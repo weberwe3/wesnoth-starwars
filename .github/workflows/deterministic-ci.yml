@@ -95,15 +95,19 @@ jobs:
 
           assert len(refs) == 3
           assert package['manifest']['schema_version'] == 1
-          assert len(package['manifest_sha256']) == 64
+          assert len(package['manifest']['sha256']) == 64
           assert len(package['policy']['sha256']) == 64
+          assert len(package['human_archives']) == 2
           assert all(len(meta['sha256']) == 64 for meta in refs.values())
+          assert all(len(meta['sha256']) == 64 for meta in package['human_archives'].values())
           assert all(ticket_runner.is_protected(path) for path in package['controlled_paths'])
 
           prompt = ticket_runner.build_governance_prompt(package)
+          normalized_prompt = ' '.join(prompt.split())
           assert 'docs/PROJECT_SCOPE_AND_FEATURE_SET.md' in prompt
           assert 'docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md' in prompt
-          assert 'DOCX files are human/archive counterparts' in prompt
+          assert 'DOCX files are human/archive counterparts' in normalized_prompt
+          assert 'not duplicate prompt context' in normalized_prompt
 
           print('reference package loading: PASS')
           print('reference package protected paths: PASS')
