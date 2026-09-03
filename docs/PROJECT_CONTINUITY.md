@@ -1,11 +1,12 @@
 # Wesnoth Star Wars Project Continuity Ledger
 
-**Purpose:** living project handoff, operational history, current-state summary, and forward plan  
-**Repository:** `weberwe3/wesnoth-starwars`  
-**Primary branch:** `main`  
-**Last continuity refresh:** 2026-09-03 after INFRA-002  
-**Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`  
-**Next intended development ticket:** `ENGINE-002`  
+**Purpose:** living project handoff, operational history, current-state summary, and forward plan<br>
+**Repository:** `weberwe3/wesnoth-starwars`<br>
+**Repository visibility at this snapshot:** public<br>
+**Primary branch:** `main`<br>
+**Last continuity refresh:** 2026-09-03 after INFRA-002<br>
+**Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`<br>
+**Next intended development ticket:** `ENGINE-002`
 
 ---
 
@@ -39,8 +40,7 @@ A serious, original fan total conversion for Battle for Wesnoth, inspired by the
 
 The project has:
 
-- a private GitHub repository;
-- protected `main`;
+- a GitHub repository with protected `main`;
 - hardened OpenCode worker/reviewer definitions;
 - a deterministic local Python coordinator and bounded ticket runner;
 - isolated Git branches/worktrees per ticket;
