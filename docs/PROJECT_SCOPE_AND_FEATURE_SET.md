@@ -1,8 +1,8 @@
 # Wesnoth Star Wars Total Conversion - Project Scope and Feature Set
 
-**Status:** Living project reference  
-**Baseline date:** 2026-09-03  
-**Repository:** `wesnoth-starwars`  
+**Status:** Living project reference<br>
+**Baseline date:** 2026-09-03<br>
+**Repository:** `wesnoth-starwars`<br>
 **Engine target:** Battle for Wesnoth 1.19.27 development generation, with forward compatibility toward 1.20.
 
 ## 1. Purpose

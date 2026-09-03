@@ -1,8 +1,8 @@
 # Wesnoth Star Wars Agent Development System - Functional Specification
 
-**Status:** Living architecture and operating specification  
-**Baseline date:** 2026-09-03  
-**Repository:** `wesnoth-starwars`  
+**Status:** Living architecture and operating specification<br>
+**Baseline date:** 2026-09-03<br>
+**Repository:** `wesnoth-starwars`<br>
 **Primary host:** KillDozer (Windows + WSL Ubuntu 24.04)
 
 ## 1. Purpose
