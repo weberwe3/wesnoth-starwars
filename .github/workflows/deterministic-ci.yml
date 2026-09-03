@@ -1,0 +1,53 @@
+name: Deterministic CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  repository-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify mandatory references
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          required = (
+              Path('AGENTS.md'),
+              Path('docs/PROJECT_SCOPE_AND_FEATURE_SET.md'),
+              Path('docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md'),
+          )
+          for path in required:
+              if not path.is_file():
+                  raise SystemExit(f'missing mandatory reference: {path}')
+              data = path.read_bytes()
+              if not data.strip():
+                  raise SystemExit(f'empty mandatory reference: {path}')
+              data.decode('utf-8')
+          print('mandatory references: PASS')
+          PY
+
+      - name: Compile coordinator Python
+        run: python3 -m compileall -q agent/coordinator
+
+      - name: Check whitespace
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git diff --check "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --check HEAD^ HEAD
+          else
+            git diff --check
+          fi
