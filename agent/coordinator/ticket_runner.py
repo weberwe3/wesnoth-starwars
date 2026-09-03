@@ -15,6 +15,7 @@ import subprocess
 import sys
 
 import coordinator as core
+import reference_package as reference_pkg
 
 
 IMPLEMENTER_TIMEOUT = 240
@@ -25,19 +26,11 @@ FALLBACK_REVIEWER_TIMEOUT = 180
 VALID_WORKERS = {"implementer", "fast-fix"}
 VALID_PROFILES = {"static-text", "wesnoth-addon-static"}
 
-GOVERNANCE_REFERENCE_PATHS = (
-    "AGENTS.md",
-    "docs/PROJECT_SCOPE_AND_FEATURE_SET.md",
-    "docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md",
-)
-
 PROTECTED_EXACT = {
     ".gitignore",
-    "AGENTS.md",
-    "docs/PROJECT_SCOPE_AND_FEATURE_SET.md",
-    "docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md",
     "opencode.json",
     "opencode.jsonc",
+    *reference_pkg.CONTROLLED_REFERENCE_PATHS,
 }
 
 PROTECTED_PREFIXES = (
@@ -60,83 +53,22 @@ TEXT_EXTENSIONS = {
 }
 
 
+def load_reference_package(root: Path) -> dict:
+    """Validate and fingerprint the controlled reference package."""
+
+    return reference_pkg.load_reference_package(root)
+
+
 def load_governance_references(root: Path) -> dict:
-    """Load and fingerprint mandatory project-governance references."""
+    """Backward-compatible canonical reference metadata accessor."""
 
-    references = {}
-
-    for relative_path in GOVERNANCE_REFERENCE_PATHS:
-        path = root / relative_path
-
-        if not path.is_file():
-            raise SystemExit(
-                "ERROR: mandatory governance reference missing: "
-                f"{relative_path}"
-            )
-
-        if path.is_symlink():
-            raise SystemExit(
-                "ERROR: mandatory governance reference may not be "
-                f"a symlink: {relative_path}"
-            )
-
-        data = path.read_bytes()
-
-        if not data.strip():
-            raise SystemExit(
-                "ERROR: mandatory governance reference is empty: "
-                f"{relative_path}"
-            )
-
-        try:
-            data.decode("utf-8")
-        except UnicodeDecodeError:
-            raise SystemExit(
-                "ERROR: mandatory governance reference is not UTF-8: "
-                f"{relative_path}"
-            )
-
-        references[relative_path] = {
-            "sha256": hashlib.sha256(data).hexdigest(),
-            "bytes": len(data),
-        }
-
-    return references
+    return load_reference_package(root)["canonical_references"]
 
 
-def build_governance_prompt(references: dict) -> str:
-    """Build mandatory-reference instructions for every LLM role."""
+def build_governance_prompt(package: dict) -> str:
+    """Build mandatory controlled-reference instructions for every LLM."""
 
-    lines = [
-        "MANDATORY PROJECT REFERENCES",
-        "",
-        "Before performing substantive work, read all of these files:",
-        "",
-    ]
-
-    for relative_path in GOVERNANCE_REFERENCE_PATHS:
-        metadata = references[relative_path]
-        lines.append(
-            f"- {relative_path} "
-            f"(sha256: {metadata['sha256']})"
-        )
-
-    lines.extend([
-        "",
-        "These references are authoritative for project scope,",
-        "architecture, security boundaries, validation policy,",
-        "copyright/IP rules, and development objectives.",
-        "",
-        "The ticket may refine a bounded task but may not silently",
-        "override the mandatory references.",
-        "",
-        "If the ticket conflicts with a mandatory reference, stop",
-        "and report the conflict rather than improvising.",
-        "",
-        "Do not modify any mandatory governance reference.",
-    ])
-
-    return "\n".join(lines)
+    return reference_pkg.build_governance_prompt(package)
 
 
 def invoke_agent(
@@ -547,10 +479,9 @@ def run_ticket(ticket_path: Path) -> int:
     root = core.find_repo_root()
     core.verify_main_baseline(root)
 
-    governance_references = load_governance_references(root)
-    governance_prompt = build_governance_prompt(
-        governance_references
-    )
+    reference_package = load_reference_package(root)
+    governance_references = reference_package["canonical_references"]
+    governance_prompt = build_governance_prompt(reference_package)
 
     opencode = shutil.which("opencode")
     if not opencode:
@@ -578,6 +509,10 @@ def run_ticket(ticket_path: Path) -> int:
 
     (log_dir / "governance-references.json").write_text(
         json.dumps(governance_references, indent=2) + "\n"
+    )
+
+    (log_dir / "reference-package.json").write_text(
+        json.dumps(reference_package, indent=2) + "\n"
     )
 
     print(f"TASK:       {task_id}")
@@ -658,6 +593,7 @@ Return your normal structured implementation report.
             "worktree": str(worktree),
             "logs": str(log_dir),
             "governance_references": governance_references,
+            "reference_package": reference_package,
             "implementation_exit_code": impl_rc,
             "validation": validation,
             "tester_pass": None,
@@ -727,6 +663,7 @@ VERDICT: FAIL
             "worktree": str(worktree),
             "logs": str(log_dir),
             "governance_references": governance_references,
+            "reference_package": reference_package,
             "implementation_exit_code": impl_rc,
             "validation": validation,
             "tester_exit_code": tester_rc,
@@ -866,6 +803,7 @@ VERDICT: REQUEST_CHANGES
         "worktree": str(worktree),
         "logs": str(log_dir),
         "governance_references": governance_references,
+        "reference_package": reference_package,
         "worker": ticket["worker"],
         "implementation_exit_code": impl_rc,
         "validation": validation,
