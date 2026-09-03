@@ -74,4 +74,13 @@ Before substantive work on any ticket, every agent MUST read:
 1. `docs/PROJECT_SCOPE_AND_FEATURE_SET.md`
 2. `docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md`
 
-These documents define project scope, architecture, security boundaries, validation policy, copyright constraints, and development objectives. Ticket instructions may refine a task but may not silently override these references. If a ticket conflicts with either reference, stop and report the conflict. Ordinary feature tickets must not modify these files.
+These two Markdown documents are the canonical machine-readable project references supplied to LLM roles. They define project scope, architecture, security boundaries, validation policy, copyright constraints, and development objectives. Ticket instructions may refine a task but may not silently override these references. If a ticket conflicts with either reference, stop and report the conflict.
+
+The controlled reference package is governed by:
+
+- `docs/REFERENCE_POLICY.md`
+- `docs/REFERENCE_MANIFEST.json`
+
+Human-readable/archive counterparts are stored under `docs/reference-source/` as DOCX files. They are preserved for human review and provenance but are not duplicate model prompt context. The Markdown specifications remain authoritative for deterministic LLM execution.
+
+Ordinary feature, engine, scenario, unit, balance, art, testing, and maintenance tickets MUST NOT modify any controlled reference-package artifact. Any such change requires a dedicated governance/reference pull request that synchronizes all affected representations and manifest hashes.
