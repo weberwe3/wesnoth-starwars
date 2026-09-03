@@ -66,3 +66,12 @@ Prefer:
 - fail-closed behavior when an engine capability is uncertain
 
 Do not claim tests passed based on inspection. The deterministic coordinator executes tests and records their actual results.
+
+## Mandatory Project References
+
+Before substantive work on any ticket, every agent MUST read:
+
+1. `docs/PROJECT_SCOPE_AND_FEATURE_SET.md`
+2. `docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md`
+
+These documents define project scope, architecture, security boundaries, validation policy, copyright constraints, and development objectives. Ticket instructions may refine a task but may not silently override these references. If a ticket conflicts with either reference, stop and report the conflict. Ordinary feature tickets must not modify these files.
