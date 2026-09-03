@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "package_name": "wesnoth-starwars-controlled-reference-package",
+  "canonical_runtime_format": "markdown",
+  "human_archive_format": "docx",
+  "references": [
+    {
+      "id": "project_scope_and_feature_set",
+      "canonical_markdown": {
+        "path": "docs/PROJECT_SCOPE_AND_FEATURE_SET.md",
+        "sha256": "44d88e73d66984d6003872bee24206607493568cb35e6a4057138a5c93b190e1",
+        "bytes": 12874
+      },
+      "human_archive": {
+        "path": "docs/reference-source/Wesnoth_Project_Scope_and_Feature_Set.docx",
+        "sha256": "b817d1acea8cc3ac800952b5987216820db1e3eeb64befd07020b1408d20cf3d",
+        "bytes": 43777
+      },
+      "required_for_all_agents": true
+    },
+    {
+      "id": "agent_orchestration_functional_spec",
+      "canonical_markdown": {
+        "path": "docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md",
+        "sha256": "5e3b960ff0f3ba9e0415090ba2cdef29104436d9b2237bb0ef11cc527f060209",
+        "bytes": 25674
+      },
+      "human_archive": {
+        "path": "docs/reference-source/Wesnoth_Agent_Development_Functional_Specification.docx",
+        "sha256": "21b9676ba5371949b3a48206e586110f77e2def386d692db1c07908170bbd8e9",
+        "bytes": 49043
+      },
+      "required_for_all_agents": true
+    }
+  ]
+}
