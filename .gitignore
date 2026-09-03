@@ -2,3 +2,6 @@
 # Generated local diagnostics
 models-full.txt
 agent-smoke-test.txt
+
+# Local agent operational data
+agent/logs/
