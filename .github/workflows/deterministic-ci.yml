@@ -41,6 +41,27 @@ jobs:
       - name: Compile coordinator Python
         run: python3 -m compileall -q agent/coordinator
 
+      - name: Verify governance enforcement
+        env:
+          PYTHONPATH: agent/coordinator
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import ticket_runner
+
+          refs = ticket_runner.load_governance_references(Path.cwd())
+          assert len(refs) == 3
+          assert all(len(meta['sha256']) == 64 for meta in refs.values())
+          assert all(ticket_runner.is_protected(path) for path in refs)
+
+          prompt = ticket_runner.build_governance_prompt(refs)
+          assert all(path in prompt for path in refs)
+
+          print('governance hashing: PASS')
+          print('governance protected paths: PASS')
+          print('governance prompt injection: PASS')
+          PY
+
       - name: Check whitespace
         shell: bash
         run: |
