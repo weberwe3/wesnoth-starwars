@@ -30,9 +30,11 @@ def main() -> int:
         assert ticket_runner.is_protected(path), path
 
     prompt = ticket_runner.build_governance_prompt(package)
+    normalized_prompt = " ".join(prompt.split())
     assert "docs/PROJECT_SCOPE_AND_FEATURE_SET.md" in prompt
     assert "docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md" in prompt
-    assert "DOCX files are human/archive counterparts" in prompt
+    assert "DOCX files are human/archive counterparts" in normalized_prompt
+    assert "not duplicate prompt context" in normalized_prompt
 
     print("Controlled files:", len(package["controlled_paths"]))
     print("Canonical LLM references:", len(references))
