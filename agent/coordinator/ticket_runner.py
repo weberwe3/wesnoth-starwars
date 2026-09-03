@@ -34,6 +34,8 @@ GOVERNANCE_REFERENCE_PATHS = (
 PROTECTED_EXACT = {
     ".gitignore",
     "AGENTS.md",
+    "docs/PROJECT_SCOPE_AND_FEATURE_SET.md",
+    "docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md",
     "opencode.json",
     "opencode.jsonc",
 }
