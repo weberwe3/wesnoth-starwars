@@ -19,29 +19,70 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify mandatory references
+      - name: Verify controlled reference package
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          required = (
-              Path('AGENTS.md'),
-              Path('docs/PROJECT_SCOPE_AND_FEATURE_SET.md'),
-              Path('docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md'),
-          )
-          for path in required:
-              if not path.is_file():
-                  raise SystemExit(f'missing mandatory reference: {path}')
+          import hashlib
+          import json
+
+          root = Path.cwd()
+          manifest_path = root / 'docs/REFERENCE_MANIFEST.json'
+          policy_path = root / 'docs/REFERENCE_POLICY.md'
+          agents_path = root / 'AGENTS.md'
+
+          for path in (manifest_path, policy_path, agents_path):
+              if not path.is_file() or path.is_symlink():
+                  raise SystemExit(f'invalid controlled reference: {path}')
               data = path.read_bytes()
               if not data.strip():
-                  raise SystemExit(f'empty mandatory reference: {path}')
+                  raise SystemExit(f'empty controlled reference: {path}')
               data.decode('utf-8')
-          print('mandatory references: PASS')
+
+          manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+          if manifest.get('schema_version') != 1:
+              raise SystemExit('unsupported reference manifest schema')
+
+          references = manifest.get('references')
+          if not isinstance(references, list) or len(references) != 2:
+              raise SystemExit('reference manifest must contain exactly two references')
+
+          expected_ids = {
+              'project_scope_and_feature_set',
+              'agent_orchestration_functional_spec',
+          }
+          if {item.get('id') for item in references} != expected_ids:
+              raise SystemExit('unexpected reference manifest ids')
+
+          for item in references:
+              if item.get('required_for_all_agents') is not True:
+                  raise SystemExit(f"reference not mandatory: {item.get('id')}")
+
+              for key in ('canonical_markdown', 'human_archive'):
+                  record = item.get(key)
+                  if not isinstance(record, dict):
+                      raise SystemExit(f'missing {key} record')
+                  rel = record.get('path')
+                  path = root / rel
+                  if not path.is_file() or path.is_symlink():
+                      raise SystemExit(f'invalid controlled reference: {rel}')
+                  data = path.read_bytes()
+                  actual_hash = hashlib.sha256(data).hexdigest()
+                  if actual_hash != record.get('sha256'):
+                      raise SystemExit(f'hash mismatch: {rel}')
+                  if len(data) != record.get('bytes'):
+                      raise SystemExit(f'byte-length mismatch: {rel}')
+                  if key == 'canonical_markdown':
+                      data.decode('utf-8')
+
+          print('controlled reference manifest: PASS')
+          print('controlled reference hashes: PASS')
           PY
 
       - name: Compile coordinator Python
         run: python3 -m compileall -q agent/coordinator
 
-      - name: Verify governance enforcement
+      - name: Verify coordinator reference enforcement
         env:
           PYTHONPATH: agent/coordinator
         run: |
@@ -49,17 +90,24 @@ jobs:
           from pathlib import Path
           import ticket_runner
 
-          refs = ticket_runner.load_governance_references(Path.cwd())
+          package = ticket_runner.load_reference_package(Path.cwd())
+          refs = package['canonical_references']
+
           assert len(refs) == 3
+          assert package['manifest']['schema_version'] == 1
+          assert len(package['manifest_sha256']) == 64
+          assert len(package['policy']['sha256']) == 64
           assert all(len(meta['sha256']) == 64 for meta in refs.values())
-          assert all(ticket_runner.is_protected(path) for path in refs)
+          assert all(ticket_runner.is_protected(path) for path in package['controlled_paths'])
 
-          prompt = ticket_runner.build_governance_prompt(refs)
-          assert all(path in prompt for path in refs)
+          prompt = ticket_runner.build_governance_prompt(package)
+          assert 'docs/PROJECT_SCOPE_AND_FEATURE_SET.md' in prompt
+          assert 'docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md' in prompt
+          assert 'DOCX files are human/archive counterparts' in prompt
 
-          print('governance hashing: PASS')
-          print('governance protected paths: PASS')
-          print('governance prompt injection: PASS')
+          print('reference package loading: PASS')
+          print('reference package protected paths: PASS')
+          print('canonical prompt injection: PASS')
           PY
 
       - name: Check whitespace
