@@ -84,3 +84,15 @@ The controlled reference package is governed by:
 Human-readable/archive counterparts are stored under `docs/reference-source/` as DOCX files. They are preserved for human review and provenance but are not duplicate model prompt context. The Markdown specifications remain authoritative for deterministic LLM execution.
 
 Ordinary feature, engine, scenario, unit, balance, art, testing, and maintenance tickets MUST NOT modify any controlled reference-package artifact. Any such change requires a dedicated governance/reference pull request that synchronizes all affected representations and manifest hashes.
+
+## Project continuity ledger
+
+`docs/PROJECT_CONTINUITY.md` is the living operational handoff for the project. It records current state, completed milestones, significant decisions and corrections, known tooling/engine lessons, and the planned next work so a fresh Codex/LLM instance can resume without chat history.
+
+Project-level coordinators, architects, and fresh Codex/LLM sessions taking over the effort MUST read `docs/PROJECT_CONTINUITY.md` after the controlled references and before planning new project-level work.
+
+The continuity ledger is descriptive, not a replacement for the controlled reference package. If it conflicts with a controlled reference, the controlled reference wins and the ledger must be corrected.
+
+After a meaningful merged milestone, architecture/security change, important reusable lesson, or roadmap change, the project-level coordinator SHOULD update `docs/PROJECT_CONTINUITY.md` in an appropriately scoped branch/PR. Ordinary bounded implementation workers MUST NOT modify the ledger unless their ticket explicitly allows it.
+
+Never record credential values, tokens, private keys, recovery information, encrypted secret blobs, or other secrets in the continuity ledger.
