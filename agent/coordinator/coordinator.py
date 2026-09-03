@@ -107,6 +107,62 @@ def make_test_env() -> dict[str, str]:
     return env
 
 
+
+def provider_preflight() -> bool:
+    """Validate the provider environment without exposing credential values."""
+
+    required = {
+        "GROQ_API_KEY": "Groq implementer",
+        "CLOUDFLARE_ACCOUNT_ID": "Cloudflare workers",
+        "CLOUDFLARE_API_KEY": "Cloudflare workers",
+    }
+
+    missing = [
+        f"{name} ({purpose})"
+        for name, purpose in required.items()
+        if not os.environ.get(name)
+    ]
+
+    google_available = bool(
+        os.environ.get("GOOGLE_GENERATIVE_AI_API_KEY")
+        or os.environ.get("GEMINI_API_KEY")
+    )
+
+    print("PROVIDER PREFLIGHT:")
+    print(
+        "  Groq:       "
+        + ("PRESENT" if os.environ.get("GROQ_API_KEY") else "MISSING")
+    )
+    print(
+        "  Cloudflare: "
+        + (
+            "PRESENT"
+            if (
+                os.environ.get("CLOUDFLARE_ACCOUNT_ID")
+                and os.environ.get("CLOUDFLARE_API_KEY")
+            )
+            else "MISSING"
+        )
+    )
+    print(
+        "  Google:     "
+        + ("PRESENT" if google_available else "MISSING — fallback only")
+    )
+    print()
+
+    if missing:
+        print("ERROR: required provider credentials are missing:")
+        for item in missing:
+            print(f"  - {item}")
+        print(
+            "\nLaunch the project through the secure Wesnoth Agent Shell "
+            "instead of a normal WSL shell."
+        )
+        raise SystemExit(6)
+
+    return google_available
+
+
 def verify_main_baseline(root: Path) -> None:
     rc, branch = git(root, "branch", "--show-current")
     require_success(rc, branch, "Read current branch")
@@ -178,6 +234,8 @@ def run_smoke(root: Path) -> int:
     if not opencode:
         print("ERROR: opencode not found in PATH.")
         return 3
+
+    google_available = provider_preflight()
 
     timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     task_id = f"COORD-SMOKE-{timestamp}"
@@ -368,6 +426,12 @@ VERDICT: FAIL
 
     # ------------------------------------------------------------------
     # Independent reviewer
+    #
+    # Gemini is preferred for model/provider diversity. It may be
+    # unavailable because of quota/rate limits. Infrastructure failure or
+    # malformed output triggers the independent fallback reviewer.
+    #
+    # A substantive REQUEST_CHANGES verdict NEVER triggers fallback.
     # ------------------------------------------------------------------
 
     reviewer_prompt = f"""
@@ -400,24 +464,99 @@ or
 VERDICT: REQUEST_CHANGES
 """.strip()
 
-    reviewer_rc, reviewer_output = invoke_agent(
-        opencode=opencode,
-        worktree=worktree,
-        agent="reviewer",
-        prompt=reviewer_prompt,
-        log_file=log_dir / "reviewer.jsonl",
-    )
+    reviewer_primary_rc = None
+    reviewer_primary_approve = False
+    reviewer_primary_request_changes = False
+    reviewer_fallback_rc = None
+    reviewer_fallback_approve = False
+    reviewer_fallback_request_changes = False
+    reviewer_used = None
+    reviewer_pass = False
 
-    reviewer_pass = (
-        reviewer_rc == 0
-        and contains_verdict(reviewer_output, "APPROVE")
-    )
+    if google_available:
+        reviewer_primary_rc, reviewer_primary_output = invoke_agent(
+            opencode=opencode,
+            worktree=worktree,
+            agent="reviewer",
+            prompt=reviewer_prompt,
+            log_file=log_dir / "reviewer-primary.jsonl",
+        )
 
-    print(
-        f"      Reviewer exit code: {reviewer_rc}; "
-        f"verdict detected: "
-        f"{'APPROVE' if reviewer_pass else 'REQUEST_CHANGES/UNKNOWN'}"
-    )
+        reviewer_primary_approve = (
+            reviewer_primary_rc == 0
+            and contains_verdict(reviewer_primary_output, "APPROVE")
+        )
+
+        reviewer_primary_request_changes = (
+            reviewer_primary_rc == 0
+            and contains_verdict(
+                reviewer_primary_output,
+                "REQUEST_CHANGES",
+            )
+        )
+
+        print(
+            f"      Primary reviewer exit code: {reviewer_primary_rc}; "
+            f"APPROVE={reviewer_primary_approve}; "
+            f"REQUEST_CHANGES={reviewer_primary_request_changes}"
+        )
+    else:
+        print(
+            "      Primary reviewer skipped: Google credential unavailable."
+        )
+
+    # A real negative review is authoritative. Do not shop for a more
+    # favorable answer by invoking another reviewer.
+    if reviewer_primary_request_changes:
+        reviewer_used = "google/gemini-3.6-flash"
+        reviewer_pass = False
+
+    elif reviewer_primary_approve:
+        reviewer_used = "google/gemini-3.6-flash"
+        reviewer_pass = True
+
+    else:
+        print(
+            "      Primary reviewer unavailable or non-decisive; "
+            "invoking fallback reviewer."
+        )
+
+        reviewer_fallback_rc, reviewer_fallback_output = invoke_agent(
+            opencode=opencode,
+            worktree=worktree,
+            agent="reviewer-fallback",
+            prompt=reviewer_prompt,
+            log_file=log_dir / "reviewer-fallback.jsonl",
+        )
+
+        reviewer_fallback_approve = (
+            reviewer_fallback_rc == 0
+            and contains_verdict(
+                reviewer_fallback_output,
+                "APPROVE",
+            )
+        )
+
+        reviewer_fallback_request_changes = (
+            reviewer_fallback_rc == 0
+            and contains_verdict(
+                reviewer_fallback_output,
+                "REQUEST_CHANGES",
+            )
+        )
+
+        reviewer_used = (
+            "cloudflare-workers-ai/"
+            "@cf/nvidia/nemotron-3-120b-a12b"
+        )
+
+        reviewer_pass = reviewer_fallback_approve
+
+        print(
+            f"      Fallback reviewer exit code: {reviewer_fallback_rc}; "
+            f"APPROVE={reviewer_fallback_approve}; "
+            f"REQUEST_CHANGES={reviewer_fallback_request_changes}"
+        )
 
     final_pass = (
         deterministic_pass
@@ -434,7 +573,18 @@ VERDICT: REQUEST_CHANGES
         "deterministic_checks": deterministic_checks,
         "tester_exit_code": tester_rc,
         "tester_pass": tester_pass,
-        "reviewer_exit_code": reviewer_rc,
+        "google_reviewer_available": google_available,
+        "reviewer_primary_exit_code": reviewer_primary_rc,
+        "reviewer_primary_approve": reviewer_primary_approve,
+        "reviewer_primary_request_changes": (
+            reviewer_primary_request_changes
+        ),
+        "reviewer_fallback_exit_code": reviewer_fallback_rc,
+        "reviewer_fallback_approve": reviewer_fallback_approve,
+        "reviewer_fallback_request_changes": (
+            reviewer_fallback_request_changes
+        ),
+        "reviewer_used": reviewer_used,
         "reviewer_approve": reviewer_pass,
         "final_verdict": "PASS" if final_pass else "FAIL",
         "commit_created": False,

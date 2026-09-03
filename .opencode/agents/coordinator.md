@@ -25,6 +25,7 @@ permission:
     fast-fix: allow
     tester: allow
     reviewer: allow
+    reviewer-fallback: allow
 ---
 
 You are an optional planning assistant.
@@ -42,7 +43,7 @@ That coordinator owns:
 - commits and merges.
 
 You may analyze project files and, when explicitly used interactively, delegate
-to the four named workers.
+to the five named workers.
 
 You may not edit files, execute shell commands, access external directories, or
 use the web.
