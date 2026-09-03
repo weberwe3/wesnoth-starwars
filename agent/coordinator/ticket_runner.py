@@ -344,6 +344,11 @@ def validate_wesnoth_addon(
         "main_cfg_exists": main_cfg.is_file(),
         "main_cfg_nonempty": False,
         "main_cfg_utf8": False,
+        "no_invalid_addon_tag": False,
+        "no_invalid_translations_tag": False,
+        "textdomain_tag_present": False,
+        "textdomain_name_present": False,
+        "textdomain_path_present": False,
     }
 
     if main_cfg.is_file():
@@ -351,10 +356,43 @@ def validate_wesnoth_addon(
         checks["main_cfg_nonempty"] = bool(data.strip())
 
         try:
-            data.decode("utf-8")
+            text = data.decode("utf-8")
             checks["main_cfg_utf8"] = True
         except UnicodeDecodeError:
-            pass
+            text = ""
+
+        if text:
+            normalized = text.replace(" ", "").replace("\t", "")
+
+            checks["no_invalid_addon_tag"] = (
+                "[addon]" not in normalized
+                and "[/addon]" not in normalized
+            )
+
+            checks["no_invalid_translations_tag"] = (
+                "[translations]" not in normalized
+                and "[/translations]" not in normalized
+            )
+
+            checks["textdomain_tag_present"] = (
+                "[textdomain]" in normalized
+                and "[/textdomain]" in normalized
+            )
+
+            checks["textdomain_name_present"] = (
+                'name="wesnoth-Star_Wars_Thrawn_Trilogy"'
+                in normalized
+                or "name=wesnoth-Star_Wars_Thrawn_Trilogy"
+                in normalized
+            )
+
+            checks["textdomain_path_present"] = (
+                'path="data/add-ons/Star_Wars_Thrawn_Trilogy/translations"'
+                in normalized
+                or
+                "path=data/add-ons/Star_Wars_Thrawn_Trilogy/translations"
+                in normalized
+            )
 
     return {
         "pass": all(checks.values()),
