@@ -46,6 +46,23 @@ their real exit codes and output.
 - Favor deterministic, testable mechanics.
 - Keep campaign-specific content from unnecessarily coupling core mechanics.
 
+## Wesnoth WML construction and engine-validation rules
+
+For tickets that create or modify campaign/scenario WML, apply these rules unless a task deliberately requires a different engine pattern:
+
+- Keep `[campaign]` focused on campaign metadata. Define scenarios as top-level `[scenario]` content loaded separately rather than nesting `[scenario]` inside `[campaign]`.
+- Use a campaign `define` and a matching guarded scenario include when loading campaign scenario files, for example `#ifdef <CAMPAIGN_DEFINE>` around the `{~add-ons/<addon_id>/scenarios}` include.
+- A multiline `map_data` value must be a quoted WML string. Do not place bare terrain rows after `map_data=`.
+- When leader-defeat behavior is intended, declare an actual leader correctly, such as directly in `[side]` or with `[leader]`, and use `canrecruit=yes`. Do not assume an arbitrary nested `[unit]` acts as the side leader.
+- Displayed objectives belong in an appropriate runtime event such as `prestart` or `start`. Objective text describes goals; it does not by itself implement victory or defeat logic.
+- Treat deterministic Python/static validation as necessary but insufficient for declaring WML launchable.
+- When preprocessing worktree content that uses `{~add-ons/...}`, stage the add-on under an isolated Wesnoth userdata tree at `data/add-ons/<addon_id>` and point the installed engine at that userdata directory so `~add-ons` resolves correctly.
+- Run installed-engine preprocessing for WML changes and capture the process exit code immediately after the Wesnoth invocation, before running any other command.
+- Before calling a campaign/scenario launchable, require applicable installed-engine/schema/add-on validation plus a GUI launch smoke test on the supported Wesnoth build.
+- `--validate-addon` is not a substitute for a launch smoke test; where the installed engine requires campaign play to trigger add-on validation, actually launch/play the campaign as part of validation.
+- Do not commit generated or preprocessed validation output.
+- When the engine reports a concrete parser/validation failure, fix the smallest confirmed defect first and rerun the engine before making broader speculative edits.
+
 ## Intellectual-property boundary
 
 This is a fan total-conversion project.
