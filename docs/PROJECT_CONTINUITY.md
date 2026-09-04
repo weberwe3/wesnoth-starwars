@@ -279,7 +279,8 @@ Intended system roles:
 - **free/low-cost hosted worker LLMs** — bounded implementation work in isolated branches/worktrees;
 - **tester LLM** — independent inspection after deterministic gates;
 - **reviewer LLM** — final independent model review;
-- **fallback reviewer** — only when primary reviewer is unavailable/non-decisive for infrastructure reasons.
+- **intermediate reviewer** — Gemini 3.8 Flash only when the primary reviewer is unavailable/non-decisive for infrastructure reasons;
+- **final fallback reviewer** — Nemotron only when both Gemini reviewers are unavailable/non-decisive for infrastructure reasons.
 
 Workers do not control `main`.
 
@@ -298,6 +299,7 @@ Committed agent definitions:
 - `.opencode/agents/fast-fix.md`
 - `.opencode/agents/tester.md`
 - `.opencode/agents/reviewer.md`
+- `.opencode/agents/reviewer-intermediate.md`
 - `.opencode/agents/reviewer-fallback.md`
 
 Workers are deny-by-default:
@@ -318,13 +320,15 @@ Routing used during the infrastructure baseline:
 - fast-fix: `opencode/ling-3.0-flash-fin-free`
 - tester: `cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash`
 - primary reviewer: `google/gemini-3.6-flash`
-- fallback reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
+- intermediate reviewer: `google/gemini-3.8-flash`
+- final fallback reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
 
 Observed behavior:
 
 - Google primary reviewer sometimes encounters free-tier quota/429/timeouts;
-- fallback reviewer is permitted for infrastructure/unavailability/non-decisive failures;
-- a substantive primary `REQUEST_CHANGES` must not be bypassed by fallback.
+- Gemini 3.8 Flash is the only intermediate reviewer when Gemini 3.6 Flash has an infrastructure/unavailability/non-decisive failure;
+- Nemotron is permitted only when both Gemini reviewers have infrastructure/unavailability/non-decisive failures;
+- a substantive `REQUEST_CHANGES` from either Gemini reviewer must not be bypassed by a later fallback.
 
 Provider choices may change over time; the role boundaries and fail-closed policy matter more than a specific model name.
 
@@ -945,12 +949,13 @@ When updating this file:
 | 2026-09-04 | Bounded error-recovery governance (proposed) | Permit no more than two scoped coordinator repair attempts for eligible implementation/gate errors; retain immediate hard stops for security, approval, repository hygiene, and publication failures |
 | 2026-09-04 | Implementer provider fallback (proposed) | Keep GPT-OSS 120B primary and permit exactly one sandboxed GPT-5.6 Terra medium fallback after primary Implementer failure; failure of both providers hard-stops without consuming code-recovery attempts |
 | 2026-09-04 | DASH-005 / PR #19 | Merged structured failure diagnostics, one Terra Medium Implementer fallback, open-work planning context, and a strict two-attempt Sol-planned/Fast-Fix recovery loop |
-| 2026-09-04 | DASH-006 automation diagnosis (local feature branch) | Correct stale-dashboard restart behavior, surface no-safe-ticket pauses, preserve safe exception diagnostics, resume safe nonterminal ticket worktrees under their original contracts, require explicit owner language before a fresh start, provide paired full-control private-LAN access, display its reachable address, and add safe-state dashboard/associated-console shutdown |
+| 2026-09-04 | DASH-006 / PR #20 | Merged stale-dashboard restart, visible no-safe-ticket diagnostics, resume-first nonterminal worktrees, paired full-control private-LAN access, and safe-state dashboard/associated-console shutdown |
+| 2026-09-04 | DASH-007 open-PR recovery and reviewer routing (local architecture branch) | Add exact-head, contract-backed open-PR resumption with append-only main reconciliation, a fail-closed same-contract replacement path that preserves retired branches, and Gemini 3.8 Flash between Gemini 3.6 Flash and Nemotron in the reviewer fallback chain |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, the project has completed the infrastructure/reference foundation and local autonomous Agent Manager needed for controlled AI-assisted development. DASH-005 is merged through PR #19. `ENGINE-002` is implemented on open PR #15 but is not part of protected `main`; reconcile that PR before planning duplicate campaign-registration or dependent scenario-validation work. Automation should present this dependency as a visible pause rather than a silent failure.
+At this snapshot, the project has completed the infrastructure/reference foundation and local autonomous Agent Manager needed for controlled AI-assisted development. DASH-006 is merged through PR #20. `ENGINE-002` is implemented on open PR #15 but is not part of protected `main`; its exact branch and managed worktree remain intact and GitHub reports it mergeable but behind `main`. DASH-007 is being prepared so automation can append current `main`, rerun the original gates, and queue the refreshed PR head rather than duplicating or abandoning that work. The same branch adds Gemini 3.8 Flash as the only intermediate reviewer between Gemini 3.6 Flash and the final Nemotron fallback; any substantive reviewer rejection remains authoritative.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.

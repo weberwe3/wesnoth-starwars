@@ -82,11 +82,18 @@ dependency before enabling automation again. Control-plane failures record a
 redacted diagnostic and required action instead of only a generic stop message.
 
 Automation treats a managed branch/worktree from a nonterminal ticket as
-resumable work. It restores the original ticket scope and continues useful
-committed or uncommitted changes in place. It does not resume terminal results,
-PR-owned branches, unmanaged worktrees, or scope violations. To create a new
-worktree when there is no resumable ticket, the coordinator brief must include
-an explicit phrase such as **start a fresh ticket** or **start from scratch**.
+resumable work. It also resumes an eligible open PR when its exact published
+head, clean managed worktree, original contract, repository ownership, and path
+scope all verify. Current `main` is appended with a normal merge commit and the
+original gates are rerun; published history is never rebased, reset, or
+force-pushed. If a contract-backed PR is deterministically unrecoverable, a
+same-contract replacement must pass locally before the old PR is closed, and
+the old branch remains preserved. Ambiguous, dirty, divergent, cross-repository,
+protected-path, or out-of-scope cases stop for human review.
+
+To create unrelated new work when there is no resumable ticket, the coordinator
+brief must include an explicit phrase such as **start a fresh ticket** or
+**start from scratch**.
 
 In continuous automation, eligible implementation, deterministic-validation,
 tester, or substantive reviewer failures can trigger no more than two recovery

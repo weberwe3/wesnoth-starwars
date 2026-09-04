@@ -514,6 +514,9 @@ VERDICT: REQUEST_CHANGES
     reviewer_primary_rc = None
     reviewer_primary_approve = False
     reviewer_primary_request_changes = False
+    reviewer_intermediate_rc = None
+    reviewer_intermediate_approve = False
+    reviewer_intermediate_request_changes = False
     reviewer_fallback_rc = None
     reviewer_fallback_approve = False
     reviewer_fallback_request_changes = False
@@ -566,55 +569,90 @@ VERDICT: REQUEST_CHANGES
 
     else:
         status.set_worker("reviewer", "waiting", "Unavailable or non-decisive")
-        status.handoff("reviewer", "reviewer-fallback", "Fallback smoke review activated")
-        status.set_worker("reviewer-fallback", "active", "Independent fallback smoke review")
-        print(
-            "      Primary reviewer unavailable or non-decisive; "
-            "invoking fallback reviewer."
-        )
-
-        reviewer_fallback_rc, reviewer_fallback_output = invoke_agent(
-            opencode=opencode,
-            worktree=worktree,
-            agent="reviewer-fallback",
-            prompt=reviewer_prompt,
-            log_file=log_dir / "reviewer-fallback.jsonl",
-        )
-
-        reviewer_fallback_approve = (
-            reviewer_fallback_rc == 0
-            and contains_verdict(
-                reviewer_fallback_output,
-                "APPROVE",
+        if google_available:
+            status.handoff("reviewer", "reviewer-fallback", "Intermediate smoke review activated")
+            status.set_assignment("reviewer-fallback", "Google", "gemini-3.8-flash")
+            status.set_worker("reviewer-fallback", "active", "Independent intermediate smoke review")
+            print(
+                "      Primary reviewer unavailable or non-decisive; "
+                "invoking intermediate reviewer."
             )
-        )
 
-        reviewer_fallback_request_changes = (
-            reviewer_fallback_rc == 0
-            and contains_verdict(
-                reviewer_fallback_output,
-                "REQUEST_CHANGES",
+            reviewer_intermediate_rc, reviewer_intermediate_output = invoke_agent(
+                opencode=opencode,
+                worktree=worktree,
+                agent="reviewer-intermediate",
+                prompt=reviewer_prompt,
+                log_file=log_dir / "reviewer-intermediate.jsonl",
             )
-        )
 
-        reviewer_used = (
-            "cloudflare-workers-ai/"
-            "@cf/nvidia/nemotron-3-120b-a12b"
-        )
+            reviewer_intermediate_approve = (
+                reviewer_intermediate_rc == 0
+                and contains_verdict(reviewer_intermediate_output, "APPROVE")
+            )
+            reviewer_intermediate_request_changes = (
+                reviewer_intermediate_rc == 0
+                and contains_verdict(reviewer_intermediate_output, "REQUEST_CHANGES")
+            )
 
-        reviewer_pass = reviewer_fallback_approve
-        status.set_worker(
-            "reviewer-fallback",
-            "idle" if reviewer_fallback_approve else "error",
-            "Approved" if reviewer_fallback_approve else "Fallback did not approve",
-            error=None if reviewer_fallback_approve else "Fallback reviewer did not approve",
-        )
+            print(
+                f"      Intermediate reviewer exit code: {reviewer_intermediate_rc}; "
+                f"APPROVE={reviewer_intermediate_approve}; "
+                f"REQUEST_CHANGES={reviewer_intermediate_request_changes}"
+            )
 
-        print(
-            f"      Fallback reviewer exit code: {reviewer_fallback_rc}; "
-            f"APPROVE={reviewer_fallback_approve}; "
-            f"REQUEST_CHANGES={reviewer_fallback_request_changes}"
-        )
+        if reviewer_intermediate_request_changes:
+            reviewer_used = "google/gemini-3.8-flash"
+            reviewer_pass = False
+            status.set_worker("reviewer-fallback", "error", "Changes requested", error="Intermediate reviewer requested changes")
+        elif reviewer_intermediate_approve:
+            reviewer_used = "google/gemini-3.8-flash"
+            reviewer_pass = True
+            status.set_worker("reviewer-fallback", "idle", "Approved")
+        else:
+            status.set_worker("reviewer-fallback", "waiting", "Intermediate unavailable or non-decisive")
+            status.handoff("reviewer-fallback", "reviewer-fallback", "Final fallback smoke review activated")
+            status.set_assignment(
+                "reviewer-fallback",
+                "Cloudflare Workers AI",
+                "@cf/nvidia/nemotron-3-120b-a12b",
+            )
+            status.set_worker("reviewer-fallback", "active", "Independent final fallback smoke review")
+            print(
+                "      Intermediate reviewer unavailable or non-decisive; "
+                "invoking final fallback reviewer."
+            )
+            reviewer_fallback_rc, reviewer_fallback_output = invoke_agent(
+                opencode=opencode,
+                worktree=worktree,
+                agent="reviewer-fallback",
+                prompt=reviewer_prompt,
+                log_file=log_dir / "reviewer-fallback.jsonl",
+            )
+            reviewer_fallback_approve = (
+                reviewer_fallback_rc == 0
+                and contains_verdict(reviewer_fallback_output, "APPROVE")
+            )
+            reviewer_fallback_request_changes = (
+                reviewer_fallback_rc == 0
+                and contains_verdict(reviewer_fallback_output, "REQUEST_CHANGES")
+            )
+            reviewer_used = (
+                "cloudflare-workers-ai/"
+                "@cf/nvidia/nemotron-3-120b-a12b"
+            )
+            reviewer_pass = reviewer_fallback_approve
+            status.set_worker(
+                "reviewer-fallback",
+                "idle" if reviewer_fallback_approve else "error",
+                "Approved" if reviewer_fallback_approve else "Final fallback did not approve",
+                error=None if reviewer_fallback_approve else "Final fallback reviewer did not approve",
+            )
+            print(
+                f"      Final fallback reviewer exit code: {reviewer_fallback_rc}; "
+                f"APPROVE={reviewer_fallback_approve}; "
+                f"REQUEST_CHANGES={reviewer_fallback_request_changes}"
+            )
 
     final_pass = (
         deterministic_pass
@@ -642,6 +680,11 @@ VERDICT: REQUEST_CHANGES
         "reviewer_primary_approve": reviewer_primary_approve,
         "reviewer_primary_request_changes": (
             reviewer_primary_request_changes
+        ),
+        "reviewer_intermediate_exit_code": reviewer_intermediate_rc,
+        "reviewer_intermediate_approve": reviewer_intermediate_approve,
+        "reviewer_intermediate_request_changes": (
+            reviewer_intermediate_request_changes
         ),
         "reviewer_fallback_exit_code": reviewer_fallback_rc,
         "reviewer_fallback_approve": reviewer_fallback_approve,

@@ -64,7 +64,7 @@ def _configured_assignments(root: Path | None) -> dict[str, dict[str, str]]:
         "fast-fix": "fast-fix.md",
         "tester": "tester.md",
         "reviewer": "reviewer.md",
-        "reviewer-fallback": "reviewer-fallback.md",
+        "reviewer-fallback": "reviewer-intermediate.md",
     }
     provider_names = {
         "groq": "Groq",
