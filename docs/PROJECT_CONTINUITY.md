@@ -940,12 +940,14 @@ When updating this file:
 | 2026-09-03 | INFRA-003 / Issue #5 | Living project continuity ledger initiated; intended to become persistent handoff state |
 | 2026-09-03 | DASH-001 / PR #9 | Local structured-telemetry Agent Manager dashboard and secure-launcher companion entry point merged |
 | 2026-09-04 | DASH-002 / PR #16 | Coordinator mode control and one-ticket governed Sol handoff merged |
-| 2026-09-04 | Continuous automation governance (proposed) | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
+| 2026-09-04 | Continuous automation governance / PR #17 | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
+| 2026-09-04 | DASH-004 / PR #18 | Autonomous scheduling toggle, planned-ticket picker, local approval queue, exact-commit publication pipeline, and deletion manifest gate merged |
+| 2026-09-04 | Bounded error-recovery governance (proposed) | Permit no more than two scoped coordinator repair attempts for eligible implementation/gate errors; retain immediate hard stops for security, approval, repository hygiene, and publication failures |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, the project has completed the infrastructure/reference foundation needed for controlled AI-assisted development and has one minimal Wesnoth add-on foundation milestone (`ENGINE-001`). The next development priority is to begin real game execution with `ENGINE-002`, registering a minimal campaign and first launchable scenario, then strengthening engine-backed scenario validation.
+At this snapshot, the project has completed the infrastructure/reference foundation and local autonomous Agent Manager needed for controlled AI-assisted development. `ENGINE-002` is implemented on open PR #15 but is not part of protected `main`; reconcile that PR before planning duplicate campaign-registration work. The immediate orchestration priority is bounded, structured error recovery with a two-attempt ceiling and precise safe diagnostics.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.

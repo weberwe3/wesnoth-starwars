@@ -410,14 +410,47 @@ When automation is enabled:
 - turning automation off prevents another ticket from starting. An active
   ticket proceeds only to its next safe deterministic stopping point before
   control returns to the manual Python/Bash workflow; and
-- any failed mandatory gate, unresolved reviewer result, scope violation,
-  provider failure outside established retry policy, dirty or unexpected Git
-  state, publication failure, or approval mismatch pauses automation and is
-  recorded as an error. Automation must never reinterpret failure as approval.
+- an eligible implementation, validation, tester, or reviewer error may enter
+  the bounded recovery policy below before it becomes a final failure; and
+- any unrecovered mandatory-gate failure, scope violation, provider failure
+  outside established retry policy, dirty or unexpected Git state,
+  publication failure, or approval mismatch pauses automation and is recorded
+  as an error. Automation must never reinterpret failure as approval.
 
 Automation does not grant a worker shell access, ownership of `main`, access to
 credentials, or authority to weaken branch protection. Planning models remain
 nondeterministic inputs to the Python coordinator.
+
+#### Bounded autonomous error recovery
+
+When continuous automation is enabled, the deterministic coordinator may ask
+the selected coordinator model to diagnose and address an error only when the
+error is supported by structured, secret-free evidence and can be corrected
+inside the active ticket's existing allowed paths. Eligible errors are limited
+to implementation defects, deterministic validation failures attributable to
+the candidate change, tester failures, and reviewer requests for changes.
+
+Recovery is limited to **two attempts per ticket**. Each attempt must record
+the failure class, safe diagnostic summary, attempt number, proposed corrective
+action, changed paths, and resulting gate evidence. The coordinator must use a
+narrow corrective brief, preserve the original ticket scope, reject protected
+or expanded paths, and rerun every applicable deterministic, engine, tester,
+and reviewer gate. A complete PASS resets the recovery counter. Failure after
+the second attempt pauses automation and leaves the candidate uncommitted.
+
+The coordinator must stop immediately, without spending recovery attempts, for
+errors an implementation ticket cannot safely resolve: dirty or unexpected
+repository state; deletion approval; missing human approval; protected-path,
+scope, governance, or security violations; missing credentials or secure
+bridge; unavailable planner/provider outside existing retry policy; ambiguous
+or credential-bearing diagnostics; publication, branch-protection, remote-head,
+merge, or approval mismatch; and explicit user stop. These are recorded with a
+specific safe reason and required human action.
+
+Before planning new or recovery work, the coordinator must include structured
+local queue and open pull-request/branch context so it does not duplicate an
+existing ticket. If that inventory cannot be established reliably, automation
+pauses instead of guessing.
 
 #### Ticket approval queue and publication
 
@@ -469,8 +502,11 @@ enabled only when deterministic prerequisites are satisfied.
 
 The former routing-history surface becomes **Activity log and errors**. It
 combines structured coordinator, routing, validation, approval, and publication
-events. Error-bearing entries use the established red alert treatment and open
-an accessible detail dialog when selected. Secrets, environment values, raw
+events. Recovery entries show the error class, current attempt out of two,
+corrective action, and resulting state. Error-bearing entries use the
+established red alert treatment and open an accessible detail dialog containing
+the specific safe diagnostic and required next action when selected. Secrets,
+environment values, raw
 credential-bearing logs, and arbitrary filesystem content must never be shown.
 
 Ordinary tickets remain unable to modify controlled references. A controlled
