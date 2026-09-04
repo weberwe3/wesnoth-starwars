@@ -152,6 +152,10 @@ class ApprovalQueue:
         level: str = "info",
         detail: str | None = None,
         ticket_id: str | None = None,
+        failure_class: str | None = None,
+        required_action: str | None = None,
+        recovery_attempt: int | None = None,
+        recovery_limit: int | None = None,
     ) -> None:
         record = {
             "id": hashlib.sha256(
@@ -163,6 +167,14 @@ class ApprovalQueue:
             "detail": (detail or message)[:2000],
             "ticket_id": ticket_id,
         }
+        if failure_class:
+            record["failure_class"] = failure_class[:80]
+        if required_action:
+            record["required_action"] = required_action[:1000]
+        if recovery_attempt is not None:
+            record["recovery_attempt"] = recovery_attempt
+        if recovery_limit is not None:
+            record["recovery_limit"] = recovery_limit
         self._update(lambda state: state["activity"].append(record))
 
     def public_state(self) -> dict[str, Any]:
@@ -178,7 +190,10 @@ class ApprovalQueue:
             for item in state["records"]
             if isinstance(item, dict)
         ]
-        activity_allowed = {"id", "at", "level", "message", "detail", "ticket_id"}
+        activity_allowed = {
+            "id", "at", "level", "message", "detail", "ticket_id",
+            "failure_class", "required_action", "recovery_attempt", "recovery_limit",
+        }
         activity = [
             {key: item.get(key) for key in activity_allowed}
             for item in state["activity"]

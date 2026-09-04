@@ -167,6 +167,11 @@ class RuntimeStatus:
         level: str = "info",
         source: str | None = None,
         target: str | None = None,
+        detail: str | None = None,
+        failure_class: str | None = None,
+        required_action: str | None = None,
+        recovery_attempt: int | None = None,
+        recovery_limit: int | None = None,
     ) -> None:
         record = {
             "at": _utc_now(),
@@ -178,6 +183,16 @@ class RuntimeStatus:
             record["source"] = source
         if target:
             record["target"] = target
+        if detail:
+            record["detail"] = detail[:2000]
+        if failure_class:
+            record["failure_class"] = failure_class[:80]
+        if required_action:
+            record["required_action"] = required_action[:1000]
+        if recovery_attempt is not None:
+            record["recovery_attempt"] = recovery_attempt
+        if recovery_limit is not None:
+            record["recovery_limit"] = recovery_limit
         self.state["events"] = (self.state["events"] + [record])[-200:]
         self._write()
 
@@ -249,7 +264,17 @@ class RuntimeStatus:
         self.state["gates"] = gates
         self._write()
 
-    def finish(self, passed: bool, message: str) -> None:
+    def finish(
+        self,
+        passed: bool,
+        message: str,
+        *,
+        detail: str | None = None,
+        failure_class: str | None = None,
+        required_action: str | None = None,
+        recovery_attempt: int | None = None,
+        recovery_limit: int | None = None,
+    ) -> None:
         now = _utc_now()
         for worker in self.state["workers"].values():
             if worker["state"] == "active":
@@ -267,9 +292,21 @@ class RuntimeStatus:
             message,
             kind="result",
             level="success" if passed else "error",
+            detail=detail,
+            failure_class=failure_class,
+            required_action=required_action,
+            recovery_attempt=recovery_attempt,
+            recovery_limit=recovery_limit,
         )
 
-    def fail_system(self, message: str) -> None:
+    def fail_system(
+        self,
+        message: str,
+        *,
+        detail: str | None = None,
+        failure_class: str | None = None,
+        required_action: str | None = None,
+    ) -> None:
         self.state["active_transfer"] = None
         self.state["system"]["state"] = "attention"
         for worker in self.state["workers"].values():
@@ -282,7 +319,16 @@ class RuntimeStatus:
                 "result": "FAIL",
                 "completed_at": _utc_now(),
             })
-        self.event(message, kind="system", level="error")
+        self.event(
+            message,
+            kind="system",
+            level="error",
+            detail=detail,
+            failure_class=failure_class,
+            required_action=required_action,
+            recovery_attempt=0,
+            recovery_limit=2,
+        )
 
 
 def runtime_status_path(root: Path) -> Path:

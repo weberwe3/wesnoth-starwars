@@ -65,7 +65,10 @@ function renderActivity(data, control) {
   const queueActivity = (control.activity || []).map(item => ({...item, sortAt: item.at}));
   const telemetry = (data.events || []).map(item => ({
     at: item.at, sortAt: item.at, level: item.level, message: item.message,
-    detail: item.message, route: item.source ? `${item.source}${item.target ? ` → ${item.target}` : ""}` : "",
+    detail: item.detail || item.message, failure_class: item.failure_class,
+    required_action: item.required_action, recovery_attempt: item.recovery_attempt,
+    recovery_limit: item.recovery_limit,
+    route: item.source ? `${item.source}${item.target ? ` → ${item.target}` : ""}` : "",
   }));
   const routing = (data.routing_history || []).map(item => ({
     at: item.at, sortAt: item.at, level: "info", message: item.message,
@@ -74,9 +77,13 @@ function renderActivity(data, control) {
   const activity = [...queueActivity, ...telemetry, ...routing]
     .sort((a, b) => String(b.sortAt || "").localeCompare(String(a.sortAt || ""))).slice(0, 16);
   $("activity-log").innerHTML = activity.map(item => {
-    const inner = `<time>${clock(item.at)}</time>${item.route ? `<span class="event-route">${esc(item.route)}</span>` : ""}<span>${esc(item.message)}</span>`;
+    const recovery = item.recovery_attempt != null
+      ? `<span class="recovery-badge">Attempt ${esc(item.recovery_attempt)} / ${esc(item.recovery_limit || 2)}</span>` : "";
+    const failureClass = item.failure_class
+      ? `<span class="failure-class">${esc(displayState(item.failure_class))}</span>` : "";
+    const inner = `<time>${clock(item.at)}</time>${item.route ? `<span class="event-route">${esc(item.route)}</span>` : ""}<span>${esc(item.message)}</span><span class="event-meta">${failureClass}${recovery}</span>`;
     return item.level === "error"
-      ? `<li class="error"><button type="button" class="error-activity" data-message="${esc(item.message)}" data-detail="${esc(item.detail || item.message)}">${inner}</button></li>`
+      ? `<li class="error"><button type="button" class="error-activity" data-message="${esc(item.message)}" data-detail="${esc(item.detail || item.message)}" data-action="${esc(item.required_action || "Review the ticket evidence before retrying.")}">${inner}</button></li>`
       : `<li class="level-${esc(item.level)}">${inner}</li>`;
   }).join("") || '<li class="empty">No activity recorded</li>';
 }
@@ -282,6 +289,7 @@ $("activity-log").addEventListener("click", event => {
   if (!button) return;
   $("error-dialog-message").textContent = button.dataset.message;
   $("error-dialog-detail").textContent = button.dataset.detail;
+  $("error-dialog-action").textContent = button.dataset.action;
   $("error-dialog").showModal();
 });
 

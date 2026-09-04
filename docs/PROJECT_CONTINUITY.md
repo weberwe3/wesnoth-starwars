@@ -6,8 +6,8 @@
 **Primary branch:** `main`<br>
 **Last continuity refresh:** 2026-09-04 during autonomous queue governance design<br>
 **Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`<br>
-**Active infrastructure ticket:** governance design for continuous automation and per-ticket approval<br>
-**Next intended game-development ticket:** `ENGINE-002`
+**Active infrastructure ticket:** DASH-005 bounded autonomous error recovery<br>
+**Next intended game-development ticket:** reconcile open `ENGINE-002` PR #15 before new overlapping work
 
 ---
 
@@ -943,6 +943,7 @@ When updating this file:
 | 2026-09-04 | Continuous automation governance / PR #17 | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
 | 2026-09-04 | DASH-004 / PR #18 | Autonomous scheduling toggle, planned-ticket picker, local approval queue, exact-commit publication pipeline, and deletion manifest gate merged |
 | 2026-09-04 | Bounded error-recovery governance (proposed) | Permit no more than two scoped coordinator repair attempts for eligible implementation/gate errors; retain immediate hard stops for security, approval, repository hygiene, and publication failures |
+| 2026-09-04 | DASH-005 (local feature branch) | Added structured failure diagnostics, open-PR/branch planning context, and a strict two-attempt Sol-planned/Fast-Fix recovery loop pending review and publication |
 
 ---
 

@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "agent" / "coordinator"))
 
 from runtime_status import RuntimeStatus, default_state  # noqa: E402
 from coordination_control import ControlStore  # noqa: E402
+import recovery_policy  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from autonomy import AutonomyController, ControlError  # noqa: E402
 from approval_queue import ApprovalQueue  # noqa: E402
@@ -47,6 +48,26 @@ class RuntimeStatusTests(unittest.TestCase):
             self.assertEqual(state["job"]["worktree"], "dash-test")
             self.assertEqual(state["routing_history"][-1]["to"], "implementer")
             self.assertEqual(state["gates"][-1]["state"], "pass")
+
+    def test_runtime_exposes_bounded_recovery_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "agent" / "runtime" / "state.json"
+            status = RuntimeStatus(path)
+            status.event(
+                "Recovery attempt 1 of 2",
+                kind="recovery",
+                level="warning",
+                detail="Static check failed",
+                failure_class="implementation_or_validation_failure",
+                required_action="Correct the scoped file",
+                recovery_attempt=1,
+                recovery_limit=2,
+            )
+            state = public_state(json.loads(path.read_text(encoding="utf-8")))
+            event = state["events"][-1]
+            self.assertEqual(event["recovery_attempt"], 1)
+            self.assertEqual(event["recovery_limit"], 2)
+            self.assertEqual(event["required_action"], "Correct the scoped file")
 
     def test_public_state_drops_unknown_and_marks_stale_running_job(self) -> None:
         state = default_state(ROOT)
@@ -129,6 +150,47 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertEqual(state["approval_queue"], [])
             payload = json.dumps(state).lower()
             self.assertNotIn("api_key", payload)
+
+    def test_recovery_policy_allows_exactly_two_attempts(self) -> None:
+        eligible = {"eligible": True}
+        self.assertTrue(recovery_policy.can_attempt(0, eligible, True))
+        self.assertTrue(recovery_policy.can_attempt(1, eligible, True))
+        self.assertFalse(recovery_policy.can_attempt(2, eligible, True))
+        self.assertFalse(recovery_policy.can_attempt(0, eligible, False))
+        self.assertFalse(recovery_policy.can_attempt(0, {"eligible": False}, True))
+
+    def test_repository_hygiene_is_immediate_hard_stop(self) -> None:
+        failure = recovery_policy.hard_stop_for_exit(2)
+        self.assertEqual(failure["class"], "repository_hygiene")
+        self.assertFalse(failure["eligible"])
+        self.assertFalse(recovery_policy.can_attempt(0, failure, True))
+
+    def test_scope_violation_never_consumes_recovery_attempt(self) -> None:
+        failure = recovery_policy.classify_validation({
+            "scope": {"violations": ["AGENTS.md: protected"]},
+            "static": {"checks": []},
+        }, 0)
+        self.assertEqual(failure["class"], "scope_violation")
+        self.assertFalse(recovery_policy.can_attempt(0, failure, True))
+
+    def test_failure_diagnostic_redacts_secret_shapes(self) -> None:
+        diagnostic = recovery_policy.safe_text(
+            "TOKEN=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ validator failed",
+            "fallback",
+        )
+        self.assertNotIn("abcdefghijklmnopqrstuvwxyz", diagnostic)
+        self.assertIn("[redacted]", diagnostic)
+
+    def test_open_pull_request_path_overlap_is_rejected(self) -> None:
+        ticket = {"allowed_paths": ["addons/Star_Wars_Thrawn_Trilogy/**"]}
+        inventory = {
+            "approval_queue": [],
+            "open_pull_requests": [{
+                "changed_paths": ["addons/Star_Wars_Thrawn_Trilogy/_main.cfg"]
+            }],
+        }
+        with self.assertRaises(ControlError):
+            AutonomyController._reject_overlapping_proposal(ticket, inventory)
 
     def test_control_api_requires_same_origin_token(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

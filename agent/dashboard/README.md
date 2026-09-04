@@ -34,14 +34,27 @@ strict ticket object. Python then validates that object with the existing
 ticket schema and protected-path rules. Only after validation does the
 dashboard invoke the unchanged DPAPI secure launcher with a fixed
 `secure_ticket_bridge.py` command. The native bridge accepts only a random run
-ID, derives all paths itself, and publishes only the ticket runner's numeric
-result. The resulting work occurs in the normal isolated worktree and passes
+ID and allowlisted recovery effort, derives all paths itself, and publishes a
+numeric result plus a bounded secret-free failure diagnostic. The resulting work occurs in the normal isolated worktree and passes
 through deterministic validation, tester, and reviewer gates.
 
 The green **Automation** switch lets the selected Sol effort plan another
 bounded ticket after each safe completion. Turning it off prevents the next
 ticket from starting; it does not interrupt an active gate mid-operation.
 Switching back to **Python** restores the manual Python/Bash workflow.
+
+In continuous automation, eligible implementation, deterministic-validation,
+tester, or substantive reviewer failures can trigger no more than two recovery
+attempts for the ticket. The selected Sol effort produces a read-only corrective
+plan, Fast-Fix applies only that narrow plan inside the original allowed paths,
+and Python reruns all gates. A third repair call is forbidden. Repository
+hygiene, scope/protected-path, approval, security, credential, bridge, provider,
+or publication failures stop immediately and consume no repair attempt. Error
+entries show the safe diagnostic, required action, and attempt count.
+
+Before Sol plans a ticket, Python inventories the local approval queue, local
+agent branches, and open pull requests. A proposal that overlaps queued work or
+an open PR is rejected instead of creating a duplicate ticket.
 
 Passing tickets are committed locally and appear in the FIFO **Ticket approval
 queue**. **Approve & publish** is a single, explicit authorization bound to the
@@ -53,10 +66,9 @@ fast-forwards local `main`. A changed commit, missing CI evidence, dirty local
 available only through their dedicated governance-ticket process.
 
 Tickets that delete files pause before the local commit. The queue creates an
-exact request and manifest digest under ignored `agent/runtime/`; a Codex
-approval task can surface that request for phone notification. After the user
-explicitly approves or rejects the matching request ID and digest, the trusted
-local decision command is:
+exact request and manifest digest under ignored `agent/runtime/`. The project
+owner checks the dashboard queue and explicitly approves or rejects the matching
+request ID and digest with the trusted local decision command:
 
 ```bash
 python3 agent/dashboard/deletion_approval.py approve REQUEST_ID MANIFEST_DIGEST
@@ -64,8 +76,8 @@ python3 agent/dashboard/deletion_approval.py approve REQUEST_ID MANIFEST_DIGEST
 python3 agent/dashboard/deletion_approval.py reject REQUEST_ID MANIFEST_DIGEST
 ```
 
-The local manifest gate is authoritative. Notification delivery alone never
-approves a deletion.
+The local manifest gate is authoritative. No background notification automation
+is required or installed.
 
 Control POSTs require an in-memory same-origin nonce, reject non-loopback Host
 headers and foreign Origin headers, and accept only allowlisted control JSON.

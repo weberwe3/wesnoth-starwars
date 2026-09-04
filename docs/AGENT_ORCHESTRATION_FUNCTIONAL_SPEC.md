@@ -485,13 +485,13 @@ pause and a dedicated deletion manifest is created. The manifest must bind the
 ticket ID, branch, base SHA, candidate tree identity, exact deleted paths, prior
 blob identities, stated reasons, and expected impact to a unique request ID.
 
-The request is routed to a Codex-hosted approval task or automation so the
-project owner can receive a mobile notification when supported by the signed-in
-Codex/ChatGPT client. Notification delivery is advisory; the local fail-closed
-gate is authoritative. Codex must record an explicit approve or reject decision
-for the exact manifest. A changed path set, candidate tree, branch, or request
-identity invalidates the decision. No deletion commit, later ticket, push, PR,
-or merge may proceed while this gate is unresolved.
+The request remains visible in the localhost dashboard approval queue for the
+project owner to inspect. No recurring Codex task, background chat message, or
+token-consuming notification job is required. The local fail-closed gate is
+authoritative and must record an explicit approve or reject decision for the
+exact manifest. A changed path set, candidate tree, branch, or request identity
+invalidates the decision. No deletion commit, later ticket, push, PR, or merge
+may proceed while this gate is unresolved.
 
 #### Dashboard presentation
 
