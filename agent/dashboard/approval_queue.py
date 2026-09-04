@@ -21,6 +21,9 @@ HEX_SHA = re.compile(r"[0-9a-f]{40}")
 REQUEST_ID = re.compile(r"[0-9a-f]{16}")
 SAFE_CONCLUSIONS = {"SUCCESS"}
 PUBLISH_TIMEOUT_SECONDS = 1800
+PR_HEAD_CONFIRM_ATTEMPTS = 8
+PR_HEAD_CONFIRM_INTERVAL_SECONDS = 1
+TERMINAL_QUEUE_STATES = {"published", "rejected", "stale", "dismissed", "superseded"}
 
 
 class QueueError(RuntimeError):
@@ -189,6 +192,7 @@ class ApprovalQueue:
             {key: item.get(key) for key in allowed}
             for item in state["records"]
             if isinstance(item, dict)
+            and item.get("state") not in {"dismissed", "superseded"}
         ]
         activity_allowed = {
             "id", "at", "level", "message", "detail", "ticket_id",
@@ -235,9 +239,16 @@ class ApprovalQueue:
         validated = result.get("validation", {}).get("scope", {}).get("changed_paths", [])
         if sorted(changed_paths) != sorted(validated):
             raise QueueError("Ticket changes no longer match validated evidence")
-        queued_ids = {item.get("ticket_id") for item in self.read()["records"]}
+        queued_records = self.read()["records"]
+        queued_ids = {item.get("ticket_id") for item in queued_records}
         if ticket.get("task_id") in queued_ids:
             raise QueueError("Ticket is already queued")
+        if any(
+            item.get("branch") == branch
+            and item.get("state") not in TERMINAL_QUEUE_STATES | {"failed"}
+            for item in queued_records
+        ):
+            raise QueueError("This branch is already owned by an active approval-queue ticket")
 
         queue_state = self.read()
         record_id = hashlib.sha256(
@@ -500,6 +511,60 @@ class ApprovalQueue:
             self._record_failure(record_id, "Publication stopped safely", str(exc))
             return
 
+    def failed_record(self, record_id: str, commit_sha: str) -> dict[str, Any]:
+        """Return a safe snapshot only when an exact failed queue item is selected."""
+
+        if not REQUEST_ID.fullmatch(record_id) or not HEX_SHA.fullmatch(commit_sha):
+            raise QueueError("Invalid failed-ticket selection")
+        record = next(
+            (item for item in self.read()["records"] if item.get("id") == record_id),
+            None,
+        )
+        if (
+            record is None
+            or record.get("state") != "failed"
+            or record.get("commit_sha") != commit_sha
+        ):
+            raise QueueError("Failed ticket no longer matches the selected commit")
+        return {
+            key: record.get(key)
+            for key in ("id", "ticket_id", "purpose", "impact", "branch", "commit_sha")
+        }
+
+    def dismiss_failed(
+        self,
+        record_id: str,
+        commit_sha: str,
+        *,
+        superseded_by: str | None = None,
+    ) -> None:
+        """Hide a failed queue record without deleting repository or audit evidence."""
+
+        selected = self.failed_record(record_id, commit_sha)
+
+        def dismiss(state: dict[str, Any]) -> None:
+            record = next(item for item in state["records"] if item.get("id") == record_id)
+            record.update({
+                "state": "superseded" if superseded_by else "dismissed",
+                "updated_at": utc_now(),
+                "superseded_by": superseded_by,
+            })
+
+        self._update(dismiss)
+        self.event(
+            (
+                f"{selected['ticket_id']} was superseded by {superseded_by}"
+                if superseded_by
+                else f"{selected['ticket_id']} was removed from the approval queue"
+            ),
+            level="info",
+            detail=(
+                "The failed queue card was removed. Its Git branch, worktree, commits, "
+                "pull request, files, and audit evidence were preserved."
+            ),
+            ticket_id=str(selected.get("ticket_id") or ""),
+        )
+
     def _publish(self, record: dict[str, Any]) -> None:
         if _run(["git", "status", "--porcelain"], self.root):
             raise QueueError("Local main is not clean; publication did not start")
@@ -526,8 +591,12 @@ class ApprovalQueue:
                 "gh", "pr", "view", pr_url,
                 "--json", "number,url,headRefOid,state",
             ], worktree))
-        if pr_data.get("headRefOid") != record["commit_sha"]:
-            raise QueueError("PR head does not match the approved commit")
+        pr_data = self._wait_for_pr_head(
+            str(pr_data.get("url") or record["branch"]),
+            record["commit_sha"],
+            worktree,
+            initial=pr_data,
+        )
         pr_number = pr_data.get("number")
         if not isinstance(pr_number, int):
             raise QueueError("GitHub returned no PR number")
@@ -576,6 +645,33 @@ class ApprovalQueue:
             detail=f"PR #{pr_number} merged as {merge_sha}.",
             ticket_id=record["ticket_id"],
         )
+
+    def _wait_for_pr_head(
+        self,
+        locator: str,
+        expected_sha: str,
+        worktree: Path,
+        *,
+        initial: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Bound GitHub's brief post-push read-after-write propagation window."""
+
+        latest = initial
+        for attempt in range(PR_HEAD_CONFIRM_ATTEMPTS):
+            if latest is None:
+                try:
+                    latest = json.loads(_run([
+                        "gh", "pr", "view", locator,
+                        "--json", "number,url,headRefOid,state",
+                    ], worktree))
+                except json.JSONDecodeError as exc:
+                    raise QueueError("GitHub returned malformed PR identity") from exc
+            if latest.get("headRefOid") == expected_sha:
+                return latest
+            if attempt + 1 < PR_HEAD_CONFIRM_ATTEMPTS:
+                threading.Event().wait(PR_HEAD_CONFIRM_INTERVAL_SECONDS)
+                latest = None
+        raise QueueError("PR head did not converge to the approved commit after push")
 
     def _pr_body(self, record: dict[str, Any]) -> str:
         paths = "\n".join(f"- `{path}`" for path in record["changed_paths"])

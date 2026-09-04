@@ -27,7 +27,8 @@ from autonomy import (  # noqa: E402
     TICKET_SCHEMA,
     validate_strict_output_schema,
 )
-from approval_queue import ApprovalQueue  # noqa: E402
+import approval_queue  # noqa: E402
+from approval_queue import ApprovalQueue, QueueError  # noqa: E402
 from server import create_server, public_state  # noqa: E402
 
 
@@ -803,6 +804,75 @@ class ApprovalQueueTests(unittest.TestCase):
             request = json.loads((root / "agent/runtime/deletion-approval-request.json").read_text())
             self.assertEqual(request["deleted_paths"], ["obsolete.txt"])
             self.assertEqual(len(request["manifest_digest"]), 64)
+
+    def test_pr_head_confirmation_retries_a_stale_github_read(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            expected = "a" * 40
+            stale = json.dumps({
+                "number": 15, "url": "https://example.invalid/15",
+                "headRefOid": "b" * 40, "state": "OPEN",
+            })
+            current = json.dumps({
+                "number": 15, "url": "https://example.invalid/15",
+                "headRefOid": expected, "state": "OPEN",
+            })
+            with (
+                mock.patch("approval_queue._run", return_value=current) as run,
+                mock.patch.object(approval_queue, "PR_HEAD_CONFIRM_INTERVAL_SECONDS", 0),
+            ):
+                result = queue._wait_for_pr_head(
+                    "https://example.invalid/15", expected, root,
+                    initial=json.loads(stale),
+                )
+            self.assertEqual(result["headRefOid"], expected)
+            self.assertEqual(run.call_count, 1)
+
+    def test_remove_failed_ticket_hides_only_queue_record(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            record_id = "1" * 16
+            commit = "a" * 40
+            queue._update(lambda state: state["records"].append({
+                "id": record_id,
+                "ticket_id": "DASH-TEST",
+                "purpose": "Fixture",
+                "impact": "Fixture impact",
+                "branch": "agent/dash-test",
+                "commit_sha": commit,
+                "state": "failed",
+            }))
+            queue.dismiss_failed(record_id, commit)
+            self.assertEqual(queue.public_state()["records"], [])
+            stored = queue.read()["records"][0]
+            self.assertEqual(stored["state"], "dismissed")
+            self.assertEqual(stored["branch"], "agent/dash-test")
+            with self.assertRaises(QueueError):
+                queue.dismiss_failed(record_id, commit)
+
+    def test_failed_queue_item_blocks_normal_planning_but_can_be_excluded_for_recode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            controller.queue._update(lambda state: state["records"].append({
+                "id": "2" * 16,
+                "ticket_id": "DASH-TEST",
+                "purpose": "Fixture",
+                "changed_paths": ["addons/example.cfg"],
+                "branch": "agent/dash-test",
+                "state": "failed",
+            }))
+            self.assertEqual(len(controller._queued_context()), 1)
+            self.assertEqual(
+                controller._queued_context(exclude_id="2" * 16),
+                [],
+            )
 
 
 if __name__ == "__main__":
