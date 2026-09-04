@@ -4,9 +4,9 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-03 during DASH-001 implementation<br>
+**Last continuity refresh:** 2026-09-04 during autonomous queue governance design<br>
 **Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`<br>
-**Active infrastructure ticket:** `DASH-001`<br>
+**Active infrastructure ticket:** governance design for continuous automation and per-ticket approval<br>
 **Next intended game-development ticket:** `ENGINE-002`
 
 ---
@@ -709,11 +709,14 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 - `ticket_runner.py` currently does not automatically retry a failed implementation attempt; retry handling exists as a concept but is not a completed general mechanism.
 - OpenCode Web is a session UI, not the deterministic project dashboard.
 - DASH-001 covers live ticket status, gates, routing, role/model assignments,
-  and recent activity. DASH-002 adds a narrowly scoped execution control:
+  and recent activity. DASH-002 added a narrowly scoped execution control:
   Python/manual coordination or a GPT-5.6 Sol low/medium/high planning pass may
-  initiate exactly one schema-validated deterministic ticket. Diff browsing,
-  general command execution, PR status, commit, push, and merge controls remain
-  intentionally unavailable.
+  initiate exactly one schema-validated deterministic ticket. A dedicated
+  governance change is now being prepared for an optional continuous scheduler,
+  validated-local-commit approval queue, exact-commit publication action, and a
+  separate Codex-routed approval gate for file deletions. These capabilities are
+  proposed until their governance and implementation changes are reviewed and
+  merged.
 - `OPENCODE_SERVER_PASSWORD` hardening would matter if OpenCode Web is intentionally exposed/used.
 - The exact model-provider mix can change; keep routing policy bounded and fail-closed.
 - Installed-Wesnoth validation remains local rather than GitHub Actions because CI does not replace the local engine environment.
@@ -735,7 +738,7 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 - reference provenance;
 - continuity-ledger work initiated by INFRA-003.
 
-**DASH-001 merged; DASH-002 in progress on a feature branch:**
+**DASH-001 and DASH-002 merged; later dashboard controls remain in development:**
 
 - a localhost-only Agent Manager web dashboard with same-origin protected,
   allowlisted coordinator-mode controls;
@@ -750,6 +753,12 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
   protected-path rejection, a native Windows run-ID bridge, the unchanged
   existing DPAPI launcher, and the existing deterministic ticket runner; each
   run stops before commit, push, or merge.
+
+Proposed next dashboard-control work includes a repository-owned planned-ticket
+picker and a continuous automation toggle. The continuous mode will schedule one
+bounded ticket at a time, queue only validated local commits, require per-ticket
+approval for the fixed push/PR/exact-head-CI/protected-merge pipeline, and pause
+for a separate Codex-routed approval before any file deletion is committed.
 
 The DPAPI-backed secure launcher remains unmodified. This preserves the rule
 that feature work must not alter credential storage or credential-forwarding
@@ -930,7 +939,8 @@ When updating this file:
 | 2026-09-03 | INFRA-002 / PR #4 | Controlled Markdown/DOCX reference package, manifest provenance, package validator/self-test merged |
 | 2026-09-03 | INFRA-003 / Issue #5 | Living project continuity ledger initiated; intended to become persistent handoff state |
 | 2026-09-03 | DASH-001 / PR #9 | Local structured-telemetry Agent Manager dashboard and secure-launcher companion entry point merged |
-| 2026-09-04 | DASH-002 (in progress) | Coordinator mode control and one-ticket governed Sol handoff implemented on an isolated feature branch |
+| 2026-09-04 | DASH-002 / PR #16 | Coordinator mode control and one-ticket governed Sol handoff merged |
+| 2026-09-04 | Continuous automation governance (proposed) | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
 
 ---
 
