@@ -140,4 +140,12 @@ Runtime state is stored under the ignored `agent/runtime/` directory. The path
 is deliberately fixed so the HTTP server cannot be pointed at arbitrary JSON.
 Generated Sol proposals and control state are mode `0600` and are not served as
 static files.
+
+Before invoking Codex, the dashboard verifies that every object in its strict
+planner output schema marks every declared property as required. Fields that are
+conditionally unused remain nullable. This mirrors the model API's strict
+structured-output contract and prevents schema drift from consuming a planner
+request. Nonzero planner exits are mapped to bounded, secret-free diagnostic
+classes; raw Codex output and prompt content are never exposed in the dashboard.
+
 Override the port with `WESNOTH_DASHBOARD_PORT`.

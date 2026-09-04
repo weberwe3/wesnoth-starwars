@@ -46,6 +46,9 @@ TICKET_SCHEMA = {
                     "required": [
                         "worker", "objective", "allowed_paths",
                         "validation_profile", "validation_root", "resume_branch",
+                        "resume_pr_number", "resume_pr_head_sha",
+                        "replace_pr_number", "replace_pr_head_sha",
+                        "replace_pr_branch",
                     ],
                     "properties": {
                         "worker": {
@@ -94,6 +97,24 @@ TICKET_SCHEMA = {
 
 class ControlError(RuntimeError):
     """A safe, user-displayable control-plane error."""
+
+
+def validate_strict_output_schema(schema: object) -> None:
+    """Reject object schemas that the model API cannot use in strict mode."""
+
+    if isinstance(schema, dict):
+        properties = schema.get("properties")
+        if isinstance(properties, dict):
+            required = schema.get("required")
+            if not isinstance(required, list) or set(required) != set(properties):
+                raise ControlError(
+                    "Sol planner output schema is not strict: every property must be required"
+                )
+        for value in schema.values():
+            validate_strict_output_schema(value)
+    elif isinstance(schema, list):
+        for value in schema:
+            validate_strict_output_schema(value)
 
 
 class AutonomyController:
@@ -393,6 +414,7 @@ class AutonomyController:
         runtime = self.root / "agent" / "runtime"
         schema_path = runtime / f"sol-ticket-schema-{run_id}.json"
         output_path = runtime / f"sol-ticket-proposal-{run_id}.json"
+        validate_strict_output_schema(TICKET_SCHEMA)
         schema_path.write_text(json.dumps(TICKET_SCHEMA, indent=2) + "\n", encoding="utf-8")
         os.chmod(schema_path, 0o600)
         effort = VALID_MODES[mode]["effort"]
@@ -413,6 +435,7 @@ Set ticket.resume_branch to the exact branch from resumable_local_work when cont
 For resumable_pull_requests, also copy its exact number and head_sha into
 ticket.resume_pr_number and ticket.resume_pr_head_sha. Published history must only
 gain new commits; never propose a rebase, reset, force-push, or branch deletion.
+Set every unused resume_pr_* and replace_pr_* field to null.
 Preserve useful existing changes and complete them in place; never discard or recreate them.
 Use action replace_pr only for an entry from replaceable_pull_requests. Copy its exact
 number and head_sha into ticket.replace_pr_number and ticket.replace_pr_head_sha,
@@ -444,13 +467,13 @@ fresh_start_authorized: {json.dumps(self._fresh_start_requested(brief))}
             env=environment,
             input=prompt,
             text=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             timeout=PLANNER_TIMEOUT_SECONDS,
             check=False,
         )
         if completed.returncode != 0:
-            raise ControlError("Sol planner did not complete")
+            raise ControlError(self._planner_failure_detail(completed))
         try:
             proposal = json.loads(output_path.read_text(encoding="utf-8"))
         except (FileNotFoundError, json.JSONDecodeError) as exc:
@@ -463,6 +486,27 @@ fresh_start_authorized: {json.dumps(self._fresh_start_requested(brief))}
             self._reject_overlapping_proposal(proposal["ticket"], inventory)
         proposal["_planning_inventory"] = inventory
         return proposal
+
+    @staticmethod
+    def _planner_failure_detail(completed: subprocess.CompletedProcess) -> str:
+        """Classify Codex failures without exposing raw output or prompt content."""
+
+        diagnostic = "\n".join(
+            line for line in (completed.stderr or "").splitlines()
+            if line.lstrip().startswith("ERROR")
+            or re.search(r'"(?:code|type|status)"\s*:', line)
+        ).lower()
+        if "invalid_json_schema" in diagnostic or "invalid schema" in diagnostic:
+            return "Sol planner request schema was rejected by the model API"
+        if any(value in diagnostic for value in ("usage limit", "rate limit", "quota")):
+            return "Sol planner usage limit was reached"
+        if any(value in diagnostic for value in ("authentication", "unauthorized", "status 401")):
+            return "Sol planner authentication is unavailable"
+        if any(value in diagnostic for value in ("model_not_found", "model not found")):
+            return "The selected Sol planner model is unavailable"
+        if any(value in diagnostic for value in ("failed to send request", "connection refused", "dns error")):
+            return "Sol planner network connection failed"
+        return f"Sol planner process exited without a proposal (code {completed.returncode})"
 
     def _build_ticket(self, run_id: str, proposal: dict, brief: str = "") -> dict:
         raw = proposal["ticket"]

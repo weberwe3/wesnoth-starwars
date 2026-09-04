@@ -21,7 +21,12 @@ from coordination_control import ControlStore  # noqa: E402
 import recovery_policy  # noqa: E402
 import ticket_runner  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
-from autonomy import AutonomyController, ControlError  # noqa: E402
+from autonomy import (  # noqa: E402
+    AutonomyController,
+    ControlError,
+    TICKET_SCHEMA,
+    validate_strict_output_schema,
+)
 from approval_queue import ApprovalQueue  # noqa: E402
 from server import create_server, public_state  # noqa: E402
 
@@ -129,6 +134,54 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertFalse(public["automation"]["enabled"])
             with self.assertRaises(ControlError):
                 controller.set_mode("danger-full-access")
+
+    def test_planner_schema_is_strict_at_every_object_level(self) -> None:
+        validate_strict_output_schema(TICKET_SCHEMA)
+        ticket_schema = TICKET_SCHEMA["properties"]["ticket"]["anyOf"][1]
+        self.assertEqual(
+            set(ticket_schema["required"]),
+            set(ticket_schema["properties"]),
+        )
+
+    def test_planner_schema_preflight_rejects_optional_declared_property(self) -> None:
+        invalid = {
+            "type": "object",
+            "properties": {
+                "required_value": {"type": "string"},
+                "omitted": {"type": "null"},
+            },
+            "required": ["required_value"],
+        }
+        with self.assertRaisesRegex(ControlError, "every property must be required"):
+            validate_strict_output_schema(invalid)
+
+    def test_planner_failure_details_are_safe_and_actionable(self) -> None:
+        rejected = subprocess.CompletedProcess(
+            ["codex"],
+            1,
+            stdout="",
+            stderr=(
+                "user prompt mentions quota and SECRET-RAW-DATA\n"
+                'ERROR: {"code": "invalid_json_schema"}'
+            ),
+        )
+        detail = AutonomyController._planner_failure_detail(rejected)
+        self.assertEqual(
+            detail,
+            "Sol planner request schema was rejected by the model API",
+        )
+        self.assertNotIn("SECRET-RAW-DATA", detail)
+
+        unknown = subprocess.CompletedProcess(
+            ["codex"],
+            17,
+            stdout="arbitrary prompt echo",
+            stderr="user prompt mentions quota but contains no ERROR record",
+        )
+        self.assertEqual(
+            AutonomyController._planner_failure_detail(unknown),
+            "Sol planner process exited without a proposal (code 17)",
+        )
 
     def test_sol_ticket_cannot_target_protected_paths(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
