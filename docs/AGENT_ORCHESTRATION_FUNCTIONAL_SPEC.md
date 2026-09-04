@@ -77,7 +77,7 @@ Binary:
 
 OpenCode provides the model-agent execution layer. It is used to run the hardened project agents and may also expose an interactive web interface. The OpenCode Web UI is an interactive model session interface; it is not the authoritative ticket dashboard for the deterministic coordinator.
 
-A purpose-built local Wesnoth Agent Manager dashboard is a future UX layer that may visualize coordinator state, ticket history, gates, diffs, retries, PR status, and merge readiness.
+A purpose-built Wesnoth Agent Manager dashboard visualizes coordinator state, ticket history, gates, diffs, retries, PR status, and merge readiness. Its Python server remains bound to loopback; a separately constrained Windows proxy may expose paired access on the private LAN.
 
 ### 3.4 Battle for Wesnoth
 
@@ -185,19 +185,22 @@ Baseline routing:
 
 | Role | Provider / model | Purpose |
 |---|---|---|
-| Implementer | Groq - `groq/openai/gpt-oss-120b` | Main bounded implementation work |
+| Implementer | Groq - `groq/openai/gpt-oss-120b`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Main bounded implementation work |
 | Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free` | Small mechanical corrections |
 | Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash` | Independent read-only test evaluation |
 | Primary reviewer | Google - `google/gemini-3.6-flash` | Independent review when quota is available |
-| Fallback reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Reviewer fallback for infrastructure/non-decisive primary failure |
+| Intermediate reviewer | Google - `google/gemini-3.8-flash` | First reviewer fallback for infrastructure/non-decisive primary failure |
+| Final fallback reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Final reviewer fallback when both Gemini reviewers are unavailable or non-decisive |
 
 Routing is policy, not permanence. Models may change if availability, capability, retirement, quota, or quality changes. The role separation and fallback rules are more important than any specific model.
 
 Known provider observations:
 
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
-- Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out.
-- A primary reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a fallback reviewer for a more favorable answer.
+- When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
+- A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
+- A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. Gemini 3.8 Flash is the only intermediate reviewer between Gemini 3.6 Flash and Nemotron.
+- A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
 
 ## 6. OpenCode Agent Security Model
@@ -213,6 +216,7 @@ Current roles:
 - `fast-fix`
 - `tester`
 - `reviewer`
+- `reviewer-intermediate`
 - `reviewer-fallback`
 
 Security rules:
@@ -226,6 +230,8 @@ Security rules:
 - protected coordinator/config/reference paths are denied unless the ticket explicitly authorizes architecture/documentation maintenance;
 - tester/reviewer roles are read-only;
 - deterministic test execution belongs to Python, not the LLM worker.
+
+The Terra Implementer fallback is a narrowly authorized exception to the OpenCode worker tool profile. Codex runs with its `workspace-write` sandbox, no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Deterministic scope and protected-path gates remain authoritative immediately after it returns; sandbox access never grants publication or governance authority.
 
 Tool denial is an application-level security boundary. It is not claimed to be equivalent to a separately virtualized OS sandbox.
 
@@ -267,6 +273,7 @@ Current ticket fields:
 - `allowed_paths`
 - `validation_profile`
 - `validation_root` where applicable
+- `resume_branch` when continuing an unfinished managed ticket worktree
 
 Ticket objectives should be bounded, testable, and explicit about exclusions when omission is important.
 
@@ -285,17 +292,54 @@ Coordinator verifies:
 - ticket schema is valid;
 - task ID is valid and unique enough for current execution;
 - required project references exist.
+- existing ticket remnants have a managed worktree, an original ticket contract,
+  and changes contained by the original allowed paths. A failed run remains
+  unfinished work when its remnants still satisfy those boundaries. An open pull
+  request may also be resumed when its repository-owned `agent/*` branch, exact
+  published head, managed worktree, original contract, and changed paths all
+  verify deterministically.
 
 Failure stops the run.
 
 ### Stage 1 - Isolated branch/worktree
 
-Create:
+For a new ticket, create:
 
 - branch: `agent/<ticket>-<timestamp>`;
 - worktree: `~/projects/wesnoth-starwars-worktrees/<ticket>-<timestamp>`.
 
 No worker edits the main worktree.
+
+If a prior ticket started but did not reach a terminal PASS, resume its
+existing managed branch/worktree before planning fresh work. Python must derive
+the worktree from the trusted Git worktree inventory, restore the original
+worker, objective, allowed paths, and validation profile from the prior ticket
+record, and validate all existing committed and uncommitted changes before an
+LLM continues. The worker must preserve useful partial changes and must not
+reset, discard, recreate, or restart the implementation.
+
+An open pull request does not make its ticket disposable. Python may resume it
+only when GitHub reports an open, same-repository PR against `main`; its head is
+a safe `agent/*` branch; the exact remote head is an ancestor of the clean local
+managed branch; an original ticket contract exists; and every changed path is
+inside that contract and outside protected paths. Current `main` is appended by
+a normal merge commit before all original gates are rerun. Rebase, reset,
+force-push, published-history rewriting, and automatic branch deletion are
+forbidden.
+
+If a contract-backed PR cannot be resumed because its managed worktree is gone
+or GitHub reports an unmergeable conflict, Python may prepare a new branch from
+current `main` under the exact original contract. The old PR may be closed only
+after the replacement passes every local gate, and its branch must remain
+preserved for audit and recovery. Dirty worktrees, divergent heads,
+cross-repository PRs, missing contracts, ambiguous identities, and protected or
+out-of-scope changes require human review and must not be discarded
+automatically.
+
+A new branch/worktree may be created only when the project owner explicitly
+requests a fresh start in the coordinator brief, such as “start from scratch”
+or “start a fresh ticket.” Without that instruction and without safe resumable
+work, automation pauses with a visible reason.
 
 ### Stage 2 - Implementation
 
@@ -385,6 +429,172 @@ Fallback reviewer is used only when primary review is unavailable or non-decisiv
 Final local PASS requires every mandatory gate to pass.
 
 A local PASS means **eligible for commit/PR**, not automatically merged.
+
+### Optional continuous automation mode
+
+The Agent Manager may offer a human-controlled automation toggle for
+the selected Sol coordinator mode. This is an alternate ticket-scheduling mode,
+not an exemption from deterministic governance.
+
+When automation is enabled:
+
+- Sol must inventory and resume safe unfinished ticket work before proposing a
+  new ticket; this includes eligible open pull requests, and stale remnants are
+  continuation context rather than grounds to discard prior work;
+- a fresh ticket is permitted only when the owner-provided coordinator brief
+  explicitly authorizes a fresh/new ticket or starting from scratch;
+- Sol may read the controlled references and continuity ledger, prioritize the
+  planned backlog, and propose one bounded ticket at a time;
+- Python remains the authoritative state machine and must validate each ticket,
+  create its isolated worktree, enforce path scope, and run every applicable
+  deterministic, engine, tester, and reviewer gate;
+- a passing ticket may be committed locally to its ticket branch and added to a
+  FIFO approval queue, but it must not be pushed, opened as a PR, merged, or
+  applied to protected `main` without a separate explicit human approval for
+  that exact queued commit;
+- subsequent dependent tickets may be based on the preceding queued head so
+  unattended work can continue, but approvals and publication must occur in
+  dependency order; rejecting or invalidating an upstream item makes dependent
+  queue entries stale and requires deterministic replanning;
+- turning automation off prevents another ticket from starting. An active
+  ticket proceeds only to its next safe deterministic stopping point before
+  control returns to the manual Python/Bash workflow; and
+- an eligible implementation, validation, tester, or reviewer error may enter
+  the bounded recovery policy below before it becomes a final failure; and
+- any unrecovered mandatory-gate failure, scope violation, provider failure
+  outside established retry policy, dirty or unexpected Git state,
+  publication failure, or approval mismatch pauses automation and is recorded
+  as an error. Automation must never reinterpret failure as approval.
+
+Automation does not grant a worker shell access, ownership of `main`, access to
+credentials, or authority to weaken branch protection. Planning models remain
+nondeterministic inputs to the Python coordinator.
+
+#### Bounded autonomous error recovery
+
+When continuous automation is enabled, the deterministic coordinator may ask
+the selected coordinator model to diagnose and address an error only when the
+error is supported by structured, secret-free evidence and can be corrected
+inside the active ticket's existing allowed paths. Eligible errors are limited
+to implementation defects, deterministic validation failures attributable to
+the candidate change, tester failures, and reviewer requests for changes.
+
+Recovery is limited to **two attempts per ticket**. Each attempt must record
+the failure class, safe diagnostic summary, attempt number, proposed corrective
+action, changed paths, and resulting gate evidence. The coordinator must use a
+narrow corrective brief, preserve the original ticket scope, reject protected
+or expanded paths, and rerun every applicable deterministic, engine, tester,
+and reviewer gate. A complete PASS resets the recovery counter. Failure after
+the second attempt pauses automation and leaves the candidate uncommitted.
+
+The coordinator must stop immediately, without spending recovery attempts, for
+errors an implementation ticket cannot safely resolve: dirty or unexpected
+repository state; deletion approval; missing human approval; protected-path,
+scope, governance, or security violations; missing credentials or secure
+bridge; unavailable planner/provider outside existing retry policy; ambiguous
+or credential-bearing diagnostics; publication, branch-protection, remote-head,
+merge, or approval mismatch; and explicit user stop. These are recorded with a
+specific safe reason and required human action.
+
+Before planning new, resumed, replacement, or recovery work, the coordinator
+must include structured local queue, open pull-request, and managed worktree
+context so it does not duplicate an existing ticket. A resumable record must be
+backed by its original ticket contract. Terminal PASS evidence may support an
+open-PR resume but does not bypass rerunning the current reference, validation,
+tester, reviewer, exact-head CI, or publication gates. If inventory cannot be
+established reliably, automation pauses instead of guessing. A no-safe-ticket
+decision must preserve the model's specific reason in the control state and
+activity log rather than appearing as a silent or generic failure.
+
+#### Ticket approval queue and publication
+
+Each passing local commit enters a repository-owned approval record containing
+at minimum the ticket ID, purpose, expected mod impact, dependency position,
+changed paths, branch, base SHA, exact commit SHA, validation evidence, reviewer
+verdict, and publication state. Queue records must expose no credential values.
+
+The dashboard may present one approval action for the fixed publication
+pipeline. That action is authorization for the exact queued commit only. The
+deterministic controller must then, in order:
+
+1. verify that the queue record, branch, commit, diff, dependency order, and
+   local PASS evidence are unchanged;
+2. push the ticket branch without force;
+3. create or update its pull request with validation evidence;
+4. wait for required GitHub checks on the exact PR head;
+5. merge only through protected-branch policy after every required check and
+   conversation rule passes; and
+6. synchronize local `main` and update structured queue evidence.
+
+A single approval does not authorize later commits, other queue items, direct
+pushes to `main`, force pushes, branch-protection bypass, or credential access.
+Any head change, failed check, merge conflict, unexpected remote state, or
+policy rejection terminates the pipeline and requires a new review/approval.
+
+#### File deletion approval
+
+Before creating a local ticket commit, Python must inspect the actual Git diff
+for deleted files. If any deletion exists, the ticket and continuous scheduler
+pause and a dedicated deletion manifest is created. The manifest must bind the
+ticket ID, branch, base SHA, candidate tree identity, exact deleted paths, prior
+blob identities, stated reasons, and expected impact to a unique request ID.
+
+The request remains visible in the dashboard approval queue for the
+project owner to inspect. No recurring Codex task, background chat message, or
+token-consuming notification job is required. The local fail-closed gate is
+authoritative and must record an explicit approve or reject decision for the
+exact manifest. A changed path set, candidate tree, branch, or request identity
+invalidates the decision. No deletion commit, later ticket, push, PR, or merge
+may proceed while this gate is unresolved.
+
+#### Dashboard presentation
+
+The dashboard places validated local commits in a **Ticket approval queue**.
+Each item has an expandable summary of purpose, expected mod impact, files,
+gates, dependencies, and publication state. The per-ticket approval action is
+enabled only when deterministic prerequisites are satisfied.
+
+The former routing-history surface becomes **Activity log and errors**. It
+combines structured coordinator, routing, validation, approval, and publication
+events. Recovery entries show the error class, current attempt out of two,
+corrective action, and resulting state. Error-bearing entries use the
+established red alert treatment and open an accessible detail dialog containing
+the specific safe diagnostic and required next action when selected. Secrets,
+environment values, raw
+credential-bearing logs, and arbitrary filesystem content must never be shown.
+
+Ordinary tickets remain unable to modify controlled references. A controlled
+reference change must be a clearly identified governance ticket, synchronize
+all affected Markdown/DOCX representations and manifest values, pass the
+reference-package self-test, and receive its own exact-commit publication
+approval through the queue.
+
+#### Paired private-LAN access and clean shutdown
+
+The Python dashboard server remains bound to `127.0.0.1`. The repository-owned
+Windows launcher may expose it to other devices through a narrow user-space
+proxy bound to one detected private IPv4 address and TCP port 8765. The Windows
+firewall rule must be limited to the Private profile, that local address, and
+`LocalSubnet` sources. The dashboard must display the LAN address under system
+health.
+
+LAN access must require a high-entropy runtime pairing token delivered in a URL
+fragment. The token is stored only in a permission-restricted ignored runtime
+file and the paired browser's local storage; it is not an environment variable,
+telemetry field, provider credential, log value, query parameter, or committed
+file. Static assets and minimal health status may be retrieved before pairing,
+but status, coordinator state, and every mutation endpoint must reject an
+unpaired LAN request. A paired LAN device receives the same governed controls as
+localhost. Mutations additionally retain exact-origin, per-process CSRF,
+allowlisted-action, request-size, and deterministic controller validation.
+
+An **Exit dashboard** action may be accepted from localhost or a paired LAN
+device only while no planning, ticket-execution, or publication operation is
+active. The server must complete its shutdown and remove its own
+PID/version/session records before signaling exit. A session-specific marker
+may then close only the CMD process tree that launched that dashboard session;
+unrelated consoles, processes, and WSL distributions must not be targeted. The
+same signal stops the LAN proxy.
 
 ### Stage 8 - Commit and GitHub publication
 
@@ -584,7 +794,7 @@ All development LLMs must follow these rules:
 - preserve existing architectural decisions unless a ticket explicitly changes them;
 - make original implementation choices compatible with the project scope;
 - tester/reviewer agents remain read-only;
-- fallback reviewer is not a mechanism to overturn a substantive negative primary review.
+- neither the intermediate nor final fallback reviewer is a mechanism to overturn a substantive negative verdict from an earlier reviewer.
 
 ## 17. Mandatory Reference Injection Design
 
@@ -643,10 +853,16 @@ Extend deterministic tooling to optionally:
 - query required check status;
 - refuse merge until checks pass;
 - require explicit human/architect authorization for merge at the current maturity level.
+- bind a dashboard publication approval to one exact queued commit and execute
+  the fixed push/PR/exact-head-CI/protected-merge sequence without broad shell
+  input from the browser;
+- maintain FIFO dependency ordering for queued autonomous tickets; and
+- pause before any file deletion until an exact deletion manifest is explicitly
+  approved through the Codex-routed approval channel.
 
 ### Phase E - dashboard
 
-The future local Agent Manager dashboard should display:
+The local Agent Manager dashboard displays:
 
 - current/last ticket;
 - worktree and branch;
@@ -656,7 +872,10 @@ The future local Agent Manager dashboard should display:
 - CI checks;
 - review state;
 - merge readiness;
-- task history;
+- ticket approval queue with expandable purpose and impact summaries;
+- activity log and errors with accessible error-detail dialogs;
+- paired private-LAN access with the reachable address shown under system health;
+- a safe-state Exit dashboard action scoped to its associated launcher console;
 - view diff/logs;
 - retry eligible infrastructure failures;
 - never bypass mandatory gates.

@@ -4,10 +4,10 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-03 during DASH-001 implementation<br>
+**Last continuity refresh:** 2026-09-04 during autonomous queue governance design<br>
 **Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`<br>
-**Active infrastructure ticket:** `DASH-001`<br>
-**Next intended game-development ticket:** `ENGINE-002`
+**Active infrastructure ticket:** DASH-005 bounded autonomous error recovery<br>
+**Next intended game-development ticket:** reconcile open `ENGINE-002` PR #15 before new overlapping work
 
 ---
 
@@ -279,7 +279,8 @@ Intended system roles:
 - **free/low-cost hosted worker LLMs** — bounded implementation work in isolated branches/worktrees;
 - **tester LLM** — independent inspection after deterministic gates;
 - **reviewer LLM** — final independent model review;
-- **fallback reviewer** — only when primary reviewer is unavailable/non-decisive for infrastructure reasons.
+- **intermediate reviewer** — Gemini 3.8 Flash only when the primary reviewer is unavailable/non-decisive for infrastructure reasons;
+- **final fallback reviewer** — Nemotron only when both Gemini reviewers are unavailable/non-decisive for infrastructure reasons.
 
 Workers do not control `main`.
 
@@ -298,6 +299,7 @@ Committed agent definitions:
 - `.opencode/agents/fast-fix.md`
 - `.opencode/agents/tester.md`
 - `.opencode/agents/reviewer.md`
+- `.opencode/agents/reviewer-intermediate.md`
 - `.opencode/agents/reviewer-fallback.md`
 
 Workers are deny-by-default:
@@ -314,17 +316,19 @@ The deterministic coordinator, not the worker LLM, executes tests and records ac
 
 Routing used during the infrastructure baseline:
 
-- implementer: `groq/openai/gpt-oss-120b`
+- implementer: `groq/openai/gpt-oss-120b`, with one `gpt-5.6-terra` medium fallback after primary Implementer process failure
 - fast-fix: `opencode/ling-3.0-flash-fin-free`
 - tester: `cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash`
 - primary reviewer: `google/gemini-3.6-flash`
-- fallback reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
+- intermediate reviewer: `google/gemini-3.8-flash`
+- final fallback reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
 
 Observed behavior:
 
 - Google primary reviewer sometimes encounters free-tier quota/429/timeouts;
-- fallback reviewer is permitted for infrastructure/unavailability/non-decisive failures;
-- a substantive primary `REQUEST_CHANGES` must not be bypassed by fallback.
+- Gemini 3.8 Flash is the only intermediate reviewer when Gemini 3.6 Flash has an infrastructure/unavailability/non-decisive failure;
+- Nemotron is permitted only when both Gemini reviewers have infrastructure/unavailability/non-decisive failures;
+- a substantive `REQUEST_CHANGES` from either Gemini reviewer must not be bypassed by a later fallback.
 
 Provider choices may change over time; the role boundaries and fail-closed policy matter more than a specific model name.
 
@@ -709,9 +713,14 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 - `ticket_runner.py` currently does not automatically retry a failed implementation attempt; retry handling exists as a concept but is not a completed general mechanism.
 - OpenCode Web is a session UI, not the deterministic project dashboard.
 - DASH-001 covers live ticket status, gates, routing, role/model assignments,
-  and recent activity. Diff browsing, retry controls, PR status, and merge
-  controls remain intentionally deferred; the dashboard has no execution
-  authority.
+  and recent activity. DASH-002 added a narrowly scoped execution control:
+  Python/manual coordination or a GPT-5.6 Sol low/medium/high planning pass may
+  initiate exactly one schema-validated deterministic ticket. A dedicated
+  governance change is now being prepared for an optional continuous scheduler,
+  validated-local-commit approval queue, exact-commit publication action, and a
+  separate Codex-routed approval gate for file deletions. These capabilities are
+  proposed until their governance and implementation changes are reviewed and
+  merged.
 - `OPENCODE_SERVER_PASSWORD` hardening would matter if OpenCode Web is intentionally exposed/used.
 - The exact model-provider mix can change; keep routing policy bounded and fail-closed.
 - Installed-Wesnoth validation remains local rather than GitHub Actions because CI does not replace the local engine environment.
@@ -733,9 +742,10 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 - reference provenance;
 - continuity-ledger work initiated by INFRA-003.
 
-**In progress on the DASH-001 feature branch:**
+**DASH-001 and DASH-002 merged; later dashboard controls remain in development:**
 
-- a localhost-only, read-only Agent Manager web dashboard;
+- a loopback-bound Agent Manager backend with same-origin protected,
+  allowlisted coordinator controls and an optional paired private-LAN proxy;
 - structured coordinator telemetry rather than log scraping;
 - live role, provider, configured model, ticket, stage, elapsed-time, gate,
   routing/fallback, activity, error, and health views;
@@ -743,6 +753,16 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
   then delegates credential handling unchanged to the existing secure launcher;
 - responsive, accessible control-console presentation with reduced-motion
   support and no external runtime dependencies.
+- a bounded Sol handoff that uses read-only planning, strict JSON output,
+  protected-path rejection, a native Windows run-ID bridge, the unchanged
+  existing DPAPI launcher, and the existing deterministic ticket runner; each
+  run stops before commit, push, or merge.
+
+Proposed next dashboard-control work includes a repository-owned planned-ticket
+picker and a continuous automation toggle. The continuous mode will schedule one
+bounded ticket at a time, queue only validated local commits, require per-ticket
+approval for the fixed push/PR/exact-head-CI/protected-merge pipeline, and pause
+for a separate Codex-routed approval before any file deletion is committed.
 
 The DPAPI-backed secure launcher remains unmodified. This preserves the rule
 that feature work must not alter credential storage or credential-forwarding
@@ -922,12 +942,21 @@ When updating this file:
 | 2026-09-03 | INFRA-001 / PR #2 | GitHub governance, mandatory LLM references, hashing, protected paths, CI, branch protection merged |
 | 2026-09-03 | INFRA-002 / PR #4 | Controlled Markdown/DOCX reference package, manifest provenance, package validator/self-test merged |
 | 2026-09-03 | INFRA-003 / Issue #5 | Living project continuity ledger initiated; intended to become persistent handoff state |
-| 2026-09-03 | DASH-001 (in progress) | Local structured-telemetry Agent Manager dashboard and secure-launcher companion entry point implemented on a feature branch |
+| 2026-09-03 | DASH-001 / PR #9 | Local structured-telemetry Agent Manager dashboard and secure-launcher companion entry point merged |
+| 2026-09-04 | DASH-002 / PR #16 | Coordinator mode control and one-ticket governed Sol handoff merged |
+| 2026-09-04 | Continuous automation governance / PR #17 | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
+| 2026-09-04 | DASH-004 / PR #18 | Autonomous scheduling toggle, planned-ticket picker, local approval queue, exact-commit publication pipeline, and deletion manifest gate merged |
+| 2026-09-04 | Bounded error-recovery governance (proposed) | Permit no more than two scoped coordinator repair attempts for eligible implementation/gate errors; retain immediate hard stops for security, approval, repository hygiene, and publication failures |
+| 2026-09-04 | Implementer provider fallback (proposed) | Keep GPT-OSS 120B primary and permit exactly one sandboxed GPT-5.6 Terra medium fallback after primary Implementer failure; failure of both providers hard-stops without consuming code-recovery attempts |
+| 2026-09-04 | DASH-005 / PR #19 | Merged structured failure diagnostics, one Terra Medium Implementer fallback, open-work planning context, and a strict two-attempt Sol-planned/Fast-Fix recovery loop |
+| 2026-09-04 | DASH-006 / PR #20 | Merged stale-dashboard restart, visible no-safe-ticket diagnostics, resume-first nonterminal worktrees, paired full-control private-LAN access, and safe-state dashboard/associated-console shutdown |
+| 2026-09-04 | DASH-007 / PR #21 | Merged exact-head, contract-backed open-PR resumption with append-only main reconciliation, a fail-closed same-contract replacement path that preserves retired branches, and Gemini 3.8 Flash between Gemini 3.6 Flash and Nemotron in the reviewer fallback chain |
+| 2026-09-04 | DASH-008 autonomous planner schema repair (local fix branch) | Correct strict structured-output required fields, add deterministic schema preflight, and surface bounded secret-free planner failure classes |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, the project has completed the infrastructure/reference foundation needed for controlled AI-assisted development and has one minimal Wesnoth add-on foundation milestone (`ENGINE-001`). The next development priority is to begin real game execution with `ENGINE-002`, registering a minimal campaign and first launchable scenario, then strengthening engine-backed scenario validation.
+At this snapshot, the project has completed the infrastructure/reference foundation and local autonomous Agent Manager needed for controlled AI-assisted development. DASH-007 is merged through PR #21. `ENGINE-002` is implemented on open PR #15 but is not part of protected `main`; its exact branch and managed worktree remain intact. The first post-merge autonomous planner request exposed a strict structured-output schema defect: five newly declared nullable PR identity fields were omitted from the ticket object's required list, so the model API rejected the request before Sol ran. DASH-008 corrects that schema, validates strictness locally before invoking Codex, and reports safe classified planner failures without exposing raw output.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.

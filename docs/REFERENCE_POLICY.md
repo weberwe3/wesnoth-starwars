@@ -68,7 +68,7 @@ For every future ticket, the deterministic coordinator records a `reference_pack
 - each canonical Markdown file's SHA-256 and byte length; and
 - each DOCX counterpart's SHA-256 and byte length.
 
-The same canonical Markdown hashes are included in the mandatory prompt block supplied to implementer/fast-fix, tester, primary reviewer, and fallback reviewer roles.
+The same canonical Markdown hashes are included in the mandatory prompt block supplied to implementer/fast-fix, tester, primary reviewer, intermediate reviewer, and final fallback reviewer roles.
 
 ## Fail-closed rule
 

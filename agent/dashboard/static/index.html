@@ -17,7 +17,7 @@
         <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
         <div><p class="eyebrow">Wesnoth Star Wars</p><h1>Agent Manager</h1></div>
       </div>
-      <div class="connection"><span class="signal" id="connection-dot"></span><div><b id="connection-label">Connecting</b><small>127.0.0.1 · read-only</small></div></div>
+      <div class="connection"><span class="signal" id="connection-dot"></span><div><b id="connection-label">Connecting</b><small id="dashboard-address">127.0.0.1 · governed control</small></div></div>
     </header>
 
     <section class="mission" aria-labelledby="mission-title">
@@ -33,6 +33,45 @@
       </div>
     </section>
 
+    <section class="panel coordination-panel" aria-labelledby="coordination-title">
+      <div class="coordination-copy">
+        <p class="eyebrow">Coordination authority</p>
+        <h2 id="coordination-title">Choose how the next ticket begins</h2>
+        <p>Python remains the enforcement layer. Sol can plan bounded tickets continuously; every validated commit waits here for explicit publication approval.</p>
+      </div>
+      <form id="mode-form" class="mode-form">
+        <div class="coordination-mode-row">
+          <fieldset>
+            <legend>Coordinator mode</legend>
+            <div class="mode-switch">
+              <label><input type="radio" name="mode" value="deterministic"><span>Python</span></label>
+              <label><input type="radio" name="mode" value="sol-low"><span>Sol Low</span></label>
+              <label><input type="radio" name="mode" value="sol-medium"><span>Sol Medium</span></label>
+              <label><input type="radio" name="mode" value="sol-high"><span>Sol High</span></label>
+            </div>
+          </fieldset>
+          <label class="automation-control" for="automation-toggle">
+            <span class="automation-copy"><span>Automation</span><small id="automation-status">Manual trigger</small></span>
+            <input id="automation-toggle" type="checkbox" role="switch" aria-describedby="automation-status">
+            <span class="automation-track" aria-hidden="true"><span></span></span>
+          </label>
+        </div>
+        <label class="brief-field" for="coordination-brief">
+          <span>Coordinator brief <small>Never paste credentials</small></span>
+          <textarea id="coordination-brief" maxlength="1000" rows="2" placeholder="Select the next safe priority from project continuity."></textarea>
+        </label>
+        <div class="control-actions">
+          <button class="handoff-button" id="handoff-button" type="submit">Hand off one ticket</button>
+          <label class="planned-ticket-field" for="planned-ticket">
+            <span class="visually-hidden">Load a planned ticket</span>
+            <select id="planned-ticket" aria-describedby="planned-ticket-status" disabled><option value="">Loading planned tickets…</option></select>
+          </label>
+          <div class="control-state" role="status" aria-live="polite"><span id="control-state-dot"></span><strong id="control-state">Loading control state</strong><small id="control-summary"></small></div>
+        </div>
+        <p class="planned-ticket-status" id="planned-ticket-status" aria-live="polite">Choose a planned ticket to load its editable brief.</p>
+      </form>
+    </section>
+
     <div class="dashboard-grid">
       <section class="panel workflow-panel" id="workflow" aria-labelledby="workflow-title">
         <div class="panel-heading"><div><p class="eyebrow">Live architecture</p><h2 id="workflow-title">Execution flow</h2></div><span class="micro-label">Structured telemetry</span></div>
@@ -44,10 +83,16 @@
           <div class="panel-heading"><div><p class="eyebrow">System</p><h2 id="health-title">Health</h2></div><span class="health-orb" aria-hidden="true"></span></div>
           <div class="health-grid">
             <div><span>Coordinator</span><strong id="health-state">Ready</strong></div>
-            <div><span>Transport</span><strong>Local file</strong></div>
-            <div><span>Exposure</span><strong>Localhost only</strong></div>
+            <div><span>Transport</span><strong>Paired LAN</strong></div>
+            <div><span>Exposure</span><strong id="network-exposure">Starting</strong></div>
             <div><span>Secrets</span><strong>Not collected</strong></div>
+            <div class="network-address"><span>Network address</span><a id="dashboard-lan-url" href="#">Detecting…</a></div>
           </div>
+          <div class="dashboard-actions">
+            <button type="button" class="copy-lan-button" id="copy-lan-button" disabled>Copy secure device link</button>
+            <button type="button" class="exit-button" id="exit-button" disabled>Exit dashboard</button>
+          </div>
+          <p class="dashboard-action-status" id="dashboard-action-status" role="status" aria-live="polite">Dashboard controls are loading.</p>
         </section>
 
         <section class="panel" aria-labelledby="details-title">
@@ -56,18 +101,27 @@
           <div class="gate-list" id="gate-list"></div>
         </section>
 
-        <section class="panel" aria-labelledby="routing-title">
-          <div class="panel-heading"><div><p class="eyebrow">Decisions</p><h2 id="routing-title">Routing history</h2></div></div>
-          <ol class="routing-list" id="routing-list"><li class="empty">No handoffs recorded</li></ol>
+        <section class="panel" aria-labelledby="activity-title">
+          <div class="panel-heading"><div><p class="eyebrow">Chronology</p><h2 id="activity-title">Activity log &amp; errors</h2></div><span class="micro-label" id="last-update">Awaiting update</span></div>
+          <ol class="activity-log" id="activity-log"><li class="empty">No activity recorded</li></ol>
         </section>
       </aside>
 
-      <section class="panel activity-panel" aria-labelledby="activity-title">
-        <div class="panel-heading"><div><p class="eyebrow">Chronology</p><h2 id="activity-title">Activity & errors</h2></div><span class="micro-label" id="last-update">Awaiting update</span></div>
-        <ol class="event-list" id="event-list"></ol>
+      <section class="panel activity-panel" aria-labelledby="queue-title">
+        <div class="panel-heading"><div><p class="eyebrow">Governed publication</p><h2 id="queue-title">Ticket approval queue</h2></div><span class="micro-label">Exact commit · FIFO</span></div>
+        <div class="approval-queue" id="approval-queue"><p class="empty">No validated tickets awaiting approval</p></div>
       </section>
     </div>
   </main>
+  <dialog class="error-dialog" id="error-dialog" aria-labelledby="error-dialog-title">
+    <form method="dialog"><button class="dialog-close" aria-label="Close error details">×</button></form>
+    <p class="eyebrow">Recorded error</p>
+    <h2 id="error-dialog-title">Error details</h2>
+    <p id="error-dialog-message"></p>
+    <pre id="error-dialog-detail"></pre>
+    <h3>Required action</h3>
+    <p id="error-dialog-action"></p>
+  </dialog>
   <noscript><p class="noscript">JavaScript is required to display live coordinator status.</p></noscript>
 </body>
 </html>

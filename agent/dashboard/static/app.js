@@ -2,6 +2,27 @@ const roles = {coordinator: "⌁", implementer: "⚒", "fast-fix": "ϟ", validat
 
 const $ = (id) => document.getElementById(id);
 let snapshot = null;
+let controlSnapshot = null;
+let controlToken = null;
+let controlBusy = false;
+let ticketCatalogReady = false;
+const plannedTickets = new Map();
+const fragmentAccess = new URLSearchParams(location.hash.slice(1)).get("access");
+const fragmentToken = fragmentAccess && /^[A-Za-z0-9_-]{32,128}$/.test(fragmentAccess) ? fragmentAccess : "";
+let storedAccess = "";
+try {
+  storedAccess = localStorage.getItem("wesnoth-dashboard-lan-token") || "";
+  if (fragmentToken) {
+    localStorage.setItem("wesnoth-dashboard-lan-token", fragmentToken);
+    storedAccess = fragmentToken;
+    history.replaceState(null, "", `${location.pathname}${location.search}`);
+  }
+} catch (_) {}
+const lanToken = fragmentToken || storedAccess;
+
+function apiHeaders(extra = {}) {
+  return lanToken ? {...extra, "X-Wesnoth-LAN-Token": lanToken} : extra;
+}
 
 function safe(value, fallback = "—") { return value == null || value === "" ? fallback : String(value); }
 function esc(value, fallback = "—") {
@@ -15,8 +36,87 @@ function duration(start, end = Date.now()) {
   return [Math.floor(seconds / 3600), Math.floor(seconds % 3600 / 60), seconds % 60].map(v => String(v).padStart(2, "0")).join(":");
 }
 
+async function loadPlannedTickets() {
+  const picker = $("planned-ticket");
+  try {
+    const response = await fetch("/planned-tickets.json", {cache: "no-store"});
+    if (!response.ok) throw new Error("Planned tickets unavailable");
+    const catalog = await response.json();
+    if (!Array.isArray(catalog.tickets)) throw new Error("Invalid ticket catalog");
+    picker.replaceChildren(new Option("Choose a planned ticket…", ""));
+    for (const ticket of catalog.tickets) {
+      if (!ticket || typeof ticket.id !== "string" || typeof ticket.label !== "string" || typeof ticket.brief !== "string") continue;
+      plannedTickets.set(ticket.id, ticket.brief);
+      picker.add(new Option(ticket.label, ticket.id));
+    }
+    ticketCatalogReady = plannedTickets.size > 0;
+    if (controlSnapshot) renderControl(controlSnapshot);
+  } catch (_) {
+    picker.replaceChildren(new Option("Planned tickets unavailable", ""));
+    picker.disabled = true;
+  }
+}
+
+function renderQueue(control) {
+  const records = control.approval_queue || [];
+  const firstReady = records.find(item => item.state === "ready")?.id;
+  const ticketActive = ["planning", "executing", "publishing"].includes(control.run?.state);
+  $("approval-queue").innerHTML = records.slice().reverse().map(item => {
+    const publishable = item.state === "ready" && item.id === firstReady && !ticketActive;
+    const commit = item.commit_sha || "Pending deletion approval";
+    const paths = (item.changed_paths || []).map(path => `<li>${esc(path)}</li>`).join("");
+    const deletion = (item.deleted_paths || []).length
+      ? `<p class="queue-warning">Deletes ${item.deleted_paths.length} file(s); Codex approval is required before commit.</p>` : "";
+    return `<article class="queue-card state-${esc(item.state)}">
+      <div class="queue-summary"><div><span class="queue-ticket">${esc(item.ticket_id)}</span><h3>${esc(item.purpose)}</h3><p>${esc(item.impact)}</p></div>
+      <div class="queue-action"><span class="state-tag">${esc(displayState(item.state))}</span><button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button></div></div>
+      <details><summary>Ticket impact and publication evidence</summary><div class="queue-details">
+        ${deletion}<dl><dt>Exact commit</dt><dd>${esc(commit)}</dd><dt>Branch</dt><dd>${esc(item.branch)}</dd><dt>Local gates</dt><dd>${esc(item.validation)}</dd><dt>Reviewer</dt><dd>${esc(item.reviewer)}</dd><dt>Publication</dt><dd>${item.pr_number ? `PR #${esc(item.pr_number)} · ${esc(displayState(item.state))}` : esc(displayState(item.state))}</dd></dl>
+        <div><strong>Changed paths</strong><ul>${paths}</ul></div>${item.error ? `<p class="queue-error">${esc(item.error)}</p>` : ""}
+      </div></details></article>`;
+  }).join("") || '<p class="empty">No validated tickets awaiting approval</p>';
+}
+
+function renderActivity(data, control) {
+  const queueActivity = (control.activity || []).map(item => ({...item, sortAt: item.at}));
+  const telemetry = (data.events || []).map(item => ({
+    at: item.at, sortAt: item.at, level: item.level, message: item.message,
+    detail: item.detail || item.message, failure_class: item.failure_class,
+    required_action: item.required_action, recovery_attempt: item.recovery_attempt,
+    recovery_limit: item.recovery_limit,
+    route: item.source ? `${item.source}${item.target ? ` → ${item.target}` : ""}` : "",
+  }));
+  const routing = (data.routing_history || []).map(item => ({
+    at: item.at, sortAt: item.at, level: "info", message: item.message,
+    detail: item.message, route: `${item.from} → ${item.to}`,
+  }));
+  const activity = [...queueActivity, ...telemetry, ...routing]
+    .sort((a, b) => String(b.sortAt || "").localeCompare(String(a.sortAt || ""))).slice(0, 16);
+  $("activity-log").innerHTML = activity.map(item => {
+    const recovery = item.recovery_attempt != null
+      ? `<span class="recovery-badge">Attempt ${esc(item.recovery_attempt)} / ${esc(item.recovery_limit || 2)}</span>` : "";
+    const failureClass = item.failure_class
+      ? `<span class="failure-class">${esc(displayState(item.failure_class))}</span>` : "";
+    const inner = `<time>${clock(item.at)}</time>${item.route ? `<span class="event-route">${esc(item.route)}</span>` : ""}<span>${esc(item.message)}</span><span class="event-meta">${failureClass}${recovery}</span>`;
+    return item.level === "error"
+      ? `<li class="error"><button type="button" class="error-activity" data-message="${esc(item.message)}" data-detail="${esc(item.detail || item.message)}" data-action="${esc(item.required_action || "Review the ticket evidence before retrying.")}">${inner}</button></li>`
+      : `<li class="level-${esc(item.level)}">${inner}</li>`;
+  }).join("") || '<li class="empty">No activity recorded</li>';
+}
+
 function makeNode(data, key) {
-    const worker = data.workers?.[key] || {};
+    const worker = {...(data.workers?.[key] || {})};
+    if (key === "coordinator" && controlSnapshot?.assignment) {
+      worker.provider = controlSnapshot.assignment.provider;
+      worker.model = controlSnapshot.assignment.effort
+        ? `${controlSnapshot.assignment.model} · ${displayState(controlSnapshot.assignment.effort)}`
+        : controlSnapshot.assignment.model;
+      if (["planning", "executing"].includes(controlSnapshot.run?.state)) {
+        worker.state = "active";
+        worker.task = controlSnapshot.run.summary;
+        worker.started_at = controlSnapshot.run.started_at;
+      }
+    }
     const node = document.createElement("article");
     node.className = `node ${safe(worker.state, "idle")}`;
     node.dataset.role = key;
@@ -83,8 +183,7 @@ function render(data) {
   const details = [["Branch", job?.branch], ["Worktree", job?.worktree], ["Validation", job?.validation_profile], ["Result", job?.result]];
   $("job-details").innerHTML = details.map(([name, value]) => `<dt>${name}</dt><dd>${esc(value)}</dd>`).join("");
   $("gate-list").innerHTML = (data.gates || []).map(g => `<div class="gate ${esc(g.state).toLowerCase()}"><span><b>${esc(g.name)}</b><br>${esc(g.detail)}</span></div>`).join("");
-  $("routing-list").innerHTML = (data.routing_history || []).slice(-6).reverse().map(r => `<li><time>${clock(r.at)}</time><span class="event-route">${esc(r.from)} → ${esc(r.to)}</span><br>${esc(r.message)}</li>`).join("") || '<li class="empty">No handoffs recorded</li>';
-  $("event-list").innerHTML = (data.events || []).slice(-10).reverse().map(e => `<li class="${e.level === "error" ? "error" : ""}"><time>${clock(e.at)}</time>${e.source ? `<span class="event-route">${esc(e.source)}${e.target ? ` → ${esc(e.target)}` : ""}</span><br>` : ""}${esc(e.message)}</li>`).join("");
+  renderActivity(data, controlSnapshot || {});
   renderFlow(data);
   const live = data.system?.state !== "stale";
   $("connection-dot").classList.toggle("online", live);
@@ -104,15 +203,161 @@ function updateElapsed() {
 
 async function refresh() {
   try {
-    const response = await fetch("/api/status", {cache: "no-store"});
-    if (!response.ok) throw new Error("Status unavailable");
-    render(await response.json());
+    const [statusResponse, controlResponse] = await Promise.all([
+      fetch("/api/status", {cache: "no-store", headers: apiHeaders()}),
+      fetch("/api/control", {cache: "no-store", headers: apiHeaders()}),
+    ]);
+    if (!statusResponse.ok || !controlResponse.ok) throw new Error("Status unavailable");
+    const control = await controlResponse.json();
+    controlToken = control.csrf_token || null;
+    delete control.csrf_token;
+    renderControl(control);
+    render(await statusResponse.json());
   } catch (_) {
     $("connection-dot").classList.remove("online");
     $("connection-label").textContent = "Reconnecting";
   }
 }
 
+function renderControl(control) {
+  controlSnapshot = control;
+  document.querySelectorAll('input[name="mode"]').forEach(input => {
+    input.checked = input.value === control.mode;
+    input.disabled = controlBusy || ["planning", "executing"].includes(control.run?.state);
+  });
+  const autonomous = control.mode !== "deterministic";
+  const running = ["planning", "executing", "publishing"].includes(control.run?.state);
+  const bridgeOnline = control.capabilities?.secure_bridge_online;
+  const automated = Boolean(control.automation?.enabled);
+  const access = control.access || {};
+  if (document.activeElement !== $("coordination-brief") && !$("coordination-brief").value) {
+    $("coordination-brief").value = control.automation?.brief || "";
+  }
+  $("coordination-brief").disabled = !autonomous || running || controlBusy;
+  $("planned-ticket").disabled = !ticketCatalogReady || !autonomous || running || controlBusy;
+  $("handoff-button").disabled = !autonomous || !bridgeOnline || running || automated || controlBusy;
+  $("automation-toggle").checked = automated;
+  $("automation-toggle").disabled = !autonomous || !bridgeOnline || controlBusy;
+  $("automation-status").textContent = automated ? "Unattended planning active" : "Manual trigger";
+  $("automation-toggle").closest(".automation-control").classList.toggle("active", automated);
+  $("handoff-button").textContent = running
+    ? (control.run.state === "planning" ? "Sol is planning…" : "Ticket gates running…")
+    : "Hand off one ticket";
+  $("control-state").textContent = `${control.assignment?.label || "Coordinator"} · ${displayState(control.run?.state)}`;
+  $("control-summary").textContent = autonomous && !bridgeOnline
+    ? "Secure bridge offline — restart with the Windows launcher"
+    : control.run?.error || control.run?.summary || "Ready";
+  $("control-state-dot").className = running
+    ? "active"
+    : control.run?.state === "failed"
+      ? "error"
+      : control.run?.state === "paused" ? "warning" : "";
+  const lanUrl = access.lan_url || "";
+  const secureLanUrl = access.lan_access_url || (lanToken && lanUrl ? `${lanUrl}/#access=${lanToken}` : "");
+  $("dashboard-address").textContent = access.remote ? "LAN · governed control" : "127.0.0.1 · governed control";
+  $("network-exposure").textContent = access.lan_proxy_online ? "LAN online" : "LAN unavailable";
+  $("dashboard-lan-url").textContent = lanUrl || "Unavailable";
+  $("dashboard-lan-url").href = secureLanUrl || lanUrl || "#";
+  $("copy-lan-button").disabled = !secureLanUrl;
+  $("copy-lan-button").dataset.url = secureLanUrl;
+  $("exit-button").disabled = !access.shutdown_available || running || controlBusy || !controlToken;
+  $("dashboard-action-status").textContent = access.remote
+    ? "Secure LAN device paired. All governed controls are available."
+    : access.lan_proxy_online
+      ? "Use the secure device link to pair another computer on this network."
+      : "LAN access is not ready; localhost controls remain available.";
+  renderQueue(control);
+  if (snapshot) renderActivity(snapshot, control);
+}
+
+async function controlAction(payload) {
+  if (!controlToken || controlBusy) return;
+  controlBusy = true;
+  let errorMessage = null;
+  let shutdownAccepted = false;
+  if (controlSnapshot) renderControl(controlSnapshot);
+  try {
+    const response = await fetch("/api/control", {
+      method: "POST",
+      headers: apiHeaders({"Content-Type": "application/json", "X-Wesnoth-CSRF": controlToken}),
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Control request rejected");
+    if (result.shutdown === "accepted") {
+      shutdownAccepted = true;
+      $("exit-button").textContent = "Shutting down…";
+      $("exit-button").disabled = true;
+      $("dashboard-action-status").textContent = "Dashboard stopped cleanly. Closing its launcher console.";
+    } else {
+      renderControl(result);
+    }
+  } catch (error) {
+    errorMessage = error.message;
+  } finally {
+    controlBusy = false;
+    if (controlSnapshot && !shutdownAccepted) renderControl(controlSnapshot);
+    if (errorMessage) {
+      $("control-state").textContent = "Control request rejected";
+      $("control-summary").textContent = errorMessage;
+      $("control-state-dot").className = "error";
+    }
+  }
+}
+
+document.querySelectorAll('input[name="mode"]').forEach(input => {
+  input.addEventListener("change", () => controlAction({action: "set_mode", mode: input.value}));
+});
+
+$("automation-toggle").addEventListener("change", event => {
+  controlAction({action: "set_automation", enabled: event.target.checked, brief: $("coordination-brief").value});
+});
+
+$("planned-ticket").addEventListener("change", event => {
+  const brief = plannedTickets.get(event.target.value);
+  if (!brief) return;
+  $("coordination-brief").value = brief;
+  $("coordination-brief").focus();
+  $("planned-ticket-status").textContent = "Planned ticket brief loaded. You can edit it before handoff.";
+});
+
+$("approval-queue").addEventListener("click", event => {
+  const button = event.target.closest(".publish-button");
+  if (!button) return;
+  controlAction({action: "approve_publish", record_id: button.dataset.recordId, commit_sha: button.dataset.commitSha});
+});
+
+$("activity-log").addEventListener("click", event => {
+  const button = event.target.closest(".error-activity");
+  if (!button) return;
+  $("error-dialog-message").textContent = button.dataset.message;
+  $("error-dialog-detail").textContent = button.dataset.detail;
+  $("error-dialog-action").textContent = button.dataset.action;
+  $("error-dialog").showModal();
+});
+
+$("mode-form").addEventListener("submit", event => {
+  event.preventDefault();
+  controlAction({action: "run", brief: $("coordination-brief").value});
+});
+
+$("copy-lan-button").addEventListener("click", async event => {
+  const url = event.currentTarget.dataset.url;
+  if (!url) return;
+  try {
+    await navigator.clipboard.writeText(url);
+    $("dashboard-action-status").textContent = "Secure device link copied. Open it only on a trusted device on this LAN.";
+  } catch (_) {
+    $("dashboard-action-status").textContent = "Copy failed. Open the network-address link and copy it from the address bar.";
+  }
+});
+
+$("exit-button").addEventListener("click", () => {
+  if (!confirm("Shut down this dashboard and close only its associated launcher console?")) return;
+  controlAction({action: "shutdown"});
+});
+
+loadPlannedTickets();
 refresh();
 setInterval(refresh, 1500);
 setInterval(updateElapsed, 1000);
