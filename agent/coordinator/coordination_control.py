@@ -133,7 +133,7 @@ class ControlStore:
             run = fallback["run"]
         valid_states = {
             "idle", "planning", "executing", "queued", "awaiting_deletion_approval",
-            "publishing", "passed", "failed", "interrupted",
+            "publishing", "paused", "passed", "failed", "interrupted",
         }
         state = run.get("state") if run.get("state") in valid_states else "idle"
         automation = value.get("automation")

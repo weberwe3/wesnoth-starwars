@@ -10,6 +10,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,6 +19,7 @@ sys.path.insert(0, str(ROOT / "agent" / "coordinator"))
 from runtime_status import RuntimeStatus, default_state  # noqa: E402
 from coordination_control import ControlStore  # noqa: E402
 import recovery_policy  # noqa: E402
+import ticket_runner  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from autonomy import AutonomyController, ControlError  # noqa: E402
 from approval_queue import ApprovalQueue  # noqa: E402
@@ -144,13 +146,173 @@ class CoordinationControlTests(unittest.TestCase):
                 },
             }
             with self.assertRaises(ControlError):
-                controller._build_ticket("abc123def456", proposal)
+                controller._build_ticket(
+                    "abc123def456", proposal, "Start a fresh ticket"
+                )
 
     def test_deterministic_mode_rejects_continuous_automation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
             with self.assertRaises(ControlError):
                 controller.set_automation(True, "Continue safely")
+
+    def test_no_safe_ticket_pauses_with_visible_reason(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            controller.store.update(lambda state: state.update({
+                "mode": "sol-low",
+                "automation": {"enabled": True, "brief": "Continue safely"},
+                "run": {
+                    "state": "planning", "run_id": "abc123def456",
+                    "requested_at": None, "started_at": None, "completed_at": None,
+                    "ticket_id": None, "summary": "Planning", "error": None,
+                },
+            }))
+            proposal = {
+                "action": "stop",
+                "summary": "ENGINE-002 is still open on PR #15.",
+                "impact": "Follow-on work must wait.",
+                "ticket": None,
+            }
+            with mock.patch.object(controller, "_plan", return_value=proposal):
+                controller._run("abc123def456", "sol-low", "Continue safely", True)
+            state = controller.public_state()
+            self.assertEqual(state["run"]["state"], "paused")
+            self.assertEqual(state["run"]["summary"], proposal["summary"])
+            self.assertFalse(state["automation"]["enabled"])
+            self.assertEqual(state["activity"][-1]["level"], "warning")
+            self.assertIn("PR #15", state["activity"][-1]["detail"])
+
+    def test_pr_represented_branches_are_not_local_planning_work(self) -> None:
+        represented = AutonomyController._represented_pr_branches([
+            {"headRefName": "agent/open-ticket", "state": "OPEN"},
+            {"headRefName": "agent/merged-ticket", "state": "MERGED"},
+            {"headRefName": "main", "state": "CLOSED"},
+        ])
+        self.assertEqual(
+            represented,
+            {"agent/open-ticket", "agent/merged-ticket"},
+        )
+
+    def test_fresh_work_requires_explicit_owner_language(self) -> None:
+        self.assertFalse(AutonomyController._fresh_start_requested("Continue safely"))
+        self.assertTrue(AutonomyController._fresh_start_requested("Start from scratch"))
+        self.assertTrue(AutonomyController._fresh_start_requested("Start a fresh ticket"))
+
+    def test_resume_restores_original_ticket_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            proposal = {
+                "action": "run_ticket",
+                "summary": "Resume work",
+                "impact": "Finish the existing change",
+                "_planning_inventory": {
+                    "local_agent_branches": [{
+                        "name": "agent/interrupted-20260904-120000",
+                        "worker": "implementer",
+                        "objective": "Original bounded objective",
+                        "allowed_paths": ["addons/example.cfg"],
+                        "validation_profile": "static-text",
+                        "validation_root": None,
+                        "changed_paths": ["addons/example.cfg"],
+                    }],
+                },
+                "ticket": {
+                    "worker": "fast-fix",
+                    "objective": "Broadened model objective",
+                    "allowed_paths": ["**"],
+                    "validation_profile": "wesnoth-addon-static",
+                    "validation_root": "addons",
+                    "resume_branch": "agent/interrupted-20260904-120000",
+                },
+            }
+            ticket = controller._build_ticket("abc123def456", proposal)
+            self.assertEqual(ticket["worker"], "implementer")
+            self.assertEqual(ticket["objective"], "Original bounded objective")
+            self.assertEqual(ticket["allowed_paths"], ["addons/example.cfg"])
+            self.assertEqual(
+                ticket["resume_branch"], "agent/interrupted-20260904-120000"
+            )
+
+    def test_managed_worktree_parser_excludes_external_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            managed = Path(directory).resolve()
+            inside = managed / "ticket-one"
+            outside = managed.parent / "outside-ticket"
+            output = (
+                f"worktree {inside}\nbranch refs/heads/agent/ticket-one\n\n"
+                f"worktree {outside}\nbranch refs/heads/agent/outside-ticket\n"
+            )
+            parsed = AutonomyController._managed_worktrees(output, managed)
+            self.assertEqual(parsed, {"agent/ticket-one": inside})
+
+    def test_failed_result_remains_resumable_but_pass_does_not(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project = Path(directory) / "project"
+            project.mkdir()
+            controller = AutonomyController(
+                project,
+                ControlStore(Path(directory) / "control.json"),
+                ApprovalQueue(project, Path(directory) / "approval-queue.json"),
+            )
+            logs = controller.root / "agent" / "logs"
+            branch_stamp = "20260904-120000"
+            run = logs / f"INTERRUPTED-1-{branch_stamp}"
+            run.mkdir(parents=True)
+            ticket = {
+                "task_id": "INTERRUPTED-1",
+                "worker": "implementer",
+                "objective": "Finish bounded work",
+                "allowed_paths": ["addons/example.cfg"],
+                "validation_profile": "static-text",
+                "validation_root": None,
+            }
+            (run / "ticket.json").write_text(json.dumps(ticket), encoding="utf-8")
+            (run / "result.json").write_text(
+                json.dumps({"final_verdict": "FAIL"}), encoding="utf-8"
+            )
+            branch = f"agent/interrupted-1-{branch_stamp}"
+            self.assertIn(branch, controller._unfinished_ticket_evidence())
+            (run / "result.json").write_text(
+                json.dumps({"final_verdict": "PASS"}), encoding="utf-8"
+            )
+            self.assertNotIn(branch, controller._unfinished_ticket_evidence())
+
+    def test_resume_keeps_committed_and_uncommitted_candidate_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "project"
+            worktree = parent / "project-worktrees" / "interrupted"
+            root.mkdir()
+
+            def git(cwd: Path, *args: str) -> str:
+                return subprocess.run(
+                    ["git", *args], cwd=cwd, check=True, text=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                ).stdout.strip()
+
+            git(root, "init", "-b", "main")
+            git(root, "config", "user.email", "tests@example.invalid")
+            git(root, "config", "user.name", "Dashboard Tests")
+            (root / "existing.txt").write_text("base\n", encoding="utf-8")
+            git(root, "add", "existing.txt")
+            git(root, "commit", "-m", "base")
+            worktree.parent.mkdir()
+            git(
+                root, "worktree", "add", "-b", "agent/interrupted",
+                str(worktree), "main",
+            )
+            (worktree / "existing.txt").write_text("partial\n", encoding="utf-8")
+            git(worktree, "add", "existing.txt")
+            git(worktree, "commit", "-m", "partial implementation")
+            (worktree / "uncommitted.txt").write_text("more\n", encoding="utf-8")
+
+            _, paths = ticket_runner.read_git_changes(worktree)
+            self.assertEqual(paths, ["existing.txt", "uncommitted.txt"])
+            self.assertEqual(
+                ticket_runner.resolve_resume_worktree(root, "agent/interrupted"),
+                worktree.resolve(),
+            )
 
     def test_public_queue_drops_private_worktree_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

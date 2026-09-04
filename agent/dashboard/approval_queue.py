@@ -228,7 +228,7 @@ class ApprovalQueue:
         if _run(["git", "branch", "--show-current"], worktree) != branch:
             raise QueueError("Ticket branch no longer matches its evidence")
 
-        base_sha = _run(["git", "rev-parse", "HEAD"], worktree)
+        base_sha = _run(["git", "merge-base", "main", "HEAD"], worktree)
         if not HEX_SHA.fullmatch(base_sha):
             raise QueueError("Ticket base commit is invalid")
         changed_paths, deleted_paths = self._changes(worktree)
@@ -297,22 +297,30 @@ class ApprovalQueue:
 
     def _changes(self, worktree: Path) -> tuple[list[str], list[str]]:
         output = _run(
-            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            ["git", "diff", "--name-status", "-M", "main"],
             worktree,
             strip=False,
         )
         changed: list[str] = []
         deleted: list[str] = []
         for line in output.splitlines():
+            fields = line.split("\t")
+            if len(fields) != 2 or fields[0].startswith(("R", "C")):
+                raise QueueError("Unsupported Git status in ticket worktree")
+            code, path = fields
+            changed.append(path)
+            if code == "D":
+                deleted.append(path)
+        status = _run(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            worktree,
+            strip=False,
+        )
+        for line in status.splitlines():
             if len(line) < 4 or " -> " in line:
                 raise QueueError("Unsupported Git status in ticket worktree")
-            code = line[:2]
-            path = line[3:].strip()
-            if path.startswith('"'):
-                raise QueueError("Quoted Git paths are not supported by the queue")
-            changed.append(path)
-            if "D" in code:
-                deleted.append(path)
+            if line[:2] == "??":
+                changed.append(line[3:].strip())
         if not changed:
             raise QueueError("Passing ticket has no changes to queue")
         return sorted(set(changed)), sorted(set(deleted))
@@ -326,7 +334,7 @@ class ApprovalQueue:
             if candidate.is_file() and not candidate.is_symlink():
                 digest.update(hashlib.sha256(candidate.read_bytes()).digest())
             elif path in record["deleted_paths"]:
-                blob = _run(["git", "rev-parse", f"HEAD:{path}"], worktree)
+                blob = _run(["git", "rev-parse", f"main:{path}"], worktree)
                 digest.update(blob.encode())
             else:
                 raise QueueError("Candidate tree changed while preparing approval")
@@ -337,7 +345,7 @@ class ApprovalQueue:
             f"{record['id']}:{utc_now()}:{os.urandom(16).hex()}".encode()
         ).hexdigest()[:16]
         prior_blobs = {
-            path: _run(["git", "rev-parse", f"HEAD:{path}"], worktree)
+            path: _run(["git", "rev-parse", f"main:{path}"], worktree)
             for path in record["deleted_paths"]
         }
         request = {
@@ -361,10 +369,21 @@ class ApprovalQueue:
 
     def _commit(self, record: dict[str, Any], worktree: Path) -> str:
         _run(["git", "add", "--all"], worktree)
-        _run(
-            ["git", "commit", "-m", f"{record['ticket_id']}: {record['purpose'][:60]}"],
-            worktree,
+        staged = subprocess.run(
+            ["git", "diff", "--cached", "--quiet"],
+            cwd=worktree,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=30,
+            check=False,
         )
+        if staged.returncode == 1:
+            _run(
+                ["git", "commit", "-m", f"{record['ticket_id']}: {record['purpose'][:60]}"],
+                worktree,
+            )
+        elif staged.returncode != 0:
+            raise QueueError("Could not determine whether the candidate needs a commit")
         commit_sha = _run(["git", "rev-parse", "HEAD"], worktree)
         if not HEX_SHA.fullmatch(commit_sha):
             raise QueueError("Created commit identity is invalid")

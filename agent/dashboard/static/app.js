@@ -230,7 +230,11 @@ function renderControl(control) {
   $("control-summary").textContent = autonomous && !bridgeOnline
     ? "Secure bridge offline — restart with the Windows launcher"
     : control.run?.error || control.run?.summary || "Ready";
-  $("control-state-dot").className = running ? "active" : control.run?.state === "failed" ? "error" : "";
+  $("control-state-dot").className = running
+    ? "active"
+    : control.run?.state === "failed"
+      ? "error"
+      : control.run?.state === "paused" ? "warning" : "";
   renderQueue(control);
   if (snapshot) renderActivity(snapshot, control);
 }

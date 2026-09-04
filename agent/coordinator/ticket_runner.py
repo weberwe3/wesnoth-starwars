@@ -173,6 +173,7 @@ def load_ticket(path: Path) -> dict:
         "allowed_paths",
         "validation_profile",
         "validation_root",
+        "resume_branch",
     }
 
     unknown = sorted(set(ticket) - allowed_keys)
@@ -238,6 +239,13 @@ def load_ticket(path: Path) -> dict:
                 "validation_root."
             )
 
+    resume_branch = ticket.get("resume_branch")
+    if resume_branch is not None and (
+        not isinstance(resume_branch, str)
+        or not re.fullmatch(r"agent/[a-z0-9][a-z0-9._/-]{0,180}", resume_branch)
+    ):
+        raise SystemExit("ERROR: resume_branch must be null or a safe agent branch.")
+
     return ticket
 
 
@@ -256,6 +264,15 @@ def path_allowed(path: str, patterns: list[str]) -> bool:
 
 
 def read_git_changes(worktree: Path) -> tuple[list[str], list[str]]:
+    rc, candidate_output = core.git(
+        worktree,
+        "diff",
+        "--name-status",
+        "-M",
+        "main",
+    )
+    core.require_success(rc, candidate_output, "Read candidate changes from main")
+
     rc, output = core.git(
         worktree,
         "status",
@@ -264,8 +281,18 @@ def read_git_changes(worktree: Path) -> tuple[list[str], list[str]]:
     )
     core.require_success(rc, output, "Read implementation Git status")
 
-    entries = []
+    entries = [f"CANDIDATE {line}" for line in candidate_output.splitlines() if line]
     paths = []
+
+    for line in candidate_output.splitlines():
+        fields = line.split("\t")
+        if not fields:
+            continue
+        status_code = fields[0]
+        if status_code.startswith(("R", "C")) or len(fields) != 2:
+            paths.append("<RENAME_OR_COPY_NOT_SUPPORTED>")
+            continue
+        paths.append(fields[1])
 
     for line in output.splitlines():
         if not line:
@@ -290,9 +317,33 @@ def read_git_changes(worktree: Path) -> tuple[list[str], list[str]]:
             paths.append("<RENAME_OR_COPY_NOT_SUPPORTED>")
             continue
 
-        paths.append(path)
+        if status_code == "??" or path not in paths:
+            paths.append(path)
 
-    return entries, paths
+    return entries, sorted(set(paths))
+
+
+def resolve_resume_worktree(root: Path, branch: str) -> Path:
+    """Resolve a trusted existing ticket worktree without accepting a path from an LLM."""
+
+    rc, output = core.git(root, "worktree", "list", "--porcelain")
+    core.require_success(rc, output, "Inventory resumable worktrees")
+    managed_root = (root.parent / f"{root.name}-worktrees").resolve()
+    current_path: Path | None = None
+    for line in output.splitlines() + [""]:
+        if line.startswith("worktree "):
+            current_path = Path(line.removeprefix("worktree ")).resolve()
+        elif line == f"branch refs/heads/{branch}" and current_path is not None:
+            try:
+                current_path.relative_to(managed_root)
+            except ValueError as exc:
+                raise SystemExit("ERROR: resume worktree is outside the managed root.") from exc
+            rc, active = core.git(current_path, "branch", "--show-current")
+            core.require_success(rc, active, "Verify resumed ticket branch")
+            if active.strip() != branch:
+                raise SystemExit("ERROR: resume worktree branch does not match.")
+            return current_path
+    raise SystemExit("ERROR: requested resume branch has no managed worktree.")
 
 
 def validate_scope(
@@ -328,7 +379,7 @@ def validate_static_files(
     checks = []
     passed = True
 
-    rc, output = core.git(worktree, "diff", "--check")
+    rc, output = core.git(worktree, "diff", "--check", "main")
     diff_check = {
         "name": "git_diff_check",
         "pass": rc == 0,
@@ -857,10 +908,14 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     task_id = ticket["task_id"]
 
-    branch = f"agent/{task_id.lower()}-{timestamp}"
-
+    resume_branch = ticket.get("resume_branch")
     worktree_base = root.parent / f"{root.name}-worktrees"
-    worktree = worktree_base / f"{task_id.lower()}-{timestamp}"
+    if resume_branch:
+        branch = resume_branch
+        worktree = resolve_resume_worktree(root, branch)
+    else:
+        branch = f"agent/{task_id.lower()}-{timestamp}"
+        worktree = worktree_base / f"{task_id.lower()}-{timestamp}"
 
     log_dir = root / "agent" / "logs" / f"{task_id}-{timestamp}"
     status.begin_job(
@@ -894,25 +949,44 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     print(f"LOGS:       {log_dir}")
     print()
 
-    rc, output = core.git(
-        root,
-        "worktree",
-        "add",
-        "-b",
-        branch,
-        str(worktree),
-        "main",
-        timeout=60,
-    )
-
-    core.require_success(rc, output, "Create isolated ticket worktree")
-
-    print("[1/5] Worktree created.")
-    status.event("Isolated ticket worktree created", source="coordinator")
+    if resume_branch:
+        _, existing_paths = read_git_changes(worktree)
+        existing_scope = validate_scope(existing_paths, ticket["allowed_paths"])
+        if not existing_scope["pass"]:
+            status.fail_system(
+                "Resumable work failed its original scope boundary",
+                detail="Existing ticket remnants are empty, protected, or outside allowed paths.",
+                failure_class="resume_scope_violation",
+                required_action="Inspect the existing ticket worktree before continuing.",
+            )
+            return 14
+        print("[1/5] Existing ticket worktree resumed.")
+        status.event("Existing isolated ticket worktree resumed", source="coordinator")
+    else:
+        rc, output = core.git(
+            root,
+            "worktree",
+            "add",
+            "-b",
+            branch,
+            str(worktree),
+            "main",
+            timeout=60,
+        )
+        core.require_success(rc, output, "Create isolated ticket worktree")
+        print("[1/5] Worktree created.")
+        status.event("Isolated ticket worktree created", source="coordinator")
     status.handoff("coordinator", ticket["worker"], "Implementation assigned")
     status.set_worker("coordinator", "idle", "Monitoring ticket gates")
     status.set_worker(ticket["worker"], "active", ticket["objective"])
 
+    continuation_instruction = (
+        "This ticket is resuming an existing isolated worktree. Inspect and preserve all "
+        "useful existing changes, then complete the original objective in place. Do not "
+        "discard, reset, recreate, or restart the implementation."
+        if resume_branch else
+        "This is an explicitly authorized fresh ticket worktree."
+    )
     implementation_prompt = f"""
 TASK ID: {task_id}
 
@@ -920,6 +994,9 @@ TASK ID: {task_id}
 
 OBJECTIVE:
 {ticket["objective"]}
+
+CONTINUATION POLICY:
+{continuation_instruction}
 
 You may modify ONLY paths matching these patterns:
 
