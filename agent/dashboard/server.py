@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "agent" / "coordinator"))
 from coordination_control import ControlStore, control_state_path  # noqa: E402
 from runtime_status import default_state, runtime_status_path  # noqa: E402
 from autonomy import AutonomyController, ControlError  # noqa: E402
+from approval_queue import QueueError  # noqa: E402
 
 
 def public_state(state: object) -> dict:
@@ -167,9 +168,21 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 controller.set_mode(data.get("mode"))
             elif data.get("action") == "run" and set(data) == {"action", "brief"}:
                 controller.start(data.get("brief") if isinstance(data.get("brief"), str) else "")
+            elif data.get("action") == "set_automation" and set(data) == {
+                "action", "enabled", "brief",
+            }:
+                if not isinstance(data.get("enabled"), bool) or not isinstance(data.get("brief"), str):
+                    raise ControlError("Invalid automation request")
+                controller.set_automation(data["enabled"], data["brief"])
+            elif data.get("action") == "approve_publish" and set(data) == {
+                "action", "record_id", "commit_sha",
+            }:
+                if not isinstance(data.get("record_id"), str) or not isinstance(data.get("commit_sha"), str):
+                    raise ControlError("Invalid publication request")
+                controller.approve_publish(data["record_id"], data["commit_sha"])
             else:
                 raise ControlError("Unsupported control action")
-        except ControlError as exc:
+        except (ControlError, QueueError) as exc:
             self._json({"error": str(exc)}, HTTPStatus.CONFLICT)
             return
         self._json(controller.public_state(), HTTPStatus.ACCEPTED)
@@ -217,7 +230,7 @@ def main() -> int:
     server = create_server(args.port, status_file)
     print(f"Wesnoth Agent Manager: http://127.0.0.1:{args.port}")
     print(f"Telemetry: {status_file}")
-    print("Control: one validated ticket per explicit local handoff")
+    print("Control: governed manual or continuous ticket coordination")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -235,7 +248,11 @@ def create_server(
     server = ThreadingHTTPServer(("127.0.0.1", port), DashboardHandler)
     server.status_file = status_file.resolve()  # type: ignore[attr-defined]
     store = ControlStore(control_file or control_state_path(ROOT))
-    server.controller = AutonomyController(ROOT, store)  # type: ignore[attr-defined]
+    queue = None
+    if control_file is not None:
+        from approval_queue import ApprovalQueue
+        queue = ApprovalQueue(ROOT, control_file.resolve().parent / "approval-queue.json")
+    server.controller = AutonomyController(ROOT, store, queue)  # type: ignore[attr-defined]
     server.csrf_token = secrets.token_urlsafe(32)  # type: ignore[attr-defined]
     return server
 
