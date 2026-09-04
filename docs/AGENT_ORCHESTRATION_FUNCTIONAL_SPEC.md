@@ -271,6 +271,7 @@ Current ticket fields:
 - `allowed_paths`
 - `validation_profile`
 - `validation_root` where applicable
+- `resume_branch` when continuing an unfinished managed ticket worktree
 
 Ticket objectives should be bounded, testable, and explicit about exclusions when omission is important.
 
@@ -289,17 +290,36 @@ Coordinator verifies:
 - ticket schema is valid;
 - task ID is valid and unique enough for current execution;
 - required project references exist.
+- existing ticket remnants have a managed worktree, an original ticket contract,
+  no terminal PASS, no representing pull request, and changes contained by the
+  original allowed paths. A failed run remains unfinished work when its remnants
+  still satisfy those boundaries.
 
 Failure stops the run.
 
 ### Stage 1 - Isolated branch/worktree
 
-Create:
+For a new ticket, create:
 
 - branch: `agent/<ticket>-<timestamp>`;
 - worktree: `~/projects/wesnoth-starwars-worktrees/<ticket>-<timestamp>`.
 
 No worker edits the main worktree.
+
+If a prior ticket started but did not reach a terminal PASS, resume its
+existing managed branch/worktree before planning fresh work. Python must derive
+the worktree from the trusted Git worktree inventory, restore the original
+worker, objective, allowed paths, and validation profile from the prior ticket
+record, and validate all existing committed and uncommitted changes before an
+LLM continues. The worker must preserve useful partial changes and must not
+reset, discard, recreate, or restart the implementation. Branches already
+represented by a pull request, terminal PASS results, unmanaged
+worktrees, and protected or out-of-scope remnants are not resumable.
+
+A new branch/worktree may be created only when the project owner explicitly
+requests a fresh start in the coordinator brief, such as “start from scratch”
+or “start a fresh ticket.” Without that instruction and without safe resumable
+work, automation pauses with a visible reason.
 
 ### Stage 2 - Implementation
 
@@ -398,6 +418,11 @@ not an exemption from deterministic governance.
 
 When automation is enabled:
 
+- Sol must inventory and resume safe unfinished ticket work before proposing a
+  new ticket; stale remnants are continuation context, not grounds to discard
+  prior work;
+- a fresh ticket is permitted only when the owner-provided coordinator brief
+  explicitly authorizes a fresh/new ticket or starting from scratch;
 - Sol may read the controlled references and continuity ledger, prioritize the
   planned backlog, and propose one bounded ticket at a time;
 - Python remains the authoritative state machine and must validate each ticket,
@@ -451,10 +476,14 @@ or credential-bearing diagnostics; publication, branch-protection, remote-head,
 merge, or approval mismatch; and explicit user stop. These are recorded with a
 specific safe reason and required human action.
 
-Before planning new or recovery work, the coordinator must include structured
-local queue and open pull-request/branch context so it does not duplicate an
-existing ticket. If that inventory cannot be established reliably, automation
-pauses instead of guessing.
+Before planning new, resumed, or recovery work, the coordinator must include
+structured local queue, open pull-request, and managed worktree context so it
+does not duplicate an existing ticket. A resumable record must be backed by the
+original unfinished ticket contract; terminal PASS results and PR-represented
+branches are excluded. If that inventory cannot be established reliably,
+automation pauses instead of guessing. A no-safe-ticket decision must preserve
+the model's specific reason in the control state and activity log rather than
+appearing as a silent or generic failure.
 
 #### Ticket approval queue and publication
 
