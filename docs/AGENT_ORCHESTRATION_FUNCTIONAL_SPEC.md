@@ -386,6 +386,99 @@ Final local PASS requires every mandatory gate to pass.
 
 A local PASS means **eligible for commit/PR**, not automatically merged.
 
+### Optional continuous automation mode
+
+The localhost Agent Manager may offer a human-controlled automation toggle for
+the selected Sol coordinator mode. This is an alternate ticket-scheduling mode,
+not an exemption from deterministic governance.
+
+When automation is enabled:
+
+- Sol may read the controlled references and continuity ledger, prioritize the
+  planned backlog, and propose one bounded ticket at a time;
+- Python remains the authoritative state machine and must validate each ticket,
+  create its isolated worktree, enforce path scope, and run every applicable
+  deterministic, engine, tester, and reviewer gate;
+- a passing ticket may be committed locally to its ticket branch and added to a
+  FIFO approval queue, but it must not be pushed, opened as a PR, merged, or
+  applied to protected `main` without a separate explicit human approval for
+  that exact queued commit;
+- subsequent dependent tickets may be based on the preceding queued head so
+  unattended work can continue, but approvals and publication must occur in
+  dependency order; rejecting or invalidating an upstream item makes dependent
+  queue entries stale and requires deterministic replanning;
+- turning automation off prevents another ticket from starting. An active
+  ticket proceeds only to its next safe deterministic stopping point before
+  control returns to the manual Python/Bash workflow; and
+- any failed mandatory gate, unresolved reviewer result, scope violation,
+  provider failure outside established retry policy, dirty or unexpected Git
+  state, publication failure, or approval mismatch pauses automation and is
+  recorded as an error. Automation must never reinterpret failure as approval.
+
+Automation does not grant a worker shell access, ownership of `main`, access to
+credentials, or authority to weaken branch protection. Planning models remain
+nondeterministic inputs to the Python coordinator.
+
+#### Ticket approval queue and publication
+
+Each passing local commit enters a repository-owned approval record containing
+at minimum the ticket ID, purpose, expected mod impact, dependency position,
+changed paths, branch, base SHA, exact commit SHA, validation evidence, reviewer
+verdict, and publication state. Queue records must expose no credential values.
+
+The dashboard may present one approval action for the fixed publication
+pipeline. That action is authorization for the exact queued commit only. The
+deterministic controller must then, in order:
+
+1. verify that the queue record, branch, commit, diff, dependency order, and
+   local PASS evidence are unchanged;
+2. push the ticket branch without force;
+3. create or update its pull request with validation evidence;
+4. wait for required GitHub checks on the exact PR head;
+5. merge only through protected-branch policy after every required check and
+   conversation rule passes; and
+6. synchronize local `main` and update structured queue evidence.
+
+A single approval does not authorize later commits, other queue items, direct
+pushes to `main`, force pushes, branch-protection bypass, or credential access.
+Any head change, failed check, merge conflict, unexpected remote state, or
+policy rejection terminates the pipeline and requires a new review/approval.
+
+#### File deletion approval
+
+Before creating a local ticket commit, Python must inspect the actual Git diff
+for deleted files. If any deletion exists, the ticket and continuous scheduler
+pause and a dedicated deletion manifest is created. The manifest must bind the
+ticket ID, branch, base SHA, candidate tree identity, exact deleted paths, prior
+blob identities, stated reasons, and expected impact to a unique request ID.
+
+The request is routed to a Codex-hosted approval task or automation so the
+project owner can receive a mobile notification when supported by the signed-in
+Codex/ChatGPT client. Notification delivery is advisory; the local fail-closed
+gate is authoritative. Codex must record an explicit approve or reject decision
+for the exact manifest. A changed path set, candidate tree, branch, or request
+identity invalidates the decision. No deletion commit, later ticket, push, PR,
+or merge may proceed while this gate is unresolved.
+
+#### Dashboard presentation
+
+The dashboard places validated local commits in a **Ticket approval queue**.
+Each item has an expandable summary of purpose, expected mod impact, files,
+gates, dependencies, and publication state. The per-ticket approval action is
+enabled only when deterministic prerequisites are satisfied.
+
+The former routing-history surface becomes **Activity log and errors**. It
+combines structured coordinator, routing, validation, approval, and publication
+events. Error-bearing entries use the established red alert treatment and open
+an accessible detail dialog when selected. Secrets, environment values, raw
+credential-bearing logs, and arbitrary filesystem content must never be shown.
+
+Ordinary tickets remain unable to modify controlled references. A controlled
+reference change must be a clearly identified governance ticket, synchronize
+all affected Markdown/DOCX representations and manifest values, pass the
+reference-package self-test, and receive its own exact-commit publication
+approval through the queue.
+
 ### Stage 8 - Commit and GitHub publication
 
 After local PASS:
@@ -643,6 +736,12 @@ Extend deterministic tooling to optionally:
 - query required check status;
 - refuse merge until checks pass;
 - require explicit human/architect authorization for merge at the current maturity level.
+- bind a dashboard publication approval to one exact queued commit and execute
+  the fixed push/PR/exact-head-CI/protected-merge sequence without broad shell
+  input from the browser;
+- maintain FIFO dependency ordering for queued autonomous tickets; and
+- pause before any file deletion until an exact deletion manifest is explicitly
+  approved through the Codex-routed approval channel.
 
 ### Phase E - dashboard
 
@@ -656,7 +755,8 @@ The future local Agent Manager dashboard should display:
 - CI checks;
 - review state;
 - merge readiness;
-- task history;
+- ticket approval queue with expandable purpose and impact summaries;
+- activity log and errors with accessible error-detail dialogs;
 - view diff/logs;
 - retry eligible infrastructure failures;
 - never bypass mandatory gates.
