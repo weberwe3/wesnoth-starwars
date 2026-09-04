@@ -69,7 +69,14 @@ def public_state(state: object) -> dict:
     for collection, keys, maximum in (
         ("gates", ("name", "state", "detail", "at"), 30),
         ("routing_history", ("at", "from", "to", "message"), 100),
-        ("events", ("at", "kind", "level", "message", "source", "target"), 200),
+        (
+            "events",
+            (
+                "at", "kind", "level", "message", "source", "target", "detail",
+                "failure_class", "required_action", "recovery_attempt", "recovery_limit",
+            ),
+            200,
+        ),
     ):
         values = state.get(collection)
         if isinstance(values, list):

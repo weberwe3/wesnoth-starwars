@@ -19,6 +19,7 @@ RUNTIME = ROOT / "agent" / "runtime"
 REQUEST = RUNTIME / "secure-run-request.json"
 ACCEPTED = RUNTIME / "secure-run-request.accepted.json"
 RUN_ID = re.compile(r"[a-f0-9]{12}")
+RECOVERY_EFFORTS = {"low", "medium", "high"}
 
 
 def write_json(path: Path, value: object) -> None:
@@ -70,8 +71,11 @@ def main() -> int:
             request = json.loads(ACCEPTED.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise SystemExit("ERROR: invalid bridge request") from exc
-        if not isinstance(request, dict) or set(request) != {"run_id"}:
+        if not isinstance(request, dict) or set(request) != {"run_id", "recovery_effort"}:
             raise SystemExit("ERROR: invalid bridge request")
+        effort = request.get("recovery_effort")
+        if effort is not None and effort not in RECOVERY_EFFORTS:
+            raise SystemExit("ERROR: invalid recovery effort")
         print(valid_run_id(request["run_id"]))
         return 0
     if command == "result" and len(sys.argv) == 3:
@@ -85,8 +89,20 @@ def main() -> int:
         result = RUNTIME / f"sol-result-{run_id}.json"
         bridge = ROOT / "agent" / "dashboard" / "secure_ticket_bridge.py"
         bootstrap = RUNTIME / f"secure-bootstrap-{run_id}.sh"
-        script = "#!/usr/bin/env bash\nunset BASH_ENV\nexec python3 {} {} {}\n".format(
-            shlex.quote(str(bridge)), shlex.quote(str(ticket)), shlex.quote(str(result))
+        try:
+            request = json.loads(ACCEPTED.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise SystemExit("ERROR: invalid accepted bridge request") from exc
+        if request.get("run_id") != run_id:
+            raise SystemExit("ERROR: accepted bridge request does not match")
+        effort = request.get("recovery_effort")
+        if effort is not None and effort not in RECOVERY_EFFORTS:
+            raise SystemExit("ERROR: invalid recovery effort")
+        arguments = [str(bridge), str(ticket), str(result)]
+        if effort:
+            arguments.append(effort)
+        script = "#!/usr/bin/env bash\nunset BASH_ENV\nexec python3 {}\n".format(
+            " ".join(shlex.quote(value) for value in arguments)
         )
         bootstrap.write_text(script, encoding="utf-8")
         os.chmod(bootstrap, 0o700)
@@ -94,7 +110,17 @@ def main() -> int:
         return 0
     if command == "failure" and len(sys.argv) == 3:
         run_id = valid_run_id(sys.argv[2])
-        write_json(RUNTIME / f"sol-result-{run_id}.json", {"return_code": 125})
+        write_json(RUNTIME / f"sol-result-{run_id}.json", {
+            "return_code": 125,
+            "failure": {
+                "class": "secure_bridge_failure",
+                "detail": "The secure ticket process did not return a valid result.",
+                "required_action": "Restart the secure Windows launcher and try again.",
+                "eligible": False,
+                "attempt": 0,
+                "limit": 2,
+            },
+        })
         return 0
     if command == "cleanup" and len(sys.argv) == 3:
         run_id = valid_run_id(sys.argv[2])

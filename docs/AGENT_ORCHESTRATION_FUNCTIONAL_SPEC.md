@@ -185,7 +185,7 @@ Baseline routing:
 
 | Role | Provider / model | Purpose |
 |---|---|---|
-| Implementer | Groq - `groq/openai/gpt-oss-120b` | Main bounded implementation work |
+| Implementer | Groq - `groq/openai/gpt-oss-120b`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Main bounded implementation work |
 | Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free` | Small mechanical corrections |
 | Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash` | Independent read-only test evaluation |
 | Primary reviewer | Google - `google/gemini-3.6-flash` | Independent review when quota is available |
@@ -196,6 +196,8 @@ Routing is policy, not permanence. Models may change if availability, capability
 Known provider observations:
 
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
+- When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
+- A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
 - Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out.
 - A primary reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
@@ -226,6 +228,8 @@ Security rules:
 - protected coordinator/config/reference paths are denied unless the ticket explicitly authorizes architecture/documentation maintenance;
 - tester/reviewer roles are read-only;
 - deterministic test execution belongs to Python, not the LLM worker.
+
+The Terra Implementer fallback is a narrowly authorized exception to the OpenCode worker tool profile. Codex runs with its `workspace-write` sandbox, no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Deterministic scope and protected-path gates remain authoritative immediately after it returns; sandbox access never grants publication or governance authority.
 
 Tool denial is an application-level security boundary. It is not claimed to be equivalent to a separately virtualized OS sandbox.
 
@@ -410,14 +414,47 @@ When automation is enabled:
 - turning automation off prevents another ticket from starting. An active
   ticket proceeds only to its next safe deterministic stopping point before
   control returns to the manual Python/Bash workflow; and
-- any failed mandatory gate, unresolved reviewer result, scope violation,
-  provider failure outside established retry policy, dirty or unexpected Git
-  state, publication failure, or approval mismatch pauses automation and is
-  recorded as an error. Automation must never reinterpret failure as approval.
+- an eligible implementation, validation, tester, or reviewer error may enter
+  the bounded recovery policy below before it becomes a final failure; and
+- any unrecovered mandatory-gate failure, scope violation, provider failure
+  outside established retry policy, dirty or unexpected Git state,
+  publication failure, or approval mismatch pauses automation and is recorded
+  as an error. Automation must never reinterpret failure as approval.
 
 Automation does not grant a worker shell access, ownership of `main`, access to
 credentials, or authority to weaken branch protection. Planning models remain
 nondeterministic inputs to the Python coordinator.
+
+#### Bounded autonomous error recovery
+
+When continuous automation is enabled, the deterministic coordinator may ask
+the selected coordinator model to diagnose and address an error only when the
+error is supported by structured, secret-free evidence and can be corrected
+inside the active ticket's existing allowed paths. Eligible errors are limited
+to implementation defects, deterministic validation failures attributable to
+the candidate change, tester failures, and reviewer requests for changes.
+
+Recovery is limited to **two attempts per ticket**. Each attempt must record
+the failure class, safe diagnostic summary, attempt number, proposed corrective
+action, changed paths, and resulting gate evidence. The coordinator must use a
+narrow corrective brief, preserve the original ticket scope, reject protected
+or expanded paths, and rerun every applicable deterministic, engine, tester,
+and reviewer gate. A complete PASS resets the recovery counter. Failure after
+the second attempt pauses automation and leaves the candidate uncommitted.
+
+The coordinator must stop immediately, without spending recovery attempts, for
+errors an implementation ticket cannot safely resolve: dirty or unexpected
+repository state; deletion approval; missing human approval; protected-path,
+scope, governance, or security violations; missing credentials or secure
+bridge; unavailable planner/provider outside existing retry policy; ambiguous
+or credential-bearing diagnostics; publication, branch-protection, remote-head,
+merge, or approval mismatch; and explicit user stop. These are recorded with a
+specific safe reason and required human action.
+
+Before planning new or recovery work, the coordinator must include structured
+local queue and open pull-request/branch context so it does not duplicate an
+existing ticket. If that inventory cannot be established reliably, automation
+pauses instead of guessing.
 
 #### Ticket approval queue and publication
 
@@ -452,13 +489,13 @@ pause and a dedicated deletion manifest is created. The manifest must bind the
 ticket ID, branch, base SHA, candidate tree identity, exact deleted paths, prior
 blob identities, stated reasons, and expected impact to a unique request ID.
 
-The request is routed to a Codex-hosted approval task or automation so the
-project owner can receive a mobile notification when supported by the signed-in
-Codex/ChatGPT client. Notification delivery is advisory; the local fail-closed
-gate is authoritative. Codex must record an explicit approve or reject decision
-for the exact manifest. A changed path set, candidate tree, branch, or request
-identity invalidates the decision. No deletion commit, later ticket, push, PR,
-or merge may proceed while this gate is unresolved.
+The request remains visible in the localhost dashboard approval queue for the
+project owner to inspect. No recurring Codex task, background chat message, or
+token-consuming notification job is required. The local fail-closed gate is
+authoritative and must record an explicit approve or reject decision for the
+exact manifest. A changed path set, candidate tree, branch, or request identity
+invalidates the decision. No deletion commit, later ticket, push, PR, or merge
+may proceed while this gate is unresolved.
 
 #### Dashboard presentation
 
@@ -469,8 +506,11 @@ enabled only when deterministic prerequisites are satisfied.
 
 The former routing-history surface becomes **Activity log and errors**. It
 combines structured coordinator, routing, validation, approval, and publication
-events. Error-bearing entries use the established red alert treatment and open
-an accessible detail dialog when selected. Secrets, environment values, raw
+events. Recovery entries show the error class, current attempt out of two,
+corrective action, and resulting state. Error-bearing entries use the
+established red alert treatment and open an accessible detail dialog containing
+the specific safe diagnostic and required next action when selected. Secrets,
+environment values, raw
 credential-bearing logs, and arbitrary filesystem content must never be shown.
 
 Ordinary tickets remain unable to modify controlled references. A controlled

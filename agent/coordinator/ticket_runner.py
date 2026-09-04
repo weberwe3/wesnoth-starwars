@@ -16,6 +16,7 @@ import sys
 
 import coordinator as core
 import reference_package as reference_pkg
+import recovery_policy
 from runtime_status import RuntimeStatus, runtime_status_path
 
 
@@ -23,10 +24,22 @@ IMPLEMENTER_TIMEOUT = 240
 TESTER_TIMEOUT = 180
 PRIMARY_REVIEWER_TIMEOUT = 75
 FALLBACK_REVIEWER_TIMEOUT = 180
+RECOVERY_PLANNER_TIMEOUT = 300
+TERRA_IMPLEMENTER_TIMEOUT = 600
 
 VALID_WORKERS = {"implementer", "fast-fix"}
 VALID_PROFILES = {"static-text", "wesnoth-addon-static"}
 ACTIVE_STATUS: RuntimeStatus | None = None
+RECOVERY_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["action", "summary", "corrective_action"],
+    "properties": {
+        "action": {"type": "string", "enum": ["repair", "stop"]},
+        "summary": {"type": "string", "minLength": 1, "maxLength": 500},
+        "corrective_action": {"type": "string", "minLength": 1, "maxLength": 1200},
+    },
+}
 
 PROTECTED_EXACT = {
     ".gitignore",
@@ -104,6 +117,44 @@ def invoke_agent(
 
     log_file.write_text(output)
     return rc, output
+
+
+def invoke_terra_implementer(
+    *, worktree: Path, prompt: str, log_file: Path
+) -> tuple[int, str]:
+    """Run the single sandboxed Terra Medium Implementer fallback."""
+
+    executable = shutil.which("codex") or shutil.which("codex.exe")
+    if not executable:
+        return 127, "Codex Terra fallback is unavailable."
+    windows_binary = executable.lower().endswith(".exe")
+    command = [
+        executable, "exec", "-C", _codex_path(worktree, windows_binary),
+        "-s", "workspace-write", "-m", "gpt-5.6-terra",
+        "-c", 'model_reasoning_effort="medium"',
+        "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
+        "--color", "never", "-",
+    ]
+    environment = {
+        key: value for key, value in core.make_test_env().items()
+        if not re.search(
+            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
+            key, re.IGNORECASE,
+        )
+    }
+    try:
+        completed = subprocess.run(
+            command, cwd=worktree, env=environment, input=prompt, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            timeout=TERRA_IMPLEMENTER_TIMEOUT, check=False,
+        )
+        output = completed.stdout or ""
+        log_file.write_text(output, encoding="utf-8")
+        return completed.returncode, output
+    except subprocess.TimeoutExpired as exc:
+        output = str(exc.stdout or "") + "\n[COORDINATOR] TERRA FALLBACK TIMEOUT\n"
+        log_file.write_text(output, encoding="utf-8")
+        return 124, output
 
 
 def load_ticket(path: Path) -> dict:
@@ -475,7 +526,314 @@ def save_result(log_dir: Path, result: dict) -> None:
     )
 
 
-def _run_ticket(ticket_path: Path) -> int:
+def _codex_path(path: Path, windows_binary: bool) -> str:
+    if not windows_binary:
+        return str(path)
+    completed = subprocess.run(
+        ["wslpath", "-w", str(path)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    if completed.returncode != 0 or not completed.stdout.strip():
+        raise RuntimeError("Could not translate the recovery-planner path")
+    return completed.stdout.strip()
+
+
+def plan_recovery(
+    *,
+    worktree: Path,
+    log_dir: Path,
+    ticket: dict,
+    failure: dict,
+    attempt: int,
+    effort: str,
+    governance_prompt: str,
+) -> dict:
+    executable = shutil.which("codex") or shutil.which("codex.exe")
+    if not executable:
+        raise RuntimeError("Codex recovery planner is unavailable")
+    schema_path = log_dir / f"recovery-{attempt}-schema.json"
+    output_path = log_dir / f"recovery-{attempt}-plan.json"
+    schema_path.write_text(json.dumps(RECOVERY_SCHEMA, indent=2) + "\n")
+    windows_binary = executable.lower().endswith(".exe")
+    prompt = f"""You are the selected bounded recovery planner for this ticket.
+
+{governance_prompt}
+
+Do not edit files, run commands, use the web, expose secrets, broaden scope, or change governance.
+This is recovery attempt {attempt} of {recovery_policy.MAX_RECOVERY_ATTEMPTS} for the ticket.
+Diagnose only the structured failure below and propose the smallest corrective action.
+If the evidence is insufficient or repair would exceed allowed paths, return action stop.
+
+TICKET:
+{json.dumps(ticket, indent=2)}
+
+STRUCTURED FAILURE:
+{json.dumps(failure, indent=2)}
+""".strip()
+    command = [
+        executable,
+        "exec",
+        "-C",
+        _codex_path(worktree, windows_binary),
+        "-s",
+        "read-only",
+        "-m",
+        "gpt-5.6-sol",
+        "-c",
+        f'model_reasoning_effort="{effort}"',
+        "--ephemeral",
+        "--ignore-user-config",
+        "--color",
+        "never",
+        "--output-schema",
+        _codex_path(schema_path, windows_binary),
+        "-o",
+        _codex_path(output_path, windows_binary),
+        "-",
+    ]
+    environment = {
+        key: value for key, value in os.environ.items()
+        if not re.search(
+            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
+            key,
+            re.IGNORECASE,
+        )
+    }
+    completed = subprocess.run(
+        command,
+        cwd=worktree,
+        env=environment,
+        input=prompt,
+        text=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        timeout=RECOVERY_PLANNER_TIMEOUT,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError("Codex recovery planner did not complete")
+    try:
+        plan = json.loads(output_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("Codex recovery planner returned no valid plan") from exc
+    if plan.get("action") not in {"repair", "stop"}:
+        raise RuntimeError("Codex recovery planner returned an invalid action")
+    plan["summary"] = recovery_policy.safe_text(plan.get("summary"), "Recovery plan")
+    plan["corrective_action"] = recovery_policy.safe_text(
+        plan.get("corrective_action"), "Inspect the structured failure.", 1200
+    )
+    return plan
+
+
+def evaluate_candidate(
+    *,
+    status: RuntimeStatus,
+    ticket: dict,
+    worktree: Path,
+    log_dir: Path,
+    governance_prompt: str,
+    opencode: str,
+    google_available: bool,
+    implementer_rc: int,
+    attempt: int,
+) -> dict:
+    suffix = "" if attempt == 0 else f"-recovery-{attempt}"
+    task_id = ticket["task_id"]
+    status.handoff(ticket["worker"] if attempt == 0 else "fast-fix", "validation", "Candidate sent to deterministic validation")
+    status.set_worker("validation", "active", "Running deterministic gates")
+    validation = run_validation(
+        worktree=worktree,
+        ticket=ticket,
+        implementer_rc=implementer_rc,
+    )
+    (log_dir / f"validation{suffix}.json").write_text(
+        json.dumps(validation, indent=2) + "\n"
+    )
+    status.set_worker(
+        "validation",
+        "idle" if validation["pass"] else "error",
+        "Deterministic gates passed" if validation["pass"] else "Deterministic gates failed",
+        error=None if validation["pass"] else "One or more deterministic gates failed",
+    )
+    status.gate(
+        "Deterministic validation",
+        "pass" if validation["pass"] else "fail",
+        "All configured checks passed" if validation["pass"] else "Review validation evidence",
+    )
+    if not validation["pass"]:
+        return {
+            "pass": False,
+            "exit_code": 10,
+            "validation": validation,
+            "tester_pass": None,
+            "reviewer_approve": None,
+            "failure": recovery_policy.classify_validation(validation, implementer_rc),
+        }
+
+    status.handoff("validation", "tester", "Validated change sent to tester")
+    status.set_worker("tester", "active", "Independent verification")
+    tester_prompt = f"""TASK ID: {task_id}
+
+{governance_prompt}
+
+OBJECTIVE:
+{ticket['objective']}
+
+ALLOWED PATHS:
+{json.dumps(ticket['allowed_paths'], indent=2)}
+
+DETERMINISTIC VALIDATION:
+{json.dumps(validation, indent=2)}
+
+Independently inspect the changed project files. Do not execute commands, edit files, or use the web.
+Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
+""".strip()
+    tester_rc, tester_output = invoke_agent(
+        opencode=opencode,
+        worktree=worktree,
+        agent="tester",
+        prompt=tester_prompt,
+        log_file=log_dir / f"tester{suffix}.jsonl",
+        timeout=TESTER_TIMEOUT,
+    )
+    tester_pass = tester_rc == 0 and core.contains_verdict(tester_output, "PASS")
+    status.set_worker(
+        "tester",
+        "idle" if tester_pass else "error",
+        "Tester passed" if tester_pass else "Tester rejected change",
+        error=None if tester_pass else "Independent tester did not return PASS",
+    )
+    status.gate(
+        "Independent tester",
+        "pass" if tester_pass else "fail",
+        "PASS" if tester_pass else "FAIL or non-decisive response",
+    )
+    if not tester_pass:
+        return {
+            "pass": False,
+            "exit_code": 11,
+            "validation": validation,
+            "tester_exit_code": tester_rc,
+            "tester_pass": False,
+            "reviewer_approve": None,
+            "failure": recovery_policy.classify_tester(tester_output, tester_rc),
+        }
+
+    status.handoff("tester", "reviewer", "Verified change sent to reviewer")
+    status.set_worker("reviewer", "active", "Independent final review")
+    reviewer_prompt = f"""TASK ID: {task_id}
+
+{governance_prompt}
+
+OBJECTIVE:
+{ticket['objective']}
+
+ALLOWED PATHS:
+{json.dumps(ticket['allowed_paths'], indent=2)}
+
+DETERMINISTIC VALIDATION:
+{json.dumps(validation, indent=2)}
+
+TESTER: exit code {tester_rc}; PASS={tester_pass}
+
+Perform an independent final review. Inspect the relevant changed files yourself.
+Do not execute commands, edit files, invoke another agent, or use the web.
+Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CHANGES.
+""".strip()
+    primary_rc = None
+    primary_output = ""
+    primary_approve = False
+    primary_request_changes = False
+    if google_available:
+        primary_rc, primary_output = invoke_agent(
+            opencode=opencode,
+            worktree=worktree,
+            agent="reviewer",
+            prompt=reviewer_prompt,
+            log_file=log_dir / f"reviewer-primary{suffix}.jsonl",
+            timeout=PRIMARY_REVIEWER_TIMEOUT,
+        )
+        primary_approve = primary_rc == 0 and core.contains_verdict(primary_output, "APPROVE")
+        primary_request_changes = primary_rc == 0 and core.contains_verdict(primary_output, "REQUEST_CHANGES")
+
+    fallback_rc = None
+    fallback_output = ""
+    fallback_approve = False
+    fallback_request_changes = False
+    if primary_request_changes:
+        reviewer_used = "google/gemini-3.6-flash"
+        reviewer_approve = False
+        decisive_output = primary_output
+        decisive_rc = primary_rc
+        decisive_changes = True
+        status.set_worker("reviewer", "error", "Changes requested", error="Primary reviewer requested changes")
+    elif primary_approve:
+        reviewer_used = "google/gemini-3.6-flash"
+        reviewer_approve = True
+        decisive_output = primary_output
+        decisive_rc = primary_rc
+        decisive_changes = False
+        status.set_worker("reviewer", "idle", "Approved")
+    else:
+        status.set_worker("reviewer", "waiting", "Unavailable or non-decisive")
+        status.handoff("reviewer", "reviewer-fallback", "Fallback review activated")
+        status.set_worker("reviewer-fallback", "active", "Independent fallback review")
+        fallback_rc, fallback_output = invoke_agent(
+            opencode=opencode,
+            worktree=worktree,
+            agent="reviewer-fallback",
+            prompt=reviewer_prompt,
+            log_file=log_dir / f"reviewer-fallback{suffix}.jsonl",
+            timeout=FALLBACK_REVIEWER_TIMEOUT,
+        )
+        fallback_approve = fallback_rc == 0 and core.contains_verdict(fallback_output, "APPROVE")
+        fallback_request_changes = fallback_rc == 0 and core.contains_verdict(fallback_output, "REQUEST_CHANGES")
+        reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
+        reviewer_approve = fallback_approve
+        decisive_output = fallback_output
+        decisive_rc = fallback_rc
+        decisive_changes = fallback_request_changes
+        status.set_worker(
+            "reviewer-fallback",
+            "idle" if fallback_approve else "error",
+            "Approved" if fallback_approve else "Fallback review rejected change",
+            error=None if fallback_approve else "Fallback reviewer did not approve",
+        )
+
+    status.gate(
+        "Independent review",
+        "pass" if reviewer_approve else "fail",
+        f"{reviewer_used}: " + ("APPROVE" if reviewer_approve else "NOT APPROVED"),
+    )
+    result = {
+        "pass": reviewer_approve,
+        "exit_code": 0 if reviewer_approve else 12,
+        "validation": validation,
+        "tester_exit_code": tester_rc,
+        "tester_pass": tester_pass,
+        "reviewer_primary_exit_code": primary_rc,
+        "reviewer_primary_approve": primary_approve,
+        "reviewer_primary_request_changes": primary_request_changes,
+        "reviewer_fallback_exit_code": fallback_rc,
+        "reviewer_fallback_approve": fallback_approve,
+        "reviewer_fallback_request_changes": fallback_request_changes,
+        "reviewer_used": reviewer_used,
+        "reviewer_approve": reviewer_approve,
+    }
+    if not reviewer_approve:
+        result["failure"] = recovery_policy.classify_reviewer(
+            decisive_output,
+            decisive_rc,
+            requested_changes=decisive_changes,
+        )
+    return result
+
+
+def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     global ACTIVE_STATUS
     ticket = load_ticket(ticket_path)
 
@@ -586,6 +944,34 @@ Return your normal structured implementation report.
         timeout=IMPLEMENTER_TIMEOUT,
     )
 
+    primary_impl_rc = impl_rc
+    terra_fallback = {
+        "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
+        "reasoning_effort": "medium", "exit_code": None,
+    }
+    if recovery_policy.should_use_terra_fallback(ticket["worker"], impl_rc, False):
+        terra_fallback["used"] = True
+        status.handoff("coordinator", "implementer", "GPT-OSS to Terra Medium fallback")
+        status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
+        status.set_worker("implementer", "active", "Running single Terra fallback")
+        terra_prompt = implementation_prompt.replace(
+            "Do not execute commands or tests.",
+            "You may use read-only inspection commands and apply patches. Do not run tests, "
+            "package managers, network commands, or Git write commands.",
+        )
+        terra_rc, _ = invoke_terra_implementer(
+            worktree=worktree,
+            prompt=terra_prompt,
+            log_file=log_dir / "implementer-terra-fallback.txt",
+        )
+        terra_fallback["exit_code"] = terra_rc
+        impl_rc = 0 if terra_rc == 0 else recovery_policy.TERRA_FALLBACK_FAILURE
+        status.set_worker(
+            "implementer", "idle" if terra_rc == 0 else "error",
+            "Terra fallback returned" if terra_rc == 0 else "Terra fallback failed",
+            error=None if terra_rc == 0 else f"Terra exited with code {terra_rc}",
+        )
+
     print(f"[2/5] Implementation exit code: {impl_rc}")
     status.set_worker(
         ticket["worker"],
@@ -593,342 +979,246 @@ Return your normal structured implementation report.
         "Implementation returned" if impl_rc == 0 else "Implementation failed",
         error=None if impl_rc == 0 else f"Worker exited with code {impl_rc}",
     )
-    status.handoff(ticket["worker"], "validation", "Implementation returned")
-    status.set_worker("validation", "active", "Running deterministic gates")
+    recovery_attempts = []
+    attempt = 0
+    while True:
+        evaluation = evaluate_candidate(
+            status=status,
+            ticket=ticket,
+            worktree=worktree,
+            log_dir=log_dir,
+            governance_prompt=governance_prompt,
+            opencode=opencode,
+            google_available=google_available,
+            implementer_rc=impl_rc,
+            attempt=attempt,
+        )
+        if attempt and recovery_attempts:
+            recovery_attempts[-1]["changed_paths"] = (
+                evaluation.get("validation", {}).get("scope", {}).get("changed_paths", [])
+            )
+            recovery_attempts[-1]["gate_result"] = (
+                "PASS" if evaluation["pass"] else evaluation.get("failure", {}).get("class", "FAIL")
+            )
+        if evaluation["pass"]:
+            result = {
+                "task_id": task_id,
+                "branch": branch,
+                "worktree": str(worktree),
+                "logs": str(log_dir),
+                "governance_references": governance_references,
+                "reference_package": reference_package,
+                "worker": ticket["worker"],
+                "implementation_exit_code": impl_rc,
+                "primary_implementation_exit_code": primary_impl_rc,
+                "terra_implementer_fallback": terra_fallback,
+                **{key: value for key, value in evaluation.items() if key not in {"pass", "exit_code"}},
+                "recovery_attempts": recovery_attempts,
+                "final_verdict": "PASS",
+                "commit_created": False,
+                "merge_performed": False,
+            }
+            save_result(log_dir, result)
+            status.finish(True, "Ticket passed all local gates")
+            print(json.dumps(result, indent=2))
+            print("\nPASS: ticket passed all gates. No commit or merge was performed.")
+            return 0
 
-    validation = run_validation(
-        worktree=worktree,
-        ticket=ticket,
-        implementer_rc=impl_rc,
-    )
+        failure = evaluation["failure"]
+        can_recover = recovery_policy.can_attempt(
+            attempt,
+            failure,
+            recovery_effort is not None,
+        )
+        if not can_recover:
+            failure = {**failure, "attempt": attempt, "limit": recovery_policy.MAX_RECOVERY_ATTEMPTS}
+            result = {
+                "task_id": task_id,
+                "branch": branch,
+                "worktree": str(worktree),
+                "logs": str(log_dir),
+                "governance_references": governance_references,
+                "reference_package": reference_package,
+                "worker": ticket["worker"],
+                "implementation_exit_code": impl_rc,
+                "primary_implementation_exit_code": primary_impl_rc,
+                "terra_implementer_fallback": terra_fallback,
+                **{key: value for key, value in evaluation.items() if key not in {"pass", "exit_code"}},
+                "failure": failure,
+                "recovery_attempts": recovery_attempts,
+                "final_verdict": "FAIL",
+                "commit_created": False,
+                "merge_performed": False,
+            }
+            save_result(log_dir, result)
+            status.finish(
+                False,
+                "Ticket stopped after bounded recovery" if attempt else "Ticket stopped safely",
+                detail=failure["detail"],
+                failure_class=failure["class"],
+                required_action=failure["required_action"],
+                recovery_attempt=attempt,
+                recovery_limit=recovery_policy.MAX_RECOVERY_ATTEMPTS,
+            )
+            print(json.dumps(result, indent=2))
+            print("\nFAIL: ticket stopped without commit or merge.")
+            return evaluation["exit_code"]
 
-    (log_dir / "validation.json").write_text(
-        json.dumps(validation, indent=2) + "\n"
-    )
+        next_attempt = attempt + 1
+        try:
+            plan = plan_recovery(
+                worktree=worktree,
+                log_dir=log_dir,
+                ticket=ticket,
+                failure=failure,
+                attempt=next_attempt,
+                effort=recovery_effort,
+                governance_prompt=governance_prompt,
+            )
+        except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
+            planner_failure = {
+                "class": "recovery_planner_failure",
+                "detail": recovery_policy.safe_text(exc, "The recovery planner did not complete."),
+                "required_action": "Check Codex availability before enabling automation again.",
+                "eligible": False,
+                "attempt": attempt,
+                "limit": recovery_policy.MAX_RECOVERY_ATTEMPTS,
+            }
+            status.finish(
+                False,
+                "Recovery planner stopped safely",
+                detail=planner_failure["detail"],
+                failure_class=planner_failure["class"],
+                required_action=planner_failure["required_action"],
+                recovery_attempt=attempt,
+                recovery_limit=recovery_policy.MAX_RECOVERY_ATTEMPTS,
+            )
+            evaluation["failure"] = planner_failure
+            result = {
+                "task_id": task_id, "branch": branch, "worktree": str(worktree),
+                "logs": str(log_dir), "governance_references": governance_references,
+                "reference_package": reference_package, "worker": ticket["worker"],
+                "implementation_exit_code": impl_rc,
+                "primary_implementation_exit_code": primary_impl_rc,
+                "terra_implementer_fallback": terra_fallback,
+                **evaluation,
+                "recovery_attempts": recovery_attempts, "final_verdict": "FAIL",
+                "commit_created": False, "merge_performed": False,
+            }
+            save_result(log_dir, result)
+            return 13
+        if plan["action"] == "stop":
+            failure = {
+                **failure,
+                "detail": plan["summary"],
+                "required_action": plan["corrective_action"],
+                "eligible": False,
+                "attempt": attempt,
+                "limit": recovery_policy.MAX_RECOVERY_ATTEMPTS,
+            }
+            evaluation["failure"] = failure
+            result = {
+                "task_id": task_id, "branch": branch, "worktree": str(worktree),
+                "logs": str(log_dir), "governance_references": governance_references,
+                "reference_package": reference_package, "worker": ticket["worker"],
+                "implementation_exit_code": impl_rc,
+                "primary_implementation_exit_code": primary_impl_rc,
+                "terra_implementer_fallback": terra_fallback,
+                **evaluation,
+                "recovery_attempts": recovery_attempts, "final_verdict": "FAIL",
+                "commit_created": False, "merge_performed": False,
+            }
+            save_result(log_dir, result)
+            status.finish(
+                False, "Recovery planner declined unsafe repair", detail=failure["detail"],
+                failure_class=failure["class"], required_action=failure["required_action"],
+                recovery_attempt=attempt, recovery_limit=recovery_policy.MAX_RECOVERY_ATTEMPTS,
+            )
+            return evaluation["exit_code"]
 
-    print(
-        "[3/5] Deterministic validation: "
-        + ("PASS" if validation["pass"] else "FAIL")
-    )
-    status.set_worker(
-        "validation",
-        "idle" if validation["pass"] else "error",
-        "Deterministic gates passed" if validation["pass"] else "Deterministic gates failed",
-        error=None if validation["pass"] else "One or more deterministic gates failed",
-    )
-    status.gate(
-        "Deterministic validation",
-        "pass" if validation["pass"] else "fail",
-        "All configured checks passed" if validation["pass"] else "Review validation evidence",
-    )
-
-    if not validation["pass"]:
-        result = {
-            "task_id": task_id,
-            "branch": branch,
-            "worktree": str(worktree),
-            "logs": str(log_dir),
-            "governance_references": governance_references,
-            "reference_package": reference_package,
-            "implementation_exit_code": impl_rc,
-            "validation": validation,
-            "tester_pass": None,
-            "reviewer_approve": None,
-            "final_verdict": "FAIL",
-            "commit_created": False,
-            "merge_performed": False,
-        }
-        save_result(log_dir, result)
-
-        print(json.dumps(result, indent=2))
-        print("\nFAIL: deterministic gate rejected the implementation.")
-        status.finish(False, "Ticket failed deterministic validation")
-        return 10
-
-    status.handoff("validation", "tester", "Validated change sent to tester")
-    status.set_worker("tester", "active", "Independent verification")
-
-    tester_prompt = f"""
-TASK ID: {task_id}
+        attempt = next_attempt
+        status.event(
+            f"Recovery attempt {attempt} of {recovery_policy.MAX_RECOVERY_ATTEMPTS}",
+            kind="recovery",
+            level="warning",
+            detail=failure["detail"],
+            failure_class=failure["class"],
+            required_action=plan["corrective_action"],
+            recovery_attempt=attempt,
+            recovery_limit=recovery_policy.MAX_RECOVERY_ATTEMPTS,
+        )
+        status.handoff("coordinator", "fast-fix", f"Scoped recovery attempt {attempt} assigned")
+        status.set_worker("fast-fix", "active", plan["corrective_action"])
+        repair_prompt = f"""TASK ID: {task_id}
 
 {governance_prompt}
 
-OBJECTIVE:
-{ticket["objective"]}
+This is recovery attempt {attempt} of {recovery_policy.MAX_RECOVERY_ATTEMPTS}.
+Preserve the original objective and modify only the original allowed paths.
+Do not execute commands or tests. Do not commit, merge, or push.
+
+ORIGINAL OBJECTIVE:
+{ticket['objective']}
 
 ALLOWED PATHS:
-{json.dumps(ticket["allowed_paths"], indent=2)}
+{json.dumps(ticket['allowed_paths'], indent=2)}
 
-DETERMINISTIC VALIDATION:
-{json.dumps(validation, indent=2)}
+SAFE FAILURE DIAGNOSTIC:
+{failure['detail']}
 
-Independently inspect the changed project files.
+COORDINATOR CORRECTIVE ACTION:
+{plan['corrective_action']}
 
-Do not execute commands.
-Do not edit files.
-Do not use the web.
-
-Determine whether the implementation satisfies the objective and whether the
-deterministic evidence is sufficient.
-
-Return your normal report beginning with:
-VERDICT: PASS
-or
-VERDICT: FAIL
+Inspect the existing candidate and make the smallest correction.
 """.strip()
-
-    tester_rc, tester_output = invoke_agent(
-        opencode=opencode,
-        worktree=worktree,
-        agent="tester",
-        prompt=tester_prompt,
-        log_file=log_dir / "tester.jsonl",
-        timeout=TESTER_TIMEOUT,
-    )
-
-    tester_pass = (
-        tester_rc == 0
-        and core.contains_verdict(tester_output, "PASS")
-    )
-
-    print(
-        f"[4/5] Tester exit code: {tester_rc}; "
-        f"PASS={tester_pass}"
-    )
-    status.set_worker(
-        "tester",
-        "idle" if tester_pass else "error",
-        "Tester passed" if tester_pass else "Tester rejected change",
-        error=None if tester_pass else "Independent tester did not return PASS",
-    )
-    status.gate(
-        "Independent tester",
-        "pass" if tester_pass else "fail",
-        "PASS" if tester_pass else "FAIL or non-decisive response",
-    )
-
-    if not tester_pass:
-        result = {
-            "task_id": task_id,
-            "branch": branch,
-            "worktree": str(worktree),
-            "logs": str(log_dir),
-            "governance_references": governance_references,
-            "reference_package": reference_package,
-            "implementation_exit_code": impl_rc,
-            "validation": validation,
-            "tester_exit_code": tester_rc,
-            "tester_pass": False,
-            "reviewer_approve": None,
-            "final_verdict": "FAIL",
-            "commit_created": False,
-            "merge_performed": False,
-        }
-        save_result(log_dir, result)
-
-        print(json.dumps(result, indent=2))
-        print("\nFAIL: tester gate rejected the implementation.")
-        status.finish(False, "Ticket failed independent testing")
-        return 11
-
-
-    status.handoff("tester", "reviewer", "Verified change sent to reviewer")
-    status.set_worker("reviewer", "active", "Independent final review")
-
-    reviewer_prompt = f"""
-TASK ID: {task_id}
-
-{governance_prompt}
-
-OBJECTIVE:
-{ticket["objective"]}
-
-ALLOWED PATHS:
-{json.dumps(ticket["allowed_paths"], indent=2)}
-
-DETERMINISTIC VALIDATION:
-{json.dumps(validation, indent=2)}
-
-TESTER:
-- exit code: {tester_rc}
-- PASS: {tester_pass}
-
-Perform an independent final review.
-
-Inspect the relevant changed files yourself.
-
-Do not execute commands.
-Do not edit files.
-Do not invoke another agent.
-Do not use the web.
-
-Return your normal report beginning with:
-VERDICT: APPROVE
-or
-VERDICT: REQUEST_CHANGES
-""".strip()
-
-    primary_rc = None
-    primary_approve = False
-    primary_request_changes = False
-
-    if google_available:
-        primary_rc, primary_output = invoke_agent(
+        impl_rc, _ = invoke_agent(
             opencode=opencode,
             worktree=worktree,
-            agent="reviewer",
-            prompt=reviewer_prompt,
-            log_file=log_dir / "reviewer-primary.jsonl",
-            timeout=PRIMARY_REVIEWER_TIMEOUT,
+            agent="fast-fix",
+            prompt=repair_prompt,
+            log_file=log_dir / f"recovery-{attempt}-fast-fix.jsonl",
+            timeout=IMPLEMENTER_TIMEOUT,
         )
-
-        primary_approve = (
-            primary_rc == 0
-            and core.contains_verdict(primary_output, "APPROVE")
-        )
-
-        primary_request_changes = (
-            primary_rc == 0
-            and core.contains_verdict(
-                primary_output,
-                "REQUEST_CHANGES",
-            )
-        )
-
-    fallback_rc = None
-    fallback_approve = False
-    fallback_request_changes = False
-    reviewer_used = None
-
-    if primary_request_changes:
-        status.set_worker("reviewer", "error", "Changes requested", error="Primary reviewer requested changes")
-        reviewer_used = "google/gemini-3.6-flash"
-        reviewer_approve = False
-
-    elif primary_approve:
-        status.set_worker("reviewer", "idle", "Approved")
-        reviewer_used = "google/gemini-3.6-flash"
-        reviewer_approve = True
-
-    else:
-        status.set_worker("reviewer", "waiting", "Unavailable or non-decisive")
-        status.handoff("reviewer", "reviewer-fallback", "Fallback review activated")
-        status.set_worker("reviewer-fallback", "active", "Independent fallback review")
-        print(
-            "      Primary reviewer unavailable/non-decisive; "
-            "using fallback."
-        )
-
-        fallback_rc, fallback_output = invoke_agent(
-            opencode=opencode,
-            worktree=worktree,
-            agent="reviewer-fallback",
-            prompt=reviewer_prompt,
-            log_file=log_dir / "reviewer-fallback.jsonl",
-            timeout=FALLBACK_REVIEWER_TIMEOUT,
-        )
-
-        fallback_approve = (
-            fallback_rc == 0
-            and core.contains_verdict(
-                fallback_output,
-                "APPROVE",
-            )
-        )
-
-        fallback_request_changes = (
-            fallback_rc == 0
-            and core.contains_verdict(
-                fallback_output,
-                "REQUEST_CHANGES",
-            )
-        )
-
-        reviewer_used = (
-            "cloudflare-workers-ai/"
-            "@cf/nvidia/nemotron-3-120b-a12b"
-        )
-
-        reviewer_approve = fallback_approve
         status.set_worker(
-            "reviewer-fallback",
-            "idle" if fallback_approve else "error",
-            "Approved" if fallback_approve else "Fallback review rejected change",
-            error=None if fallback_approve else "Fallback reviewer did not approve",
+            "fast-fix",
+            "idle" if impl_rc == 0 else "error",
+            "Recovery candidate returned" if impl_rc == 0 else "Recovery worker failed",
+            error=None if impl_rc == 0 else f"Fast-Fix exited with code {impl_rc}",
         )
-
-    print(
-        f"[5/5] Reviewer: {reviewer_used}; "
-        f"APPROVE={reviewer_approve}"
-    )
-
-    final_pass = reviewer_approve
-    status.gate(
-        "Independent review",
-        "pass" if final_pass else "fail",
-        f"{reviewer_used or 'No reviewer'}: " + ("APPROVE" if final_pass else "NOT APPROVED"),
-    )
-
-    result = {
-        "task_id": task_id,
-        "branch": branch,
-        "worktree": str(worktree),
-        "logs": str(log_dir),
-        "governance_references": governance_references,
-        "reference_package": reference_package,
-        "worker": ticket["worker"],
-        "implementation_exit_code": impl_rc,
-        "validation": validation,
-        "tester_exit_code": tester_rc,
-        "tester_pass": tester_pass,
-        "reviewer_primary_exit_code": primary_rc,
-        "reviewer_primary_approve": primary_approve,
-        "reviewer_primary_request_changes": primary_request_changes,
-        "reviewer_fallback_exit_code": fallback_rc,
-        "reviewer_fallback_approve": fallback_approve,
-        "reviewer_fallback_request_changes": fallback_request_changes,
-        "reviewer_used": reviewer_used,
-        "reviewer_approve": reviewer_approve,
-        "final_verdict": "PASS" if final_pass else "FAIL",
-        "commit_created": False,
-        "merge_performed": False,
-    }
-
-    save_result(log_dir, result)
-
-    print()
-    print("========================================")
-    print("TICKET RESULT")
-    print("========================================")
-    print(json.dumps(result, indent=2))
-    print("========================================")
-
-    if final_pass:
-        status.finish(True, "Ticket passed all local gates")
-        print(
-            "\nPASS: ticket passed all gates. "
-            "No commit or merge was performed."
-        )
-        return 0
-
-    status.finish(False, "Ticket failed independent review")
-    print(
-        "\nFAIL: reviewer gate rejected the ticket. "
-        "No commit or merge was performed."
-    )
-    return 12
+        recovery_attempts.append({
+            "attempt": attempt,
+            "failure_class": failure["class"],
+            "diagnostic": failure["detail"],
+            "corrective_action": plan["corrective_action"],
+            "fast_fix_exit_code": impl_rc,
+        })
 
 
-def run_ticket(ticket_path: Path) -> int:
+def run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     try:
-        return _run_ticket(ticket_path)
-    except SystemExit:
+        return _run_ticket(ticket_path, recovery_effort)
+    except SystemExit as exc:
         if ACTIVE_STATUS is not None:
-            ACTIVE_STATUS.fail_system("Ticket runner stopped before completion")
+            try:
+                code = int(exc.code)
+            except (TypeError, ValueError):
+                code = 1
+            failure = recovery_policy.hard_stop_for_exit(code)
+            ACTIVE_STATUS.fail_system(
+                "Ticket runner stopped before completion",
+                detail=failure["detail"],
+                failure_class=failure["class"],
+                required_action=failure["required_action"],
+            )
         raise
-    except Exception:
+    except Exception as exc:
         if ACTIVE_STATUS is not None:
-            ACTIVE_STATUS.fail_system("Unexpected ticket-runner failure")
+            ACTIVE_STATUS.fail_system(
+                "Unexpected ticket-runner failure",
+                detail="The deterministic runner encountered an internal error and stopped fail-closed.",
+                failure_class="internal_runner_failure",
+                required_action="Review the local ticket traceback; do not retry autonomously.",
+            )
         raise
 
 
@@ -942,9 +1232,15 @@ def main() -> int:
         type=Path,
         help="Path to a ticket JSON file",
     )
+    parser.add_argument(
+        "--recovery-effort",
+        choices=("low", "medium", "high"),
+        default=None,
+        help="Enable at most two Sol-planned scoped repair attempts.",
+    )
 
     args = parser.parse_args()
-    return run_ticket(args.ticket.resolve())
+    return run_ticket(args.ticket.resolve(), args.recovery_effort)
 
 
 if __name__ == "__main__":

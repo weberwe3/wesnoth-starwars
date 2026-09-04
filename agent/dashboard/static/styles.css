@@ -147,6 +147,9 @@ h2 { margin-bottom: 0; font-size: clamp(1.05rem, 1.6vw, 1.35rem); letter-spacing
 .activity-log li.level-warning { border-left-color: var(--amber); }
 .activity-log li.error { padding: 0; border-color: rgba(255,107,117,.65); box-shadow: 0 0 18px rgba(255,107,117,.12); }
 .activity-log time { display: block; color: var(--muted); font-size: .67rem; font-variant-numeric: tabular-nums; }
+.event-meta { display: flex; flex-wrap: wrap; gap: .35rem; }
+.recovery-badge, .failure-class { width: fit-content; padding: .16rem .4rem; border: 1px solid rgba(255,190,92,.4); border-radius: 999px; color: var(--amber); background: rgba(255,190,92,.08); font-size: .62rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.failure-class { border-color: rgba(123,213,255,.3); color: var(--cyan); background: rgba(123,213,255,.06); }
 .error-activity { width: 100%; display: grid; gap: .18rem; padding: .65rem .75rem; border: 0; border-radius: inherit; color: var(--text); background: rgba(255,107,117,.07); font: inherit; text-align: left; cursor: pointer; }
 .error-activity:hover { background: rgba(255,107,117,.13); }
 .empty { color: var(--muted); border-color: var(--line) !important; }
@@ -178,6 +181,7 @@ h2 { margin-bottom: 0; font-size: clamp(1.05rem, 1.6vw, 1.35rem); letter-spacing
 .dialog-close { width: 2rem; height: 2rem; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: var(--surface-2); font-size: 1.2rem; cursor: pointer; }
 .error-dialog > p:not(.eyebrow) { color: var(--muted); line-height: 1.5; }
 .error-dialog pre { max-height: 18rem; overflow: auto; padding: .8rem; border: 1px solid var(--line); border-radius: 9px; color: #ffc4c8; background: #080c13; white-space: pre-wrap; overflow-wrap: anywhere; }
+.error-dialog h3 { margin: 1rem 0 .25rem; color: var(--text); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
 .noscript { margin: 1rem; padding: 1rem; background: #30161a; color: #fff; }
 @keyframes active-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(82,230,154,.12), inset 0 0 16px rgba(82,230,154,.05); } 50% { box-shadow: 0 0 0 8px rgba(82,230,154,0), 0 0 22px rgba(82,230,154,.28); } }
 @keyframes packet { from { transform: translateY(0); } to { transform: translateY(8rem); } }

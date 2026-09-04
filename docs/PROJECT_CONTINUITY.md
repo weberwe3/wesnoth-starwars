@@ -6,8 +6,8 @@
 **Primary branch:** `main`<br>
 **Last continuity refresh:** 2026-09-04 during autonomous queue governance design<br>
 **Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`<br>
-**Active infrastructure ticket:** governance design for continuous automation and per-ticket approval<br>
-**Next intended game-development ticket:** `ENGINE-002`
+**Active infrastructure ticket:** DASH-005 bounded autonomous error recovery<br>
+**Next intended game-development ticket:** reconcile open `ENGINE-002` PR #15 before new overlapping work
 
 ---
 
@@ -314,7 +314,7 @@ The deterministic coordinator, not the worker LLM, executes tests and records ac
 
 Routing used during the infrastructure baseline:
 
-- implementer: `groq/openai/gpt-oss-120b`
+- implementer: `groq/openai/gpt-oss-120b`, with one `gpt-5.6-terra` medium fallback after primary Implementer process failure
 - fast-fix: `opencode/ling-3.0-flash-fin-free`
 - tester: `cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash`
 - primary reviewer: `google/gemini-3.6-flash`
@@ -940,12 +940,16 @@ When updating this file:
 | 2026-09-03 | INFRA-003 / Issue #5 | Living project continuity ledger initiated; intended to become persistent handoff state |
 | 2026-09-03 | DASH-001 / PR #9 | Local structured-telemetry Agent Manager dashboard and secure-launcher companion entry point merged |
 | 2026-09-04 | DASH-002 / PR #16 | Coordinator mode control and one-ticket governed Sol handoff merged |
-| 2026-09-04 | Continuous automation governance (proposed) | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
+| 2026-09-04 | Continuous automation governance / PR #17 | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
+| 2026-09-04 | DASH-004 / PR #18 | Autonomous scheduling toggle, planned-ticket picker, local approval queue, exact-commit publication pipeline, and deletion manifest gate merged |
+| 2026-09-04 | Bounded error-recovery governance (proposed) | Permit no more than two scoped coordinator repair attempts for eligible implementation/gate errors; retain immediate hard stops for security, approval, repository hygiene, and publication failures |
+| 2026-09-04 | Implementer provider fallback (proposed) | Keep GPT-OSS 120B primary and permit exactly one sandboxed GPT-5.6 Terra medium fallback after primary Implementer failure; failure of both providers hard-stops without consuming code-recovery attempts |
+| 2026-09-04 | DASH-005 (local feature branch) | Added structured failure diagnostics, open-PR/branch planning context, and a strict two-attempt Sol-planned/Fast-Fix recovery loop pending review and publication |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, the project has completed the infrastructure/reference foundation needed for controlled AI-assisted development and has one minimal Wesnoth add-on foundation milestone (`ENGINE-001`). The next development priority is to begin real game execution with `ENGINE-002`, registering a minimal campaign and first launchable scenario, then strengthening engine-backed scenario validation.
+At this snapshot, the project has completed the infrastructure/reference foundation and local autonomous Agent Manager needed for controlled AI-assisted development. `ENGINE-002` is implemented on open PR #15 but is not part of protected `main`; reconcile that PR before planning duplicate campaign-registration work. The immediate orchestration priority is bounded, structured error recovery with a two-attempt ceiling and precise safe diagnostics.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.
