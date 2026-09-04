@@ -25,6 +25,7 @@ TESTER_TIMEOUT = 180
 PRIMARY_REVIEWER_TIMEOUT = 75
 FALLBACK_REVIEWER_TIMEOUT = 180
 RECOVERY_PLANNER_TIMEOUT = 300
+TERRA_IMPLEMENTER_TIMEOUT = 600
 
 VALID_WORKERS = {"implementer", "fast-fix"}
 VALID_PROFILES = {"static-text", "wesnoth-addon-static"}
@@ -116,6 +117,44 @@ def invoke_agent(
 
     log_file.write_text(output)
     return rc, output
+
+
+def invoke_terra_implementer(
+    *, worktree: Path, prompt: str, log_file: Path
+) -> tuple[int, str]:
+    """Run the single sandboxed Terra Medium Implementer fallback."""
+
+    executable = shutil.which("codex") or shutil.which("codex.exe")
+    if not executable:
+        return 127, "Codex Terra fallback is unavailable."
+    windows_binary = executable.lower().endswith(".exe")
+    command = [
+        executable, "exec", "-C", _codex_path(worktree, windows_binary),
+        "-s", "workspace-write", "-m", "gpt-5.6-terra",
+        "-c", 'model_reasoning_effort="medium"',
+        "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
+        "--color", "never", "-",
+    ]
+    environment = {
+        key: value for key, value in core.make_test_env().items()
+        if not re.search(
+            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
+            key, re.IGNORECASE,
+        )
+    }
+    try:
+        completed = subprocess.run(
+            command, cwd=worktree, env=environment, input=prompt, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            timeout=TERRA_IMPLEMENTER_TIMEOUT, check=False,
+        )
+        output = completed.stdout or ""
+        log_file.write_text(output, encoding="utf-8")
+        return completed.returncode, output
+    except subprocess.TimeoutExpired as exc:
+        output = str(exc.stdout or "") + "\n[COORDINATOR] TERRA FALLBACK TIMEOUT\n"
+        log_file.write_text(output, encoding="utf-8")
+        return 124, output
 
 
 def load_ticket(path: Path) -> dict:
@@ -905,6 +944,34 @@ Return your normal structured implementation report.
         timeout=IMPLEMENTER_TIMEOUT,
     )
 
+    primary_impl_rc = impl_rc
+    terra_fallback = {
+        "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
+        "reasoning_effort": "medium", "exit_code": None,
+    }
+    if recovery_policy.should_use_terra_fallback(ticket["worker"], impl_rc, False):
+        terra_fallback["used"] = True
+        status.handoff("coordinator", "implementer", "GPT-OSS to Terra Medium fallback")
+        status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
+        status.set_worker("implementer", "active", "Running single Terra fallback")
+        terra_prompt = implementation_prompt.replace(
+            "Do not execute commands or tests.",
+            "You may use read-only inspection commands and apply patches. Do not run tests, "
+            "package managers, network commands, or Git write commands.",
+        )
+        terra_rc, _ = invoke_terra_implementer(
+            worktree=worktree,
+            prompt=terra_prompt,
+            log_file=log_dir / "implementer-terra-fallback.txt",
+        )
+        terra_fallback["exit_code"] = terra_rc
+        impl_rc = 0 if terra_rc == 0 else recovery_policy.TERRA_FALLBACK_FAILURE
+        status.set_worker(
+            "implementer", "idle" if terra_rc == 0 else "error",
+            "Terra fallback returned" if terra_rc == 0 else "Terra fallback failed",
+            error=None if terra_rc == 0 else f"Terra exited with code {terra_rc}",
+        )
+
     print(f"[2/5] Implementation exit code: {impl_rc}")
     status.set_worker(
         ticket["worker"],
@@ -943,6 +1010,8 @@ Return your normal structured implementation report.
                 "reference_package": reference_package,
                 "worker": ticket["worker"],
                 "implementation_exit_code": impl_rc,
+                "primary_implementation_exit_code": primary_impl_rc,
+                "terra_implementer_fallback": terra_fallback,
                 **{key: value for key, value in evaluation.items() if key not in {"pass", "exit_code"}},
                 "recovery_attempts": recovery_attempts,
                 "final_verdict": "PASS",
@@ -972,6 +1041,8 @@ Return your normal structured implementation report.
                 "reference_package": reference_package,
                 "worker": ticket["worker"],
                 "implementation_exit_code": impl_rc,
+                "primary_implementation_exit_code": primary_impl_rc,
+                "terra_implementer_fallback": terra_fallback,
                 **{key: value for key, value in evaluation.items() if key not in {"pass", "exit_code"}},
                 "failure": failure,
                 "recovery_attempts": recovery_attempts,
@@ -1027,7 +1098,10 @@ Return your normal structured implementation report.
                 "task_id": task_id, "branch": branch, "worktree": str(worktree),
                 "logs": str(log_dir), "governance_references": governance_references,
                 "reference_package": reference_package, "worker": ticket["worker"],
-                "implementation_exit_code": impl_rc, **evaluation,
+                "implementation_exit_code": impl_rc,
+                "primary_implementation_exit_code": primary_impl_rc,
+                "terra_implementer_fallback": terra_fallback,
+                **evaluation,
                 "recovery_attempts": recovery_attempts, "final_verdict": "FAIL",
                 "commit_created": False, "merge_performed": False,
             }
@@ -1047,7 +1121,10 @@ Return your normal structured implementation report.
                 "task_id": task_id, "branch": branch, "worktree": str(worktree),
                 "logs": str(log_dir), "governance_references": governance_references,
                 "reference_package": reference_package, "worker": ticket["worker"],
-                "implementation_exit_code": impl_rc, **evaluation,
+                "implementation_exit_code": impl_rc,
+                "primary_implementation_exit_code": primary_impl_rc,
+                "terra_implementer_fallback": terra_fallback,
+                **evaluation,
                 "recovery_attempts": recovery_attempts, "final_verdict": "FAIL",
                 "commit_created": False, "merge_performed": False,
             }

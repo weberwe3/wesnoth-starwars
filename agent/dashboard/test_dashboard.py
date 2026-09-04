@@ -69,6 +69,15 @@ class RuntimeStatusTests(unittest.TestCase):
             self.assertEqual(event["recovery_limit"], 2)
             self.assertEqual(event["required_action"], "Correct the scoped file")
 
+    def test_runtime_can_publish_exact_fallback_assignment(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "agent" / "runtime" / "state.json"
+            status = RuntimeStatus(path)
+            status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
+            state = public_state(json.loads(path.read_text(encoding="utf-8")))
+            self.assertEqual(state["workers"]["implementer"]["provider"], "OpenAI")
+            self.assertEqual(state["workers"]["implementer"]["model"], "GPT-5.6 Terra · Medium")
+
     def test_public_state_drops_unknown_and_marks_stale_running_job(self) -> None:
         state = default_state(ROOT)
         state["secret"] = "must-not-escape"
@@ -158,6 +167,20 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertFalse(recovery_policy.can_attempt(2, eligible, True))
         self.assertFalse(recovery_policy.can_attempt(0, eligible, False))
         self.assertFalse(recovery_policy.can_attempt(0, {"eligible": False}, True))
+
+    def test_terra_fallback_is_single_and_implementer_only(self) -> None:
+        self.assertTrue(recovery_policy.should_use_terra_fallback("implementer", 1, False))
+        self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 1, True))
+        self.assertFalse(recovery_policy.should_use_terra_fallback("fast-fix", 1, False))
+        self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 0, False))
+
+    def test_failed_terra_fallback_is_not_recoverable(self) -> None:
+        failure = recovery_policy.classify_validation(
+            {"scope": {"changed_paths": ["addons/example.cfg"]}, "static": {"checks": []}},
+            recovery_policy.TERRA_FALLBACK_FAILURE,
+        )
+        self.assertEqual(failure["class"], "implementer_fallback_failure")
+        self.assertFalse(failure["eligible"])
 
     def test_repository_hygiene_is_immediate_hard_stop(self) -> None:
         failure = recovery_policy.hard_stop_for_exit(2)

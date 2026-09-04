@@ -240,6 +240,16 @@ class RuntimeStatus:
             self.state["job"]["stage"] = role
         self._write()
 
+    def set_assignment(self, role: str, provider: str, model: str) -> None:
+        """Publish the exact active assignment without exposing configuration."""
+
+        self.state["workers"][role].update({
+            "provider": provider[:80],
+            "model": model[:160],
+            "assignment_error": False,
+        })
+        self._write()
+
     def handoff(self, source: str, target: str, message: str) -> None:
         at = _utc_now()
         self.state["active_transfer"] = {

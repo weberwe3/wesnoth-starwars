@@ -38,6 +38,11 @@ ID and allowlisted recovery effort, derives all paths itself, and publishes a
 numeric result plus a bounded secret-free failure diagnostic. The resulting work occurs in the normal isolated worktree and passes
 through deterministic validation, tester, and reviewer gates.
 
+GPT-OSS 120B remains the primary Implementer. If that process fails, the
+runner makes one sandboxed GPT-5.6 Terra attempt at medium reasoning and shows
+the live assignment in the Implementer card and activity log. Failure of both
+providers stops the ticket without starting an unbounded retry cycle.
+
 The green **Automation** switch lets the selected Sol effort plan another
 bounded ticket after each safe completion. Turning it off prevents the next
 ticket from starting; it does not interrupt an active gate mid-operation.

@@ -185,7 +185,7 @@ Baseline routing:
 
 | Role | Provider / model | Purpose |
 |---|---|---|
-| Implementer | Groq - `groq/openai/gpt-oss-120b` | Main bounded implementation work |
+| Implementer | Groq - `groq/openai/gpt-oss-120b`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Main bounded implementation work |
 | Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free` | Small mechanical corrections |
 | Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash` | Independent read-only test evaluation |
 | Primary reviewer | Google - `google/gemini-3.6-flash` | Independent review when quota is available |
@@ -196,6 +196,8 @@ Routing is policy, not permanence. Models may change if availability, capability
 Known provider observations:
 
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
+- When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
+- A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
 - Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out.
 - A primary reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
@@ -226,6 +228,8 @@ Security rules:
 - protected coordinator/config/reference paths are denied unless the ticket explicitly authorizes architecture/documentation maintenance;
 - tester/reviewer roles are read-only;
 - deterministic test execution belongs to Python, not the LLM worker.
+
+The Terra Implementer fallback is a narrowly authorized exception to the OpenCode worker tool profile. Codex runs with its `workspace-write` sandbox, no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Deterministic scope and protected-path gates remain authoritative immediately after it returns; sandbox access never grants publication or governance authority.
 
 Tool denial is an application-level security boundary. It is not claimed to be equivalent to a separately virtualized OS sandbox.
 

@@ -22,13 +22,13 @@
       "id": "agent_orchestration_functional_spec",
       "canonical_markdown": {
         "path": "docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md",
-        "sha256": "5bd13ffe02e7a4e4839df568cd8733c386a69ef2493929ba429079259aa36088",
-        "bytes": 33598
+        "sha256": "710e17fecaefe273d16fa93d65314b2a9868fb19f697c8290245a9a30329b178",
+        "bytes": 34780
       },
       "human_archive": {
         "path": "docs/reference-source/Wesnoth_Agent_Development_Functional_Specification.docx",
-        "sha256": "a653f88fca4627620a2abe788c97533be71e386ea8e589424f4eb25575af6baf",
-        "bytes": 51831
+        "sha256": "d808ada567cd9545ec6d7c3290a7bb7a68edc38e56eef73a36873ce2dd870082",
+        "bytes": 52247
       },
       "required_for_all_agents": true
     }

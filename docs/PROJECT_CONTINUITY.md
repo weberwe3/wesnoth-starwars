@@ -314,7 +314,7 @@ The deterministic coordinator, not the worker LLM, executes tests and records ac
 
 Routing used during the infrastructure baseline:
 
-- implementer: `groq/openai/gpt-oss-120b`
+- implementer: `groq/openai/gpt-oss-120b`, with one `gpt-5.6-terra` medium fallback after primary Implementer process failure
 - fast-fix: `opencode/ling-3.0-flash-fin-free`
 - tester: `cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash`
 - primary reviewer: `google/gemini-3.6-flash`
@@ -943,6 +943,7 @@ When updating this file:
 | 2026-09-04 | Continuous automation governance / PR #17 | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
 | 2026-09-04 | DASH-004 / PR #18 | Autonomous scheduling toggle, planned-ticket picker, local approval queue, exact-commit publication pipeline, and deletion manifest gate merged |
 | 2026-09-04 | Bounded error-recovery governance (proposed) | Permit no more than two scoped coordinator repair attempts for eligible implementation/gate errors; retain immediate hard stops for security, approval, repository hygiene, and publication failures |
+| 2026-09-04 | Implementer provider fallback (proposed) | Keep GPT-OSS 120B primary and permit exactly one sandboxed GPT-5.6 Terra medium fallback after primary Implementer failure; failure of both providers hard-stops without consuming code-recovery attempts |
 | 2026-09-04 | DASH-005 (local feature branch) | Added structured failure diagnostics, open-PR/branch planning context, and a strict two-attempt Sol-planned/Fast-Fix recovery loop pending review and publication |
 
 ---

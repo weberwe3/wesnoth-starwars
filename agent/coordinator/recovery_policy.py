@@ -9,6 +9,7 @@ from typing import Any
 
 
 MAX_RECOVERY_ATTEMPTS = 2
+TERRA_FALLBACK_FAILURE = 86
 _SENSITIVE = re.compile(
     r"(?i)(api[_-]?key|token|secret|password|credential|private[_-]?key)"
     r"\s*[\"']?\s*[:=]\s*[\"']?[^\"'\s,;]+"
@@ -37,6 +38,12 @@ def can_attempt(attempts_used: int, failure: dict[str, Any], enabled: bool) -> b
         and failure.get("eligible") is True
         and 0 <= attempts_used < MAX_RECOVERY_ATTEMPTS
     )
+
+
+def should_use_terra_fallback(worker: str, return_code: int, used: bool) -> bool:
+    """Allow one Terra fallback only for a failed primary Implementer call."""
+
+    return worker == "implementer" and return_code != 0 and not used
 
 
 def model_finding(output: str, fallback: str) -> str:
@@ -96,6 +103,13 @@ def classify_validation(validation: dict[str, Any], implementer_rc: int) -> dict
         )
 
     changed = scope.get("changed_paths") or []
+    if implementer_rc == TERRA_FALLBACK_FAILURE:
+        return _failure(
+            "implementer_fallback_failure",
+            "Both the primary Implementer and its single Terra Medium fallback failed.",
+            "Check Codex and Groq availability before starting another ticket.",
+            eligible=False,
+        )
     if implementer_rc != 0 and not changed:
         return _failure(
             "provider_or_worker_failure",
