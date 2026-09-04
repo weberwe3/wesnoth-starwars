@@ -50,6 +50,10 @@ def default_control_state() -> dict[str, Any]:
         "schema_version": 1,
         "updated_at": utc_now(),
         "mode": "deterministic",
+        "automation": {
+            "enabled": False,
+            "brief": "Select the next safe, documented project priority.",
+        },
         "run": {
             "state": "idle",
             "run_id": None,
@@ -81,6 +85,7 @@ class ControlStore:
                     "completed_at": utc_now(),
                     "error": "Dashboard restarted during the prior run",
                 })
+                state["automation"]["enabled"] = False
                 self._write(state)
 
     def read(self) -> dict[str, Any]:
@@ -127,13 +132,24 @@ class ControlStore:
         if not isinstance(run, dict):
             run = fallback["run"]
         valid_states = {
-            "idle", "planning", "executing", "passed", "failed", "interrupted"
+            "idle", "planning", "executing", "queued", "awaiting_deletion_approval",
+            "publishing", "passed", "failed", "interrupted",
         }
         state = run.get("state") if run.get("state") in valid_states else "idle"
+        automation = value.get("automation")
+        if not isinstance(automation, dict):
+            automation = fallback["automation"]
+        brief = automation.get("brief")
+        if not isinstance(brief, str) or not brief.strip() or len(brief) > 1000:
+            brief = fallback["automation"]["brief"]
         return {
             "schema_version": 1,
             "updated_at": value.get("updated_at") or fallback["updated_at"],
             "mode": value["mode"],
+            "automation": {
+                "enabled": bool(automation.get("enabled")),
+                "brief": brief,
+            },
             "run": {
                 "state": state,
                 "run_id": run.get("run_id"),

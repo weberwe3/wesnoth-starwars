@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import http.client
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import threading
@@ -18,6 +19,7 @@ from runtime_status import RuntimeStatus, default_state  # noqa: E402
 from coordination_control import ControlStore  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from autonomy import AutonomyController, ControlError  # noqa: E402
+from approval_queue import ApprovalQueue  # noqa: E402
 from server import create_server, public_state  # noqa: E402
 
 
@@ -74,28 +76,35 @@ class RuntimeStatusTests(unittest.TestCase):
 
 
 class CoordinationControlTests(unittest.TestCase):
+    @staticmethod
+    def controller(directory: str) -> AutonomyController:
+        base = Path(directory)
+        return AutonomyController(
+            ROOT,
+            ControlStore(base / "control.json"),
+            ApprovalQueue(ROOT, base / "approval-queue.json"),
+        )
+
     def test_mode_switch_is_allowlisted_and_persistent(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            store = ControlStore(Path(directory) / "control.json")
-            controller = AutonomyController(ROOT, store)
+            controller = self.controller(directory)
             controller.set_mode("sol-high")
             public = controller.public_state()
             self.assertEqual(public["mode"], "sol-high")
             self.assertEqual(public["assignment"]["model"], "GPT-5.6 Sol")
             self.assertEqual(public["assignment"]["effort"], "high")
-            self.assertFalse(public["capabilities"]["merge"])
+            self.assertTrue(public["capabilities"]["merge"])
+            self.assertFalse(public["automation"]["enabled"])
             with self.assertRaises(ControlError):
                 controller.set_mode("danger-full-access")
 
     def test_sol_ticket_cannot_target_protected_paths(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            controller = AutonomyController(
-                ROOT,
-                ControlStore(Path(directory) / "control.json"),
-            )
+            controller = self.controller(directory)
             proposal = {
                 "action": "run_ticket",
                 "summary": "Unsafe",
+                "impact": "Would modify governance",
                 "ticket": {
                     "worker": "implementer",
                     "objective": "Change governance",
@@ -106,6 +115,20 @@ class CoordinationControlTests(unittest.TestCase):
             }
             with self.assertRaises(ControlError):
                 controller._build_ticket("abc123def456", proposal)
+
+    def test_deterministic_mode_rejects_continuous_automation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            with self.assertRaises(ControlError):
+                controller.set_automation(True, "Continue safely")
+
+    def test_public_queue_drops_private_worktree_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            state = controller.public_state()
+            self.assertEqual(state["approval_queue"], [])
+            payload = json.dumps(state).lower()
+            self.assertNotIn("api_key", payload)
 
     def test_control_api_requires_same_origin_token(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -152,6 +175,50 @@ class CoordinationControlTests(unittest.TestCase):
                 server.shutdown()
                 server.server_close()
                 thread.join(timeout=2)
+
+
+class ApprovalQueueTests(unittest.TestCase):
+    @staticmethod
+    def git(cwd: Path, *args: str) -> str:
+        completed = subprocess.run(
+            ["git", *args], cwd=cwd, text=True, check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        return completed.stdout.strip()
+
+    def test_deletion_pauses_before_commit_and_binds_exact_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            root = base / "project"
+            worktrees = base / "project-worktrees"
+            root.mkdir()
+            self.git(root, "init", "-b", "main")
+            self.git(root, "config", "user.email", "test@example.invalid")
+            self.git(root, "config", "user.name", "Dashboard Test")
+            tracked = root / "obsolete.txt"
+            tracked.write_text("old\n", encoding="utf-8")
+            self.git(root, "add", "obsolete.txt")
+            self.git(root, "commit", "-m", "fixture")
+            worktree = worktrees / "delete-ticket"
+            self.git(root, "worktree", "add", "-b", "agent/delete-ticket", str(worktree), "main")
+            (worktree / "obsolete.txt").unlink()
+            queue = ApprovalQueue(root)
+            result = {
+                "task_id": "DELETE-TEST", "branch": "agent/delete-ticket",
+                "worktree": str(worktree), "final_verdict": "PASS",
+                "reviewer_used": "reviewer",
+                "validation": {"scope": {"changed_paths": ["obsolete.txt"]}},
+            }
+            self.assertEqual(queue._changes(worktree), (["obsolete.txt"], ["obsolete.txt"]))
+            record = queue.add_passed_ticket(
+                result, {"task_id": "DELETE-TEST", "objective": "Remove obsolete file"},
+                summary="Remove obsolete file", impact="The obsolete fixture is removed.",
+            )
+            self.assertEqual(record["state"], "deletion_pending")
+            self.assertEqual(self.git(worktree, "rev-parse", "HEAD"), record["base_sha"])
+            request = json.loads((root / "agent/runtime/deletion-approval-request.json").read_text())
+            self.assertEqual(request["deleted_paths"], ["obsolete.txt"])
+            self.assertEqual(len(request["manifest_digest"]), 64)
 
 
 if __name__ == "__main__":

@@ -27,8 +27,9 @@ The **Coordination authority** control offers four modes:
 - **Sol Low**, **Sol Medium**, and **Sol High** use GPT-5.6 Sol at the selected
   reasoning effort to propose one bounded ticket from the supplied brief.
 
-Selecting a Sol mode does not begin work. Enter an optional brief and choose
-**Hand off one ticket**. Sol runs in a read-only planning sandbox and returns a
+Selecting a Sol mode does not begin work. Enter an optional brief, or load an
+editable brief from the **planned ticket** menu, and choose **Hand off one
+ticket**. Sol runs in a read-only planning sandbox and returns a
 strict ticket object. Python then validates that object with the existing
 ticket schema and protected-path rules. Only after validation does the
 dashboard invoke the unchanged DPAPI secure launcher with a fixed
@@ -37,13 +38,37 @@ ID, derives all paths itself, and publishes only the ticket runner's numeric
 result. The resulting work occurs in the normal isolated worktree and passes
 through deterministic validation, tester, and reviewer gates.
 
-Each handoff stops after one ticket. It never commits, pushes, merges, changes
-GitHub protection, or modifies controlled references. A passing result is
-eligible for the existing human-authorized branch/PR workflow; it is not
-integrated automatically. Switching back to **Python** restores manual mode.
+The green **Automation** switch lets the selected Sol effort plan another
+bounded ticket after each safe completion. Turning it off prevents the next
+ticket from starting; it does not interrupt an active gate mid-operation.
+Switching back to **Python** restores the manual Python/Bash workflow.
+
+Passing tickets are committed locally and appear in the FIFO **Ticket approval
+queue**. **Approve & publish** is a single, explicit authorization bound to the
+displayed commit. The fail-closed publication pipeline verifies the clean
+candidate, pushes without force, creates or reuses a PR, waits for exact-head
+required CI, verifies protected-merge readiness, squash-merges, and
+fast-forwards local `main`. A changed commit, missing CI evidence, dirty local
+`main`, or GitHub error stops the pipeline. Controlled references remain
+available only through their dedicated governance-ticket process.
+
+Tickets that delete files pause before the local commit. The queue creates an
+exact request and manifest digest under ignored `agent/runtime/`; a Codex
+approval task can surface that request for phone notification. After the user
+explicitly approves or rejects the matching request ID and digest, the trusted
+local decision command is:
+
+```bash
+python3 agent/dashboard/deletion_approval.py approve REQUEST_ID MANIFEST_DIGEST
+# or
+python3 agent/dashboard/deletion_approval.py reject REQUEST_ID MANIFEST_DIGEST
+```
+
+The local manifest gate is authoritative. Notification delivery alone never
+approves a deletion.
 
 Control POSTs require an in-memory same-origin nonce, reject non-loopback Host
-headers and foreign Origin headers, and accept only allowlisted mode/run JSON.
+headers and foreign Origin headers, and accept only allowlisted control JSON.
 The nonce is regenerated whenever the dashboard restarts. Coordinator briefs
 are sent to Sol, so never paste credentials into that field.
 
