@@ -423,6 +423,90 @@ class CoordinationControlTests(unittest.TestCase):
                 server.server_close()
                 thread.join(timeout=2)
 
+    def test_paired_lan_client_receives_full_governed_control(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            lan_url = "http://192.168.4.88:8765"
+            lan_token = "a" * 43
+            server = create_server(
+                0, base / "state.json", base / "control.json",
+                lan_url=lan_url, lan_token=lan_token,
+            )
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+                host = f"127.0.0.1:{server.server_port}"
+                connection.request(
+                    "GET", "/api/control",
+                    headers={"Host": host, "X-Wesnoth-LAN-View": "1"},
+                )
+                response = connection.getresponse()
+                self.assertEqual(response.status, 403)
+                response.read()
+
+                lan_headers = {
+                    "Host": host,
+                    "X-Wesnoth-LAN-View": "1",
+                    "X-Wesnoth-LAN-Token": lan_token,
+                }
+                connection.request("GET", "/api/control", headers=lan_headers)
+                response = connection.getresponse()
+                control = json.loads(response.read())
+                self.assertEqual(response.status, 200)
+                self.assertTrue(control["access"]["remote"])
+                self.assertTrue(control["access"]["shutdown_available"])
+                self.assertEqual(control["access"]["lan_access_url"], "")
+                self.assertIn("csrf_token", control)
+
+                connection.request(
+                    "POST", "/api/control",
+                    body=json.dumps({"action": "set_mode", "mode": "sol-medium"}),
+                    headers={
+                        **lan_headers,
+                        "Origin": lan_url,
+                        "Content-Type": "application/json",
+                        "X-Wesnoth-CSRF": control["csrf_token"],
+                    },
+                )
+                response = connection.getresponse()
+                changed = json.loads(response.read())
+                self.assertEqual(response.status, 202)
+                self.assertEqual(changed["mode"], "sol-medium")
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
+    def test_idle_dashboard_accepts_clean_shutdown(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            server = create_server(0, base / "state.json", base / "control.json")
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+            host = f"127.0.0.1:{server.server_port}"
+            connection.request("GET", "/api/control", headers={"Host": host})
+            control = json.loads(connection.getresponse().read())
+            connection.request(
+                "POST", "/api/control", body=json.dumps({"action": "shutdown"}),
+                headers={
+                    "Host": host,
+                    "Origin": f"http://127.0.0.1:{server.server_port}",
+                    "Content-Type": "application/json",
+                    "X-Wesnoth-CSRF": control["csrf_token"],
+                },
+            )
+            response = connection.getresponse()
+            result = json.loads(response.read())
+            self.assertEqual(response.status, 202)
+            self.assertEqual(result["shutdown"], "accepted")
+            connection.close()
+            thread.join(timeout=2)
+            self.assertFalse(thread.is_alive())
+            server.server_close()
+
 
 class ApprovalQueueTests(unittest.TestCase):
     @staticmethod

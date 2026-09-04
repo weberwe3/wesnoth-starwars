@@ -17,7 +17,7 @@
         <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
         <div><p class="eyebrow">Wesnoth Star Wars</p><h1>Agent Manager</h1></div>
       </div>
-      <div class="connection"><span class="signal" id="connection-dot"></span><div><b id="connection-label">Connecting</b><small>127.0.0.1 · governed control</small></div></div>
+      <div class="connection"><span class="signal" id="connection-dot"></span><div><b id="connection-label">Connecting</b><small id="dashboard-address">127.0.0.1 · governed control</small></div></div>
     </header>
 
     <section class="mission" aria-labelledby="mission-title">
@@ -83,10 +83,16 @@
           <div class="panel-heading"><div><p class="eyebrow">System</p><h2 id="health-title">Health</h2></div><span class="health-orb" aria-hidden="true"></span></div>
           <div class="health-grid">
             <div><span>Coordinator</span><strong id="health-state">Ready</strong></div>
-            <div><span>Transport</span><strong>Local file</strong></div>
-            <div><span>Exposure</span><strong>Localhost only</strong></div>
+            <div><span>Transport</span><strong>Paired LAN</strong></div>
+            <div><span>Exposure</span><strong id="network-exposure">Starting</strong></div>
             <div><span>Secrets</span><strong>Not collected</strong></div>
+            <div class="network-address"><span>Network address</span><a id="dashboard-lan-url" href="#">Detecting…</a></div>
           </div>
+          <div class="dashboard-actions">
+            <button type="button" class="copy-lan-button" id="copy-lan-button" disabled>Copy secure device link</button>
+            <button type="button" class="exit-button" id="exit-button" disabled>Exit dashboard</button>
+          </div>
+          <p class="dashboard-action-status" id="dashboard-action-status" role="status" aria-live="polite">Dashboard controls are loading.</p>
         </section>
 
         <section class="panel" aria-labelledby="details-title">

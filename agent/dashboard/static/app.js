@@ -7,6 +7,22 @@ let controlToken = null;
 let controlBusy = false;
 let ticketCatalogReady = false;
 const plannedTickets = new Map();
+const fragmentAccess = new URLSearchParams(location.hash.slice(1)).get("access");
+const fragmentToken = fragmentAccess && /^[A-Za-z0-9_-]{32,128}$/.test(fragmentAccess) ? fragmentAccess : "";
+let storedAccess = "";
+try {
+  storedAccess = localStorage.getItem("wesnoth-dashboard-lan-token") || "";
+  if (fragmentToken) {
+    localStorage.setItem("wesnoth-dashboard-lan-token", fragmentToken);
+    storedAccess = fragmentToken;
+    history.replaceState(null, "", `${location.pathname}${location.search}`);
+  }
+} catch (_) {}
+const lanToken = fragmentToken || storedAccess;
+
+function apiHeaders(extra = {}) {
+  return lanToken ? {...extra, "X-Wesnoth-LAN-Token": lanToken} : extra;
+}
 
 function safe(value, fallback = "—") { return value == null || value === "" ? fallback : String(value); }
 function esc(value, fallback = "—") {
@@ -188,12 +204,12 @@ function updateElapsed() {
 async function refresh() {
   try {
     const [statusResponse, controlResponse] = await Promise.all([
-      fetch("/api/status", {cache: "no-store"}),
-      fetch("/api/control", {cache: "no-store"}),
+      fetch("/api/status", {cache: "no-store", headers: apiHeaders()}),
+      fetch("/api/control", {cache: "no-store", headers: apiHeaders()}),
     ]);
     if (!statusResponse.ok || !controlResponse.ok) throw new Error("Status unavailable");
     const control = await controlResponse.json();
-    controlToken = control.csrf_token;
+    controlToken = control.csrf_token || null;
     delete control.csrf_token;
     renderControl(control);
     render(await statusResponse.json());
@@ -213,6 +229,7 @@ function renderControl(control) {
   const running = ["planning", "executing", "publishing"].includes(control.run?.state);
   const bridgeOnline = control.capabilities?.secure_bridge_online;
   const automated = Boolean(control.automation?.enabled);
+  const access = control.access || {};
   if (document.activeElement !== $("coordination-brief") && !$("coordination-brief").value) {
     $("coordination-brief").value = control.automation?.brief || "";
   }
@@ -235,6 +252,20 @@ function renderControl(control) {
     : control.run?.state === "failed"
       ? "error"
       : control.run?.state === "paused" ? "warning" : "";
+  const lanUrl = access.lan_url || "";
+  const secureLanUrl = access.lan_access_url || (lanToken && lanUrl ? `${lanUrl}/#access=${lanToken}` : "");
+  $("dashboard-address").textContent = access.remote ? "LAN · governed control" : "127.0.0.1 · governed control";
+  $("network-exposure").textContent = access.lan_proxy_online ? "LAN online" : "LAN unavailable";
+  $("dashboard-lan-url").textContent = lanUrl || "Unavailable";
+  $("dashboard-lan-url").href = secureLanUrl || lanUrl || "#";
+  $("copy-lan-button").disabled = !secureLanUrl;
+  $("copy-lan-button").dataset.url = secureLanUrl;
+  $("exit-button").disabled = !access.shutdown_available || running || controlBusy || !controlToken;
+  $("dashboard-action-status").textContent = access.remote
+    ? "Secure LAN device paired. All governed controls are available."
+    : access.lan_proxy_online
+      ? "Use the secure device link to pair another computer on this network."
+      : "LAN access is not ready; localhost controls remain available.";
   renderQueue(control);
   if (snapshot) renderActivity(snapshot, control);
 }
@@ -243,21 +274,29 @@ async function controlAction(payload) {
   if (!controlToken || controlBusy) return;
   controlBusy = true;
   let errorMessage = null;
+  let shutdownAccepted = false;
   if (controlSnapshot) renderControl(controlSnapshot);
   try {
     const response = await fetch("/api/control", {
       method: "POST",
-      headers: {"Content-Type": "application/json", "X-Wesnoth-CSRF": controlToken},
+      headers: apiHeaders({"Content-Type": "application/json", "X-Wesnoth-CSRF": controlToken}),
       body: JSON.stringify(payload),
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "Control request rejected");
-    renderControl(result);
+    if (result.shutdown === "accepted") {
+      shutdownAccepted = true;
+      $("exit-button").textContent = "Shutting down…";
+      $("exit-button").disabled = true;
+      $("dashboard-action-status").textContent = "Dashboard stopped cleanly. Closing its launcher console.";
+    } else {
+      renderControl(result);
+    }
   } catch (error) {
     errorMessage = error.message;
   } finally {
     controlBusy = false;
-    if (controlSnapshot) renderControl(controlSnapshot);
+    if (controlSnapshot && !shutdownAccepted) renderControl(controlSnapshot);
     if (errorMessage) {
       $("control-state").textContent = "Control request rejected";
       $("control-summary").textContent = errorMessage;
@@ -300,6 +339,22 @@ $("activity-log").addEventListener("click", event => {
 $("mode-form").addEventListener("submit", event => {
   event.preventDefault();
   controlAction({action: "run", brief: $("coordination-brief").value});
+});
+
+$("copy-lan-button").addEventListener("click", async event => {
+  const url = event.currentTarget.dataset.url;
+  if (!url) return;
+  try {
+    await navigator.clipboard.writeText(url);
+    $("dashboard-action-status").textContent = "Secure device link copied. Open it only on a trusted device on this LAN.";
+  } catch (_) {
+    $("dashboard-action-status").textContent = "Copy failed. Open the network-address link and copy it from the address bar.";
+  }
+});
+
+$("exit-button").addEventListener("click", () => {
+  if (!confirm("Shut down this dashboard and close only its associated launcher console?")) return;
+  controlAction({action: "shutdown"});
 });
 
 loadPlannedTickets();

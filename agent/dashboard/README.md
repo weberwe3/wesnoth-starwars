@@ -13,11 +13,32 @@ bash ./agent/dashboard/start-dashboard.sh
 
 Open `http://127.0.0.1:8765`.
 
+The Windows launcher also starts a private-subnet proxy and shows the detected
+LAN address under **System health**. Use **Copy secure device link** on the local
+dashboard to pair another trusted computer on the same network. The link carries
+a random dashboard access token in its URL fragment; the browser stores it
+locally and removes it from the visible address. Unpaired LAN API requests are
+rejected. A one-time Windows UAC prompt may appear to install an inbound firewall
+rule limited to the selected private IPv4 address, TCP port 8765, the Private
+profile, and `LocalSubnet` sources. Provider credentials and environment values
+are never exposed.
+
+Paired devices receive the same governed mode, automation, ticket approval, and
+shutdown controls as localhost. All mutation requests still require the runtime
+access token, a per-process CSRF token, the expected origin, an allowlisted JSON
+action, and the existing deterministic controller gates.
+
 The start script records the Git commit loaded by the dashboard process. When
 the repository advances, the launcher replaces an idle stale process with the
 current code. It refuses to interrupt active planning, execution, or
 publication work, and it reports success only after the localhost health check
 passes.
+
+**Exit dashboard** is available on localhost and paired LAN devices. It refuses
+to interrupt planning, ticket execution, or publication. When idle or at another
+safe stopping state, it closes the HTTP server, removes its PID/version/session
+files, stops the LAN proxy, and signals only the matching Windows launcher CMD
+process tree to close. It does not target unrelated consoles or WSL processes.
 
 For the Windows startup workflow, use `Start-WesnothAgentEnvironment.cmd`.
 It starts a hidden native Windows control bridge, starts the dashboard, and
