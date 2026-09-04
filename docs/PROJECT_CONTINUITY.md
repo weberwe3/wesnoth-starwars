@@ -709,9 +709,11 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 - `ticket_runner.py` currently does not automatically retry a failed implementation attempt; retry handling exists as a concept but is not a completed general mechanism.
 - OpenCode Web is a session UI, not the deterministic project dashboard.
 - DASH-001 covers live ticket status, gates, routing, role/model assignments,
-  and recent activity. Diff browsing, retry controls, PR status, and merge
-  controls remain intentionally deferred; the dashboard has no execution
-  authority.
+  and recent activity. DASH-002 adds a narrowly scoped execution control:
+  Python/manual coordination or a GPT-5.6 Sol low/medium/high planning pass may
+  initiate exactly one schema-validated deterministic ticket. Diff browsing,
+  general command execution, PR status, commit, push, and merge controls remain
+  intentionally unavailable.
 - `OPENCODE_SERVER_PASSWORD` hardening would matter if OpenCode Web is intentionally exposed/used.
 - The exact model-provider mix can change; keep routing policy bounded and fail-closed.
 - Installed-Wesnoth validation remains local rather than GitHub Actions because CI does not replace the local engine environment.
@@ -733,9 +735,10 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 - reference provenance;
 - continuity-ledger work initiated by INFRA-003.
 
-**In progress on the DASH-001 feature branch:**
+**DASH-001 merged; DASH-002 in progress on a feature branch:**
 
-- a localhost-only, read-only Agent Manager web dashboard;
+- a localhost-only Agent Manager web dashboard with same-origin protected,
+  allowlisted coordinator-mode controls;
 - structured coordinator telemetry rather than log scraping;
 - live role, provider, configured model, ticket, stage, elapsed-time, gate,
   routing/fallback, activity, error, and health views;
@@ -743,6 +746,10 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
   then delegates credential handling unchanged to the existing secure launcher;
 - responsive, accessible control-console presentation with reduced-motion
   support and no external runtime dependencies.
+- a bounded Sol handoff that uses read-only planning, strict JSON output,
+  protected-path rejection, a native Windows run-ID bridge, the unchanged
+  existing DPAPI launcher, and the existing deterministic ticket runner; each
+  run stops before commit, push, or merge.
 
 The DPAPI-backed secure launcher remains unmodified. This preserves the rule
 that feature work must not alter credential storage or credential-forwarding
@@ -922,7 +929,8 @@ When updating this file:
 | 2026-09-03 | INFRA-001 / PR #2 | GitHub governance, mandatory LLM references, hashing, protected paths, CI, branch protection merged |
 | 2026-09-03 | INFRA-002 / PR #4 | Controlled Markdown/DOCX reference package, manifest provenance, package validator/self-test merged |
 | 2026-09-03 | INFRA-003 / Issue #5 | Living project continuity ledger initiated; intended to become persistent handoff state |
-| 2026-09-03 | DASH-001 (in progress) | Local structured-telemetry Agent Manager dashboard and secure-launcher companion entry point implemented on a feature branch |
+| 2026-09-03 | DASH-001 / PR #9 | Local structured-telemetry Agent Manager dashboard and secure-launcher companion entry point merged |
+| 2026-09-04 | DASH-002 (in progress) | Coordinator mode control and one-ticket governed Sol handoff implemented on an isolated feature branch |
 
 ---
 

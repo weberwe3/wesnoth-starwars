@@ -17,7 +17,7 @@
         <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
         <div><p class="eyebrow">Wesnoth Star Wars</p><h1>Agent Manager</h1></div>
       </div>
-      <div class="connection"><span class="signal" id="connection-dot"></span><div><b id="connection-label">Connecting</b><small>127.0.0.1 · read-only</small></div></div>
+      <div class="connection"><span class="signal" id="connection-dot"></span><div><b id="connection-label">Connecting</b><small>127.0.0.1 · governed control</small></div></div>
     </header>
 
     <section class="mission" aria-labelledby="mission-title">
@@ -31,6 +31,33 @@
         <div><span>Elapsed</span><strong class="tabular" id="elapsed">00:00:00</strong></div>
         <div><span>Stage</span><strong id="job-stage">Coordinator</strong></div>
       </div>
+    </section>
+
+    <section class="panel coordination-panel" aria-labelledby="coordination-title">
+      <div class="coordination-copy">
+        <p class="eyebrow">Coordination authority</p>
+        <h2 id="coordination-title">Choose how the next ticket begins</h2>
+        <p>Python remains the enforcement layer. Sol may select and initiate one bounded ticket; commit, push, and merge stay disabled.</p>
+      </div>
+      <form id="mode-form" class="mode-form">
+        <fieldset>
+          <legend>Coordinator mode</legend>
+          <div class="mode-switch">
+            <label><input type="radio" name="mode" value="deterministic"><span>Python</span></label>
+            <label><input type="radio" name="mode" value="sol-low"><span>Sol Low</span></label>
+            <label><input type="radio" name="mode" value="sol-medium"><span>Sol Medium</span></label>
+            <label><input type="radio" name="mode" value="sol-high"><span>Sol High</span></label>
+          </div>
+        </fieldset>
+        <label class="brief-field" for="coordination-brief">
+          <span>Coordinator brief <small>Never paste credentials</small></span>
+          <textarea id="coordination-brief" maxlength="1000" rows="2" placeholder="Select the next safe priority from project continuity."></textarea>
+        </label>
+        <div class="control-actions">
+          <button class="handoff-button" id="handoff-button" type="submit">Hand off one ticket</button>
+          <div class="control-state" role="status" aria-live="polite"><span id="control-state-dot"></span><strong id="control-state">Loading control state</strong><small id="control-summary"></small></div>
+        </div>
+      </form>
     </section>
 
     <div class="dashboard-grid">

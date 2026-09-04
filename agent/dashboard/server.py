@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Localhost-only, read-only status dashboard server."""
+"""Localhost-only status and governed coordination dashboard server."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import secrets
 import sys
 from urllib.parse import urlsplit
 
@@ -19,7 +20,9 @@ ROOT = HERE.parents[1]
 STATIC = HERE / "static"
 sys.path.insert(0, str(ROOT / "agent" / "coordinator"))
 
+from coordination_control import ControlStore, control_state_path  # noqa: E402
 from runtime_status import default_state, runtime_status_path  # noqa: E402
+from autonomy import AutonomyController, ControlError  # noqa: E402
 
 
 def public_state(state: object) -> dict:
@@ -86,7 +89,7 @@ def public_state(state: object) -> dict:
 
 
 class DashboardHandler(SimpleHTTPRequestHandler):
-    server_version = "WesnothDashboard/1"
+    server_version = "WesnothDashboard/2"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(STATIC), **kwargs)
@@ -104,11 +107,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self) -> None:  # noqa: N802
-        allowed_hosts = {
-            f"127.0.0.1:{self.server.server_port}",  # type: ignore[attr-defined]
-            "127.0.0.1",
-        }
-        if self.headers.get("Host", "") not in allowed_hosts:
+        if not self._valid_host():
             self.send_error(HTTPStatus.BAD_REQUEST, "Invalid host")
             return
         path = urlsplit(self.path).path
@@ -118,9 +117,71 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         if path == "/healthz":
             self._json({"ok": True, "bind": "127.0.0.1"})
             return
+        if path == "/api/control":
+            state = self.server.controller.public_state()  # type: ignore[attr-defined]
+            state["csrf_token"] = self.server.csrf_token  # type: ignore[attr-defined]
+            self._json(state)
+            return
         if path == "/":
             self.path = "/index.html"
         super().do_GET()
+
+    def do_POST(self) -> None:  # noqa: N802
+        if not self._valid_host():
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid host")
+            return
+        if urlsplit(self.path).path != "/api/control":
+            self.send_error(HTTPStatus.NOT_FOUND)
+            return
+        expected_origin = f"http://127.0.0.1:{self.server.server_port}"  # type: ignore[attr-defined]
+        if self.headers.get("Origin") != expected_origin:
+            self._json({"error": "Invalid origin"}, HTTPStatus.FORBIDDEN)
+            return
+        if not secrets.compare_digest(
+            self.headers.get("X-Wesnoth-CSRF", ""),
+            self.server.csrf_token,  # type: ignore[attr-defined]
+        ):
+            self._json({"error": "Invalid control token"}, HTTPStatus.FORBIDDEN)
+            return
+        if self.headers.get_content_type() != "application/json":
+            self._json({"error": "JSON required"}, HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            length = -1
+        if length < 2 or length > 4096:
+            self._json({"error": "Invalid request size"}, HTTPStatus.BAD_REQUEST)
+            return
+        try:
+            data = json.loads(self.rfile.read(length))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self._json({"error": "Invalid JSON"}, HTTPStatus.BAD_REQUEST)
+            return
+        if not isinstance(data, dict):
+            self._json({"error": "JSON object required"}, HTTPStatus.BAD_REQUEST)
+            return
+        controller = self.server.controller  # type: ignore[attr-defined]
+        try:
+            if data.get("action") == "set_mode" and set(data) == {"action", "mode"}:
+                controller.set_mode(data.get("mode"))
+            elif data.get("action") == "run" and set(data) == {"action", "brief"}:
+                controller.start(data.get("brief") if isinstance(data.get("brief"), str) else "")
+            else:
+                raise ControlError("Unsupported control action")
+        except ControlError as exc:
+            self._json({"error": str(exc)}, HTTPStatus.CONFLICT)
+            return
+        self._json(controller.public_state(), HTTPStatus.ACCEPTED)
+
+    def do_OPTIONS(self) -> None:  # noqa: N802
+        self.send_error(HTTPStatus.METHOD_NOT_ALLOWED)
+
+    def _valid_host(self) -> bool:
+        return self.headers.get("Host", "") in {
+            f"127.0.0.1:{self.server.server_port}",  # type: ignore[attr-defined]
+            "127.0.0.1",
+        }
 
     def _status(self) -> None:
         status_file = self.server.status_file  # type: ignore[attr-defined]
@@ -132,16 +193,16 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             state["events"][0]["message"] = "Waiting for coordinator telemetry"
         self._json(public_state(state))
 
-    def _json(self, data: object) -> None:
+    def _json(self, data: object, status: HTTPStatus = HTTPStatus.OK) -> None:
         payload = json.dumps(data, separators=(",", ":")).encode("utf-8")
-        self.send_response(HTTPStatus.OK)
+        self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
         self.wfile.write(payload)
 
     def log_message(self, format: str, *args: object) -> None:
-        if self.path not in {"/api/status", "/healthz"}:
+        if self.path not in {"/api/status", "/api/control", "/healthz"}:
             super().log_message(format, *args)
 
 
@@ -156,6 +217,7 @@ def main() -> int:
     server = create_server(args.port, status_file)
     print(f"Wesnoth Agent Manager: http://127.0.0.1:{args.port}")
     print(f"Telemetry: {status_file}")
+    print("Control: one validated ticket per explicit local handoff")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -165,9 +227,16 @@ def main() -> int:
     return 0
 
 
-def create_server(port: int, status_file: Path) -> ThreadingHTTPServer:
+def create_server(
+    port: int,
+    status_file: Path,
+    control_file: Path | None = None,
+) -> ThreadingHTTPServer:
     server = ThreadingHTTPServer(("127.0.0.1", port), DashboardHandler)
     server.status_file = status_file.resolve()  # type: ignore[attr-defined]
+    store = ControlStore(control_file or control_state_path(ROOT))
+    server.controller = AutonomyController(ROOT, store)  # type: ignore[attr-defined]
+    server.csrf_token = secrets.token_urlsafe(32)  # type: ignore[attr-defined]
     return server
 
 
