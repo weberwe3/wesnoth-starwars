@@ -8,7 +8,6 @@ from pathlib import Path
 import sys
 import tempfile
 import threading
-import time
 import unittest
 
 
@@ -16,7 +15,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent" / "coordinator"))
 
 from runtime_status import RuntimeStatus, default_state  # noqa: E402
+from coordination_control import ControlStore  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
+from autonomy import AutonomyController, ControlError  # noqa: E402
 from server import create_server, public_state  # noqa: E402
 
 
@@ -64,6 +65,87 @@ class RuntimeStatusTests(unittest.TestCase):
                 connection.request("GET", "/healthz", headers={"Host": "attacker.invalid"})
                 response = connection.getresponse()
                 self.assertEqual(response.status, 400)
+                response.read()
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
+
+class CoordinationControlTests(unittest.TestCase):
+    def test_mode_switch_is_allowlisted_and_persistent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            store = ControlStore(Path(directory) / "control.json")
+            controller = AutonomyController(ROOT, store)
+            controller.set_mode("sol-high")
+            public = controller.public_state()
+            self.assertEqual(public["mode"], "sol-high")
+            self.assertEqual(public["assignment"]["model"], "GPT-5.6 Sol")
+            self.assertEqual(public["assignment"]["effort"], "high")
+            self.assertFalse(public["capabilities"]["merge"])
+            with self.assertRaises(ControlError):
+                controller.set_mode("danger-full-access")
+
+    def test_sol_ticket_cannot_target_protected_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = AutonomyController(
+                ROOT,
+                ControlStore(Path(directory) / "control.json"),
+            )
+            proposal = {
+                "action": "run_ticket",
+                "summary": "Unsafe",
+                "ticket": {
+                    "worker": "implementer",
+                    "objective": "Change governance",
+                    "allowed_paths": ["docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md"],
+                    "validation_profile": "static-text",
+                    "validation_root": None,
+                },
+            }
+            with self.assertRaises(ControlError):
+                controller._build_ticket("abc123def456", proposal)
+
+    def test_control_api_requires_same_origin_token(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            server = create_server(0, base / "state.json", base / "control.json")
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+                connection.request("GET", "/api/control", headers={"Host": f"127.0.0.1:{server.server_port}"})
+                response = connection.getresponse()
+                control = json.loads(response.read())
+                self.assertEqual(response.status, 200)
+                connection.request(
+                    "POST",
+                    "/api/control",
+                    body=json.dumps({"action": "set_mode", "mode": "sol-low"}),
+                    headers={
+                        "Host": f"127.0.0.1:{server.server_port}",
+                        "Origin": f"http://127.0.0.1:{server.server_port}",
+                        "Content-Type": "application/json",
+                        "X-Wesnoth-CSRF": control["csrf_token"],
+                    },
+                )
+                response = connection.getresponse()
+                changed = json.loads(response.read())
+                self.assertEqual(response.status, 202)
+                self.assertEqual(changed["mode"], "sol-low")
+                connection.request(
+                    "POST",
+                    "/api/control",
+                    body=json.dumps({"action": "set_mode", "mode": "sol-high"}),
+                    headers={
+                        "Host": f"127.0.0.1:{server.server_port}",
+                        "Origin": "http://attacker.invalid",
+                        "Content-Type": "application/json",
+                    },
+                )
+                response = connection.getresponse()
+                self.assertEqual(response.status, 403)
                 response.read()
                 connection.close()
             finally:

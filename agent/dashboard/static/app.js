@@ -2,6 +2,9 @@ const roles = {coordinator: "⌁", implementer: "⚒", "fast-fix": "ϟ", validat
 
 const $ = (id) => document.getElementById(id);
 let snapshot = null;
+let controlSnapshot = null;
+let controlToken = null;
+let controlBusy = false;
 
 function safe(value, fallback = "—") { return value == null || value === "" ? fallback : String(value); }
 function esc(value, fallback = "—") {
@@ -16,7 +19,18 @@ function duration(start, end = Date.now()) {
 }
 
 function makeNode(data, key) {
-    const worker = data.workers?.[key] || {};
+    const worker = {...(data.workers?.[key] || {})};
+    if (key === "coordinator" && controlSnapshot?.assignment) {
+      worker.provider = controlSnapshot.assignment.provider;
+      worker.model = controlSnapshot.assignment.effort
+        ? `${controlSnapshot.assignment.model} · ${displayState(controlSnapshot.assignment.effort)}`
+        : controlSnapshot.assignment.model;
+      if (["planning", "executing"].includes(controlSnapshot.run?.state)) {
+        worker.state = "active";
+        worker.task = controlSnapshot.run.summary;
+        worker.started_at = controlSnapshot.run.started_at;
+      }
+    }
     const node = document.createElement("article");
     node.className = `node ${safe(worker.state, "idle")}`;
     node.dataset.role = key;
@@ -104,14 +118,78 @@ function updateElapsed() {
 
 async function refresh() {
   try {
-    const response = await fetch("/api/status", {cache: "no-store"});
-    if (!response.ok) throw new Error("Status unavailable");
-    render(await response.json());
+    const [statusResponse, controlResponse] = await Promise.all([
+      fetch("/api/status", {cache: "no-store"}),
+      fetch("/api/control", {cache: "no-store"}),
+    ]);
+    if (!statusResponse.ok || !controlResponse.ok) throw new Error("Status unavailable");
+    const control = await controlResponse.json();
+    controlToken = control.csrf_token;
+    delete control.csrf_token;
+    renderControl(control);
+    render(await statusResponse.json());
   } catch (_) {
     $("connection-dot").classList.remove("online");
     $("connection-label").textContent = "Reconnecting";
   }
 }
+
+function renderControl(control) {
+  controlSnapshot = control;
+  document.querySelectorAll('input[name="mode"]').forEach(input => {
+    input.checked = input.value === control.mode;
+    input.disabled = controlBusy || ["planning", "executing"].includes(control.run?.state);
+  });
+  const autonomous = control.mode !== "deterministic";
+  const running = ["planning", "executing"].includes(control.run?.state);
+  const bridgeOnline = control.capabilities?.secure_bridge_online;
+  $("coordination-brief").disabled = !autonomous || running || controlBusy;
+  $("handoff-button").disabled = !autonomous || !bridgeOnline || running || controlBusy;
+  $("handoff-button").textContent = running
+    ? (control.run.state === "planning" ? "Sol is planning…" : "Ticket gates running…")
+    : "Hand off one ticket";
+  $("control-state").textContent = `${control.assignment?.label || "Coordinator"} · ${displayState(control.run?.state)}`;
+  $("control-summary").textContent = autonomous && !bridgeOnline
+    ? "Secure bridge offline — restart with the Windows launcher"
+    : control.run?.error || control.run?.summary || "Ready";
+  $("control-state-dot").className = running ? "active" : control.run?.state === "failed" ? "error" : "";
+}
+
+async function controlAction(payload) {
+  if (!controlToken || controlBusy) return;
+  controlBusy = true;
+  let errorMessage = null;
+  if (controlSnapshot) renderControl(controlSnapshot);
+  try {
+    const response = await fetch("/api/control", {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "X-Wesnoth-CSRF": controlToken},
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Control request rejected");
+    renderControl(result);
+  } catch (error) {
+    errorMessage = error.message;
+  } finally {
+    controlBusy = false;
+    if (controlSnapshot) renderControl(controlSnapshot);
+    if (errorMessage) {
+      $("control-state").textContent = "Control request rejected";
+      $("control-summary").textContent = errorMessage;
+      $("control-state-dot").className = "error";
+    }
+  }
+}
+
+document.querySelectorAll('input[name="mode"]').forEach(input => {
+  input.addEventListener("change", () => controlAction({action: "set_mode", mode: input.value}));
+});
+
+$("mode-form").addEventListener("submit", event => {
+  event.preventDefault();
+  controlAction({action: "run", brief: $("coordination-brief").value});
+});
 
 refresh();
 setInterval(refresh, 1500);
