@@ -16,6 +16,7 @@ import sys
 
 import coordinator as core
 import reference_package as reference_pkg
+from runtime_status import RuntimeStatus, runtime_status_path
 
 
 IMPLEMENTER_TIMEOUT = 240
@@ -25,6 +26,7 @@ FALLBACK_REVIEWER_TIMEOUT = 180
 
 VALID_WORKERS = {"implementer", "fast-fix"}
 VALID_PROFILES = {"static-text", "wesnoth-addon-static"}
+ACTIVE_STATUS: RuntimeStatus | None = None
 
 PROTECTED_EXACT = {
     ".gitignore",
@@ -473,10 +475,13 @@ def save_result(log_dir: Path, result: dict) -> None:
     )
 
 
-def run_ticket(ticket_path: Path) -> int:
+def _run_ticket(ticket_path: Path) -> int:
+    global ACTIVE_STATUS
     ticket = load_ticket(ticket_path)
 
     root = core.find_repo_root()
+    status = RuntimeStatus(runtime_status_path(root))
+    ACTIVE_STATUS = status
     core.verify_main_baseline(root)
 
     reference_package = load_reference_package(root)
@@ -486,6 +491,7 @@ def run_ticket(ticket_path: Path) -> int:
     opencode = shutil.which("opencode")
     if not opencode:
         print("ERROR: opencode not found in PATH.")
+        status.fail_system("Ticket runner stopped: OpenCode unavailable")
         return 3
 
     google_available = core.provider_preflight()
@@ -499,6 +505,13 @@ def run_ticket(ticket_path: Path) -> int:
     worktree = worktree_base / f"{task_id.lower()}-{timestamp}"
 
     log_dir = root / "agent" / "logs" / f"{task_id}-{timestamp}"
+    status.begin_job(
+        task_id=task_id,
+        objective=ticket["objective"],
+        branch=branch,
+        worktree=worktree,
+        validation_profile=ticket["validation_profile"],
+    )
 
     worktree_base.mkdir(parents=True, exist_ok=True)
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -537,6 +550,10 @@ def run_ticket(ticket_path: Path) -> int:
     core.require_success(rc, output, "Create isolated ticket worktree")
 
     print("[1/5] Worktree created.")
+    status.event("Isolated ticket worktree created", source="coordinator")
+    status.handoff("coordinator", ticket["worker"], "Implementation assigned")
+    status.set_worker("coordinator", "idle", "Monitoring ticket gates")
+    status.set_worker(ticket["worker"], "active", ticket["objective"])
 
     implementation_prompt = f"""
 TASK ID: {task_id}
@@ -570,6 +587,14 @@ Return your normal structured implementation report.
     )
 
     print(f"[2/5] Implementation exit code: {impl_rc}")
+    status.set_worker(
+        ticket["worker"],
+        "idle" if impl_rc == 0 else "error",
+        "Implementation returned" if impl_rc == 0 else "Implementation failed",
+        error=None if impl_rc == 0 else f"Worker exited with code {impl_rc}",
+    )
+    status.handoff(ticket["worker"], "validation", "Implementation returned")
+    status.set_worker("validation", "active", "Running deterministic gates")
 
     validation = run_validation(
         worktree=worktree,
@@ -584,6 +609,17 @@ Return your normal structured implementation report.
     print(
         "[3/5] Deterministic validation: "
         + ("PASS" if validation["pass"] else "FAIL")
+    )
+    status.set_worker(
+        "validation",
+        "idle" if validation["pass"] else "error",
+        "Deterministic gates passed" if validation["pass"] else "Deterministic gates failed",
+        error=None if validation["pass"] else "One or more deterministic gates failed",
+    )
+    status.gate(
+        "Deterministic validation",
+        "pass" if validation["pass"] else "fail",
+        "All configured checks passed" if validation["pass"] else "Review validation evidence",
     )
 
     if not validation["pass"]:
@@ -606,7 +642,11 @@ Return your normal structured implementation report.
 
         print(json.dumps(result, indent=2))
         print("\nFAIL: deterministic gate rejected the implementation.")
+        status.finish(False, "Ticket failed deterministic validation")
         return 10
+
+    status.handoff("validation", "tester", "Validated change sent to tester")
+    status.set_worker("tester", "active", "Independent verification")
 
     tester_prompt = f"""
 TASK ID: {task_id}
@@ -655,6 +695,17 @@ VERDICT: FAIL
         f"[4/5] Tester exit code: {tester_rc}; "
         f"PASS={tester_pass}"
     )
+    status.set_worker(
+        "tester",
+        "idle" if tester_pass else "error",
+        "Tester passed" if tester_pass else "Tester rejected change",
+        error=None if tester_pass else "Independent tester did not return PASS",
+    )
+    status.gate(
+        "Independent tester",
+        "pass" if tester_pass else "fail",
+        "PASS" if tester_pass else "FAIL or non-decisive response",
+    )
 
     if not tester_pass:
         result = {
@@ -677,7 +728,12 @@ VERDICT: FAIL
 
         print(json.dumps(result, indent=2))
         print("\nFAIL: tester gate rejected the implementation.")
+        status.finish(False, "Ticket failed independent testing")
         return 11
+
+
+    status.handoff("tester", "reviewer", "Verified change sent to reviewer")
+    status.set_worker("reviewer", "active", "Independent final review")
 
     reviewer_prompt = f"""
 TASK ID: {task_id}
@@ -745,14 +801,19 @@ VERDICT: REQUEST_CHANGES
     reviewer_used = None
 
     if primary_request_changes:
+        status.set_worker("reviewer", "error", "Changes requested", error="Primary reviewer requested changes")
         reviewer_used = "google/gemini-3.6-flash"
         reviewer_approve = False
 
     elif primary_approve:
+        status.set_worker("reviewer", "idle", "Approved")
         reviewer_used = "google/gemini-3.6-flash"
         reviewer_approve = True
 
     else:
+        status.set_worker("reviewer", "waiting", "Unavailable or non-decisive")
+        status.handoff("reviewer", "reviewer-fallback", "Fallback review activated")
+        status.set_worker("reviewer-fallback", "active", "Independent fallback review")
         print(
             "      Primary reviewer unavailable/non-decisive; "
             "using fallback."
@@ -789,6 +850,12 @@ VERDICT: REQUEST_CHANGES
         )
 
         reviewer_approve = fallback_approve
+        status.set_worker(
+            "reviewer-fallback",
+            "idle" if fallback_approve else "error",
+            "Approved" if fallback_approve else "Fallback review rejected change",
+            error=None if fallback_approve else "Fallback reviewer did not approve",
+        )
 
     print(
         f"[5/5] Reviewer: {reviewer_used}; "
@@ -796,6 +863,11 @@ VERDICT: REQUEST_CHANGES
     )
 
     final_pass = reviewer_approve
+    status.gate(
+        "Independent review",
+        "pass" if final_pass else "fail",
+        f"{reviewer_used or 'No reviewer'}: " + ("APPROVE" if final_pass else "NOT APPROVED"),
+    )
 
     result = {
         "task_id": task_id,
@@ -832,17 +904,32 @@ VERDICT: REQUEST_CHANGES
     print("========================================")
 
     if final_pass:
+        status.finish(True, "Ticket passed all local gates")
         print(
             "\nPASS: ticket passed all gates. "
             "No commit or merge was performed."
         )
         return 0
 
+    status.finish(False, "Ticket failed independent review")
     print(
         "\nFAIL: reviewer gate rejected the ticket. "
         "No commit or merge was performed."
     )
     return 12
+
+
+def run_ticket(ticket_path: Path) -> int:
+    try:
+        return _run_ticket(ticket_path)
+    except SystemExit:
+        if ACTIVE_STATUS is not None:
+            ACTIVE_STATUS.fail_system("Ticket runner stopped before completion")
+        raise
+    except Exception:
+        if ACTIVE_STATUS is not None:
+            ACTIVE_STATUS.fail_system("Unexpected ticket-runner failure")
+        raise
 
 
 def main() -> int:

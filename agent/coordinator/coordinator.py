@@ -13,6 +13,8 @@ import subprocess
 import sys
 from typing import Optional
 
+from runtime_status import RuntimeStatus, runtime_status_path
+
 
 AGENT_TIMEOUT_SECONDS = 240
 
@@ -30,6 +32,7 @@ SENSITIVE_ENV_VARS = {
     "CEREBRAS_API_KEY",
     "HF_TOKEN",
 }
+ACTIVE_STATUS: RuntimeStatus | None = None
 
 
 def run_process(
@@ -227,12 +230,16 @@ def contains_verdict(output: str, verdict: str) -> bool:
     ) is not None
 
 
-def run_smoke(root: Path) -> int:
+def _run_smoke(root: Path) -> int:
+    global ACTIVE_STATUS
+    status = RuntimeStatus(runtime_status_path(root))
+    ACTIVE_STATUS = status
     verify_main_baseline(root)
 
     opencode = shutil.which("opencode")
     if not opencode:
         print("ERROR: opencode not found in PATH.")
+        status.fail_system("Coordinator stopped: OpenCode unavailable")
         return 3
 
     google_available = provider_preflight()
@@ -247,6 +254,13 @@ def run_smoke(root: Path) -> int:
     worktree = worktree_base / f"coord-smoke-{timestamp}"
 
     log_dir = root / "agent" / "logs" / task_id
+    status.begin_job(
+        task_id=task_id,
+        objective="Coordinator pipeline smoke test",
+        branch=branch,
+        worktree=worktree,
+        validation_profile="coordinator-smoke",
+    )
     log_dir.mkdir(parents=True, exist_ok=True)
     worktree_base.mkdir(parents=True, exist_ok=True)
 
@@ -282,6 +296,9 @@ def run_smoke(root: Path) -> int:
     require_success(rc, output, "Create isolated worktree")
 
     print("[1/4] Worktree created.")
+    status.handoff("coordinator", "implementer", "Smoke implementation assigned")
+    status.set_worker("coordinator", "idle", "Monitoring smoke test")
+    status.set_worker("implementer", "active", "Creating bounded smoke artifact")
 
     # ------------------------------------------------------------------
     # Stage 2: implementation
@@ -316,6 +333,14 @@ Return your normal structured implementation report.
     )
 
     print(f"[2/4] Implementer exit code: {impl_rc}")
+    status.set_worker(
+        "implementer",
+        "idle" if impl_rc == 0 else "error",
+        "Smoke implementation returned" if impl_rc == 0 else "Smoke implementation failed",
+        error=None if impl_rc == 0 else f"Worker exited with code {impl_rc}",
+    )
+    status.handoff("implementer", "validation", "Smoke artifact sent to validation")
+    status.set_worker("validation", "active", "Checking exact smoke-test output")
 
     # ------------------------------------------------------------------
     # Stage 3: trusted deterministic validation
@@ -374,6 +399,19 @@ Return your normal structured implementation report.
         "[3/4] Deterministic validation: "
         + ("PASS" if deterministic_pass else "FAIL")
     )
+    status.set_worker(
+        "validation",
+        "idle" if deterministic_pass else "error",
+        "Smoke validation passed" if deterministic_pass else "Smoke validation failed",
+        error=None if deterministic_pass else "Smoke artifact did not match contract",
+    )
+    status.gate(
+        "Deterministic validation",
+        "pass" if deterministic_pass else "fail",
+        "Exact smoke contract" if deterministic_pass else "Smoke contract mismatch",
+    )
+    status.handoff("validation", "tester", "Smoke evidence sent to tester")
+    status.set_worker("tester", "active", "Independent smoke verification")
 
     # ------------------------------------------------------------------
     # Stage 4A: independent tester
@@ -423,6 +461,15 @@ VERDICT: FAIL
         f"[4/4] Tester exit code: {tester_rc}; "
         f"verdict detected: {'PASS' if tester_pass else 'FAIL/UNKNOWN'}"
     )
+    status.set_worker(
+        "tester",
+        "idle" if tester_pass else "error",
+        "Tester passed" if tester_pass else "Tester did not pass",
+        error=None if tester_pass else "Independent tester did not return PASS",
+    )
+    status.gate("Independent tester", "pass" if tester_pass else "fail", "PASS" if tester_pass else "FAIL")
+    status.handoff("tester", "reviewer", "Smoke result sent to reviewer")
+    status.set_worker("reviewer", "active", "Independent smoke review")
 
     # ------------------------------------------------------------------
     # Independent reviewer
@@ -508,14 +555,19 @@ VERDICT: REQUEST_CHANGES
     # A real negative review is authoritative. Do not shop for a more
     # favorable answer by invoking another reviewer.
     if reviewer_primary_request_changes:
+        status.set_worker("reviewer", "error", "Changes requested", error="Primary reviewer requested changes")
         reviewer_used = "google/gemini-3.6-flash"
         reviewer_pass = False
 
     elif reviewer_primary_approve:
+        status.set_worker("reviewer", "idle", "Approved")
         reviewer_used = "google/gemini-3.6-flash"
         reviewer_pass = True
 
     else:
+        status.set_worker("reviewer", "waiting", "Unavailable or non-decisive")
+        status.handoff("reviewer", "reviewer-fallback", "Fallback smoke review activated")
+        status.set_worker("reviewer-fallback", "active", "Independent fallback smoke review")
         print(
             "      Primary reviewer unavailable or non-decisive; "
             "invoking fallback reviewer."
@@ -551,6 +603,12 @@ VERDICT: REQUEST_CHANGES
         )
 
         reviewer_pass = reviewer_fallback_approve
+        status.set_worker(
+            "reviewer-fallback",
+            "idle" if reviewer_fallback_approve else "error",
+            "Approved" if reviewer_fallback_approve else "Fallback did not approve",
+            error=None if reviewer_fallback_approve else "Fallback reviewer did not approve",
+        )
 
         print(
             f"      Fallback reviewer exit code: {reviewer_fallback_rc}; "
@@ -562,6 +620,12 @@ VERDICT: REQUEST_CHANGES
         deterministic_pass
         and tester_pass
         and reviewer_pass
+    )
+    status.gate(
+        "Independent review",
+        "pass" if reviewer_pass else "fail",
+        f"{reviewer_used or 'No reviewer'}: "
+        + ("APPROVE" if reviewer_pass else "NOT APPROVED"),
     )
 
     result = {
@@ -603,17 +667,32 @@ VERDICT: REQUEST_CHANGES
     print("========================================")
 
     if final_pass:
+        status.finish(True, "Coordinator smoke test passed all gates")
         print(
             "\nPASS: pipeline completed successfully. "
             "The worktree has intentionally been left in place for inspection."
         )
         return 0
 
+    status.finish(False, "Coordinator smoke test failed")
     print(
         "\nFAIL: at least one gate failed. "
         "No commit or merge was performed."
     )
     return 10
+
+
+def run_smoke(root: Path) -> int:
+    try:
+        return _run_smoke(root)
+    except SystemExit:
+        if ACTIVE_STATUS is not None:
+            ACTIVE_STATUS.fail_system("Coordinator stopped before completion")
+        raise
+    except Exception:
+        if ACTIVE_STATUS is not None:
+            ACTIVE_STATUS.fail_system("Unexpected coordinator failure")
+        raise
 
 
 def main() -> int:

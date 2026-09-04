@@ -4,9 +4,10 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-03 after INFRA-002<br>
+**Last continuity refresh:** 2026-09-03 during DASH-001 implementation<br>
 **Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`<br>
-**Next intended development ticket:** `ENGINE-002`
+**Active infrastructure ticket:** `DASH-001`<br>
+**Next intended game-development ticket:** `ENGINE-002`
 
 ---
 
@@ -707,7 +708,10 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 
 - `ticket_runner.py` currently does not automatically retry a failed implementation attempt; retry handling exists as a concept but is not a completed general mechanism.
 - OpenCode Web is a session UI, not the deterministic project dashboard.
-- A future custom local dashboard could expose task status, gates, diffs, retry, merge state, and history above the coordinator.
+- DASH-001 covers live ticket status, gates, routing, role/model assignments,
+  and recent activity. Diff browsing, retry controls, PR status, and merge
+  controls remain intentionally deferred; the dashboard has no execution
+  authority.
 - `OPENCODE_SERVER_PASSWORD` hardening would matter if OpenCode Web is intentionally exposed/used.
 - The exact model-provider mix can change; keep routing policy bounded and fail-closed.
 - Installed-Wesnoth validation remains local rather than GitHub Actions because CI does not replace the local engine environment.
@@ -728,6 +732,21 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 - protected main;
 - reference provenance;
 - continuity-ledger work initiated by INFRA-003.
+
+**In progress on the DASH-001 feature branch:**
+
+- a localhost-only, read-only Agent Manager web dashboard;
+- structured coordinator telemetry rather than log scraping;
+- live role, provider, configured model, ticket, stage, elapsed-time, gate,
+  routing/fallback, activity, error, and health views;
+- a repository-owned Windows batch entry point that starts the dashboard and
+  then delegates credential handling unchanged to the existing secure launcher;
+- responsive, accessible control-console presentation with reduced-motion
+  support and no external runtime dependencies.
+
+The DPAPI-backed secure launcher remains unmodified. This preserves the rule
+that feature work must not alter credential storage or credential-forwarding
+logic. The new batch entry point composes with that launcher instead.
 
 ### Game
 
@@ -903,6 +922,7 @@ When updating this file:
 | 2026-09-03 | INFRA-001 / PR #2 | GitHub governance, mandatory LLM references, hashing, protected paths, CI, branch protection merged |
 | 2026-09-03 | INFRA-002 / PR #4 | Controlled Markdown/DOCX reference package, manifest provenance, package validator/self-test merged |
 | 2026-09-03 | INFRA-003 / Issue #5 | Living project continuity ledger initiated; intended to become persistent handoff state |
+| 2026-09-03 | DASH-001 (in progress) | Local structured-telemetry Agent Manager dashboard and secure-launcher companion entry point implemented on a feature branch |
 
 ---
 

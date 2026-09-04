@@ -5,6 +5,7 @@ agent-smoke-test.txt
 
 # Local agent operational data
 agent/logs/
+agent/runtime/
 
 # Python
 __pycache__/
