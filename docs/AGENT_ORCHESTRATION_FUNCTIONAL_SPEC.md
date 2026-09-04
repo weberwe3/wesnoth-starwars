@@ -77,7 +77,7 @@ Binary:
 
 OpenCode provides the model-agent execution layer. It is used to run the hardened project agents and may also expose an interactive web interface. The OpenCode Web UI is an interactive model session interface; it is not the authoritative ticket dashboard for the deterministic coordinator.
 
-A purpose-built local Wesnoth Agent Manager dashboard is a future UX layer that may visualize coordinator state, ticket history, gates, diffs, retries, PR status, and merge readiness.
+A purpose-built Wesnoth Agent Manager dashboard visualizes coordinator state, ticket history, gates, diffs, retries, PR status, and merge readiness. Its Python server remains bound to loopback; a separately constrained Windows proxy may expose paired access on the private LAN.
 
 ### 3.4 Battle for Wesnoth
 
@@ -271,6 +271,7 @@ Current ticket fields:
 - `allowed_paths`
 - `validation_profile`
 - `validation_root` where applicable
+- `resume_branch` when continuing an unfinished managed ticket worktree
 
 Ticket objectives should be bounded, testable, and explicit about exclusions when omission is important.
 
@@ -289,17 +290,36 @@ Coordinator verifies:
 - ticket schema is valid;
 - task ID is valid and unique enough for current execution;
 - required project references exist.
+- existing ticket remnants have a managed worktree, an original ticket contract,
+  no terminal PASS, no representing pull request, and changes contained by the
+  original allowed paths. A failed run remains unfinished work when its remnants
+  still satisfy those boundaries.
 
 Failure stops the run.
 
 ### Stage 1 - Isolated branch/worktree
 
-Create:
+For a new ticket, create:
 
 - branch: `agent/<ticket>-<timestamp>`;
 - worktree: `~/projects/wesnoth-starwars-worktrees/<ticket>-<timestamp>`.
 
 No worker edits the main worktree.
+
+If a prior ticket started but did not reach a terminal PASS, resume its
+existing managed branch/worktree before planning fresh work. Python must derive
+the worktree from the trusted Git worktree inventory, restore the original
+worker, objective, allowed paths, and validation profile from the prior ticket
+record, and validate all existing committed and uncommitted changes before an
+LLM continues. The worker must preserve useful partial changes and must not
+reset, discard, recreate, or restart the implementation. Branches already
+represented by a pull request, terminal PASS results, unmanaged
+worktrees, and protected or out-of-scope remnants are not resumable.
+
+A new branch/worktree may be created only when the project owner explicitly
+requests a fresh start in the coordinator brief, such as “start from scratch”
+or “start a fresh ticket.” Without that instruction and without safe resumable
+work, automation pauses with a visible reason.
 
 ### Stage 2 - Implementation
 
@@ -392,12 +412,17 @@ A local PASS means **eligible for commit/PR**, not automatically merged.
 
 ### Optional continuous automation mode
 
-The localhost Agent Manager may offer a human-controlled automation toggle for
+The Agent Manager may offer a human-controlled automation toggle for
 the selected Sol coordinator mode. This is an alternate ticket-scheduling mode,
 not an exemption from deterministic governance.
 
 When automation is enabled:
 
+- Sol must inventory and resume safe unfinished ticket work before proposing a
+  new ticket; stale remnants are continuation context, not grounds to discard
+  prior work;
+- a fresh ticket is permitted only when the owner-provided coordinator brief
+  explicitly authorizes a fresh/new ticket or starting from scratch;
 - Sol may read the controlled references and continuity ledger, prioritize the
   planned backlog, and propose one bounded ticket at a time;
 - Python remains the authoritative state machine and must validate each ticket,
@@ -451,10 +476,14 @@ or credential-bearing diagnostics; publication, branch-protection, remote-head,
 merge, or approval mismatch; and explicit user stop. These are recorded with a
 specific safe reason and required human action.
 
-Before planning new or recovery work, the coordinator must include structured
-local queue and open pull-request/branch context so it does not duplicate an
-existing ticket. If that inventory cannot be established reliably, automation
-pauses instead of guessing.
+Before planning new, resumed, or recovery work, the coordinator must include
+structured local queue, open pull-request, and managed worktree context so it
+does not duplicate an existing ticket. A resumable record must be backed by the
+original unfinished ticket contract; terminal PASS results and PR-represented
+branches are excluded. If that inventory cannot be established reliably,
+automation pauses instead of guessing. A no-safe-ticket decision must preserve
+the model's specific reason in the control state and activity log rather than
+appearing as a silent or generic failure.
 
 #### Ticket approval queue and publication
 
@@ -489,7 +518,7 @@ pause and a dedicated deletion manifest is created. The manifest must bind the
 ticket ID, branch, base SHA, candidate tree identity, exact deleted paths, prior
 blob identities, stated reasons, and expected impact to a unique request ID.
 
-The request remains visible in the localhost dashboard approval queue for the
+The request remains visible in the dashboard approval queue for the
 project owner to inspect. No recurring Codex task, background chat message, or
 token-consuming notification job is required. The local fail-closed gate is
 authoritative and must record an explicit approve or reject decision for the
@@ -518,6 +547,33 @@ reference change must be a clearly identified governance ticket, synchronize
 all affected Markdown/DOCX representations and manifest values, pass the
 reference-package self-test, and receive its own exact-commit publication
 approval through the queue.
+
+#### Paired private-LAN access and clean shutdown
+
+The Python dashboard server remains bound to `127.0.0.1`. The repository-owned
+Windows launcher may expose it to other devices through a narrow user-space
+proxy bound to one detected private IPv4 address and TCP port 8765. The Windows
+firewall rule must be limited to the Private profile, that local address, and
+`LocalSubnet` sources. The dashboard must display the LAN address under system
+health.
+
+LAN access must require a high-entropy runtime pairing token delivered in a URL
+fragment. The token is stored only in a permission-restricted ignored runtime
+file and the paired browser's local storage; it is not an environment variable,
+telemetry field, provider credential, log value, query parameter, or committed
+file. Static assets and minimal health status may be retrieved before pairing,
+but status, coordinator state, and every mutation endpoint must reject an
+unpaired LAN request. A paired LAN device receives the same governed controls as
+localhost. Mutations additionally retain exact-origin, per-process CSRF,
+allowlisted-action, request-size, and deterministic controller validation.
+
+An **Exit dashboard** action may be accepted from localhost or a paired LAN
+device only while no planning, ticket-execution, or publication operation is
+active. The server must complete its shutdown and remove its own
+PID/version/session records before signaling exit. A session-specific marker
+may then close only the CMD process tree that launched that dashboard session;
+unrelated consoles, processes, and WSL distributions must not be targeted. The
+same signal stops the LAN proxy.
 
 ### Stage 8 - Commit and GitHub publication
 
@@ -785,7 +841,7 @@ Extend deterministic tooling to optionally:
 
 ### Phase E - dashboard
 
-The future local Agent Manager dashboard should display:
+The local Agent Manager dashboard displays:
 
 - current/last ticket;
 - worktree and branch;
@@ -797,6 +853,8 @@ The future local Agent Manager dashboard should display:
 - merge readiness;
 - ticket approval queue with expandable purpose and impact summaries;
 - activity log and errors with accessible error-detail dialogs;
+- paired private-LAN access with the reachable address shown under system health;
+- a safe-state Exit dashboard action scoped to its associated launcher console;
 - view diff/logs;
 - retry eligible infrastructure failures;
 - never bypass mandatory gates.

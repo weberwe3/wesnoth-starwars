@@ -740,8 +740,8 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 
 **DASH-001 and DASH-002 merged; later dashboard controls remain in development:**
 
-- a localhost-only Agent Manager web dashboard with same-origin protected,
-  allowlisted coordinator-mode controls;
+- a loopback-bound Agent Manager backend with same-origin protected,
+  allowlisted coordinator controls and an optional paired private-LAN proxy;
 - structured coordinator telemetry rather than log scraping;
 - live role, provider, configured model, ticket, stage, elapsed-time, gate,
   routing/fallback, activity, error, and health views;
@@ -944,12 +944,13 @@ When updating this file:
 | 2026-09-04 | DASH-004 / PR #18 | Autonomous scheduling toggle, planned-ticket picker, local approval queue, exact-commit publication pipeline, and deletion manifest gate merged |
 | 2026-09-04 | Bounded error-recovery governance (proposed) | Permit no more than two scoped coordinator repair attempts for eligible implementation/gate errors; retain immediate hard stops for security, approval, repository hygiene, and publication failures |
 | 2026-09-04 | Implementer provider fallback (proposed) | Keep GPT-OSS 120B primary and permit exactly one sandboxed GPT-5.6 Terra medium fallback after primary Implementer failure; failure of both providers hard-stops without consuming code-recovery attempts |
-| 2026-09-04 | DASH-005 (local feature branch) | Added structured failure diagnostics, open-PR/branch planning context, and a strict two-attempt Sol-planned/Fast-Fix recovery loop pending review and publication |
+| 2026-09-04 | DASH-005 / PR #19 | Merged structured failure diagnostics, one Terra Medium Implementer fallback, open-work planning context, and a strict two-attempt Sol-planned/Fast-Fix recovery loop |
+| 2026-09-04 | DASH-006 automation diagnosis (local feature branch) | Correct stale-dashboard restart behavior, surface no-safe-ticket pauses, preserve safe exception diagnostics, resume safe nonterminal ticket worktrees under their original contracts, require explicit owner language before a fresh start, provide paired full-control private-LAN access, display its reachable address, and add safe-state dashboard/associated-console shutdown |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, the project has completed the infrastructure/reference foundation and local autonomous Agent Manager needed for controlled AI-assisted development. `ENGINE-002` is implemented on open PR #15 but is not part of protected `main`; reconcile that PR before planning duplicate campaign-registration work. The immediate orchestration priority is bounded, structured error recovery with a two-attempt ceiling and precise safe diagnostics.
+At this snapshot, the project has completed the infrastructure/reference foundation and local autonomous Agent Manager needed for controlled AI-assisted development. DASH-005 is merged through PR #19. `ENGINE-002` is implemented on open PR #15 but is not part of protected `main`; reconcile that PR before planning duplicate campaign-registration or dependent scenario-validation work. Automation should present this dependency as a visible pause rather than a silent failure.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.

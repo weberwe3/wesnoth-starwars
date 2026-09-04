@@ -13,6 +13,33 @@ bash ./agent/dashboard/start-dashboard.sh
 
 Open `http://127.0.0.1:8765`.
 
+The Windows launcher also starts a private-subnet proxy and shows the detected
+LAN address under **System health**. Use **Copy secure device link** on the local
+dashboard to pair another trusted computer on the same network. The link carries
+a random dashboard access token in its URL fragment; the browser stores it
+locally and removes it from the visible address. Unpaired LAN API requests are
+rejected. A one-time Windows UAC prompt may appear to install an inbound firewall
+rule limited to the selected private IPv4 address, TCP port 8765, the Private
+profile, and `LocalSubnet` sources. Provider credentials and environment values
+are never exposed.
+
+Paired devices receive the same governed mode, automation, ticket approval, and
+shutdown controls as localhost. All mutation requests still require the runtime
+access token, a per-process CSRF token, the expected origin, an allowlisted JSON
+action, and the existing deterministic controller gates.
+
+The start script records the Git commit loaded by the dashboard process. When
+the repository advances, the launcher replaces an idle stale process with the
+current code. It refuses to interrupt active planning, execution, or
+publication work, and it reports success only after the localhost health check
+passes.
+
+**Exit dashboard** is available on localhost and paired LAN devices. It refuses
+to interrupt planning, ticket execution, or publication. When idle or at another
+safe stopping state, it closes the HTTP server, removes its PID/version/session
+files, stops the LAN proxy, and signals only the matching Windows launcher CMD
+process tree to close. It does not target unrelated consoles or WSL processes.
+
 For the Windows startup workflow, use `Start-WesnothAgentEnvironment.cmd`.
 It starts a hidden native Windows control bridge, starts the dashboard, and
 then delegates interactive credential handling unchanged to the existing
@@ -47,6 +74,19 @@ The green **Automation** switch lets the selected Sol effort plan another
 bounded ticket after each safe completion. Turning it off prevents the next
 ticket from starting; it does not interrupt an active gate mid-operation.
 Switching back to **Python** restores the manual Python/Bash workflow.
+
+If Sol cannot identify a safe non-overlapping ticket, automation enters a
+visible amber **Paused** state and records the exact planning reason in the
+activity log. Resolve the listed pull request, queued ticket, or documented
+dependency before enabling automation again. Control-plane failures record a
+redacted diagnostic and required action instead of only a generic stop message.
+
+Automation treats a managed branch/worktree from a nonterminal ticket as
+resumable work. It restores the original ticket scope and continues useful
+committed or uncommitted changes in place. It does not resume terminal results,
+PR-owned branches, unmanaged worktrees, or scope violations. To create a new
+worktree when there is no resumable ticket, the coordinator brief must include
+an explicit phrase such as **start a fresh ticket** or **start from scratch**.
 
 In continuous automation, eligible implementation, deterministic-validation,
 tester, or substantive reviewer failures can trigger no more than two recovery
