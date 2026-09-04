@@ -25,6 +25,7 @@ permission:
     fast-fix: allow
     tester: allow
     reviewer: allow
+    reviewer-intermediate: allow
     reviewer-fallback: allow
 ---
 

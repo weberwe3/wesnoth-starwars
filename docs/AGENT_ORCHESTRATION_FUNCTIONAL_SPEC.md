@@ -189,7 +189,8 @@ Baseline routing:
 | Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free` | Small mechanical corrections |
 | Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash` | Independent read-only test evaluation |
 | Primary reviewer | Google - `google/gemini-3.6-flash` | Independent review when quota is available |
-| Fallback reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Reviewer fallback for infrastructure/non-decisive primary failure |
+| Intermediate reviewer | Google - `google/gemini-3.8-flash` | First reviewer fallback for infrastructure/non-decisive primary failure |
+| Final fallback reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Final reviewer fallback when both Gemini reviewers are unavailable or non-decisive |
 
 Routing is policy, not permanence. Models may change if availability, capability, retirement, quota, or quality changes. The role separation and fallback rules are more important than any specific model.
 
@@ -198,8 +199,8 @@ Known provider observations:
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
 - When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
 - A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
-- Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out.
-- A primary reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a fallback reviewer for a more favorable answer.
+- A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. Gemini 3.8 Flash is the only intermediate reviewer between Gemini 3.6 Flash and Nemotron.
+- A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
 
 ## 6. OpenCode Agent Security Model
@@ -215,6 +216,7 @@ Current roles:
 - `fast-fix`
 - `tester`
 - `reviewer`
+- `reviewer-intermediate`
 - `reviewer-fallback`
 
 Security rules:
@@ -291,9 +293,11 @@ Coordinator verifies:
 - task ID is valid and unique enough for current execution;
 - required project references exist.
 - existing ticket remnants have a managed worktree, an original ticket contract,
-  no terminal PASS, no representing pull request, and changes contained by the
-  original allowed paths. A failed run remains unfinished work when its remnants
-  still satisfy those boundaries.
+  and changes contained by the original allowed paths. A failed run remains
+  unfinished work when its remnants still satisfy those boundaries. An open pull
+  request may also be resumed when its repository-owned `agent/*` branch, exact
+  published head, managed worktree, original contract, and changed paths all
+  verify deterministically.
 
 Failure stops the run.
 
@@ -312,9 +316,25 @@ the worktree from the trusted Git worktree inventory, restore the original
 worker, objective, allowed paths, and validation profile from the prior ticket
 record, and validate all existing committed and uncommitted changes before an
 LLM continues. The worker must preserve useful partial changes and must not
-reset, discard, recreate, or restart the implementation. Branches already
-represented by a pull request, terminal PASS results, unmanaged
-worktrees, and protected or out-of-scope remnants are not resumable.
+reset, discard, recreate, or restart the implementation.
+
+An open pull request does not make its ticket disposable. Python may resume it
+only when GitHub reports an open, same-repository PR against `main`; its head is
+a safe `agent/*` branch; the exact remote head is an ancestor of the clean local
+managed branch; an original ticket contract exists; and every changed path is
+inside that contract and outside protected paths. Current `main` is appended by
+a normal merge commit before all original gates are rerun. Rebase, reset,
+force-push, published-history rewriting, and automatic branch deletion are
+forbidden.
+
+If a contract-backed PR cannot be resumed because its managed worktree is gone
+or GitHub reports an unmergeable conflict, Python may prepare a new branch from
+current `main` under the exact original contract. The old PR may be closed only
+after the replacement passes every local gate, and its branch must remain
+preserved for audit and recovery. Dirty worktrees, divergent heads,
+cross-repository PRs, missing contracts, ambiguous identities, and protected or
+out-of-scope changes require human review and must not be discarded
+automatically.
 
 A new branch/worktree may be created only when the project owner explicitly
 requests a fresh start in the coordinator brief, such as “start from scratch”
@@ -419,8 +439,8 @@ not an exemption from deterministic governance.
 When automation is enabled:
 
 - Sol must inventory and resume safe unfinished ticket work before proposing a
-  new ticket; stale remnants are continuation context, not grounds to discard
-  prior work;
+  new ticket; this includes eligible open pull requests, and stale remnants are
+  continuation context rather than grounds to discard prior work;
 - a fresh ticket is permitted only when the owner-provided coordinator brief
   explicitly authorizes a fresh/new ticket or starting from scratch;
 - Sol may read the controlled references and continuity ledger, prioritize the
@@ -476,14 +496,15 @@ or credential-bearing diagnostics; publication, branch-protection, remote-head,
 merge, or approval mismatch; and explicit user stop. These are recorded with a
 specific safe reason and required human action.
 
-Before planning new, resumed, or recovery work, the coordinator must include
-structured local queue, open pull-request, and managed worktree context so it
-does not duplicate an existing ticket. A resumable record must be backed by the
-original unfinished ticket contract; terminal PASS results and PR-represented
-branches are excluded. If that inventory cannot be established reliably,
-automation pauses instead of guessing. A no-safe-ticket decision must preserve
-the model's specific reason in the control state and activity log rather than
-appearing as a silent or generic failure.
+Before planning new, resumed, replacement, or recovery work, the coordinator
+must include structured local queue, open pull-request, and managed worktree
+context so it does not duplicate an existing ticket. A resumable record must be
+backed by its original ticket contract. Terminal PASS evidence may support an
+open-PR resume but does not bypass rerunning the current reference, validation,
+tester, reviewer, exact-head CI, or publication gates. If inventory cannot be
+established reliably, automation pauses instead of guessing. A no-safe-ticket
+decision must preserve the model's specific reason in the control state and
+activity log rather than appearing as a silent or generic failure.
 
 #### Ticket approval queue and publication
 
@@ -773,7 +794,7 @@ All development LLMs must follow these rules:
 - preserve existing architectural decisions unless a ticket explicitly changes them;
 - make original implementation choices compatible with the project scope;
 - tester/reviewer agents remain read-only;
-- fallback reviewer is not a mechanism to overturn a substantive negative primary review.
+- neither the intermediate nor final fallback reviewer is a mechanism to overturn a substantive negative verdict from an earlier reviewer.
 
 ## 17. Mandatory Reference Injection Design
 

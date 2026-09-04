@@ -23,6 +23,7 @@ from runtime_status import RuntimeStatus, runtime_status_path
 IMPLEMENTER_TIMEOUT = 240
 TESTER_TIMEOUT = 180
 PRIMARY_REVIEWER_TIMEOUT = 75
+INTERMEDIATE_REVIEWER_TIMEOUT = 90
 FALLBACK_REVIEWER_TIMEOUT = 180
 RECOVERY_PLANNER_TIMEOUT = 300
 TERRA_IMPLEMENTER_TIMEOUT = 600
@@ -174,6 +175,11 @@ def load_ticket(path: Path) -> dict:
         "validation_profile",
         "validation_root",
         "resume_branch",
+        "resume_pr_number",
+        "resume_pr_head_sha",
+        "replace_pr_number",
+        "replace_pr_head_sha",
+        "replace_pr_branch",
     }
 
     unknown = sorted(set(ticket) - allowed_keys)
@@ -245,6 +251,34 @@ def load_ticket(path: Path) -> dict:
         or not re.fullmatch(r"agent/[a-z0-9][a-z0-9._/-]{0,180}", resume_branch)
     ):
         raise SystemExit("ERROR: resume_branch must be null or a safe agent branch.")
+
+    resume_pr_number = ticket.get("resume_pr_number")
+    resume_pr_head_sha = ticket.get("resume_pr_head_sha")
+    if (resume_pr_number is None) != (resume_pr_head_sha is None):
+        raise SystemExit("ERROR: resume PR number and head SHA must be supplied together.")
+    if resume_pr_number is not None and (
+        not isinstance(resume_pr_number, int) or resume_pr_number < 1
+        or not isinstance(resume_pr_head_sha, str)
+        or not re.fullmatch(r"[0-9a-f]{40}", resume_pr_head_sha)
+        or resume_branch is None
+    ):
+        raise SystemExit("ERROR: resume PR identity is invalid or has no resume branch.")
+
+    replacement = (
+        ticket.get("replace_pr_number"),
+        ticket.get("replace_pr_head_sha"),
+        ticket.get("replace_pr_branch"),
+    )
+    if any(value is not None for value in replacement):
+        number, head_sha, branch = replacement
+        if (
+            not isinstance(number, int) or number < 1
+            or not isinstance(head_sha, str) or not re.fullmatch(r"[0-9a-f]{40}", head_sha)
+            or not isinstance(branch, str)
+            or not re.fullmatch(r"agent/[a-z0-9][a-z0-9._/-]{0,180}", branch)
+            or resume_branch is not None or resume_pr_number is not None
+        ):
+            raise SystemExit("ERROR: replacement PR identity is invalid.")
 
     return ticket
 
@@ -344,6 +378,63 @@ def resolve_resume_worktree(root: Path, branch: str) -> Path:
                 raise SystemExit("ERROR: resume worktree branch does not match.")
             return current_path
     raise SystemExit("ERROR: requested resume branch has no managed worktree.")
+
+
+def prepare_open_pr_resume(root: Path, worktree: Path, ticket: dict) -> bool:
+    """Verify an exact open PR and append current main without rewriting history."""
+
+    number = ticket.get("resume_pr_number")
+    expected_head = ticket.get("resume_pr_head_sha")
+    if number is None:
+        return False
+    rc, status = core.git(worktree, "status", "--porcelain=v1", "--untracked-files=all")
+    core.require_success(rc, status, "Verify open pull-request worktree state")
+    if status.strip():
+        raise SystemExit("ERROR: open pull-request worktree is not clean.")
+    rc, local_head = core.git(worktree, "rev-parse", "HEAD")
+    core.require_success(rc, local_head, "Verify open pull-request local head")
+    local_head = local_head.strip()
+    rc, _ = core.git(worktree, "merge-base", "--is-ancestor", expected_head, local_head)
+    if rc != 0:
+        raise SystemExit("ERROR: local pull-request history does not descend from its remote head.")
+    completed = subprocess.run(
+        [
+            "gh", "pr", "view", str(number), "--json",
+            "number,state,headRefName,headRefOid,baseRefName,isCrossRepository",
+        ],
+        cwd=root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    try:
+        current = json.loads(completed.stdout) if completed.returncode == 0 else {}
+    except json.JSONDecodeError as exc:
+        raise SystemExit("ERROR: open pull-request identity could not be verified.") from exc
+    if current != {
+        "number": number,
+        "state": "OPEN",
+        "headRefName": ticket["resume_branch"],
+        "headRefOid": expected_head,
+        "baseRefName": "main",
+        "isCrossRepository": False,
+    }:
+        raise SystemExit("ERROR: open pull-request identity changed before resumption.")
+    rc, _ = core.git(worktree, "merge-base", "--is-ancestor", "main", "HEAD")
+    if rc == 0:
+        return False
+    if rc != 1:
+        raise SystemExit("ERROR: open pull-request ancestry could not be verified.")
+    rc, output = core.git(worktree, "merge", "--no-edit", "--no-ff", "main", timeout=120)
+    if rc != 0:
+        core.git(worktree, "merge", "--abort", timeout=60)
+        raise SystemExit(
+            "ERROR: open pull request cannot be reconciled with main without conflicts. "
+            "Its branch was restored unchanged."
+        )
+    return True
 
 
 def validate_scope(
@@ -811,6 +902,10 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
         primary_approve = primary_rc == 0 and core.contains_verdict(primary_output, "APPROVE")
         primary_request_changes = primary_rc == 0 and core.contains_verdict(primary_output, "REQUEST_CHANGES")
 
+    intermediate_rc = None
+    intermediate_output = ""
+    intermediate_approve = False
+    intermediate_request_changes = False
     fallback_rc = None
     fallback_output = ""
     fallback_approve = False
@@ -831,29 +926,64 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
         status.set_worker("reviewer", "idle", "Approved")
     else:
         status.set_worker("reviewer", "waiting", "Unavailable or non-decisive")
-        status.handoff("reviewer", "reviewer-fallback", "Fallback review activated")
-        status.set_worker("reviewer-fallback", "active", "Independent fallback review")
-        fallback_rc, fallback_output = invoke_agent(
-            opencode=opencode,
-            worktree=worktree,
-            agent="reviewer-fallback",
-            prompt=reviewer_prompt,
-            log_file=log_dir / f"reviewer-fallback{suffix}.jsonl",
-            timeout=FALLBACK_REVIEWER_TIMEOUT,
-        )
-        fallback_approve = fallback_rc == 0 and core.contains_verdict(fallback_output, "APPROVE")
-        fallback_request_changes = fallback_rc == 0 and core.contains_verdict(fallback_output, "REQUEST_CHANGES")
-        reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
-        reviewer_approve = fallback_approve
-        decisive_output = fallback_output
-        decisive_rc = fallback_rc
-        decisive_changes = fallback_request_changes
-        status.set_worker(
-            "reviewer-fallback",
-            "idle" if fallback_approve else "error",
-            "Approved" if fallback_approve else "Fallback review rejected change",
-            error=None if fallback_approve else "Fallback reviewer did not approve",
-        )
+        if google_available:
+            status.handoff("reviewer", "reviewer-fallback", "Intermediate review activated")
+            status.set_assignment("reviewer-fallback", "Google", "gemini-3.8-flash")
+            status.set_worker("reviewer-fallback", "active", "Independent intermediate review")
+            intermediate_rc, intermediate_output = invoke_agent(
+                opencode=opencode,
+                worktree=worktree,
+                agent="reviewer-intermediate",
+                prompt=reviewer_prompt,
+                log_file=log_dir / f"reviewer-intermediate{suffix}.jsonl",
+                timeout=INTERMEDIATE_REVIEWER_TIMEOUT,
+            )
+            intermediate_approve = intermediate_rc == 0 and core.contains_verdict(intermediate_output, "APPROVE")
+            intermediate_request_changes = intermediate_rc == 0 and core.contains_verdict(intermediate_output, "REQUEST_CHANGES")
+        if intermediate_request_changes:
+            reviewer_used = "google/gemini-3.8-flash"
+            reviewer_approve = False
+            decisive_output = intermediate_output
+            decisive_rc = intermediate_rc
+            decisive_changes = True
+            status.set_worker("reviewer-fallback", "error", "Changes requested", error="Intermediate reviewer requested changes")
+        elif intermediate_approve:
+            reviewer_used = "google/gemini-3.8-flash"
+            reviewer_approve = True
+            decisive_output = intermediate_output
+            decisive_rc = intermediate_rc
+            decisive_changes = False
+            status.set_worker("reviewer-fallback", "idle", "Approved")
+        else:
+            status.set_worker("reviewer-fallback", "waiting", "Intermediate unavailable or non-decisive")
+            status.handoff("reviewer-fallback", "reviewer-fallback", "Final fallback review activated")
+            status.set_assignment(
+                "reviewer-fallback",
+                "Cloudflare Workers AI",
+                "@cf/nvidia/nemotron-3-120b-a12b",
+            )
+            status.set_worker("reviewer-fallback", "active", "Independent final fallback review")
+            fallback_rc, fallback_output = invoke_agent(
+                opencode=opencode,
+                worktree=worktree,
+                agent="reviewer-fallback",
+                prompt=reviewer_prompt,
+                log_file=log_dir / f"reviewer-fallback{suffix}.jsonl",
+                timeout=FALLBACK_REVIEWER_TIMEOUT,
+            )
+            fallback_approve = fallback_rc == 0 and core.contains_verdict(fallback_output, "APPROVE")
+            fallback_request_changes = fallback_rc == 0 and core.contains_verdict(fallback_output, "REQUEST_CHANGES")
+            reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
+            reviewer_approve = fallback_approve
+            decisive_output = fallback_output
+            decisive_rc = fallback_rc
+            decisive_changes = fallback_request_changes
+            status.set_worker(
+                "reviewer-fallback",
+                "idle" if fallback_approve else "error",
+                "Approved" if fallback_approve else "Final fallback review rejected change",
+                error=None if fallback_approve else "Final fallback reviewer did not approve",
+            )
 
     status.gate(
         "Independent review",
@@ -869,6 +999,9 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
         "reviewer_primary_exit_code": primary_rc,
         "reviewer_primary_approve": primary_approve,
         "reviewer_primary_request_changes": primary_request_changes,
+        "reviewer_intermediate_exit_code": intermediate_rc,
+        "reviewer_intermediate_approve": intermediate_approve,
+        "reviewer_intermediate_request_changes": intermediate_request_changes,
         "reviewer_fallback_exit_code": fallback_rc,
         "reviewer_fallback_approve": fallback_approve,
         "reviewer_fallback_request_changes": fallback_request_changes,
@@ -950,6 +1083,7 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     print()
 
     if resume_branch:
+        main_appended = prepare_open_pr_resume(root, worktree, ticket)
         _, existing_paths = read_git_changes(worktree)
         existing_scope = validate_scope(existing_paths, ticket["allowed_paths"])
         if not existing_scope["pass"]:
@@ -961,7 +1095,13 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
             )
             return 14
         print("[1/5] Existing ticket worktree resumed.")
-        status.event("Existing isolated ticket worktree resumed", source="coordinator")
+        status.event(
+            (
+                "Open pull request resumed after appending current main"
+                if main_appended else "Existing isolated ticket worktree resumed"
+            ),
+            source="coordinator",
+        )
     else:
         rc, output = core.git(
             root,

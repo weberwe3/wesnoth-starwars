@@ -234,6 +234,117 @@ class CoordinationControlTests(unittest.TestCase):
                 ticket["resume_branch"], "agent/interrupted-20260904-120000"
             )
 
+    def test_open_pr_resume_restores_contract_and_exact_pr_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            branch = "agent/engine-002-final-20260903-233720"
+            head = "09bae2fb65a9e9300e888d1af3755ec7b93c235d"
+            proposal = {
+                "action": "run_ticket",
+                "summary": "Resume ENGINE-002",
+                "impact": "Revalidate the existing launchable scenario",
+                "_planning_inventory": {
+                    "local_agent_branches": [],
+                    "resumable_pull_requests": [{
+                        "name": branch,
+                        "number": 15,
+                        "head_sha": head,
+                        "worker": "fast-fix",
+                        "objective": "Original ENGINE-002 contract",
+                        "allowed_paths": ["addons/example.cfg"],
+                        "validation_profile": "static-text",
+                        "validation_root": None,
+                        "changed_paths": ["addons/example.cfg"],
+                    }],
+                },
+                "ticket": {
+                    "worker": "implementer",
+                    "objective": "Untrusted planner rewrite",
+                    "allowed_paths": ["**"],
+                    "validation_profile": "wesnoth-addon-static",
+                    "validation_root": "addons",
+                    "resume_branch": branch,
+                    "resume_pr_number": 999,
+                    "resume_pr_head_sha": "0" * 40,
+                },
+            }
+            ticket = controller._build_ticket("abc123def456", proposal)
+            self.assertEqual(ticket["objective"], "Original ENGINE-002 contract")
+            self.assertEqual(ticket["resume_pr_number"], 15)
+            self.assertEqual(ticket["resume_pr_head_sha"], head)
+
+    def test_resume_ticket_rejects_partial_pr_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "ticket.json"
+            path.write_text(json.dumps({
+                "task_id": "TEST-PR-RESUME",
+                "worker": "implementer",
+                "objective": "Resume exact PR",
+                "allowed_paths": ["addons/example.cfg"],
+                "validation_profile": "static-text",
+                "validation_root": None,
+                "resume_branch": "agent/example",
+                "resume_pr_number": 15,
+            }), encoding="utf-8")
+            with self.assertRaises(SystemExit):
+                ticket_runner.load_ticket(path)
+
+    def test_open_pr_resume_appends_main_without_rewriting_published_head(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "project"
+            worktree = parent / "project-worktrees" / "ticket"
+            root.mkdir()
+
+            def git(cwd: Path, *args: str) -> str:
+                return subprocess.run(
+                    ["git", *args], cwd=cwd, check=True, text=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                ).stdout.strip()
+
+            git(root, "init", "-b", "main")
+            git(root, "config", "user.email", "tests@example.invalid")
+            git(root, "config", "user.name", "Dashboard Tests")
+            (root / "base.txt").write_text("base\n", encoding="utf-8")
+            git(root, "add", "base.txt")
+            git(root, "commit", "-m", "base")
+            worktree.parent.mkdir()
+            branch = "agent/open-pr"
+            git(root, "worktree", "add", "-b", branch, str(worktree), "main")
+            (worktree / "feature.txt").write_text("feature\n", encoding="utf-8")
+            git(worktree, "add", "feature.txt")
+            git(worktree, "commit", "-m", "feature")
+            published_head = git(worktree, "rev-parse", "HEAD")
+            (root / "main.txt").write_text("new main\n", encoding="utf-8")
+            git(root, "add", "main.txt")
+            git(root, "commit", "-m", "advance main")
+
+            real_run = subprocess.run
+
+            def dispatch(command, *args, **kwargs):
+                if command[0] == "gh":
+                    payload = {
+                        "number": 15, "state": "OPEN", "headRefName": branch,
+                        "headRefOid": published_head, "baseRefName": "main",
+                        "isCrossRepository": False,
+                    }
+                    return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+                return real_run(command, *args, **kwargs)
+
+            ticket = {
+                "resume_branch": branch,
+                "resume_pr_number": 15,
+                "resume_pr_head_sha": published_head,
+            }
+            with mock.patch("ticket_runner.subprocess.run", side_effect=dispatch):
+                self.assertTrue(
+                    ticket_runner.prepare_open_pr_resume(root, worktree, ticket)
+                )
+            resumed_head = git(worktree, "rev-parse", "HEAD")
+            self.assertNotEqual(resumed_head, published_head)
+            git(worktree, "merge-base", "--is-ancestor", published_head, resumed_head)
+            git(worktree, "merge-base", "--is-ancestor", "main", resumed_head)
+
     def test_managed_worktree_parser_excludes_external_paths(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             managed = Path(directory).resolve()
@@ -506,6 +617,95 @@ class CoordinationControlTests(unittest.TestCase):
             thread.join(timeout=2)
             self.assertFalse(thread.is_alive())
             server.server_close()
+
+
+class ReviewerFallbackRoutingTests(unittest.TestCase):
+    def _evaluate(
+        self,
+        responses: list[tuple[int, str]],
+        *,
+        google_available: bool = True,
+    ) -> tuple[dict, list[str]]:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            log_dir = base / "logs"
+            log_dir.mkdir()
+            status = mock.Mock()
+            invoked: list[str] = []
+
+            def invoke(**kwargs):
+                invoked.append(kwargs["agent"])
+                return responses.pop(0)
+
+            with mock.patch.object(ticket_runner, "run_validation", return_value={"pass": True}), mock.patch.object(
+                ticket_runner, "invoke_agent", side_effect=invoke
+            ):
+                result = ticket_runner.evaluate_candidate(
+                    status=status,
+                    ticket={
+                        "task_id": "REVIEW-CHAIN",
+                        "objective": "Exercise reviewer fallback routing",
+                        "allowed_paths": ["fixture.txt"],
+                        "worker": "implementer",
+                    },
+                    worktree=base,
+                    log_dir=log_dir,
+                    governance_prompt="Controlled references loaded.",
+                    opencode="opencode",
+                    google_available=google_available,
+                    implementer_rc=0,
+                    attempt=0,
+                )
+            return result, invoked
+
+    def test_gemini_38_approves_before_nemotron(self) -> None:
+        result, invoked = self._evaluate([
+            (0, "VERDICT: PASS"),
+            (1, "primary infrastructure failure"),
+            (0, "VERDICT: APPROVE"),
+        ])
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["reviewer_used"], "google/gemini-3.8-flash")
+        self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
+        self.assertIsNone(result["reviewer_fallback_exit_code"])
+
+    def test_nemotron_runs_only_after_both_gemini_reviewers_are_non_decisive(self) -> None:
+        result, invoked = self._evaluate([
+            (0, "VERDICT: PASS"),
+            (1, "primary infrastructure failure"),
+            (1, "intermediate infrastructure failure"),
+            (0, "VERDICT: APPROVE"),
+        ])
+        self.assertTrue(result["pass"])
+        self.assertEqual(
+            result["reviewer_used"],
+            "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
+        )
+        self.assertEqual(
+            invoked,
+            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
+        )
+
+    def test_intermediate_request_changes_is_authoritative(self) -> None:
+        result, invoked = self._evaluate([
+            (0, "VERDICT: PASS"),
+            (1, "primary infrastructure failure"),
+            (0, "VERDICT: REQUEST_CHANGES"),
+        ])
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["reviewer_used"], "google/gemini-3.8-flash")
+        self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
+        self.assertIsNone(result["reviewer_fallback_exit_code"])
+
+    def test_missing_google_credential_skips_both_gemini_reviewers(self) -> None:
+        result, invoked = self._evaluate(
+            [(0, "VERDICT: PASS"), (0, "VERDICT: APPROVE")],
+            google_available=False,
+        )
+        self.assertTrue(result["pass"])
+        self.assertEqual(invoked, ["tester", "reviewer-fallback"])
+        self.assertIsNone(result["reviewer_primary_exit_code"])
+        self.assertIsNone(result["reviewer_intermediate_exit_code"])
 
 
 class ApprovalQueueTests(unittest.TestCase):
