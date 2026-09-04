@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Wesnoth Agent Manager</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workflow">Skip to workflow</a>
+  <div class="ambient" aria-hidden="true"></div>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div><p class="eyebrow">Wesnoth Star Wars</p><h1>Agent Manager</h1></div>
+      </div>
+      <div class="connection"><span class="signal" id="connection-dot"></span><div><b id="connection-label">Connecting</b><small>127.0.0.1 · read-only</small></div></div>
+    </header>
+
+    <section class="mission" aria-labelledby="mission-title">
+      <div>
+        <p class="eyebrow">Current operation</p>
+        <h2 id="mission-title">Standing by</h2>
+        <p id="mission-objective">Waiting for the deterministic coordinator.</p>
+      </div>
+      <div class="mission-stats">
+        <div><span>State</span><strong class="status-pill" id="job-state">Ready</strong></div>
+        <div><span>Elapsed</span><strong class="tabular" id="elapsed">00:00:00</strong></div>
+        <div><span>Stage</span><strong id="job-stage">Coordinator</strong></div>
+      </div>
+    </section>
+
+    <div class="dashboard-grid">
+      <section class="panel workflow-panel" id="workflow" aria-labelledby="workflow-title">
+        <div class="panel-heading"><div><p class="eyebrow">Live architecture</p><h2 id="workflow-title">Execution flow</h2></div><span class="micro-label">Structured telemetry</span></div>
+        <div class="flow" id="flow" aria-live="polite"></div>
+      </section>
+
+      <aside class="rail">
+        <section class="panel health-panel" aria-labelledby="health-title">
+          <div class="panel-heading"><div><p class="eyebrow">System</p><h2 id="health-title">Health</h2></div><span class="health-orb" aria-hidden="true"></span></div>
+          <div class="health-grid">
+            <div><span>Coordinator</span><strong id="health-state">Ready</strong></div>
+            <div><span>Transport</span><strong>Local file</strong></div>
+            <div><span>Exposure</span><strong>Localhost only</strong></div>
+            <div><span>Secrets</span><strong>Not collected</strong></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="details-title">
+          <div class="panel-heading"><div><p class="eyebrow">Active ticket</p><h2 id="details-title">Job details</h2></div></div>
+          <dl class="details" id="job-details"></dl>
+          <div class="gate-list" id="gate-list"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="routing-title">
+          <div class="panel-heading"><div><p class="eyebrow">Decisions</p><h2 id="routing-title">Routing history</h2></div></div>
+          <ol class="routing-list" id="routing-list"><li class="empty">No handoffs recorded</li></ol>
+        </section>
+      </aside>
+
+      <section class="panel activity-panel" aria-labelledby="activity-title">
+        <div class="panel-heading"><div><p class="eyebrow">Chronology</p><h2 id="activity-title">Activity & errors</h2></div><span class="micro-label" id="last-update">Awaiting update</span></div>
+        <ol class="event-list" id="event-list"></ol>
+      </section>
+    </div>
+  </main>
+  <noscript><p class="noscript">JavaScript is required to display live coordinator status.</p></noscript>
+</body>
+</html>

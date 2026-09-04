@@ -80,7 +80,10 @@ jobs:
           PY
 
       - name: Compile coordinator Python
-        run: python3 -m compileall -q agent/coordinator
+        run: python3 -m compileall -q agent/coordinator agent/dashboard
+
+      - name: Test dashboard telemetry
+        run: python3 -m unittest agent/dashboard/test_dashboard.py
 
       - name: Verify coordinator reference enforcement
         env:
