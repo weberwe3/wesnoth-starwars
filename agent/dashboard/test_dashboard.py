@@ -138,6 +138,48 @@ class CoordinationControlTests(unittest.TestCase):
             with self.assertRaises(ControlError):
                 controller.set_mode("danger-full-access")
 
+    def test_existing_directory_scope_is_canonicalized_without_widening_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            self.assertEqual(
+                controller._normalize_allowed_paths([
+                    "addons/Star_Wars_Thrawn_Trilogy/units",
+                    "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+                    "addons/Star_Wars_Thrawn_Trilogy/scenarios/**",
+                ]),
+                [
+                    "addons/Star_Wars_Thrawn_Trilogy/units/**",
+                    "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+                    "addons/Star_Wars_Thrawn_Trilogy/scenarios/**",
+                ],
+            )
+
+    def test_normalized_directory_scope_accepts_descendants_not_siblings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            patterns = controller._normalize_allowed_paths([
+                "addons/Star_Wars_Thrawn_Trilogy/units"
+            ])
+            allowed = ticket_runner.validate_scope(
+                ["addons/Star_Wars_Thrawn_Trilogy/units/baseline_units.cfg"],
+                patterns,
+            )
+            sibling = ticket_runner.validate_scope(
+                ["addons/Star_Wars_Thrawn_Trilogy/scenarios/example.cfg"],
+                patterns,
+            )
+            self.assertTrue(allowed["pass"])
+            self.assertFalse(sibling["pass"])
+
+    def test_existing_protected_directory_remains_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            patterns = controller._normalize_allowed_paths(["agent"])
+            self.assertEqual(patterns, ["agent/**"])
+            self.assertTrue(
+                ticket_runner.pattern_can_touch_protected(patterns[0])
+            )
+
     def test_planner_schema_is_strict_at_every_object_level(self) -> None:
         validate_strict_output_schema(TICKET_SCHEMA)
         ticket_schema = TICKET_SCHEMA["properties"]["ticket"]["anyOf"][1]
