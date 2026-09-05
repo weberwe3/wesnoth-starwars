@@ -35,6 +35,11 @@ def main() -> int:
     assert "docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md" in prompt
     assert "DOCX files are human/archive counterparts" in normalized_prompt
     assert "not duplicate prompt context" in normalized_prompt
+    assert "Expanded Universe (Legends) terms" in normalized_prompt
+    assert "dialogue and story prose remain original" in normalized_prompt
+    assert "WML/Lua IDs with sw_" in normalized_prompt
+    assert "free non-commercial Wesnoth add-on distribution" in normalized_prompt
+    assert "complete scoped Wesnoth-ready files or snippets" in normalized_prompt
 
     print("Controlled files:", len(package["controlled_paths"]))
     print("Canonical LLM references:", len(references))

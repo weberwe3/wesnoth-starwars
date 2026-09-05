@@ -7,7 +7,7 @@
 
 ## 1. Purpose
 
-This project is an original fan total conversion for Battle for Wesnoth inspired by the broad post-Return of the Jedi setting and high-level plot concepts associated with Timothy Zahn's Thrawn trilogy. It is intended to deliver a complete, serious-toned tactical campaign experience while remaining an original implementation.
+This project is an original, non-commercial fan total conversion for Battle for Wesnoth set in the post-Return of the Jedi Star Wars Expanded Universe (Legends), with particular inspiration from the Thrawn trilogy and X-Wing series era. It is intended to deliver a complete, serious-toned tactical campaign experience while remaining an original implementation distributed free of charge through the official Battle for Wesnoth add-on server.
 
 The project must not copy copyrighted prose, dialogue, art, music, audio, proprietary game assets, or other expressive content from Star Wars books, films, television, games, or licensed products. Story adaptation is limited to broad characters, settings, relationships, and plot concepts as directed by the project owner; all implementation, dialogue, mission scripting, art direction, UI treatment, rules, and supporting material must be original.
 
@@ -174,6 +174,29 @@ Faction implementation should consider:
 
 Exact rosters remain subject to staged design tickets and balance testing.
 
+### 6.1 Legends terminology and original writing
+
+Player-facing content should use authentic post-Return of the Jedi Legends-era
+names and terminology wherever they improve clarity and setting fidelity. Unit
+names, faction identifiers, ability names, objectives, story text, and original
+character dialogue may therefore refer directly to Grand Admiral Thrawn, the
+New Republic, the Imperial Remnant, ysalamiri, Force sensitivity, blasters,
+turbolasers, and other appropriate lore concepts.
+
+Authentic terminology does not authorize copied expression. Dialogue and story
+prose must be newly written for this campaign and must not quote or closely
+paraphrase novels, films, television, games, scripts, or licensed reference
+works.
+
+### 6.2 Internal identifiers and player-facing names
+
+Every new project-owned WML/Lua identifier should use a clear `sw_` namespace
+prefix to avoid collisions and keep the codebase auditable. Representative
+forms include `id=sw_unit_stormtrooper` and
+`id=sw_ability_force_push`. Player-facing `name=`, `description=`, and
+`story=` values should use the full appropriate lore name and remain prepared
+for Wesnoth localization rather than exposing internal identifiers to players.
+
 ## 7. Mission Design Requirements
 
 Campaign missions should vary substantially in objective and structure. The design toolkit should support:
@@ -233,6 +256,18 @@ Primary development target:
 - Python is used for deterministic development orchestration, not runtime gameplay.
 
 The project should prefer engine-native behavior when it is reliable and comprehensible, while using custom WML/Lua to fill UI, AI, or rules gaps.
+
+All custom unit macros, terrain logic, event handlers, scenario configuration,
+and supporting WML/Lua must be authored from scratch for this add-on. The
+project must not extract, decompile, translate, or depend upon proprietary
+binaries, source code, data files, or assets from an official Star Wars game.
+
+When code is supplied as a response artifact rather than edited directly in an
+assigned worktree, it should be complete and ready to place under the stated
+Wesnoth structure, such as `_main.cfg`, `units/`, `scenarios/`, or `macros/`.
+Inline comments should explain non-obvious event triggers, variable handling,
+and balance mechanics. Every mechanic must remain legible within Wesnoth's
+turn-based tactical hex framework.
 
 ## 11. Quality Gates
 

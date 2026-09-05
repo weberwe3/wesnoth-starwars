@@ -45,6 +45,26 @@ their real exit codes and output.
 - Keep game logic separate from art/content where practical.
 - Favor deterministic, testable mechanics.
 - Keep campaign-specific content from unnecessarily coupling core mechanics.
+- Use authentic post-Return of the Jedi Star Wars Expanded Universe (Legends)
+  terminology in player-facing unit names, faction names, original dialogue,
+  abilities, objectives, and story text. Examples include Grand Admiral Thrawn,
+  New Republic, Imperial Remnant, ysalamiri, Force sensitivity, blasters, and
+  turbolasers.
+- Give every new project-owned WML/Lua identifier a clear `sw_` namespace
+  prefix, such as `sw_unit_stormtrooper` or `sw_ability_force_push`, while
+  using the full lore-facing name in localized `name=`, `description=`, and
+  `story=` content.
+- Generate custom WML, Lua, macros, terrain logic, event handlers, and scenario
+  configuration from scratch. Never extract, decompile, or depend on
+  proprietary Star Wars game binaries, source, or assets.
+- Design all add-on content for free, non-commercial distribution through the
+  official Battle for Wesnoth add-on server.
+- When a task asks for WML/Lua code as a response artifact, provide the complete
+  ready-to-use scoped file or snippet in its intended Wesnoth directory and add
+  useful inline comments for event triggers, variable lifecycles, and balance
+  mechanics. Do not claim unexecuted validation or paste entire unrelated files.
+- Translate Star Wars combat into readable turn-based, single-hex tactical
+  mechanics rather than attempting real-time or proprietary-game behavior.
 
 ## Wesnoth WML construction and engine-validation rules
 
@@ -70,6 +90,9 @@ This is a fan total-conversion project.
 - Do not copy copyrighted novel prose, movie dialogue, scripts, game assets, music, sound effects, or proprietary source code.
 - Use original dialogue, descriptions, artwork, audio, and implementation.
 - Broad characters, settings, plot structure, and gameplay concepts may be represented as directed by the project owner, but implementation content should be original.
+- Authentic names and Legends-era terminology are permitted and expected; they
+  do not authorize quotations, close paraphrases of protected prose or
+  dialogue, or reuse of licensed expressive assets.
 
 ## Quality bar
 
