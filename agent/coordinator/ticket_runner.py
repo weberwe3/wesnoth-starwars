@@ -772,11 +772,21 @@ STRUCTURED FAILURE:
 
 
 def plan_recovery_or_fallback(**kwargs: object) -> tuple[dict, bool]:
-    """Keep eligible recovery bounded even when its advisory planner is unavailable."""
+    """Reuse structured evidence when sufficient and preserve a bounded fallback."""
 
     failure = kwargs["failure"]
     if not isinstance(failure, dict):
         raise TypeError("failure must be a structured mapping")
+    if failure.get("class") == "implementation_or_validation_failure":
+        return {
+            "action": "repair",
+            "summary": "Structured deterministic failure already identifies the repair.",
+            "corrective_action": recovery_policy.safe_text(
+                failure.get("required_action"),
+                "Inspect the structured failure and make the smallest in-scope correction.",
+                1200,
+            ),
+        }, True
     try:
         return plan_recovery(**kwargs), False
     except Exception:
@@ -789,6 +799,27 @@ def plan_recovery_or_fallback(**kwargs: object) -> tuple[dict, bool]:
                 1200,
             ),
         }, True
+
+
+def compact_validation_evidence(validation: dict) -> dict:
+    """Retain gate facts needed by models without repeating verbose command evidence."""
+
+    scope = validation.get("scope") or {}
+    static = validation.get("static") or {}
+    profile = validation.get("profile_result") or {}
+    checks = static.get("checks") or []
+    return {
+        "pass": validation.get("pass") is True,
+        "changed_paths": list(scope.get("changed_paths") or [])[:200],
+        "scope_violations": list(scope.get("violations") or [])[:50],
+        "static_checks": [
+            {"name": str(item.get("name") or "")[:160], "pass": item.get("pass") is True}
+            for item in checks[:200]
+            if isinstance(item, dict)
+        ],
+        "validation_profile": validation.get("profile"),
+        "profile_result": profile,
+    }
 
 
 def evaluate_candidate(
@@ -838,6 +869,7 @@ def evaluate_candidate(
 
     status.handoff("validation", "tester", "Validated change sent to tester")
     status.set_worker("tester", "active", "Independent verification")
+    validation_evidence = compact_validation_evidence(validation)
     tester_prompt = f"""TASK ID: {task_id}
 
 {governance_prompt}
@@ -846,10 +878,10 @@ OBJECTIVE:
 {ticket['objective']}
 
 ALLOWED PATHS:
-{json.dumps(ticket['allowed_paths'], indent=2)}
+{json.dumps(ticket['allowed_paths'], separators=(',', ':'))}
 
 DETERMINISTIC VALIDATION:
-{json.dumps(validation, indent=2)}
+{json.dumps(validation_evidence, separators=(',', ':'))}
 
 Independently inspect the changed project files. Do not execute commands, edit files, or use the web.
 Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
@@ -895,10 +927,10 @@ OBJECTIVE:
 {ticket['objective']}
 
 ALLOWED PATHS:
-{json.dumps(ticket['allowed_paths'], indent=2)}
+{json.dumps(ticket['allowed_paths'], separators=(',', ':'))}
 
 DETERMINISTIC VALIDATION:
-{json.dumps(validation, indent=2)}
+{json.dumps(validation_evidence, separators=(',', ':'))}
 
 TESTER: exit code {tester_rc}; PASS={tester_pass}
 
@@ -1310,7 +1342,7 @@ Return your normal structured implementation report.
             return evaluation["exit_code"]
 
         next_attempt = attempt + 1
-        plan, planner_fallback = plan_recovery_or_fallback(
+        plan, structured_plan = plan_recovery_or_fallback(
             worktree=worktree,
             log_dir=log_dir,
             ticket=ticket,
@@ -1319,9 +1351,9 @@ Return your normal structured implementation report.
             effort=recovery_effort,
             governance_prompt=governance_prompt,
         )
-        if planner_fallback:
+        if structured_plan:
             status.event(
-                "Recovery planner unavailable; deterministic retry retained",
+                "Structured recovery brief used; advisory planning call avoided",
                 kind="recovery",
                 level="warning",
                 detail=plan["summary"],

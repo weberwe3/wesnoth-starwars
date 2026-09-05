@@ -4,9 +4,9 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-04 during DASH-012 resilient cancellation and retry work<br>
+**Last continuity refresh:** 2026-09-04 during DASH-012/DASH-013 resilience and resource-efficiency work<br>
 **Main at snapshot:** `148d1e03b40de105e2349bb69621c7dcd6d4fbd8`<br>
-**Active infrastructure ticket:** DASH-012 always-available exit and resilient bounded retry<br>
+**Active infrastructure ticket:** DASH-012/DASH-013 always-available exit, resilient retry, and model-usage optimization<br>
 **Next intended game-development ticket:** resume the preserved scenario-validation worktree after DASH-012 is live
 
 ---
@@ -956,11 +956,12 @@ When updating this file:
 | 2026-09-04 | DASH-010 / PR #25 | Merged continuous priority scheduling: the active Automation toggle authorizes fresh bounded tickets, skips queue/PR-owned priorities, advances through independent safe work, and sequences publication around exact-head CI registration/current-main checks while retaining manual publication/deletion gates |
 | 2026-09-04 | DASH-011 / PR #26 | Merged live-state scheduling, publication/priorities context, and reviewer routing through Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash |
 | 2026-09-04 | DASH-012 resilient cancellation and retry (implementation in progress) | Make Exit available during active work with exact-run cancellation and preserved remnants; retain both bounded retries when recovery-planner invocation fails; require bounded large-file reads |
+| 2026-09-04 | DASH-013 resource-efficient orchestration (implementation in progress) | Avoid redundant Sol calls with deterministic remnant resume and inventory-bound planning cache; compact governance/validation prompts; prefer Fast-Fix for small mechanical work; add a 60-second inter-ticket quota cooldown |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, DASH-011 is merged through PR #26 at `148d1e03b40de105e2349bb69621c7dcd6d4fbd8`. The next autonomous scenario-validation ticket created a clean managed worktree, but GPT-OSS exceeded its provider context limit after reading a large source file in one request; Terra returned without a change; and an exception in recovery planning prevented the eligible bounded retry from starting. The secure bridge then failed to publish its fixed result, leaving the dashboard in `executing` until timeout while the idle-only Exit rule blocked shutdown. DASH-012 is being implemented to retain retry eligibility through a deterministic repair brief, require bounded source inspection, make bridge health/cancellation session-aware, and allow Exit to cancel only the active secure process while preserving its branch, worktree, and evidence. Exact-commit publication and file-deletion approval remain manual boundaries.
+At this snapshot, DASH-011 is merged through PR #26 at `148d1e03b40de105e2349bb69621c7dcd6d4fbd8`. The next autonomous scenario-validation ticket created a clean managed worktree, but GPT-OSS exceeded its provider context limit after reading a large source file in one request; Terra returned without a change; and an exception in recovery planning prevented the eligible bounded retry from starting. The secure bridge then failed to publish its fixed result, leaving the dashboard in `executing` until timeout while the idle-only Exit rule blocked shutdown. DASH-012/DASH-013 are being implemented together before publication: exact-run cancellation preserves the interrupted worktree; structured deterministic failures retain both retries; a sole verified remnant bypasses Sol planning; unchanged planning decisions use a short inventory-bound cache; prompts use compact verified governance and validation evidence; worker reads are bounded; small mechanical work prefers Fast-Fix; and a 60-second inter-ticket cooldown reduces rolling-quota failures. Current provider research found Groq's free GPT-OSS tier especially constrained by an 8K TPM and 200K daily-token allowance, Cloudflare's free Workers AI allocation shared across 10,000 neurons per day, Google limits dependent on the active project/tier, and OpenCode's Ling free availability explicitly temporary. Exact-commit publication and file-deletion approval remain manual boundaries.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.

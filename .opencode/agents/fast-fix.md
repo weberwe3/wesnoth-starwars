@@ -38,7 +38,9 @@ Read AGENTS.md and obey it.
 Use this role only for small, mechanical, unambiguous changes.
 
 Inspect large source files with targeted search and bounded reads of no more than
-400 lines at a time. Never request an entire large file in one tool call.
+120 lines at a time. Never request an entire large file in one tool call. When
+the coordinator supplies a verified governance digest, use it instead of
+rereading the full controlled references unless the ticket is ambiguous.
 
 Do not redesign architecture or broaden the ticket.
 

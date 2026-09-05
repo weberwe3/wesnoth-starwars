@@ -199,7 +199,7 @@ Known provider observations:
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
 - When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
 - A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
-- Implementer and Fast-Fix agents must inspect large source files through targeted search and bounded reads rather than requesting an entire large file in one tool call. This keeps provider context/token limits from turning ordinary scoped work into avoidable infrastructure failures.
+- Implementer and Fast-Fix agents must inspect large source files through targeted search and reads of no more than 120 lines per call rather than requesting an entire large file. Tester/reviewer reads are bounded to 160 lines. This keeps provider context/token limits from turning ordinary scoped work into avoidable infrastructure failures.
 - A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. The reviewer order is Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash.
 - A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
@@ -247,7 +247,7 @@ These documents must be treated as protected baseline context.
 
 ### 7.1 Agent requirement
 
-Before substantive ticket work, every LLM role must read both reference files or receive an equivalent coordinator-supplied snapshot. Root `AGENTS.md` must explicitly require this behavior.
+Before substantive ticket work, every LLM role must read both reference files or receive an equivalent coordinator-supplied snapshot. For routine bounded work, the deterministic coordinator supplies a verified reference identity plus a compact authoritative governance digest; workers should not reread the full references unless the ticket is ambiguous or appears to conflict. Project-level planners and fresh sessions still read the full references. Root `AGENTS.md` must explicitly require this behavior.
 
 ### 7.2 Coordinator requirement
 
@@ -497,6 +497,38 @@ narrow repair brief from the existing structured failure and required-action
 fields. The same original allowed paths, complete gate rerun, and two-attempt
 ceiling still apply; planner unavailability must not silently bypass an
 otherwise eligible retry.
+
+For an ordinary deterministic implementation or validation failure whose
+structured evidence already contains a bounded required action, Python should
+use that action directly and avoid a separate coordinator-model recovery call.
+Tester or reviewer findings may still use the selected coordinator model when
+interpretation is necessary. Neither optimization changes the two-attempt
+ceiling or permits a missing gate.
+
+#### Resource-aware model operation
+
+Provider quotas and free allocations change independently of this repository,
+so they are operational inputs rather than authorization boundaries. The
+coordinator must minimize usage without weakening gates by:
+
+- deterministically resuming the sole verified unfinished contract without a
+  Sol planning call;
+- caching a validated planning decision for 15 minutes and reusing it only when
+  the coordinator mode, brief, current `main`, queue, pull requests, worktrees,
+  and planned-priority inventory have an identical fingerprint;
+- using compact reference digests, planning inventory, allowed-path lists, and
+  validation summaries in model prompts;
+- preferring the free Fast-Fix role for mechanical one- or two-file work while
+  retaining GPT-OSS for substantive implementation;
+- waiting at least 60 seconds between completed autonomous tickets to avoid
+  predictable rolling per-minute quota failures and unnecessary fallbacks; and
+- invoking reviewer fallbacks only for infrastructure/non-decisive outcomes,
+  never as duplicate review or verdict shopping.
+
+Cache entries contain no credentials or raw prompts, expire automatically, and
+are invalidated by any authoritative inventory change. Resource saving must
+never skip deterministic validation, the independent tester, the decisive
+reviewer chain, exact-commit approval, CI, or protected-branch controls.
 
 The coordinator must stop immediately, without spending recovery attempts, for
 errors an implementation ticket cannot safely resolve: dirty or unexpected
@@ -816,7 +848,8 @@ The root `AGENTS.md` should contain a mandatory block equivalent to:
 
 ```text
 MANDATORY PROJECT REFERENCES
-Before substantive work, read:
+Before substantive work, read these references or use the deterministic
+coordinator's verified reference identity and authoritative governance digest:
 1. docs/PROJECT_SCOPE_AND_FEATURE_SET.md
 2. docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md
 
@@ -827,6 +860,10 @@ references. If a conflict exists, stop and report the conflict.
 ```
 
 Additionally, `ticket_runner.py` and `coordinator.py` should prepend the same requirement to every implementer, fast-fix, tester, reviewer, and fallback-reviewer prompt.
+
+Routine bounded roles use the digest to avoid repeatedly consuming the complete
+reference package. Project-level planning, fresh sessions, ambiguity, or an
+apparent conflict still requires reading the relevant full controlled sources.
 
 This dual mechanism prevents a single missed configuration path from silently removing project context.
 

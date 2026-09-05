@@ -83,6 +83,14 @@ bounded ticket after each safe completion. Turning it off prevents the next
 ticket from starting; it does not interrupt an active gate mid-operation.
 Switching back to **Python** restores the manual Python/Bash workflow.
 
+To conserve provider and Codex limits, Python resumes a sole verified unfinished
+ticket without calling Sol, reuses a 15-minute planning decision only while the
+entire authoritative inventory fingerprint is unchanged, and waits 60 seconds
+between completed autonomous tickets. Model prompts use a verified compact
+governance digest and bounded validation summaries. Mechanical one- or two-file
+work is preferentially routed to the free Fast-Fix role. These optimizations do
+not skip deterministic validation, testing, review, approval, CI, or merge gates.
+
 If Sol cannot identify a safe non-overlapping ticket, automation enters a
 visible amber **Paused** state and records the exact planning reason in the
 activity log. Resolve the listed pull request, queued ticket, or documented

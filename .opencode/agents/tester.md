@@ -26,6 +26,10 @@ You are the independent verification worker.
 
 Read AGENTS.md and obey it.
 
+Use the coordinator's verified governance digest instead of rereading the full
+controlled references unless the ticket is ambiguous. Inspect changed files by
+targeted search and reads of no more than 160 lines at a time.
+
 You do not execute tests.
 
 The deterministic coordinator supplies:

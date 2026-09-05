@@ -564,14 +564,53 @@ class CoordinationControlTests(unittest.TestCase):
             "required_action": "Use one scoped repair attempt.",
             "eligible": True,
         }
-        with mock.patch.object(ticket_runner, "plan_recovery", side_effect=ValueError("fixture")):
+        with mock.patch.object(ticket_runner, "plan_recovery", side_effect=ValueError("fixture")) as planner:
             plan, used_fallback = ticket_runner.plan_recovery_or_fallback(
                 worktree=Path("."), log_dir=Path("."), ticket={}, failure=failure,
                 attempt=1, effort="low", governance_prompt="fixture",
             )
         self.assertTrue(used_fallback)
+        planner.assert_not_called()
         self.assertEqual(plan["action"], "repair")
         self.assertEqual(plan["corrective_action"], failure["required_action"])
+
+    def test_compact_validation_evidence_omits_verbose_process_state(self) -> None:
+        evidence = ticket_runner.compact_validation_evidence({
+            "pass": True,
+            "git_status": [{"path": "fixture.txt", "raw": "verbose"}],
+            "scope": {"changed_paths": ["fixture.txt"], "violations": []},
+            "static": {"checks": [{"name": "utf8:fixture.txt", "pass": True}]},
+            "profile": "static-text",
+            "profile_result": {"pass": True},
+        })
+        self.assertNotIn("git_status", evidence)
+        self.assertEqual(evidence["changed_paths"], ["fixture.txt"])
+        self.assertTrue(evidence["static_checks"][0]["pass"])
+
+    def test_single_verified_remnant_avoids_sol_planning(self) -> None:
+        proposal = AutonomyController._single_resume_proposal({
+            "resumable_local_work": [{
+                "name": "agent/interrupted", "previous_task_id": "ENGINE-TEST",
+                "worker": "implementer", "objective": "Continue fixture",
+                "allowed_paths": ["fixture.txt"], "validation_profile": "static-text",
+                "validation_root": None,
+            }],
+            "resumable_pull_requests": [],
+        })
+        self.assertEqual(proposal["action"], "run_ticket")
+        self.assertEqual(proposal["ticket"]["resume_branch"], "agent/interrupted")
+        self.assertIsNone(proposal["ticket"]["resume_pr_number"])
+
+    def test_unchanged_planning_decision_is_cached(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = Path(directory)
+            proposal = {"action": "stop", "summary": "Blocked", "impact": "None", "ticket": None}
+            AutonomyController._cache_plan(runtime, "a" * 64, proposal)
+            self.assertEqual(
+                AutonomyController._cached_plan(runtime, "a" * 64),
+                proposal,
+            )
+            self.assertIsNone(AutonomyController._cached_plan(runtime, "b" * 64))
 
     def test_terra_fallback_is_single_and_implementer_only(self) -> None:
         self.assertTrue(recovery_policy.should_use_terra_fallback("implementer", 1, False))
@@ -1039,6 +1078,20 @@ class ApprovalQueueTests(unittest.TestCase):
                 controller._queued_context(exclude_id="2" * 16),
                 [],
             )
+
+    def test_continuous_automation_observes_completion_cooldown(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            with mock.patch("autonomy.time.monotonic", return_value=100.0):
+                controller._last_completion_monotonic = 50.0
+                self.assertFalse(controller._cooldown_complete())
+                controller._last_completion_monotonic = 39.0
+                self.assertTrue(controller._cooldown_complete())
 
 
 if __name__ == "__main__":
