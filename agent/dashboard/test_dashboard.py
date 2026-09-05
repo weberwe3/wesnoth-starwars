@@ -27,7 +27,8 @@ from autonomy import (  # noqa: E402
     TICKET_SCHEMA,
     validate_strict_output_schema,
 )
-from approval_queue import ApprovalQueue  # noqa: E402
+import approval_queue  # noqa: E402
+from approval_queue import ApprovalQueue, QueueError  # noqa: E402
 from server import create_server, public_state  # noqa: E402
 
 
@@ -227,8 +228,15 @@ class CoordinationControlTests(unittest.TestCase):
                 "impact": "Follow-on work must wait.",
                 "ticket": None,
             }
-            with mock.patch.object(controller, "_plan", return_value=proposal):
+            with mock.patch.object(controller, "_plan", return_value=proposal) as planner:
                 controller._run("abc123def456", "sol-low", "Continue safely", True)
+            planner.assert_called_once_with(
+                "abc123def456",
+                "sol-low",
+                "Continue safely",
+                queue_exclude_id=None,
+                fresh_start_authorized=True,
+            )
             state = controller.public_state()
             self.assertEqual(state["run"]["state"], "paused")
             self.assertEqual(state["run"]["summary"], proposal["summary"])
@@ -251,6 +259,38 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertFalse(AutonomyController._fresh_start_requested("Continue safely"))
         self.assertTrue(AutonomyController._fresh_start_requested("Start from scratch"))
         self.assertTrue(AutonomyController._fresh_start_requested("Start a fresh ticket"))
+
+    def test_continuous_automation_authorizes_one_fresh_bounded_ticket(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            proposal = {
+                "action": "run_ticket",
+                "summary": "Next independent priority",
+                "impact": "Advance the documented roadmap",
+                "ticket": {
+                    "worker": "implementer",
+                    "objective": "Implement the next safe bounded priority",
+                    "allowed_paths": ["addons/example.cfg"],
+                    "validation_profile": "static-text",
+                    "validation_root": None,
+                    "resume_branch": None,
+                    "resume_pr_number": None,
+                    "resume_pr_head_sha": None,
+                    "replace_pr_number": None,
+                    "replace_pr_head_sha": None,
+                    "replace_pr_branch": None,
+                },
+            }
+            with self.assertRaises(ControlError):
+                controller._build_ticket("abc123def456", proposal, "Continue safely")
+            ticket = controller._build_ticket(
+                "abc123def456",
+                proposal,
+                "Continue safely",
+                fresh_start_authorized=True,
+            )
+            self.assertIsNone(ticket["resume_branch"])
+            self.assertEqual(ticket["worker"], "implementer")
 
     def test_resume_restores_original_ticket_contract(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -803,6 +843,112 @@ class ApprovalQueueTests(unittest.TestCase):
             request = json.loads((root / "agent/runtime/deletion-approval-request.json").read_text())
             self.assertEqual(request["deleted_paths"], ["obsolete.txt"])
             self.assertEqual(len(request["manifest_digest"]), 64)
+
+    def test_pr_head_confirmation_retries_a_stale_github_read(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            expected = "a" * 40
+            stale = json.dumps({
+                "number": 15, "url": "https://example.invalid/15",
+                "headRefOid": "b" * 40, "state": "OPEN",
+            })
+            current = json.dumps({
+                "number": 15, "url": "https://example.invalid/15",
+                "headRefOid": expected, "state": "OPEN",
+            })
+            with (
+                mock.patch("approval_queue._run", return_value=current) as run,
+                mock.patch.object(approval_queue, "PR_HEAD_CONFIRM_INTERVAL_SECONDS", 0),
+            ):
+                result = queue._wait_for_pr_head(
+                    "https://example.invalid/15", expected, root,
+                    initial=json.loads(stale),
+                )
+            self.assertEqual(result["headRefOid"], expected)
+            self.assertEqual(run.call_count, 1)
+
+    def test_ci_registration_waits_for_required_exact_head_check(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            expected = "a" * 40
+            empty = json.dumps({
+                "headRefOid": expected,
+                "statusCheckRollup": [],
+            })
+            registered = json.dumps({
+                "headRefOid": expected,
+                "statusCheckRollup": [{
+                    "name": "repository-gates",
+                    "status": "QUEUED",
+                    "conclusion": "",
+                }],
+            })
+            with (
+                mock.patch("approval_queue._run", side_effect=[empty, registered]) as run,
+                mock.patch.object(approval_queue, "CI_REGISTRATION_INTERVAL_SECONDS", 0),
+            ):
+                checks = queue._wait_for_ci_registration(15, expected, root)
+            self.assertEqual(checks[0]["name"], "repository-gates")
+            self.assertEqual(run.call_count, 2)
+
+    def test_ci_registration_rejects_a_changed_pr_head(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            changed = json.dumps({
+                "headRefOid": "b" * 40,
+                "statusCheckRollup": [{"name": "repository-gates"}],
+            })
+            with mock.patch("approval_queue._run", return_value=changed):
+                with self.assertRaisesRegex(QueueError, "PR head changed"):
+                    queue._wait_for_ci_registration(15, "a" * 40, root)
+
+    def test_remove_failed_ticket_hides_only_queue_record(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            record_id = "1" * 16
+            commit = "a" * 40
+            queue._update(lambda state: state["records"].append({
+                "id": record_id,
+                "ticket_id": "DASH-TEST",
+                "purpose": "Fixture",
+                "impact": "Fixture impact",
+                "branch": "agent/dash-test",
+                "commit_sha": commit,
+                "state": "failed",
+            }))
+            queue.dismiss_failed(record_id, commit)
+            self.assertEqual(queue.public_state()["records"], [])
+            stored = queue.read()["records"][0]
+            self.assertEqual(stored["state"], "dismissed")
+            self.assertEqual(stored["branch"], "agent/dash-test")
+            with self.assertRaises(QueueError):
+                queue.dismiss_failed(record_id, commit)
+
+    def test_failed_queue_item_blocks_normal_planning_but_can_be_excluded_for_recode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            controller.queue._update(lambda state: state["records"].append({
+                "id": "2" * 16,
+                "ticket_id": "DASH-TEST",
+                "purpose": "Fixture",
+                "changed_paths": ["addons/example.cfg"],
+                "branch": "agent/dash-test",
+                "state": "failed",
+            }))
+            self.assertEqual(len(controller._queued_context()), 1)
+            self.assertEqual(
+                controller._queued_context(exclude_id="2" * 16),
+                [],
+            )
 
 
 if __name__ == "__main__":
