@@ -26,6 +26,17 @@ TICKET_TIMEOUT_SECONDS = 1200
 MAX_BRIEF_LENGTH = 1000
 PLANNER_CACHE_SECONDS = 900
 AUTOMATION_COOLDOWN_SECONDS = 60
+AUTONOMOUS_WORKTREE_FAILURE_LIMIT = 3
+AUTONOMOUS_RETRYABLE_FAILURES = {
+    "implementation_or_validation_failure",
+    "provider_or_worker_failure",
+    "implementer_fallback_failure",
+    "implementer_fallback_unavailable",
+    "tester_change_request",
+    "tester_provider_failure",
+    "reviewer_change_request",
+    "reviewer_provider_failure",
+}
 SENSITIVE_ENV = re.compile(
     r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
     re.IGNORECASE,
@@ -158,6 +169,7 @@ class AutonomyController:
             },
             "approval_queue": queue["records"],
             "activity": queue["activity"],
+            "autonomous_failure_streak": self._read_failure_streak(),
         }
 
     def set_mode(self, mode: str) -> dict:
@@ -234,6 +246,7 @@ class AutonomyController:
                     raise ControlError("Select a Sol mode before enabling automation")
                 if not self._secure_bridge_online():
                     raise ControlError("Secure bridge offline — restart with the Windows launcher")
+                self._clear_failure_streak()
 
             def change(state: dict) -> None:
                 state["automation"].update({"enabled": enabled, "brief": brief})
@@ -463,25 +476,78 @@ class AutonomyController:
                     failure.get("required_action")
                     or "Review the ticket evidence before starting another ticket."
                 )
+                failure_class = str(failure.get("class") or "ticket_failure")
+                identity = self._failed_worktree_identity(ticket["task_id"], ticket)
+                retryable = continuous and failure_class in AUTONOMOUS_RETRYABLE_FAILURES
+                streak = self._record_autonomous_failure(
+                    identity, failure_class, detail, required_action
+                ) if retryable else 0
+                if retryable and streak < AUTONOMOUS_WORKTREE_FAILURE_LIMIT:
+                    retry_action = (
+                        f"The autonomous coordinator will preserve and resume this exact worktree "
+                        f"after the cooldown. Consecutive failure {streak} of "
+                        f"{AUTONOMOUS_WORKTREE_FAILURE_LIMIT}; two bounded in-run repair attempts "
+                        "remain governed separately."
+                    )
+                    self.queue.event(
+                        f"{ticket['task_id']} failed; autonomous worktree retry scheduled",
+                        level="error", detail=detail, ticket_id=ticket["task_id"],
+                        failure_class=failure_class, required_action=retry_action,
+                        recovery_attempt=streak,
+                        recovery_limit=AUTONOMOUS_WORKTREE_FAILURE_LIMIT,
+                    )
+                    self._finish(
+                        run_id, False,
+                        f"Worktree retry {streak} of {AUTONOMOUS_WORKTREE_FAILURE_LIMIT} scheduled",
+                        ticket_id=ticket["task_id"],
+                        error=f"{detail} {retry_action}",
+                    )
+                    return
+                if retryable:
+                    final_detail = (
+                        f"Last failure: {detail} Required action from the failed step: "
+                        f"{required_action} Autonomous processing for worktree {identity} has ceased "
+                        f"because it failed {AUTONOMOUS_WORKTREE_FAILURE_LIMIT} consecutive times, "
+                        "reaching the configured failure limit. The branch, worktree, and diagnostic "
+                        "evidence were preserved for manual inspection or an explicitly restarted run."
+                    )
+                    final_action = (
+                        "Inspect the preserved worktree and the last failure above. Re-enable "
+                        "automation only when you want to authorize a new three-failure window."
+                    )
+                    self.queue.event(
+                        f"{ticket['task_id']} stopped at the three-failure worktree limit",
+                        level="error", detail=final_detail, ticket_id=ticket["task_id"],
+                        failure_class=failure_class, required_action=final_action,
+                        recovery_attempt=streak,
+                        recovery_limit=AUTONOMOUS_WORKTREE_FAILURE_LIMIT,
+                    )
+                    self._finish(
+                        run_id, False,
+                        "Autonomous worktree processing ceased after three consecutive failures",
+                        ticket_id=ticket["task_id"], error=final_detail,
+                    )
+                    self._disable_automation(
+                        "Autonomous worktree processing ceased after three consecutive failures"
+                    )
+                    return
                 self.queue.event(
-                    f"{ticket['task_id']} stopped: {failure.get('class') or 'ticket failure'}",
-                    level="error",
-                    detail=detail,
-                    ticket_id=ticket["task_id"],
-                    failure_class=str(failure.get("class") or "ticket_failure"),
-                    required_action=required_action,
+                    f"{ticket['task_id']} stopped: {failure_class}", level="error",
+                    detail=detail, ticket_id=ticket["task_id"],
+                    failure_class=failure_class, required_action=required_action,
                     recovery_attempt=int(failure.get("attempt") or 0),
                     recovery_limit=int(failure.get("limit") or 2),
                 )
                 self._finish(
-                    run_id, False, "Ticket stopped after bounded recovery",
+                    run_id, False, "Ticket stopped at a non-retryable safety boundary",
                     ticket_id=ticket["task_id"],
                     error=f"{detail} Required action: {required_action}",
                 )
                 if continuous:
-                    self._disable_automation("Ticket stopped after bounded recovery")
+                    self._disable_automation("Ticket stopped at a non-retryable safety boundary")
                 return
             result = self._load_ticket_result(ticket["task_id"])
+            self._clear_failure_streak()
             if proposal["action"] == "replace_pr":
                 self._retire_pull_request(ticket)
             queued = self.queue.add_passed_ticket(
@@ -549,6 +615,14 @@ class AutonomyController:
                 detail="Python found interrupted work that requires bounded human review.",
             )
             return blocked
+        retry = self._failure_streak_resume_proposal(inventory)
+        if retry is not None:
+            retry["_planning_inventory"] = inventory
+            self.queue.event(
+                "Sol planning call avoided",
+                detail="Python resumed the exact worktree in its three-failure retry window.",
+            )
+            return retry
         deterministic = self._single_resume_proposal(inventory)
         if deterministic is not None:
             deterministic["_planning_inventory"] = inventory
@@ -695,6 +769,25 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         if len(contracts) != 1:
             return None
         item = max(unique.values(), key=lambda value: str(value.get("name") or ""))
+        return AutonomyController._resume_item_proposal(item)
+
+    def _failure_streak_resume_proposal(self, inventory: dict) -> dict | None:
+        streak = self._read_failure_streak()
+        if streak["count"] <= 0 or not streak["identity"]:
+            return None
+        candidates = list(inventory.get("resumable_local_work") or [])
+        candidates.extend(inventory.get("resumable_pull_requests") or [])
+        item = next(
+            (
+                value for value in candidates
+                if isinstance(value, dict) and value.get("name") == streak["identity"]
+            ),
+            None,
+        )
+        return self._resume_item_proposal(item) if item is not None else None
+
+    @staticmethod
+    def _resume_item_proposal(item: dict) -> dict:
         task_id = str(item.get("previous_task_id") or "unfinished ticket")
         return {
             "action": "run_ticket",
@@ -1205,13 +1298,15 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 )
                 blocked_branches.append(record)
                 continue
-            if dirty and contains_main.returncode != 0:
-                record["reason"] = (
-                    "Interrupted work has uncommitted changes on an outdated or divergent "
-                    "base; automatic main reconciliation was refused to preserve it."
-                )
-                blocked_branches.append(record)
-                continue
+            if contains_main.returncode != 0:
+                reconciliation = ticket_runner.inspect_local_resume_reconciliation(worktree)
+                record["reconciliation"] = reconciliation.get("mode")
+                if not reconciliation["safe"]:
+                    record["reason"] = str(reconciliation.get("reason") or (
+                        "Interrupted work cannot be reconciled with current main safely."
+                    ))
+                    blocked_branches.append(record)
+                    continue
             branches.append(record)
 
         queued_context = self._queued_context(exclude_id=queue_exclude_id)
@@ -1470,7 +1565,64 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "Sol proposed paths already owned by queued work or an open pull request"
             )
 
-    def _load_ticket_result(self, task_id: str) -> dict:
+    @property
+    def _failure_streak_path(self) -> Path:
+        return self.root / "agent" / "runtime" / "autonomous-failure-streak.json"
+
+    def _read_failure_streak(self) -> dict:
+        empty = {"identity": None, "count": 0, "failure_class": None, "last_detail": None}
+        try:
+            value = json.loads(self._failure_streak_path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, OSError, ValueError):
+            return empty
+        if not isinstance(value, dict):
+            return empty
+        identity = value.get("identity")
+        count = value.get("count")
+        if not isinstance(identity, str) or not identity or not isinstance(count, int):
+            return empty
+        return {
+            "identity": identity[:240],
+            "count": min(AUTONOMOUS_WORKTREE_FAILURE_LIMIT, max(0, count)),
+            "failure_class": str(value.get("failure_class") or "ticket_failure")[:80],
+            "last_detail": str(value.get("last_detail") or "Ticket execution failed.")[:2000],
+        }
+
+    def _write_failure_streak(self, value: dict) -> None:
+        path = self._failure_streak_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        os.chmod(path.parent, 0o700)
+        temporary = path.with_suffix(f".{uuid.uuid4().hex[:12]}.tmp")
+        temporary.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, path)
+
+    def _clear_failure_streak(self) -> None:
+        self._write_failure_streak({
+            "identity": None, "count": 0, "failure_class": None, "last_detail": None,
+        })
+
+    def _record_autonomous_failure(
+        self,
+        identity: str,
+        failure_class: str,
+        detail: str,
+        required_action: str,
+    ) -> int:
+        previous = self._read_failure_streak()
+        count = previous["count"] + 1 if previous["identity"] == identity else 1
+        count = min(AUTONOMOUS_WORKTREE_FAILURE_LIMIT, count)
+        self._write_failure_streak({
+            "identity": identity[:240],
+            "count": count,
+            "failure_class": failure_class[:80],
+            "last_detail": (
+                f"{detail} Required action: {required_action}"
+            )[:2000],
+        })
+        return count
+
+    def _latest_ticket_result(self, task_id: str) -> dict:
         candidates = sorted(
             (self.root / "agent" / "logs").glob(f"{task_id}-*/result.json"),
             key=lambda path: path.stat().st_mtime,
@@ -1479,7 +1631,22 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         if not candidates:
             raise ControlError("Deterministic runner produced no ticket evidence")
         result = json.loads(candidates[0].read_text(encoding="utf-8"))
-        if result.get("task_id") != task_id or result.get("final_verdict") != "PASS":
+        if result.get("task_id") != task_id:
+            raise ControlError("Deterministic ticket evidence identity changed")
+        return result
+
+    def _failed_worktree_identity(self, task_id: str, ticket: dict) -> str:
+        try:
+            branch = self._latest_ticket_result(task_id).get("branch")
+        except (ControlError, OSError, ValueError):
+            branch = ticket.get("resume_branch")
+        if isinstance(branch, str) and re.fullmatch(r"agent/[a-zA-Z0-9._/-]+", branch):
+            return branch
+        return task_id
+
+    def _load_ticket_result(self, task_id: str) -> dict:
+        result = self._latest_ticket_result(task_id)
+        if result.get("final_verdict") != "PASS":
             raise ControlError("Deterministic ticket evidence did not confirm PASS")
         return result
 

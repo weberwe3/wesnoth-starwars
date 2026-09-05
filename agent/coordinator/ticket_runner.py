@@ -19,6 +19,7 @@ from model_policy import AGENT_MODELS, ModelPolicy, failure_kind
 import reference_package as reference_pkg
 import recovery_policy
 from runtime_status import RuntimeStatus, runtime_status_path
+from scenario_launch_selftest import find_wesnoth_executable
 
 
 IMPLEMENTER_TIMEOUT = 240
@@ -536,6 +537,75 @@ def read_resume_changes(worktree: Path) -> tuple[list[str], list[str]]:
     return _read_git_changes_against(worktree, base)
 
 
+def _paths_overlap(left: str, right: str) -> bool:
+    """Treat a file and its parent directory as overlapping Git ownership."""
+
+    left = left.replace("\\", "/").rstrip("/")
+    right = right.replace("\\", "/").rstrip("/")
+    return left == right or left.startswith(right + "/") or right.startswith(left + "/")
+
+
+def inspect_local_resume_reconciliation(worktree: Path) -> dict:
+    """Prove whether an unpublished remnant can absorb current main safely."""
+
+    rc, _ = core.git(worktree, "merge-base", "--is-ancestor", "main", "HEAD")
+    if rc == 0:
+        return {"safe": True, "mode": "current", "dirty_paths": [], "upstream_paths": []}
+    if rc != 1:
+        return {"safe": False, "mode": "unknown", "reason": "Git ancestry could not be verified."}
+
+    _, dirty_paths = _read_git_changes_against(worktree, "HEAD")
+    if any(path.startswith("<") for path in dirty_paths):
+        return {
+            "safe": False,
+            "mode": "unsupported-dirty-state",
+            "reason": "Interrupted work contains an unsupported rename, copy, or Git status entry.",
+        }
+
+    rc, _ = core.git(worktree, "merge-base", "--is-ancestor", "HEAD", "main")
+    if rc != 0 and dirty_paths:
+        return {
+            "safe": False,
+            "mode": "dirty-diverged",
+            "reason": (
+                "Interrupted work has both committed and uncommitted changes on a divergent "
+                "base; automatic reconciliation could not prove preservation."
+            ),
+        }
+    if rc != 0:
+        return {"safe": True, "mode": "clean-merge", "dirty_paths": [], "upstream_paths": []}
+    rc, output = core.git(worktree, "diff", "--name-status", "-M", "HEAD..main")
+    core.require_success(rc, output, "Inspect changes introduced by current main")
+    upstream_paths: list[str] = []
+    for line in output.splitlines():
+        fields = line.split("\t")
+        if len(fields) != 2 or fields[0].startswith(("R", "C")):
+            return {
+                "safe": False,
+                "mode": "unsupported-upstream-state",
+                "reason": "Current main contains a rename or copy that needs human reconciliation.",
+            }
+        upstream_paths.append(fields[1])
+    conflicts = sorted({
+        dirty for dirty in dirty_paths for upstream in upstream_paths
+        if _paths_overlap(dirty, upstream)
+    })
+    if conflicts:
+        return {
+            "safe": False,
+            "mode": "overlap",
+            "dirty_paths": dirty_paths,
+            "upstream_paths": sorted(set(upstream_paths)),
+            "reason": "Current main overlaps unfinished paths: " + ", ".join(conflicts[:5]),
+        }
+    return {
+        "safe": True,
+        "mode": "dirty-disjoint-fast-forward" if dirty_paths else "clean-fast-forward",
+        "dirty_paths": dirty_paths,
+        "upstream_paths": sorted(set(upstream_paths)),
+    }
+
+
 def resolve_resume_worktree(root: Path, branch: str) -> Path:
     """Resolve a trusted existing ticket worktree without accepting a path from an LLM."""
 
@@ -617,30 +687,32 @@ def prepare_open_pr_resume(root: Path, worktree: Path, ticket: dict) -> bool:
 
 
 def prepare_local_resume(root: Path, worktree: Path) -> bool:
-    """Append current main to an unpublished remnant without losing local work."""
+    """Fast-forward a proven-safe unpublished remnant without losing local work."""
 
-    rc, _ = core.git(worktree, "merge-base", "--is-ancestor", "main", "HEAD")
-    if rc == 0:
+    inspection = inspect_local_resume_reconciliation(worktree)
+    if not inspection["safe"]:
+        raise SystemExit("ERROR: " + inspection["reason"])
+    if inspection["mode"] == "current":
         return False
-    if rc != 1:
-        raise SystemExit("ERROR: local remnant ancestry could not be verified.")
 
-    rc, status = core.git(
-        worktree, "status", "--porcelain=v1", "--untracked-files=all"
+    before_head = core.git(worktree, "rev-parse", "HEAD")[1].strip()
+    before_paths = inspection.get("dirty_paths", [])
+    merge_args = ("merge", "--no-edit", "main") if inspection["mode"] == "clean-merge" else (
+        "merge", "--ff-only", "main"
     )
-    core.require_success(rc, status, "Verify local remnant worktree state")
-    if status.strip():
-        raise SystemExit(
-            "ERROR: local remnant has uncommitted changes and does not contain current "
-            "main; automatic reconciliation was refused to preserve the remnants."
-        )
-
-    rc, output = core.git(worktree, "merge", "--no-edit", "main", timeout=120)
+    rc, output = core.git(worktree, *merge_args, timeout=120)
     if rc != 0:
-        core.git(worktree, "merge", "--abort", timeout=60)
+        if inspection["mode"] == "clean-merge":
+            core.git(worktree, "merge", "--abort", timeout=60)
         raise SystemExit(
             "ERROR: local remnant cannot be reconciled with main without conflicts. "
-            "Its branch was restored unchanged."
+            "Its branch and unfinished files were left unchanged."
+        )
+    after_paths = _read_git_changes_against(worktree, "HEAD")[1]
+    if after_paths != before_paths:
+        raise SystemExit(
+            "ERROR: main reconciliation changed the set of unfinished paths; stop and inspect "
+            f"the preserved worktree (previous HEAD {before_head[:12]})."
         )
     return True
 
@@ -921,6 +993,7 @@ def plan_recovery(
     output_path = log_dir / f"recovery-{attempt}-plan.json"
     schema_path.write_text(json.dumps(RECOVERY_SCHEMA, indent=2) + "\n")
     windows_binary = executable.lower().endswith(".exe")
+    deterministic_context = collect_recovery_context(worktree, ticket)
     prompt = f"""You are the selected bounded recovery planner for this ticket.
 
 {governance_prompt}
@@ -928,6 +1001,7 @@ def plan_recovery(
 Do not edit files, run commands, use the web, expose secrets, broaden scope, or change governance.
 This is recovery attempt {attempt} of {recovery_policy.MAX_RECOVERY_ATTEMPTS} for the ticket.
 Diagnose only the structured failure below and propose the smallest corrective action.
+Treat available deterministic local facts as authoritative over unsupported model claims.
 If the evidence is insufficient or repair would exceed allowed paths, return action stop.
 
 TICKET:
@@ -935,6 +1009,9 @@ TICKET:
 
 STRUCTURED FAILURE:
 {json.dumps(failure, indent=2)}
+
+DETERMINISTIC LOCAL CONTEXT:
+{json.dumps(deterministic_context, indent=2)}
 """.strip()
     command = [
         executable,
@@ -1042,6 +1119,83 @@ def compact_validation_evidence(validation: dict) -> dict:
     }
 
 
+def _terrain_value(block: str, name: str) -> str | None:
+    match = re.search(rf"(?m)^\s*{re.escape(name)}\s*=\s*([^#\r\n]+)", block)
+    return match.group(1).strip().strip('"') if match else None
+
+
+def parse_terrain_registry(text: str, terrain_codes: set[str]) -> dict[str, dict]:
+    """Return bounded authoritative facts for terrain codes used by a candidate."""
+
+    facts: dict[str, dict] = {}
+    for match in re.finditer(r"\[terrain_type\](.*?)\[/terrain_type\]", text, re.DOTALL):
+        block = match.group(1)
+        code = _terrain_value(block, "string")
+        if not code or code not in terrain_codes:
+            continue
+        facts[code] = {
+            "defined": True,
+            "id": _terrain_value(block, "id"),
+            "recruit_from": _terrain_value(block, "recruit_from") == "yes",
+            "recruit_onto": _terrain_value(block, "recruit_onto") == "yes",
+        }
+    return facts
+
+
+def collect_recovery_context(worktree: Path, ticket: dict) -> dict:
+    """Collect small, secret-free deterministic facts that can resolve model disputes."""
+
+    context: dict = {
+        "validation_profile": ticket.get("validation_profile"),
+        "allowed_paths": list(ticket.get("allowed_paths") or [])[:20],
+    }
+    if not (worktree / ".git").exists():
+        context["changed_paths"] = []
+        return context
+    try:
+        _, changed_paths = read_git_changes(worktree)
+    except SystemExit:
+        changed_paths = []
+    context["changed_paths"] = changed_paths[:200]
+    if ticket.get("validation_profile") != "wesnoth-addon-static":
+        return context
+
+    terrain_codes: set[str] = set()
+    for relative in changed_paths[:200]:
+        path = worktree / relative
+        try:
+            if path.suffix.casefold() != ".cfg" or path.is_symlink() or path.stat().st_size > 1_000_000:
+                continue
+            candidate = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for map_match in re.finditer(r'(?s)\bmap_data\s*=\s*"(.*?)"', candidate):
+            for cell in re.split(r"[,\r\n]", map_match.group(1)):
+                code = re.sub(r"^\s*\d+\s+", "", cell.strip())
+                if re.fullmatch(r"[A-Za-z][A-Za-z0-9]*(?:\^[A-Za-z0-9]+)?", code):
+                    terrain_codes.add(code)
+                    terrain_codes.add(code.split("^", 1)[0])
+    if not terrain_codes:
+        return context
+    executable = find_wesnoth_executable()
+    registry = executable.parent / "data" / "core" / "terrain.cfg" if executable else None
+    try:
+        registry_text = registry.read_text(encoding="utf-8") if registry else ""
+    except OSError:
+        registry_text = ""
+    if not registry_text:
+        context["terrain_registry"] = {"available": False}
+        return context
+    facts = parse_terrain_registry(registry_text, terrain_codes)
+    context["terrain_registry"] = {
+        "available": True,
+        "source": "installed Wesnoth core terrain registry",
+        "facts": facts,
+        "unresolved_codes": sorted(terrain_codes - facts.keys())[:30],
+    }
+    return context
+
+
 def evaluate_candidate(
     *,
     status: RuntimeStatus,
@@ -1096,6 +1250,7 @@ def evaluate_candidate(
     status.handoff("validation", "tester", "Validated change sent to tester")
     status.set_worker("tester", "active", "Independent verification")
     validation_evidence = compact_validation_evidence(validation)
+    deterministic_context = collect_recovery_context(worktree, ticket)
     tester_prompt = f"""TASK ID: {task_id}
 
 {governance_prompt}
@@ -1109,6 +1264,10 @@ ALLOWED PATHS:
 DETERMINISTIC VALIDATION:
 {json.dumps(validation_evidence, separators=(',', ':'))}
 
+DETERMINISTIC LOCAL CONTEXT:
+{json.dumps(deterministic_context, separators=(',', ':'))}
+
+Treat available deterministic local facts as authoritative.
 Independently inspect the changed project files. Do not execute commands, edit files, or use the web.
 Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
 """.strip()
@@ -1162,8 +1321,12 @@ ALLOWED PATHS:
 DETERMINISTIC VALIDATION:
 {json.dumps(validation_evidence, separators=(',', ':'))}
 
+DETERMINISTIC LOCAL CONTEXT:
+{json.dumps(deterministic_context, separators=(',', ':'))}
+
 TESTER: exit code {tester_rc}; PASS={tester_pass}
 
+Treat available deterministic local facts as authoritative.
 Perform an independent final review. Inspect the relevant changed files yourself.
 Do not execute commands, edit files, invoke another agent, or use the web.
 Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CHANGES.
