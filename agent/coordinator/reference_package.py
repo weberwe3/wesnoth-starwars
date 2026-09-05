@@ -292,6 +292,7 @@ def build_governance_prompt(package: dict) -> str:
         "- Python owns execution, validation, retry ceilings, and publication gates.",
         "- In continuous mode, one compact Sol call may refill a small ticket backlog; Python revalidates and selects each contract without another planning call.",
         "- The dashboard lists only pending static and generated tickets; a failed Fast-Fix call may use one scoped Terra Low fallback.",
+        "- Codex write fallbacks must report workspace-write; a read-only downgrade stops immediately and is never treated as implementation success.",
         "- Tester and reviewer roles are read-only and independent.",
         "",
         "For routine bounded work, this verified digest is the equivalent coordinator-supplied",

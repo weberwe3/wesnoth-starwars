@@ -232,6 +232,8 @@ def invoke_terra(
         "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
         "--color", "never", "-",
     ]
+    if sandbox == "workspace-write":
+        command.insert(command.index("--ephemeral"), "--approve-for-me")
     environment = {
         key: value for key, value in core.make_test_env().items()
         if not re.search(
@@ -247,6 +249,15 @@ def invoke_terra(
         )
         output = completed.stdout or ""
         log_file.write_text(output, encoding="utf-8")
+        reported = re.search(r"(?mi)^sandbox:\s*([^\s]+)", output)
+        if (
+            sandbox == "workspace-write"
+            and (
+                reported is None
+                or reported.group(1).casefold() != "workspace-write"
+            )
+        ):
+            return recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE, output
         return completed.returncode, output
     except subprocess.TimeoutExpired as exc:
         output = str(exc.stdout or "") + "\n[COORDINATOR] TERRA FALLBACK TIMEOUT\n"
@@ -1978,7 +1989,7 @@ Return your normal structured implementation report.
             attempt=attempt,
             policy=model_policy,
             run_sequence=run_sequence,
-            implementation_failure=implementation_failure if attempt == 0 else None,
+            implementation_failure=implementation_failure,
             resume_checkpoint=stage_checkpoint if attempt == 0 else None,
         )
         if attempt and recovery_attempts:
@@ -2146,7 +2157,8 @@ COORDINATOR CORRECTIVE ACTION:
 
 Inspect the existing candidate and make the smallest correction.
 """.strip()
-        impl_rc, _ = invoke_managed_agent(
+        implementation_failure = None
+        impl_rc, fast_fix_output = invoke_managed_agent(
             policy=model_policy,
             run_sequence=run_sequence,
             status=status,
@@ -2168,7 +2180,7 @@ Inspect the existing candidate and make the smallest correction.
                 "You may use read-only inspection commands and apply patches. Do not run tests, "
                 "package managers, network commands, or Git write commands.",
             )
-            terra_recovery_rc, _ = invoke_managed_terra(
+            terra_recovery_rc, terra_recovery_output = invoke_managed_terra(
                 policy=model_policy,
                 run_sequence=run_sequence,
                 status=status,
@@ -2180,6 +2192,14 @@ Inspect the existing candidate and make the smallest correction.
                 reasoning_effort="low",
             )
             impl_rc = terra_recovery_rc
+            if terra_recovery_rc != 0:
+                implementation_failure = recovery_policy.classify_implementer_fallback(
+                    fast_fix_output,
+                    fast_fix_primary_rc,
+                    terra_recovery_output,
+                    terra_recovery_rc,
+                    "Terra Light",
+                )
         status.set_worker(
             "fast-fix",
             "idle" if impl_rc == 0 else "error",

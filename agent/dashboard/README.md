@@ -83,6 +83,11 @@ inherits the exact objective and allowed paths and remains subject to every
 deterministic gate; it cannot test, commit, publish, merge, delete, or expand
 the ticket.
 
+The secure runner requests Codex's auto-reviewed workspace-write mode and
+checks the effective sandbox reported by the subprocess. A read-only downgrade
+is treated as an immediate infrastructure stop even when Codex exits with code
+zero, preventing repeated no-change repair attempts and unnecessary token use.
+
 Eligible implementation and gate failures receive at most two scoped repair
 attempts. If the Sol recovery-planning call itself is unavailable, Python keeps
 the retry sequence moving with the existing structured failure and required
