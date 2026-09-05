@@ -542,6 +542,14 @@ class AutonomyController:
     ) -> dict:
         runtime = self.root / "agent" / "runtime"
         inventory = self._planning_inventory(queue_exclude_id=queue_exclude_id)
+        blocked = self._blocked_resume_proposal(inventory)
+        if blocked is not None:
+            blocked["_planning_inventory"] = inventory
+            self.queue.event(
+                "Sol planning call avoided",
+                detail="Python found interrupted work that requires bounded human review.",
+            )
+            return blocked
         deterministic = self._single_resume_proposal(inventory)
         if deterministic is not None:
             deterministic["_planning_inventory"] = inventory
@@ -694,6 +702,21 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "replace_pr_head_sha": None,
                 "replace_pr_branch": None,
             },
+        }
+
+    @staticmethod
+    def _blocked_resume_proposal(inventory: dict) -> dict | None:
+        blocked = inventory.get("blocked_local_work") or []
+        if not blocked:
+            return None
+        item = blocked[0]
+        task_id = str(item.get("previous_task_id") or "unfinished ticket")
+        reason = str(item.get("reason") or "its worktree state is not safely resumable")
+        return {
+            "action": "stop",
+            "summary": f"{task_id} needs review before autonomous work can continue",
+            "impact": reason,
+            "ticket": None,
         }
 
     @staticmethod
@@ -1049,10 +1072,12 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         represented_branches = self._represented_pr_branches(pull_requests)
         unfinished = self._unfinished_ticket_evidence()
         all_evidence = self._ticket_evidence(include_passed=True)
+        main_head = checked(["git", "rev-parse", "main"]).strip()
 
         managed_root = (self.root.parent / f"{self.root.name}-worktrees").resolve()
         worktrees = self._managed_worktrees(checked(["git", "worktree", "list", "--porcelain"]), managed_root)
         branches = []
+        blocked_branches = []
         branch_heads: dict[str, str] = {}
         branch_output = checked([
             "git", "for-each-ref", "--format=%(refname:short)|%(objectname)",
@@ -1072,32 +1097,69 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             )
             if ancestor.returncode not in {0, 1}:
                 raise ControlError("Could not classify a local ticket branch")
+            contains_main = subprocess.run(
+                ["git", "merge-base", "--is-ancestor", "main", name],
+                cwd=self.root, env=environment, stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL, timeout=30, check=False,
+            )
+            if contains_main.returncode not in {0, 1}:
+                raise ControlError("Could not classify a local ticket branch")
             worktree = worktrees.get(name)
             evidence = unfinished.get(name)
             if worktree is None or evidence is None:
                 continue
-            paths = checked([
-                "git", "-C", str(worktree), "diff", "--name-only", "main",
-            ]).splitlines()
             dirty = checked([
                 "git", "-C", str(worktree), "status", "--porcelain=v1",
                 "--untracked-files=all",
             ]).splitlines()
-            dirty_paths = [line[3:].strip() for line in dirty if len(line) >= 4 and " -> " not in line]
-            changed_paths = sorted(set(paths + dirty_paths))[:200]
-            branches.append({
+            try:
+                _, changed_paths = ticket_runner.read_git_changes(worktree)
+            except SystemExit as exc:
+                raise ControlError("Could not inspect an interrupted ticket worktree") from exc
+            scope = ticket_runner.validate_resume_scope(
+                changed_paths, evidence["allowed_paths"]
+            )
+            record = {
                     "name": name,
                     "head": head,
                     "worktree": worktree.name,
-                    "changed_paths": changed_paths,
+                    "changed_paths": changed_paths[:200],
                     "dirty": bool(dirty),
+                    "main_relation": (
+                        "current" if head == main_head
+                        else "contains-main" if contains_main.returncode == 0
+                        else "behind-main" if ancestor.returncode == 0
+                        else "diverged-from-main"
+                    ),
                     "previous_task_id": evidence["task_id"],
                     "worker": evidence["worker"],
                     "objective": evidence["objective"],
                     "allowed_paths": evidence["allowed_paths"],
                     "validation_profile": evidence["validation_profile"],
                     "validation_root": evidence.get("validation_root"),
-            })
+            }
+            if len(changed_paths) > 200:
+                record["reason"] = (
+                    "Interrupted work changes more than 200 paths; automatic resumption "
+                    "was refused because its bounded scope cannot be displayed safely."
+                )
+                blocked_branches.append(record)
+                continue
+            if not scope["pass"]:
+                record["reason"] = (
+                    "Interrupted work contains protected, unsupported, or out-of-scope paths: "
+                    + "; ".join(scope["violations"][:5])
+                )
+                blocked_branches.append(record)
+                continue
+            if dirty and contains_main.returncode != 0:
+                record["reason"] = (
+                    "Interrupted work has uncommitted changes on an outdated or divergent "
+                    "base; automatic main reconciliation was refused to preserve it."
+                )
+                blocked_branches.append(record)
+                continue
+            branches.append(record)
 
         queued_context = self._queued_context(exclude_id=queue_exclude_id)
         recently_published = [
@@ -1202,11 +1264,12 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             else:
                 resumable_prs.append(candidate)
         return {
-            "main_head": checked(["git", "rev-parse", "main"]).strip(),
+            "main_head": main_head,
             "approval_queue": queued_context,
             "recently_published": recently_published,
             "planned_priorities": self._planned_priorities(recently_published),
             "resumable_local_work": branches,
+            "blocked_local_work": blocked_branches,
             "resumable_pull_requests": resumable_prs,
             "replaceable_pull_requests": replaceable_prs,
             "local_agent_branches": branches,

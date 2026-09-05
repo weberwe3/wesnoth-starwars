@@ -437,6 +437,35 @@ def prepare_open_pr_resume(root: Path, worktree: Path, ticket: dict) -> bool:
     return True
 
 
+def prepare_local_resume(root: Path, worktree: Path) -> bool:
+    """Append current main to an unpublished remnant without losing local work."""
+
+    rc, _ = core.git(worktree, "merge-base", "--is-ancestor", "main", "HEAD")
+    if rc == 0:
+        return False
+    if rc != 1:
+        raise SystemExit("ERROR: local remnant ancestry could not be verified.")
+
+    rc, status = core.git(
+        worktree, "status", "--porcelain=v1", "--untracked-files=all"
+    )
+    core.require_success(rc, status, "Verify local remnant worktree state")
+    if status.strip():
+        raise SystemExit(
+            "ERROR: local remnant has uncommitted changes and does not contain current "
+            "main; automatic reconciliation was refused to preserve the remnants."
+        )
+
+    rc, output = core.git(worktree, "merge", "--no-edit", "main", timeout=120)
+    if rc != 0:
+        core.git(worktree, "merge", "--abort", timeout=60)
+        raise SystemExit(
+            "ERROR: local remnant cannot be reconciled with main without conflicts. "
+            "Its branch was restored unchanged."
+        )
+    return True
+
+
 def validate_scope(
     changed_paths: list[str],
     allowed_paths: list[str],
@@ -461,6 +490,18 @@ def validate_scope(
         "violations": violations,
         "pass": bool(changed_paths) and not violations,
     }
+
+
+def validate_resume_scope(
+    changed_paths: list[str],
+    allowed_paths: list[str],
+) -> dict:
+    """Validate pre-existing remnants; an exact-contract clean worktree is resumable."""
+
+    result = validate_scope(changed_paths, allowed_paths)
+    result["state"] = "changed" if changed_paths else "clean"
+    result["pass"] = not result["violations"]
+    return result
 
 
 def validate_static_files(
@@ -1143,22 +1184,56 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     print()
 
     if resume_branch:
-        main_appended = prepare_open_pr_resume(root, worktree, ticket)
         _, existing_paths = read_git_changes(worktree)
-        existing_scope = validate_scope(existing_paths, ticket["allowed_paths"])
+        existing_scope = validate_resume_scope(existing_paths, ticket["allowed_paths"])
         if not existing_scope["pass"]:
+            violations = "; ".join(existing_scope["violations"][:5])
             status.fail_system(
                 "Resumable work failed its original scope boundary",
-                detail="Existing ticket remnants are empty, protected, or outside allowed paths.",
+                detail=f"Existing ticket remnants contain unsafe paths: {violations}",
                 failure_class="resume_scope_violation",
-                required_action="Inspect the existing ticket worktree before continuing.",
+                required_action="Inspect the listed unexpected paths before continuing.",
+            )
+            return 14
+        try:
+            if ticket.get("resume_pr_number") is not None:
+                main_appended = prepare_open_pr_resume(root, worktree, ticket)
+            else:
+                main_appended = prepare_local_resume(root, worktree)
+        except SystemExit as exc:
+            status.fail_system(
+                "Resumable branch reconciliation stopped safely",
+                detail=recovery_policy.safe_text(
+                    exc, "The interrupted ticket could not be reconciled with current main."
+                ),
+                failure_class="resume_reconciliation_failure",
+                required_action=(
+                    "Inspect the preserved ticket worktree and resolve its main-base state "
+                    "before retrying."
+                ),
+            )
+            return 15
+        _, existing_paths = read_git_changes(worktree)
+        existing_scope = validate_resume_scope(existing_paths, ticket["allowed_paths"])
+        if not existing_scope["pass"]:
+            violations = "; ".join(existing_scope["violations"][:5])
+            status.fail_system(
+                "Main reconciliation exceeded the original scope boundary",
+                detail=f"Reconciled ticket state contains unsafe paths: {violations}",
+                failure_class="resume_scope_violation",
+                required_action="Inspect the reconciled worktree before continuing.",
             )
             return 14
         print("[1/5] Existing ticket worktree resumed.")
         status.event(
             (
-                "Open pull request resumed after appending current main"
-                if main_appended else "Existing isolated ticket worktree resumed"
+                "Existing ticket resumed after appending current main"
+                if main_appended
+                else (
+                    "Clean exact-contract ticket worktree resumed before its first edit"
+                    if not existing_paths
+                    else "Existing isolated ticket worktree resumed"
+                )
             ),
             source="coordinator",
         )
