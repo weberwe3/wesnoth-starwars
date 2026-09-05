@@ -580,8 +580,11 @@ class CoordinationControlTests(unittest.TestCase):
             git(root, "add", "main.txt")
             git(root, "commit", "-m", "advance main")
 
+            self.assertEqual(ticket_runner.read_resume_changes(worktree)[1], [])
+            self.assertEqual(ticket_runner.read_git_changes(worktree)[1], ["main.txt"])
             self.assertTrue(ticket_runner.prepare_local_resume(root, worktree))
             self.assertEqual(git(worktree, "rev-parse", "HEAD"), git(root, "rev-parse", "main"))
+            self.assertEqual(ticket_runner.read_git_changes(worktree)[1], [])
             self.assertFalse(ticket_runner.prepare_local_resume(root, worktree))
 
     def test_dirty_outdated_local_remnant_is_preserved_and_blocked(self) -> None:
