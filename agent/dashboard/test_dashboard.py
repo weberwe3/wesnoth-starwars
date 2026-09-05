@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from unittest import mock
 
@@ -137,6 +138,48 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertFalse(public["automation"]["enabled"])
             with self.assertRaises(ControlError):
                 controller.set_mode("danger-full-access")
+
+    def test_existing_directory_scope_is_canonicalized_without_widening_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            self.assertEqual(
+                controller._normalize_allowed_paths([
+                    "addons/Star_Wars_Thrawn_Trilogy/units",
+                    "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+                    "addons/Star_Wars_Thrawn_Trilogy/scenarios/**",
+                ]),
+                [
+                    "addons/Star_Wars_Thrawn_Trilogy/units/**",
+                    "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+                    "addons/Star_Wars_Thrawn_Trilogy/scenarios/**",
+                ],
+            )
+
+    def test_normalized_directory_scope_accepts_descendants_not_siblings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            patterns = controller._normalize_allowed_paths([
+                "addons/Star_Wars_Thrawn_Trilogy/units"
+            ])
+            allowed = ticket_runner.validate_scope(
+                ["addons/Star_Wars_Thrawn_Trilogy/units/baseline_units.cfg"],
+                patterns,
+            )
+            sibling = ticket_runner.validate_scope(
+                ["addons/Star_Wars_Thrawn_Trilogy/scenarios/example.cfg"],
+                patterns,
+            )
+            self.assertTrue(allowed["pass"])
+            self.assertFalse(sibling["pass"])
+
+    def test_existing_protected_directory_remains_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            patterns = controller._normalize_allowed_paths(["agent"])
+            self.assertEqual(patterns, ["agent/**"])
+            self.assertTrue(
+                ticket_runner.pattern_can_touch_protected(patterns[0])
+            )
 
     def test_planner_schema_is_strict_at_every_object_level(self) -> None:
         validate_strict_output_schema(TICKET_SCHEMA)
@@ -882,6 +925,30 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertIn("unavailable", output)
             self.assertEqual(log.read_text(encoding="utf-8").strip(), output)
 
+    def test_luna_fallback_uses_medium_reasoning_and_requested_sandbox(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "luna.txt"
+            completed = subprocess.CompletedProcess([], 0, stdout="VERDICT: PASS\n")
+            with (
+                mock.patch.object(
+                    ticket_runner, "resolve_codex_executable", return_value="/opt/codex"
+                ),
+                mock.patch("ticket_runner.subprocess.run", return_value=completed) as run,
+            ):
+                code, output = ticket_runner.invoke_luna(
+                    worktree=Path(directory),
+                    prompt="fixture",
+                    log_file=log,
+                    sandbox="read-only",
+                    timeout=300,
+                )
+            command = run.call_args.args[0]
+            self.assertEqual(code, 0)
+            self.assertEqual(output, "VERDICT: PASS\n")
+            self.assertIn("gpt-5.6-luna", command)
+            self.assertIn('model_reasoning_effort="medium"', command)
+            self.assertEqual(command[command.index("-s") + 1], "read-only")
+
     def test_fallback_diagnostic_distinguishes_context_and_missing_codex(self) -> None:
         failure = recovery_policy.classify_implementer_fallback(
             "ContextOverflowError: Request too large for tokens per minute",
@@ -901,7 +968,7 @@ class CoordinationControlTests(unittest.TestCase):
         )
         self.assertEqual(failure["class"], "tester_provider_failure")
         self.assertIn("circuit is open", failure["detail"])
-        self.assertIn("Terra Medium", failure["detail"])
+        self.assertIn("Luna Medium", failure["detail"])
         self.assertIn("timed out", failure["detail"])
 
     def test_control_bridge_forwards_verified_codex_path(self) -> None:
@@ -1125,7 +1192,7 @@ class CoordinationControlTests(unittest.TestCase):
 class ModelPolicyTests(unittest.TestCase):
     def test_tester_execution_budgets_allow_slow_provider_responses(self) -> None:
         self.assertEqual(ticket_runner.TESTER_TIMEOUT, 300)
-        self.assertEqual(ticket_runner.TERRA_TESTER_TIMEOUT, 300)
+        self.assertEqual(ticket_runner.LUNA_TESTER_TIMEOUT, 300)
 
     def test_published_free_tier_launch_limits(self) -> None:
         self.assertEqual(model_policy.MODEL_RPM["groq/openai/gpt-oss-120b"], 30)
@@ -1141,7 +1208,65 @@ class ModelPolicyTests(unittest.TestCase):
             ],
             300,
         )
-        self.assertIsNone(model_policy.MODEL_RPM["google/gemini-3.8-flash"])
+        self.assertNotIn("google/gemini-3.8-flash", model_policy.MODEL_RPM)
+        self.assertNotIn("google/gemini-3.6-flash", model_policy.MODEL_RPM)
+        self.assertIsNone(model_policy.MODEL_RPM["openai/gpt-5.6-luna"])
+
+    def test_cloudflare_daily_neuron_exhaustion_is_quota_failure(self) -> None:
+        output = (
+            'Too Many Requests: {"statusCode":429,"message":'
+            '"used up your daily free allocation"}'
+        )
+        self.assertEqual(model_policy.failure_kind(1, output), "quota")
+        failure = recovery_policy.classify_tester_fallback(
+            1, 127, output, "Luna unavailable"
+        )
+        self.assertIn("exhausted its provider quota", failure["detail"])
+        self.assertIn("Luna Medium", failure["detail"])
+
+    def test_cloudflare_daily_quota_blocks_all_models_until_utc_midnight(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            now = [1_788_613_668.0]
+            policy = model_policy.ModelPolicy(
+                Path(directory), clock=lambda: now[0], sleeper=lambda _: None
+            )
+            glm = "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash"
+            nemotron = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
+            luna = "openai/gpt-5.6-luna"
+            run = policy.begin_run("DAILY-QUOTA")
+            self.assertTrue(policy.before_attempt(glm, run)[0])
+            policy.record_failure(
+                glm,
+                run,
+                "quota",
+                "Too Many Requests: used up your daily free allocation of 10,000 neurons",
+            )
+            reset = float((int(now[0]) // 86_400 + 1) * 86_400)
+            self.assertFalse(policy.before_attempt(glm, run + 1)[0])
+            self.assertFalse(policy.before_attempt(nemotron, run + 1)[0])
+            self.assertTrue(policy.before_attempt(luna, run + 1)[0])
+            self.assertIn(
+                time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(reset)),
+                policy.unavailable_reason(glm, run + 1),
+            )
+            state = policy.public_state(run + 1)
+            self.assertEqual(state[glm]["blocked_until"], reset)
+            self.assertFalse(state[nemotron]["available_this_run"])
+
+            now[0] = reset
+            self.assertTrue(policy.before_attempt(glm, run + 1)[0])
+            self.assertTrue(policy.before_attempt(nemotron, run + 1)[0])
+            self.assertIsNone(policy.public_state(run + 1)[glm]["blocked_until"])
+
+    def test_non_daily_cloudflare_failure_keeps_two_run_circuit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            policy = model_policy.ModelPolicy(Path(directory))
+            model = "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash"
+            first = policy.begin_run("ONE")
+            policy.record_failure(model, first, "quota", "ordinary rate limit")
+            self.assertFalse(policy.before_attempt(model, first + 1)[0])
+            self.assertFalse(policy.before_attempt(model, first + 2)[0])
+            self.assertTrue(policy.before_attempt(model, first + 3)[0])
 
     def test_provider_failure_skips_exactly_two_later_runs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1187,9 +1312,8 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         self,
         responses: list[tuple[int, str]],
         *,
-        google_available: bool = True,
-        terra_response: tuple[int, str] = (1, "Terra unavailable"),
-        terra_implemented: bool = False,
+        luna_response: tuple[int, str] = (1, "Luna unavailable"),
+        resume_checkpoint: dict | None = None,
     ) -> tuple[dict, list[str]]:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
@@ -1206,7 +1330,9 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             run_sequence = policy.begin_run("REVIEW-CHAIN")
             with mock.patch.object(ticket_runner, "run_validation", return_value={"pass": True}), mock.patch.object(
                 ticket_runner, "invoke_agent", side_effect=invoke
-            ), mock.patch.object(ticket_runner, "invoke_terra", return_value=terra_response):
+            ), mock.patch.object(
+                ticket_runner, "invoke_luna", return_value=luna_response
+            ):
                 result = ticket_runner.evaluate_candidate(
                     status=status,
                     ticket={
@@ -1219,12 +1345,11 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
                     log_dir=log_dir,
                     governance_prompt="Controlled references loaded.",
                     opencode="opencode",
-                    google_available=google_available,
                     implementer_rc=0,
                     attempt=0,
                     policy=policy,
                     run_sequence=run_sequence,
-                    terra_implemented=terra_implemented,
+                    resume_checkpoint=resume_checkpoint,
                 )
             return result, invoked
 
@@ -1241,140 +1366,164 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         self.assertEqual(invoked, ["tester", "reviewer"])
         self.assertIsNone(result["reviewer_intermediate_exit_code"])
 
-    def test_terra_medium_tests_when_primary_tester_circuit_is_open(self) -> None:
+    def test_luna_medium_tests_when_primary_tester_circuit_is_open(self) -> None:
         result, invoked = self._evaluate(
             [
                 (ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open"),
                 (0, "VERDICT: APPROVE"),
             ],
-            terra_response=(0, "VERDICT: PASS"),
+            luna_response=(0, "VERDICT: PASS"),
         )
         self.assertTrue(result["pass"])
         self.assertEqual(result["tester_primary_exit_code"], ticket_runner.MODEL_CIRCUIT_OPEN)
-        self.assertEqual(result["tester_terra_exit_code"], 0)
-        self.assertTrue(result["tester_terra_pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-terra")
+        self.assertEqual(result["tester_luna_exit_code"], 0)
+        self.assertTrue(result["tester_luna_pass"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
         self.assertEqual(invoked, ["tester", "reviewer"])
 
     def test_explicit_primary_tester_failure_does_not_seek_second_opinion(self) -> None:
         result, invoked = self._evaluate(
             [(0, "VERDICT: FAIL — candidate defect")],
-            terra_response=(0, "VERDICT: PASS"),
+            luna_response=(0, "VERDICT: PASS"),
         )
         self.assertFalse(result["pass"])
         self.assertEqual(result["failure"]["class"], "tester_change_request")
-        self.assertIsNone(result["tester_terra_exit_code"])
+        self.assertIsNone(result["tester_luna_exit_code"])
         self.assertEqual(invoked, ["tester"])
 
-    def test_terra_cannot_test_its_own_implementation(self) -> None:
-        result, invoked = self._evaluate(
-            [(ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open")],
-            terra_response=(0, "VERDICT: PASS"),
-            terra_implemented=True,
-        )
-        self.assertFalse(result["pass"])
-        self.assertEqual(result["failure"]["class"], "tester_provider_failure")
-        self.assertIn("withheld", result["failure"]["detail"])
-        self.assertIsNone(result["tester_terra_exit_code"])
-        self.assertEqual(invoked, ["tester"])
-
-    def test_terra_tester_cannot_later_be_terra_reviewer(self) -> None:
+    def test_luna_can_test_a_terra_implementation(self) -> None:
         result, invoked = self._evaluate(
             [
-                (ticket_runner.MODEL_CIRCUIT_OPEN, "tester circuit open"),
-                (1, "primary reviewer unavailable"),
-                (1, "intermediate reviewer unavailable"),
-                (1, "fallback reviewer unavailable"),
+                (ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open"),
+                (0, "VERDICT: APPROVE"),
             ],
-            terra_response=(0, "VERDICT: PASS"),
-        )
-        self.assertFalse(result["pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-terra")
-        self.assertIsNone(result["reviewer_terra_exit_code"])
-        self.assertEqual(
-            invoked,
-            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
-        )
-
-    def test_gemini_38_runs_after_non_decisive_nemotron(self) -> None:
-        result, invoked = self._evaluate([
-            (0, "VERDICT: PASS"),
-            (1, "primary infrastructure failure"),
-            (0, "VERDICT: APPROVE"),
-        ])
-        self.assertTrue(result["pass"])
-        self.assertEqual(result["reviewer_used"], "google/gemini-3.8-flash")
-        self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
-        self.assertIsNone(result["reviewer_fallback_exit_code"])
-
-    def test_gemini_36_runs_after_nemotron_and_gemini_38_are_non_decisive(self) -> None:
-        result, invoked = self._evaluate([
-            (0, "VERDICT: PASS"),
-            (1, "primary infrastructure failure"),
-            (1, "intermediate infrastructure failure"),
-            (0, "VERDICT: APPROVE"),
-        ])
-        self.assertTrue(result["pass"])
-        self.assertEqual(result["reviewer_used"], "google/gemini-3.6-flash")
-        self.assertEqual(
-            invoked,
-            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
-        )
-
-    def test_intermediate_request_changes_is_authoritative(self) -> None:
-        result, invoked = self._evaluate([
-            (0, "VERDICT: PASS"),
-            (1, "primary infrastructure failure"),
-            (0, "VERDICT: REQUEST_CHANGES"),
-        ])
-        self.assertFalse(result["pass"])
-        self.assertEqual(result["reviewer_used"], "google/gemini-3.8-flash")
-        self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
-        self.assertIsNone(result["reviewer_fallback_exit_code"])
-
-    def test_terra_runs_after_three_non_decisive_reviewers(self) -> None:
-        result, invoked = self._evaluate(
-            [
-                (0, "VERDICT: PASS"),
-                (1, "primary infrastructure failure"),
-                (1, "intermediate infrastructure failure"),
-                (1, "fallback infrastructure failure"),
-            ],
-            terra_response=(0, "VERDICT: APPROVE"),
+            luna_response=(0, "VERDICT: PASS"),
         )
         self.assertTrue(result["pass"])
-        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-terra")
-        self.assertEqual(result["reviewer_terra_exit_code"], 0)
-        self.assertEqual(
-            invoked,
-            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
-        )
-
-    def test_terra_cannot_review_its_own_implementation(self) -> None:
-        result, _ = self._evaluate(
-            [
-                (0, "VERDICT: PASS"),
-                (1, "primary infrastructure failure"),
-                (1, "intermediate infrastructure failure"),
-                (1, "fallback infrastructure failure"),
-            ],
-            terra_response=(0, "VERDICT: APPROVE"),
-            terra_implemented=True,
-        )
-        self.assertFalse(result["pass"])
-        self.assertIsNone(result["reviewer_terra_exit_code"])
-
-    def test_missing_google_credential_still_runs_primary_nemotron(self) -> None:
-        result, invoked = self._evaluate(
-            [(0, "VERDICT: PASS"), (0, "VERDICT: APPROVE")],
-            google_available=False,
-        )
-        self.assertTrue(result["pass"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["tester_luna_exit_code"], 0)
         self.assertEqual(invoked, ["tester", "reviewer"])
-        self.assertEqual(result["reviewer_used"], "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b")
-        self.assertEqual(result["reviewer_primary_exit_code"], 0)
-        self.assertIsNone(result["reviewer_intermediate_exit_code"])
-        self.assertIsNone(result["reviewer_fallback_exit_code"])
+
+    def test_luna_light_reviews_after_non_decisive_nemotron(self) -> None:
+        result, invoked = self._evaluate(
+            [
+                (0, "VERDICT: PASS"),
+                (1, "primary reviewer unavailable"),
+            ],
+            luna_response=(0, "VERDICT: APPROVE"),
+        )
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["reviewer_luna_exit_code"], 0)
+        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertEqual(result["reviewer_fallback_exit_code"], 0)
+
+    def test_luna_light_request_changes_is_authoritative(self) -> None:
+        result, invoked = self._evaluate(
+            [
+                (0, "VERDICT: PASS"),
+                (1, "primary infrastructure failure"),
+            ],
+            luna_response=(0, "VERDICT: REQUEST_CHANGES"),
+        )
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["failure"]["class"], "reviewer_change_request")
+        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(invoked, ["tester", "reviewer"])
+
+    def test_luna_light_can_review_when_terra_implemented(self) -> None:
+        result, invoked = self._evaluate(
+            [
+                (0, "VERDICT: PASS"),
+                (1, "primary infrastructure failure"),
+            ],
+            luna_response=(0, "VERDICT: APPROVE"),
+        )
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(invoked, ["tester", "reviewer"])
+
+    def test_reviewer_checkpoint_skips_validation_and_tester(self) -> None:
+        checkpoint = {
+            "stage": "reviewer",
+            "result": {
+                "validation": {"pass": True},
+                "tester_exit_code": 0,
+                "tester_used": "openai/gpt-5.6-luna",
+                "tester_primary_exit_code": 88,
+                "tester_primary_pass": False,
+                "tester_primary_fail": False,
+                "tester_luna_exit_code": 0,
+                "tester_luna_pass": True,
+                "tester_luna_fail": False,
+                "tester_pass": True,
+            },
+        }
+        result, invoked = self._evaluate(
+            [(0, "VERDICT: APPROVE")], resume_checkpoint=checkpoint
+        )
+        self.assertTrue(result["pass"])
+        self.assertEqual(invoked, ["reviewer"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
+
+
+class StageCheckpointTests(unittest.TestCase):
+    def test_unchanged_reviewer_failure_resumes_at_reviewer(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result_dir = root / "agent/logs/RUN"
+            result_dir.mkdir(parents=True)
+            worktree = root / "worktree"
+            worktree.mkdir()
+            ticket = {
+                "objective": "Fixture", "allowed_paths": ["fixture.txt"],
+                "worker": "implementer", "validation_profile": "static-text",
+                "validation_root": None,
+            }
+            (result_dir / "result.json").write_text(json.dumps({
+                "branch": "agent/example",
+                "final_verdict": "FAIL",
+                "candidate_digest": "a" * 64,
+                "ticket_contract_digest": ticket_runner.ticket_contract_digest(ticket),
+                "resume_stage": "reviewer",
+                "validation": {"pass": True},
+                "tester_pass": True,
+            }))
+            with mock.patch.object(
+                ticket_runner, "candidate_digest", return_value="a" * 64
+            ):
+                checkpoint = ticket_runner.load_stage_checkpoint(
+                    root, "agent/example", worktree, ticket
+                )
+            self.assertEqual(checkpoint["stage"], "reviewer")
+
+    def test_changed_candidate_invalidates_stage_checkpoint(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result_dir = root / "agent/logs/RUN"
+            result_dir.mkdir(parents=True)
+            worktree = root / "worktree"
+            worktree.mkdir()
+            ticket = {
+                "objective": "Fixture", "allowed_paths": ["fixture.txt"],
+                "worker": "implementer", "validation_profile": "static-text",
+                "validation_root": None,
+            }
+            (result_dir / "result.json").write_text(json.dumps({
+                "branch": "agent/example",
+                "final_verdict": "FAIL",
+                "candidate_digest": "a" * 64,
+                "ticket_contract_digest": ticket_runner.ticket_contract_digest(ticket),
+                "resume_stage": "tester",
+                "validation": {"pass": True},
+            }))
+            with mock.patch.object(
+                ticket_runner, "candidate_digest", return_value="b" * 64
+            ):
+                checkpoint = ticket_runner.load_stage_checkpoint(
+                    root, "agent/example", worktree, ticket
+                )
+            self.assertIsNone(checkpoint)
 
 
 class ApprovalQueueTests(unittest.TestCase):
@@ -1525,6 +1674,103 @@ class ApprovalQueueTests(unittest.TestCase):
                 controller._queued_context(exclude_id="2" * 16),
                 [],
             )
+
+    def test_exact_recode_uses_selected_branch_and_recorded_contract_without_sol(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            worktree = base / "managed-worktree"
+            worktree.mkdir()
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            commit = "a" * 40
+            failed = {
+                "id": "2" * 16,
+                "ticket_id": "DASH-FAILED",
+                "branch": "agent/dash-failed",
+                "commit_sha": commit,
+                "impact": "Repairs the selected candidate.",
+                "pr_number": None,
+            }
+            evidence = {
+                "task_id": "DASH-FAILED",
+                "worker": "implementer",
+                "objective": "Repair one bounded fixture",
+                "allowed_paths": ["addons/example.cfg"],
+                "validation_profile": "static-text",
+                "validation_root": None,
+            }
+            completed = subprocess.CompletedProcess([], 0, stdout=commit + "\n")
+            with (
+                mock.patch.object(
+                    controller, "_ticket_evidence",
+                    return_value={"agent/dash-failed": evidence},
+                ),
+                mock.patch.object(
+                    ticket_runner, "resolve_resume_worktree", return_value=worktree
+                ),
+                mock.patch.object(
+                    ticket_runner, "read_resume_changes",
+                    return_value=(["M addons/example.cfg"], ["addons/example.cfg"]),
+                ),
+                mock.patch.object(
+                    ticket_runner, "validate_resume_scope", return_value={"pass": True}
+                ),
+                mock.patch.object(
+                    ticket_runner, "inspect_local_resume_reconciliation",
+                    return_value={"safe": True, "mode": "clean-fast-forward"},
+                ),
+                mock.patch("autonomy.subprocess.run", return_value=completed),
+                mock.patch.object(controller, "_plan") as planner,
+            ):
+                proposal = controller._exact_recode_proposal(failed)
+            planner.assert_not_called()
+            self.assertEqual(proposal["action"], "run_ticket")
+            self.assertEqual(
+                proposal["ticket"]["resume_branch"], "agent/dash-failed"
+            )
+            self.assertEqual(
+                proposal["ticket"]["objective"], "Repair one bounded fixture"
+            )
+            self.assertEqual(
+                proposal["_planning_inventory"]["local_agent_branches"][0]["head"],
+                commit,
+            )
+
+    def test_exact_recode_rejects_changed_worktree_head(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            worktree = base / "managed-worktree"
+            worktree.mkdir()
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            evidence = {
+                "task_id": "DASH-FAILED", "worker": "implementer",
+                "objective": "Repair fixture", "allowed_paths": ["fixture.txt"],
+                "validation_profile": "static-text", "validation_root": None,
+            }
+            completed = subprocess.CompletedProcess([], 0, stdout="b" * 40 + "\n")
+            with (
+                mock.patch.object(
+                    controller, "_ticket_evidence",
+                    return_value={"agent/dash-failed": evidence},
+                ),
+                mock.patch.object(
+                    ticket_runner, "resolve_resume_worktree", return_value=worktree
+                ),
+                mock.patch("autonomy.subprocess.run", return_value=completed),
+            ):
+                with self.assertRaisesRegex(ControlError, "exact worktree head"):
+                    controller._exact_recode_proposal({
+                        "id": "2" * 16, "ticket_id": "DASH-FAILED",
+                        "branch": "agent/dash-failed", "commit_sha": "a" * 40,
+                        "pr_number": None,
+                    })
 
     def test_continuous_automation_observes_completion_cooldown(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
