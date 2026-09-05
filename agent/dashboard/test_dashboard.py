@@ -623,7 +623,7 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertEqual(ticket_runner.read_git_changes(worktree)[1], [])
             self.assertFalse(ticket_runner.prepare_local_resume(root, worktree))
 
-    def test_dirty_outdated_local_remnant_is_preserved_and_blocked(self) -> None:
+    def test_dirty_outdated_local_remnant_fast_forwards_when_disjoint(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             parent = Path(directory)
             root = parent / "project"
@@ -648,12 +648,69 @@ class CoordinationControlTests(unittest.TestCase):
             (root / "main.txt").write_text("new main\n", encoding="utf-8")
             git(root, "add", "main.txt")
             git(root, "commit", "-m", "advance main")
+            inspection = ticket_runner.inspect_local_resume_reconciliation(worktree)
+            self.assertTrue(inspection["safe"])
+            self.assertEqual(inspection["mode"], "dirty-disjoint-fast-forward")
+            self.assertTrue(ticket_runner.prepare_local_resume(root, worktree))
+            self.assertEqual(git(worktree, "rev-parse", "HEAD"), git(root, "rev-parse", "main"))
+            self.assertEqual((worktree / "partial.txt").read_text(), "partial\n")
+
+    def test_dirty_outdated_local_remnant_blocks_overlapping_main_change(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "project"
+            worktree = parent / "project-worktrees" / "interrupted"
+            root.mkdir()
+
+            def git(cwd: Path, *args: str) -> str:
+                return subprocess.run(
+                    ["git", *args], cwd=cwd, check=True, text=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                ).stdout.strip()
+
+            git(root, "init", "-b", "main")
+            git(root, "config", "user.email", "tests@example.invalid")
+            git(root, "config", "user.name", "Dashboard Tests")
+            (root / "shared.txt").write_text("base\n", encoding="utf-8")
+            git(root, "add", "shared.txt")
+            git(root, "commit", "-m", "base")
+            worktree.parent.mkdir()
+            git(root, "worktree", "add", "-b", "agent/interrupted", str(worktree), "main")
+            (worktree / "shared.txt").write_text("unfinished\n", encoding="utf-8")
+            (root / "shared.txt").write_text("new main\n", encoding="utf-8")
+            git(root, "add", "shared.txt")
+            git(root, "commit", "-m", "advance main")
             original_head = git(worktree, "rev-parse", "HEAD")
 
-            with self.assertRaisesRegex(SystemExit, "uncommitted changes"):
+            inspection = ticket_runner.inspect_local_resume_reconciliation(worktree)
+            self.assertFalse(inspection["safe"])
+            self.assertEqual(inspection["mode"], "overlap")
+            with self.assertRaisesRegex(SystemExit, "overlaps unfinished paths"):
                 ticket_runner.prepare_local_resume(root, worktree)
             self.assertEqual(git(worktree, "rev-parse", "HEAD"), original_head)
-            self.assertEqual((worktree / "partial.txt").read_text(), "partial\n")
+            self.assertEqual((worktree / "shared.txt").read_text(), "unfinished\n")
+
+    def test_terrain_registry_exposes_authoritative_recruitment_semantics(self) -> None:
+        facts = ticket_runner.parse_terrain_registry(
+            """
+[terrain_type]
+    id=human_keep
+    string=Kh
+    recruit_from=yes
+    recruit_onto=yes
+[/terrain_type]
+[terrain_type]
+    id=human_castle
+    string=Ch
+    recruit_onto=yes
+[/terrain_type]
+""",
+            {"Kh", "Ch", "Kt"},
+        )
+        self.assertEqual(facts["Kh"]["id"], "human_keep")
+        self.assertTrue(facts["Kh"]["recruit_from"])
+        self.assertTrue(facts["Ch"]["recruit_onto"])
+        self.assertNotIn("Kt", facts)
 
     def test_public_queue_drops_private_worktree_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1413,6 +1470,73 @@ class ApprovalQueueTests(unittest.TestCase):
                 self.assertFalse(controller._cooldown_complete())
                 controller._last_completion_monotonic = 39.0
                 self.assertTrue(controller._cooldown_complete())
+
+    def test_autonomous_worktree_stops_after_three_consecutive_failures(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            (base / "agent" / "runtime").mkdir(parents=True)
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            controller.store.update(lambda state: state.update({
+                "mode": "sol-low",
+                "automation": {"enabled": True, "brief": "Continue safely"},
+            }))
+            proposal = {
+                "action": "run_ticket", "summary": "Resume fixture", "impact": "Fixture",
+                "ticket": {},
+            }
+            ticket = {
+                "task_id": "SOL-FAILURE-FIXTURE", "resume_branch": "agent/fixture",
+            }
+            failed = {
+                "return_code": 12,
+                "failure": {
+                    "class": "reviewer_change_request",
+                    "detail": "The reviewer found a bounded scenario defect.",
+                    "required_action": "Correct the scenario objective and rerun all gates.",
+                    "attempt": 2,
+                    "limit": 2,
+                },
+            }
+            with (
+                mock.patch.object(controller, "_plan", return_value=proposal),
+                mock.patch.object(controller, "_build_ticket", return_value=ticket),
+                mock.patch.object(controller, "_run_secure_ticket", return_value=failed),
+                mock.patch.object(
+                    controller, "_failed_worktree_identity", return_value="agent/fixture"
+                ),
+                mock.patch.object(ticket_runner, "load_ticket", return_value=ticket),
+            ):
+                for index in range(1, 4):
+                    run_id = f"abc123def45{index}"
+                    controller.store.update(lambda state, value=run_id: state["run"].update({
+                        "state": "planning", "run_id": value,
+                    }))
+                    controller._run(run_id, "sol-low", "Continue safely", True)
+                    state = controller.public_state()
+                    self.assertEqual(state["autonomous_failure_streak"]["count"], index)
+                    self.assertEqual(state["automation"]["enabled"], index < 3)
+                    if index == 1:
+                        retry = controller._failure_streak_resume_proposal({
+                            "resumable_local_work": [{
+                                "name": "agent/other", "previous_task_id": "OTHER",
+                            }, {
+                                "name": "agent/fixture", "previous_task_id": "FIXTURE",
+                                "worker": "fast-fix", "objective": "Repair fixture",
+                                "allowed_paths": ["addons/example.cfg"],
+                                "validation_profile": "static-text", "validation_root": None,
+                            }],
+                        })
+                        self.assertEqual(retry["ticket"]["resume_branch"], "agent/fixture")
+
+            state = controller.public_state()
+            self.assertIn("three consecutive failures", state["run"]["summary"])
+            self.assertIn("Last failure:", state["run"]["error"])
+            self.assertIn("configured failure limit", state["run"]["error"])
+            self.assertEqual(state["activity"][-1]["recovery_limit"], 3)
 
 
 if __name__ == "__main__":
