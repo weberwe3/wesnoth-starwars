@@ -681,7 +681,7 @@ Do not stop merely because the first documented priority is already queued; stop
 when no safe non-overlapping priority can proceed without an unmerged dependency.
 Describe its user-visible or mod-facing impact separately from its implementation summary.
 Python will validate your JSON, create the isolated worktree, invoke workers, run gates, and stop before commit/push/merge.
-Use narrow allowed_paths. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null.
+Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null.
 Set ticket.resume_branch to the exact branch from resumable_local_work when continuing remnants.
 For resumable_pull_requests, also copy its exact number and head_sha into
 ticket.resume_pr_number and ticket.resume_pr_head_sha. Published history must only
@@ -946,7 +946,9 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             "task_id": f"SOL-{timestamp}-{run_id[:4].upper()}",
             "worker": source.get("worker"),
             "objective": source.get("objective"),
-            "allowed_paths": source.get("allowed_paths"),
+            "allowed_paths": self._normalize_allowed_paths(
+                source.get("allowed_paths")
+            ),
             "validation_profile": source.get("validation_profile"),
             "validation_root": source.get("validation_root"),
             "resume_branch": resume_branch,
@@ -972,6 +974,25 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             if self._pattern_can_touch_protected(pattern):
                 raise ControlError("Sol proposed a protected path")
         return validated
+
+    def _normalize_allowed_paths(self, value: object) -> object:
+        """Canonicalize verified repository directories without widening file paths."""
+
+        if not isinstance(value, list):
+            return value
+        normalized = []
+        for pattern in value:
+            if (
+                isinstance(pattern, str)
+                and pattern
+                and not pattern.startswith("/")
+                and ".." not in Path(pattern).parts
+                and not any(marker in pattern for marker in "*?[")
+                and (self.root / pattern).is_dir()
+            ):
+                pattern = pattern.rstrip("/") + "/**"
+            normalized.append(pattern)
+        return normalized
 
     @staticmethod
     def _fresh_start_requested(brief: str) -> bool:
@@ -1539,7 +1560,9 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "task_id": task_id,
                 "worker": ticket["worker"],
                 "objective": ticket["objective"],
-                "allowed_paths": ticket["allowed_paths"],
+                "allowed_paths": self._normalize_allowed_paths(
+                    ticket["allowed_paths"]
+                ),
                 "validation_profile": ticket["validation_profile"],
                 "validation_root": ticket.get("validation_root"),
             }
