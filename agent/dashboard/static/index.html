@@ -37,7 +37,7 @@
       <div class="coordination-copy">
         <p class="eyebrow">Coordination authority</p>
         <h2 id="coordination-title">Choose how the next ticket begins</h2>
-        <p>Python remains the enforcement layer. Sol can plan bounded tickets continuously; every validated commit waits here for explicit publication approval.</p>
+        <p>Python remains the enforcement layer. Manual tickets wait for exact approval; continuous automation may publish only after every local gate passes.</p>
       </div>
       <form id="mode-form" class="mode-form">
         <div class="coordination-mode-row">
@@ -108,7 +108,7 @@
       </aside>
 
       <section class="panel activity-panel" aria-labelledby="queue-title">
-        <div class="panel-heading"><div><p class="eyebrow">Governed publication</p><h2 id="queue-title">Ticket approval queue</h2></div><span class="micro-label">Exact commit · FIFO</span></div>
+        <div class="panel-heading"><div><p class="eyebrow">Governed publication</p><h2 id="queue-title">Ticket approval queue</h2></div><span class="micro-label">Exact commit · ordered batches</span></div>
         <div class="approval-queue" id="approval-queue"><p class="empty">No validated tickets awaiting approval</p></div>
       </section>
     </div>

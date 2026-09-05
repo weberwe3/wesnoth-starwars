@@ -53,6 +53,7 @@ def default_control_state() -> dict[str, Any]:
         "automation": {
             "enabled": False,
             "brief": "Select the next safe, documented project priority.",
+            "authorization_id": None,
         },
         "run": {
             "state": "idle",
@@ -79,13 +80,14 @@ class ControlStore:
             self._write(default_control_state())
         else:
             state = self.read()
-            if state["run"]["state"] in {"planning", "executing"}:
+            if state["run"]["state"] in {"planning", "executing", "publishing"}:
                 state["run"].update({
                     "state": "interrupted",
                     "completed_at": utc_now(),
                     "error": "Dashboard restarted during the prior run",
                 })
                 state["automation"]["enabled"] = False
+                state["automation"]["authorization_id"] = None
                 self._write(state)
 
     def read(self) -> dict[str, Any]:
@@ -133,7 +135,7 @@ class ControlStore:
             run = fallback["run"]
         valid_states = {
             "idle", "planning", "executing", "queued", "awaiting_deletion_approval",
-            "publishing", "paused", "passed", "failed", "interrupted",
+            "publishing", "published", "paused", "passed", "failed", "interrupted",
         }
         state = run.get("state") if run.get("state") in valid_states else "idle"
         automation = value.get("automation")
@@ -142,6 +144,13 @@ class ControlStore:
         brief = automation.get("brief")
         if not isinstance(brief, str) or not brief.strip() or len(brief) > 1000:
             brief = fallback["automation"]["brief"]
+        authorization_id = automation.get("authorization_id")
+        if (
+            not isinstance(authorization_id, str)
+            or len(authorization_id) != 32
+            or any(character not in "0123456789abcdef" for character in authorization_id)
+        ):
+            authorization_id = None
         return {
             "schema_version": 1,
             "updated_at": value.get("updated_at") or fallback["updated_at"],
@@ -149,6 +158,7 @@ class ControlStore:
             "automation": {
                 "enabled": bool(automation.get("enabled")),
                 "brief": brief,
+                "authorization_id": authorization_id,
             },
             "run": {
                 "state": state,

@@ -207,6 +207,12 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 if not isinstance(data.get("record_id"), str) or not isinstance(data.get("commit_sha"), str):
                     raise ControlError("Invalid publication request")
                 controller.approve_publish(data["record_id"], data["commit_sha"])
+            elif data.get("action") == "approve_publish_batch" and set(data) == {
+                "action", "batch_id",
+            }:
+                if not isinstance(data.get("batch_id"), str):
+                    raise ControlError("Invalid batch publication request")
+                controller.approve_publish_batch(data["batch_id"])
             elif data.get("action") in {"recode_ticket", "remove_failed_ticket"} and set(data) == {
                 "action", "record_id", "commit_sha",
             }:
@@ -216,6 +222,12 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     controller.recode_failed_ticket(data["record_id"], data["commit_sha"])
                 else:
                     controller.remove_failed_ticket(data["record_id"], data["commit_sha"])
+            elif data.get("action") == "delete_stale_ticket" and set(data) == {
+                "action", "record_id", "commit_sha",
+            }:
+                if not isinstance(data.get("record_id"), str) or not isinstance(data.get("commit_sha"), str):
+                    raise ControlError("Invalid stale-ticket deletion request")
+                controller.delete_stale_ticket(data["record_id"], data["commit_sha"])
             elif data == {"action": "shutdown"}:
                 controller.request_shutdown()
                 shutdown_requested = True

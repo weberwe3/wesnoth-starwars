@@ -26,7 +26,9 @@ PR_HEAD_CONFIRM_INTERVAL_SECONDS = 1
 CI_REGISTRATION_ATTEMPTS = 60
 CI_REGISTRATION_INTERVAL_SECONDS = 2
 REQUIRED_CHECK_NAME = "repository-gates"
-TERMINAL_QUEUE_STATES = {"published", "rejected", "stale", "dismissed", "superseded"}
+TERMINAL_QUEUE_STATES = {
+    "published", "rejected", "stale", "dismissed", "superseded", "discarded",
+}
 
 
 class QueueError(RuntimeError):
@@ -190,12 +192,13 @@ class ApprovalQueue:
             "changed_paths", "deleted_paths", "branch", "base_sha", "commit_sha",
             "state", "created_at", "updated_at", "validation", "reviewer",
             "pr_number", "pr_url", "merge_sha", "error", "deletion_request",
+            "depends_on_id", "depends_on_commit", "automation_authorized",
         }
         records = [
             {key: item.get(key) for key in allowed}
             for item in state["records"]
             if isinstance(item, dict)
-            and item.get("state") not in {"dismissed", "superseded"}
+            and item.get("state") not in {"dismissed", "superseded", "discarded"}
         ]
         activity_allowed = {
             "id", "at", "level", "message", "detail", "ticket_id",
@@ -206,7 +209,86 @@ class ApprovalQueue:
             for item in state["activity"]
             if isinstance(item, dict)
         ]
-        return {"records": records, "activity": activity}
+        return {
+            "records": records,
+            "batches": self._public_batches(state["records"], allowed),
+            "activity": activity,
+        }
+
+    def _batch_chains(self, records: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+        ready = {
+            item.get("id"): item for item in records
+            if isinstance(item, dict) and item.get("state") == "ready"
+        }
+        children: dict[str, list[dict[str, Any]]] = {}
+        for item in ready.values():
+            parent_id = item.get("depends_on_id")
+            parent = ready.get(parent_id)
+            if parent is not None and item.get("depends_on_commit") == parent.get("commit_sha"):
+                children.setdefault(str(parent_id), []).append(item)
+
+        child_ids = {
+            str(item.get("id")) for group in children.values() for item in group
+        }
+        chains: list[list[dict[str, Any]]] = []
+        used: set[str] = set()
+        for item in sorted(
+            ready.values(), key=lambda value: int(value.get("dependency_index") or 0)
+        ):
+            item_id = str(item.get("id"))
+            if item_id in child_ids or item_id in used:
+                continue
+            chain = [item]
+            while True:
+                next_items = children.get(str(chain[-1].get("id")), [])
+                if len(next_items) != 1:
+                    break
+                candidate = next_items[0]
+                if int(candidate.get("dependency_index") or 0) <= int(
+                    chain[-1].get("dependency_index") or 0
+                ):
+                    break
+                chain.append(candidate)
+            if len(chain) > 1:
+                chains.append(chain)
+                used.update(str(member.get("id")) for member in chain)
+        return chains
+
+    def _public_batches(
+        self,
+        records: list[dict[str, Any]],
+        allowed: set[str],
+    ) -> list[dict[str, Any]]:
+        batches: list[dict[str, Any]] = []
+        for chain in self._batch_chains(records):
+            identity = ":".join(
+                f"{item.get('id')}:{item.get('commit_sha')}" for item in chain
+            )
+            batch_id = hashlib.sha256(f"batch:{identity}".encode()).hexdigest()[:16]
+            members = [{key: item.get(key) for key in allowed} for item in chain]
+            batches.append({
+                "id": batch_id,
+                "state": "ready",
+                "ticket_id": f"Ordered batch · {len(chain)} tickets",
+                "purpose": "Publish a verified cumulative dependency chain",
+                "impact": "Imports the listed tickets together through one exact-head pull request.",
+                "dependency_index": chain[0].get("dependency_index"),
+                "changed_paths": sorted({
+                    path for item in chain for path in item.get("changed_paths", [])
+                    if isinstance(path, str)
+                }),
+                "deleted_paths": sorted({
+                    path for item in chain for path in item.get("deleted_paths", [])
+                    if isinstance(path, str)
+                }),
+                "commit_sha": chain[-1].get("commit_sha"),
+                "branch": chain[-1].get("branch"),
+                "members": members,
+                "automation_authorized": all(
+                    item.get("automation_authorized") is True for item in chain
+                ),
+            })
+        return batches
 
     def add_passed_ticket(
         self,
@@ -215,7 +297,13 @@ class ApprovalQueue:
         *,
         summary: str,
         impact: str,
+        automation_authorization_id: str | None = None,
     ) -> dict[str, Any]:
+        if (
+            automation_authorization_id is not None
+            and not re.fullmatch(r"[0-9a-f]{32}", automation_authorization_id)
+        ):
+            raise QueueError("Invalid automation publication authorization")
         if result.get("final_verdict") != "PASS":
             raise QueueError("Only a locally passing ticket can enter the queue")
         branch = result.get("branch")
@@ -257,6 +345,19 @@ class ApprovalQueue:
         record_id = hashlib.sha256(
             f"{ticket['task_id']}:{branch}:{base_sha}".encode()
         ).hexdigest()[:16]
+        depends_on_id = None
+        depends_on_commit = None
+        for earlier in reversed(queue_state["records"]):
+            earlier_commit = earlier.get("commit_sha")
+            if (
+                earlier.get("state") == "ready"
+                and isinstance(earlier_commit, str)
+                and HEX_SHA.fullmatch(earlier_commit)
+                and self._is_ancestor(earlier_commit, "HEAD", worktree)
+            ):
+                depends_on_id = earlier.get("id")
+                depends_on_commit = earlier_commit
+                break
         record = {
             "id": record_id,
             "ticket_id": ticket["task_id"],
@@ -279,6 +380,10 @@ class ApprovalQueue:
             "merge_sha": None,
             "error": None,
             "deletion_request": None,
+            "depends_on_id": depends_on_id,
+            "depends_on_commit": depends_on_commit,
+            "automation_authorized": bool(automation_authorization_id),
+            "automation_authorization_id": automation_authorization_id,
         }
         if deleted_paths:
             request = self._deletion_request(record, worktree)
@@ -487,7 +592,7 @@ class ApprovalQueue:
             and request.get("deleted_paths") == record.get("deleted_paths")
         )
 
-    def approve_and_publish(self, record_id: str, commit_sha: str) -> None:
+    def approve_and_publish(self, record_id: str, commit_sha: str) -> dict[str, Any]:
         if not REQUEST_ID.fullmatch(record_id) or not HEX_SHA.fullmatch(commit_sha):
             raise QueueError("Invalid publication approval")
         with self._lock:
@@ -512,10 +617,169 @@ class ApprovalQueue:
             self._publish(record)
         except (QueueError, OSError, subprocess.SubprocessError) as exc:
             self._record_failure(record_id, "Publication stopped safely", str(exc))
-            return
+        return self.record(record_id)
+
+    def approve_and_publish_batch(self, batch_id: str) -> list[dict[str, Any]]:
+        if not REQUEST_ID.fullmatch(batch_id):
+            raise QueueError("Invalid batch approval")
+        with self._lock:
+            state = self.read()
+            allowed = {
+                "id", "ticket_id", "commit_sha", "branch", "dependency_index",
+                "depends_on_id", "depends_on_commit", "state",
+            }
+            batch = next(
+                (
+                    item for item in self._public_batches(state["records"], allowed)
+                    if item.get("id") == batch_id
+                ),
+                None,
+            )
+            if batch is None:
+                raise QueueError("Publication batch is no longer valid")
+            member_ids = [item.get("id") for item in batch["members"]]
+            members = [
+                next(item for item in state["records"] if item.get("id") == member_id)
+                for member_id in member_ids
+            ]
+            ready = [item for item in state["records"] if item.get("state") == "ready"]
+            if not ready or ready[0].get("id") != members[0].get("id"):
+                raise QueueError("Publication batch is not first in dependency order")
+            final = members[-1]
+            final_worktree = self._worktree(final)
+            for previous, current in zip(members, members[1:]):
+                if (
+                    current.get("depends_on_id") != previous.get("id")
+                    or current.get("depends_on_commit") != previous.get("commit_sha")
+                    or not self._is_ancestor(
+                        str(previous.get("commit_sha")),
+                        str(current.get("commit_sha")),
+                        final_worktree,
+                    )
+                ):
+                    raise QueueError("Publication batch dependency identity changed")
+            for member in members:
+                member.update({"state": "publishing", "updated_at": utc_now()})
+            _atomic_json(self.path, state)
+
+        self.event(
+            f"Publishing ordered batch of {len(members)} tickets",
+            detail=(
+                "Batch approval matched every queue ID and exact commit. The final cumulative "
+                f"head is {final.get('commit_sha')}."
+            ),
+            ticket_id=str(final.get("ticket_id") or ""),
+        )
+        publication_record = dict(final)
+        publication_record.update({
+            "purpose": f"Ordered batch of {len(members)} dependent tickets",
+            "impact": "\n".join(
+                f"{index}. {member.get('ticket_id')}: {member.get('impact') or member.get('purpose')}"
+                for index, member in enumerate(members, start=1)
+            )[:1200],
+            "changed_paths": sorted({
+                path for member in members for path in member.get("changed_paths", [])
+                if isinstance(path, str)
+            }),
+            "batch_members": [
+                {
+                    "ticket_id": member.get("ticket_id"),
+                    "commit_sha": member.get("commit_sha"),
+                    "purpose": member.get("purpose"),
+                }
+                for member in members
+            ],
+        })
+        try:
+            self._publish(publication_record)
+        except (QueueError, OSError, subprocess.SubprocessError) as exc:
+            def restore(value: dict[str, Any]) -> None:
+                for member in members[:-1]:
+                    current = next(
+                        item for item in value["records"]
+                        if item.get("id") == member.get("id")
+                    )
+                    current.update({"state": "ready", "updated_at": utc_now()})
+            self._update(restore)
+            self._record_failure(
+                str(final.get("id")), "Batch publication stopped safely", str(exc)
+            )
+            return [self.record(str(item.get("id"))) for item in members]
+
+        published_final = self.record(str(final.get("id")))
+        def complete(value: dict[str, Any]) -> None:
+            for member in members[:-1]:
+                current = next(
+                    item for item in value["records"]
+                    if item.get("id") == member.get("id")
+                )
+                current.update({
+                    "state": "published",
+                    "pr_number": published_final.get("pr_number"),
+                    "pr_url": published_final.get("pr_url"),
+                    "merge_sha": published_final.get("merge_sha"),
+                    "error": None,
+                    "updated_at": utc_now(),
+                })
+        self._update(complete)
+        self.event(
+            f"Ordered batch of {len(members)} tickets merged into protected main",
+            level="success",
+            detail=(
+                f"PR #{published_final.get('pr_number')} imported the verified cumulative chain."
+            ),
+            ticket_id=str(final.get("ticket_id") or ""),
+        )
+        return [self.record(str(item.get("id"))) for item in members]
+
+    def record(self, record_id: str) -> dict[str, Any]:
+        record = next(
+            (item for item in self.read()["records"] if item.get("id") == record_id),
+            None,
+        )
+        if record is None:
+            raise QueueError("Queue record disappeared")
+        return dict(record)
+
+    def autonomous_publication_target(
+        self,
+        record_id: str,
+        authorization_id: str,
+    ) -> dict[str, str] | None:
+        if not re.fullmatch(r"[0-9a-f]{32}", authorization_id):
+            return None
+        stored = self.read()["records"]
+        public = self.public_state()
+        ready = [item for item in public["records"] if item.get("state") == "ready"]
+        stored_by_id = {item.get("id"): item for item in stored}
+        if (
+            not ready
+            or stored_by_id.get(ready[0].get("id"), {}).get("automation_authorization_id")
+            != authorization_id
+        ):
+            return None
+        for batch in public["batches"]:
+            members = batch.get("members") or []
+            if (
+                members
+                and members[0].get("id") == ready[0].get("id")
+                and members[-1].get("id") == record_id
+                and all(
+                    stored_by_id.get(item.get("id"), {}).get("automation_authorization_id")
+                    == authorization_id
+                    for item in members
+                )
+            ):
+                return {"kind": "batch", "id": str(batch["id"])}
+        if ready[0].get("id") == record_id:
+            return {
+                "kind": "record", "id": str(record_id),
+                "commit_sha": str(ready[0].get("commit_sha")),
+            }
+        return None
 
     def failed_record(self, record_id: str, commit_sha: str) -> dict[str, Any]:
-        """Return a safe snapshot only when an exact failed queue item is selected."""
+        """Return a safe snapshot only when an exact recoverable queue item is selected."""
 
         if not REQUEST_ID.fullmatch(record_id) or not HEX_SHA.fullmatch(commit_sha):
             raise QueueError("Invalid failed-ticket selection")
@@ -525,7 +789,7 @@ class ApprovalQueue:
         )
         if (
             record is None
-            or record.get("state") != "failed"
+            or record.get("state") not in {"failed", "stale"}
             or record.get("commit_sha") != commit_sha
         ):
             raise QueueError("Failed ticket no longer matches the selected commit")
@@ -536,6 +800,106 @@ class ApprovalQueue:
                 "pr_number", "pr_url",
             )
         }
+
+    def discard_local_remnants(self, record_id: str, commit_sha: str) -> None:
+        """Delete only an exact stale ticket's clean local worktree and branch."""
+
+        selected = self.failed_record(record_id, commit_sha)
+        state = self.read()
+        record = next(item for item in state["records"] if item.get("id") == record_id)
+        branch = selected.get("branch")
+        if not isinstance(branch, str) or not BRANCH.fullmatch(branch):
+            raise QueueError("Stale ticket branch identity is invalid")
+        if record.get("pr_number") or record.get("pr_url"):
+            raise QueueError("A ticket with a pull request cannot be deleted from the dashboard")
+        if any(
+            item.get("id") != record_id
+            and item.get("branch") == branch
+            and item.get("state") not in TERMINAL_QUEUE_STATES | {"failed"}
+            for item in state["records"]
+        ):
+            raise QueueError("A newer queue entry still owns this branch")
+        dependent_ids = {record_id}
+        while True:
+            discovered = {
+                item.get("id") for item in state["records"]
+                if item.get("depends_on_id") in dependent_ids
+            }
+            expanded = dependent_ids | {item for item in discovered if isinstance(item, str)}
+            if expanded == dependent_ids:
+                break
+            dependent_ids = expanded
+        if any(
+            item.get("id") in dependent_ids - {record_id}
+            and item.get("state") not in {
+                "discarded", "dismissed", "superseded", "published", "rejected",
+            }
+            for item in state["records"]
+        ):
+            raise QueueError("A later queued ticket still depends on this code")
+        if self._ref_sha(f"refs/remotes/origin/{branch}") is not None:
+            raise QueueError("A remote branch exists; local dashboard deletion is refused")
+
+        worktree_name = record.get("worktree_name")
+        if not isinstance(worktree_name, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", worktree_name):
+            raise QueueError("Queue worktree identity is invalid")
+        worktree = (self.root.parent / f"{self.root.name}-worktrees" / worktree_name).resolve()
+        expected_parent = (self.root.parent / f"{self.root.name}-worktrees").resolve()
+        try:
+            worktree.relative_to(expected_parent)
+        except ValueError as exc:
+            raise QueueError("Queue worktree is outside the managed root") from exc
+        if worktree.exists():
+            if _run(["git", "branch", "--show-current"], worktree) != branch:
+                raise QueueError("Managed worktree branch no longer matches the queue")
+            if _run(["git", "rev-parse", "HEAD"], worktree) != commit_sha:
+                raise QueueError("Managed worktree head no longer matches the queue")
+            if _run(["git", "status", "--porcelain"], worktree):
+                raise QueueError("Managed worktree contains uncommitted remnants; recode it instead")
+            _run(["git", "worktree", "remove", str(worktree)], self.root, 120)
+
+        local_sha = self._ref_sha(f"refs/heads/{branch}")
+        if local_sha is not None and local_sha != commit_sha:
+            raise QueueError("Local branch head no longer matches the selected commit")
+        if local_sha == commit_sha:
+            _run(["git", "branch", "-D", branch], self.root)
+
+        def discard(value: dict[str, Any]) -> None:
+            current = next(item for item in value["records"] if item.get("id") == record_id)
+            current.update({"state": "discarded", "updated_at": utc_now()})
+        self._update(discard)
+        self.event(
+            f"{selected['ticket_id']} local remnants deleted",
+            level="warning",
+            detail=(
+                f"Deleted only managed worktree {worktree_name} and exact local branch {branch}; "
+                "the non-secret queue audit record remains."
+            ),
+            ticket_id=str(selected.get("ticket_id") or ""),
+        )
+
+    def _ref_sha(self, ref: str) -> str | None:
+        completed = subprocess.run(
+            ["git", "show-ref", "--verify", "--hash", ref],
+            cwd=self.root, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            text=True, timeout=30, check=False,
+        )
+        if completed.returncode in {1, 128} and not completed.stdout.strip():
+            return None
+        if completed.returncode != 0 or not HEX_SHA.fullmatch(completed.stdout.strip()):
+            raise QueueError("Git reference inventory failed")
+        return completed.stdout.strip()
+
+    @staticmethod
+    def _is_ancestor(ancestor: str, descendant: str, cwd: Path) -> bool:
+        completed = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+            cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=30, check=False,
+        )
+        if completed.returncode not in {0, 1}:
+            raise QueueError("Git dependency verification failed")
+        return completed.returncode == 0
 
     def dismiss_failed(
         self,
@@ -726,10 +1090,21 @@ class ApprovalQueue:
 
     def _pr_body(self, record: dict[str, Any]) -> str:
         paths = "\n".join(f"- `{path}`" for path in record["changed_paths"])
+        batch_members = record.get("batch_members")
+        batch = ""
+        if isinstance(batch_members, list) and batch_members:
+            ordered = "\n".join(
+                f"{index}. `{item.get('ticket_id')}` at `{item.get('commit_sha')}` — "
+                f"{item.get('purpose')}"
+                for index, item in enumerate(batch_members, start=1)
+                if isinstance(item, dict)
+            )
+            batch = f"## Ordered batch\n\n{ordered}\n\n"
         return (
             f"## Ticket\n\n{record['ticket_id']}\n\n"
             f"## Purpose\n\n{record['purpose']}\n\n"
             f"## Expected impact\n\n{record['impact']}\n\n"
+            f"{batch}"
             f"## Changed paths\n\n{paths}\n\n"
             "## Local gates\n\nDeterministic validation: PASS\n\n"
             f"Independent reviewer: {record.get('reviewer') or 'approved by configured policy'}\n"

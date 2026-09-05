@@ -151,8 +151,11 @@ class AutonomyController:
         state = self.store.read()
         mode = VALID_MODES[state["mode"]]
         queue = self.queue.public_state()
+        public_automation = dict(state["automation"])
+        public_automation.pop("authorization_id", None)
         return {
             **state,
+            "automation": public_automation,
             "assignment": {
                 "label": mode["label"],
                 "provider": mode["provider"],
@@ -168,6 +171,7 @@ class AutonomyController:
                 "deletion_requires_codex_approval": True,
             },
             "approval_queue": queue["records"],
+            "approval_batches": queue["batches"],
             "activity": queue["activity"],
             "autonomous_failure_streak": self._read_failure_streak(),
         }
@@ -184,6 +188,7 @@ class AutonomyController:
                 state["mode"] = mode
                 if mode == "deterministic":
                     state["automation"]["enabled"] = False
+                    state["automation"]["authorization_id"] = None
                     state["run"].update({
                         "state": "idle",
                         "run_id": None,
@@ -209,6 +214,7 @@ class AutonomyController:
 
             def change(state: dict) -> None:
                 state["automation"]["enabled"] = False
+                state["automation"]["authorization_id"] = None
                 if active and state["run"].get("run_id") == run_id:
                     state["run"].update({
                         "state": "interrupted",
@@ -239,6 +245,7 @@ class AutonomyController:
 
     def set_automation(self, enabled: bool, brief: str) -> dict:
         brief = self._validated_brief(brief)
+        authorization_id = uuid.uuid4().hex if enabled else None
         with self._lock:
             current = self.store.read()
             if enabled:
@@ -249,7 +256,11 @@ class AutonomyController:
                 self._clear_failure_streak()
 
             def change(state: dict) -> None:
-                state["automation"].update({"enabled": enabled, "brief": brief})
+                state["automation"].update({
+                    "enabled": enabled,
+                    "brief": brief,
+                    "authorization_id": authorization_id,
+                })
                 if not enabled and state["run"]["state"] not in {"planning", "executing"}:
                     state["run"].update({
                         "state": "idle",
@@ -291,12 +302,39 @@ class AutonomyController:
             self._publisher.start()
             return self.store.read()
 
+    def approve_publish_batch(self, batch_id: str) -> dict:
+        with self._lock:
+            if self._publisher and self._publisher.is_alive():
+                raise ControlError("A publication pipeline is already active")
+            if self._worker_active():
+                raise ControlError("Wait for the active ticket to reach its safe stopping point")
+            batches = self.queue.public_state()["batches"]
+            batch = next((item for item in batches if item.get("id") == batch_id), None)
+            if batch is None:
+                raise ControlError("Publication batch is no longer valid")
+            self._publisher = threading.Thread(
+                target=self._publish_batch,
+                args=(batch_id,),
+                name=f"publish-batch-{batch_id}",
+                daemon=True,
+            )
+            self._publisher.start()
+            return self.store.read()
+
     def remove_failed_ticket(self, record_id: str, commit_sha: str) -> dict:
         with self._lock:
             if self._pipeline_active():
                 raise ControlError("Wait for the active governed operation to finish")
             self._disable_automation()
             self.queue.dismiss_failed(record_id, commit_sha)
+            return self.store.read()
+
+    def delete_stale_ticket(self, record_id: str, commit_sha: str) -> dict:
+        with self._lock:
+            if self._pipeline_active():
+                raise ControlError("Wait for the active governed operation to finish")
+            self._disable_automation()
+            self.queue.discard_local_remnants(record_id, commit_sha)
             return self.store.read()
 
     def recode_failed_ticket(self, record_id: str, commit_sha: str) -> dict:
@@ -353,6 +391,19 @@ class AutonomyController:
                 detail="The queue item or exact commit no longer matched the approval.",
             )
             self._disable_automation("Automation paused after approval mismatch")
+
+    def _publish_batch(self, batch_id: str) -> None:
+        try:
+            records = self.queue.approve_and_publish_batch(batch_id)
+            if any(item.get("state") == "failed" for item in records):
+                self._disable_automation("Automation paused after batch publication failure")
+        except QueueError:
+            self.queue.event(
+                "Batch publication approval was rejected",
+                level="error",
+                detail="The dependency chain or one of its exact commits no longer matched.",
+            )
+            self._disable_automation("Automation paused after batch approval mismatch")
 
     def _validated_brief(self, brief: str) -> str:
         brief = brief.strip()
@@ -561,11 +612,18 @@ class AutonomyController:
             self._clear_failure_streak()
             if proposal["action"] == "replace_pr":
                 self._retire_pull_request(ticket)
+            automation_state = self.store.read()["automation"]
+            authorization_id = (
+                automation_state.get("authorization_id")
+                if continuous and automation_state.get("enabled") is True
+                else None
+            )
             queued = self.queue.add_passed_ticket(
                 result,
                 ticket,
                 summary=proposal["summary"],
                 impact=proposal["impact"],
+                automation_authorization_id=authorization_id,
             )
             if recode_record is not None:
                 self.queue.dismiss_failed(
@@ -574,6 +632,69 @@ class AutonomyController:
                     superseded_by=queued["ticket_id"],
                 )
             awaiting = queued["state"] == "deletion_pending"
+            if continuous and not awaiting and isinstance(authorization_id, str):
+                target = self.queue.autonomous_publication_target(
+                    queued["id"], authorization_id
+                )
+                if target is None:
+                    self.queue.event(
+                        f"{ticket['task_id']} awaits an earlier manual queue decision",
+                        level="warning",
+                        detail=(
+                            "Continuous authorization cannot be applied out of dependency order "
+                            "or to queue entries created before automation was enabled."
+                        ),
+                        ticket_id=ticket["task_id"],
+                    )
+                    self._finish(
+                        run_id, True, "Ticket queued behind work requiring manual approval",
+                        ticket_id=ticket["task_id"], run_state="queued",
+                    )
+                    self._disable_automation(
+                        "Automation paused for an earlier manual queue decision"
+                    )
+                    return
+
+                def publishing(state: dict) -> None:
+                    if state["run"].get("run_id") == run_id:
+                        state["run"].update({
+                            "state": "publishing",
+                            "summary": "Local PASS complete; publishing exact approved head",
+                            "error": None,
+                        })
+                self.store.update(publishing)
+                self.queue.event(
+                    f"{ticket['task_id']} received continuous publication approval",
+                    level="success",
+                    detail=(
+                        "The automation toggle authorized this non-deleting ticket after all "
+                        "local deterministic, tester, and reviewer gates passed."
+                    ),
+                    ticket_id=ticket["task_id"],
+                )
+                if target["kind"] == "batch":
+                    published = self.queue.approve_and_publish_batch(target["id"])
+                    publication_failed = any(
+                        item.get("state") == "failed" for item in published
+                    )
+                else:
+                    published_record = self.queue.approve_and_publish(
+                        target["id"], target["commit_sha"]
+                    )
+                    publication_failed = published_record.get("state") != "published"
+                if publication_failed:
+                    self._finish(
+                        run_id, False, "Automatic publication stopped safely",
+                        ticket_id=ticket["task_id"],
+                        error="Exact-head publication did not complete; review the queue error.",
+                    )
+                    self._disable_automation("Automation paused after publication failure")
+                    return
+                self._finish(
+                    run_id, True, "Ticket published through protected main",
+                    ticket_id=ticket["task_id"], run_state="published",
+                )
+                return
             self._finish(
                 run_id,
                 True,
@@ -1802,6 +1923,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
     def _disable_automation(self, summary: str | None = None) -> None:
         def change(state: dict) -> None:
             state["automation"]["enabled"] = False
+            state["automation"]["authorization_id"] = None
             if summary and state["run"]["state"] not in {
                 "failed", "paused", "awaiting_deletion_approval",
             }:
@@ -1835,9 +1957,13 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 if resolved and state["run"]["state"] == "awaiting_deletion_approval":
                     self.store.update(lambda value: value["run"].update({
                         "state": "queued",
-                        "summary": "Deletion approved; ticket queued",
+                        "summary": "Deletion approved; manual publication approval required",
                         "error": None,
                     }))
+                    self._disable_automation(
+                        "Automation paused because deleting tickets require manual publication"
+                    )
+                    continue
                 with self._lock:
                     latest = self.store.read()
                     if (

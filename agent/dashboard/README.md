@@ -82,6 +82,11 @@ The green **Automation** switch lets the selected Sol effort plan another
 bounded ticket after each safe completion. Turning it off prevents the next
 ticket from starting; it does not interrupt an active gate mid-operation.
 Switching back to **Python** restores the manual Python/Bash workflow.
+While the switch remains enabled, it also authorizes the fixed publication
+pipeline for each subsequently completed non-deleting ticket only after every
+local deterministic, tester, and reviewer gate passes. Exact-head CI and
+protected-main merge rules still run unchanged. A deletion, approval mismatch,
+or publication failure disables automation instead of being treated as success.
 
 To conserve provider and Codex limits, Python resumes a sole verified unfinished
 ticket without calling Sol, reuses a 15-minute planning decision only while the
@@ -132,6 +137,14 @@ required CI, verifies protected-merge readiness, squash-merges, and
 fast-forwards local `main`. A changed commit, missing CI evidence, dirty local
 `main`, or GitHub error stops the pipeline. Controlled references remain
 available only through their dedicated governance-ticket process.
+
+When later queued commits provably contain their predecessors, the queue shows
+one ordered batch card and publishes only the final cumulative head through one
+PR. Independent or ambiguous entries are never grouped. Failed and stale cards
+offer **Recode with AI** plus **Delete code & entry**. Deletion has a second
+confirmation and removes only the exact clean local managed worktree and local
+`agent/` branch. It refuses dirty or mismatched worktrees, dependent records,
+open PRs, and remote branches, and retains a non-secret audit event.
 
 Tickets that delete files pause before the local commit. The queue creates an
 exact request and manifest digest under ignored `agent/runtime/`. The project

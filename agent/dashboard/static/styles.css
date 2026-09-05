@@ -167,20 +167,24 @@ h2 { margin-bottom: 0; font-size: clamp(1.05rem, 1.6vw, 1.35rem); letter-spacing
 .approval-queue { display: grid; gap: .75rem; }
 .queue-card { min-width: 0; border: 1px solid var(--line); border-radius: 13px; background: rgba(7,11,18,.42); overflow: hidden; }
 .queue-card.state-ready { border-color: rgba(82,230,154,.45); box-shadow: inset 3px 0 var(--green); }
-.queue-card.state-failed, .queue-card.state-rejected { border-color: rgba(255,107,117,.45); box-shadow: inset 3px 0 var(--red); }
+.queue-card.state-failed, .queue-card.state-rejected, .queue-card.state-stale { border-color: rgba(255,107,117,.45); box-shadow: inset 3px 0 var(--red); }
 .queue-card.state-deletion_pending { border-color: rgba(244,190,99,.48); box-shadow: inset 3px 0 var(--amber); }
 .queue-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: center; padding: 1rem; }
 .queue-ticket { color: var(--cyan); font-size: .7rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
 .queue-summary h3 { margin: .22rem 0 .3rem; font-size: 1rem; }
 .queue-summary p { margin: 0; max-width: 88ch; color: var(--muted); font-size: .78rem; line-height: 1.45; }
 .queue-action { display: grid; justify-items: end; gap: .55rem; }
-.publish-button { min-height: 2.4rem; padding: .55rem .85rem; border: 1px solid rgba(82,230,154,.5); border-radius: 8px; color: #04130b; background: var(--green); font: inherit; font-size: .75rem; font-weight: 800; cursor: pointer; }
-.publish-button:disabled { color: var(--muted); background: transparent; border-color: var(--line); cursor: not-allowed; opacity: .55; }
+.publish-button, .publish-batch-button { min-height: 2.4rem; padding: .55rem .85rem; border: 1px solid rgba(82,230,154,.5); border-radius: 8px; color: #04130b; background: var(--green); font: inherit; font-size: .75rem; font-weight: 800; cursor: pointer; }
+.publish-button:disabled, .publish-batch-button:disabled { color: var(--muted); background: transparent; border-color: var(--line); cursor: not-allowed; opacity: .55; }
 .queue-recovery-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .45rem; }
-.recode-button, .remove-ticket-button { min-height: 2.4rem; padding: .55rem .75rem; border-radius: 8px; font: inherit; font-size: .72rem; font-weight: 800; cursor: pointer; }
+.recode-button, .delete-stale-button { min-height: 2.4rem; padding: .55rem .75rem; border-radius: 8px; font: inherit; font-size: .72rem; font-weight: 800; cursor: pointer; }
 .recode-button { border: 1px solid rgba(123,213,255,.55); color: #06131a; background: var(--cyan); }
-.remove-ticket-button { border: 1px solid rgba(255,107,117,.6); color: #ffd9dc; background: rgba(255,107,117,.1); }
-.recode-button:disabled, .remove-ticket-button:disabled { color: var(--muted); background: transparent; border-color: var(--line); cursor: not-allowed; opacity: .55; }
+.delete-stale-button { border: 1px solid rgba(255,107,117,.6); color: #ffd9dc; background: rgba(255,107,117,.1); }
+.recode-button:disabled, .delete-stale-button:disabled { color: var(--muted); background: transparent; border-color: var(--line); cursor: not-allowed; opacity: .55; }
+.queue-batch { background: linear-gradient(135deg, rgba(82,230,154,.08), rgba(7,11,18,.5) 52%); }
+.batch-members { display: grid; gap: .6rem; margin: 0; padding-left: 1.3rem; }
+.batch-members li { padding-left: .2rem; color: var(--text); }
+.batch-members span, .batch-members code { display: block; margin-top: .18rem; color: var(--muted); overflow-wrap: anywhere; }
 .queue-card details { border-top: 1px solid var(--line); }
 .queue-card summary { padding: .7rem 1rem; color: var(--muted); font-size: .74rem; cursor: pointer; }
 .queue-details { display: grid; grid-template-columns: minmax(15rem, .85fr) minmax(15rem, 1.15fr); gap: 1rem; padding: 0 1rem 1rem; }

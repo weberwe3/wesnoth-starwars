@@ -361,6 +361,68 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertIsNone(ticket["resume_branch"])
             self.assertEqual(ticket["worker"], "implementer")
 
+    def test_continuous_local_pass_publishes_without_a_second_human_click(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "agent" / "runtime").mkdir(parents=True)
+            queue = ApprovalQueue(root, root / "agent" / "runtime" / "queue.json")
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "agent" / "runtime" / "control.json"),
+                queue,
+            )
+            run_id = "abc123def456"
+            authorization_id = "d" * 32
+            controller.store.update(lambda state: state.update({
+                "mode": "sol-low",
+                "automation": {
+                    "enabled": True,
+                    "brief": "Continue safely",
+                    "authorization_id": authorization_id,
+                },
+                "run": {
+                    "state": "planning", "run_id": run_id,
+                    "requested_at": None, "started_at": None, "completed_at": None,
+                    "ticket_id": None, "summary": "Planning", "error": None,
+                },
+            }))
+            proposal = {
+                "action": "run_ticket", "summary": "Safe ticket",
+                "impact": "Bounded fixture impact", "ticket": {},
+            }
+            ticket = {"task_id": "AUTO-PUBLISH", "replace_pr_number": None}
+            queued = {
+                "id": "4" * 16, "ticket_id": "AUTO-PUBLISH", "state": "ready",
+                "commit_sha": "e" * 40,
+            }
+            published = {**queued, "state": "published"}
+            with (
+                mock.patch.object(controller, "_plan", return_value=proposal),
+                mock.patch.object(controller, "_build_ticket", return_value=ticket),
+                mock.patch.object(controller, "_run_secure_ticket", return_value={"return_code": 0}),
+                mock.patch.object(controller, "_load_ticket_result", return_value={"final_verdict": "PASS"}),
+                mock.patch.object(ticket_runner, "load_ticket"),
+                mock.patch.object(queue, "add_passed_ticket", return_value=queued) as add,
+                mock.patch.object(
+                    queue, "autonomous_publication_target",
+                    return_value={
+                        "kind": "record", "id": queued["id"],
+                        "commit_sha": queued["commit_sha"],
+                    },
+                ) as target,
+                mock.patch.object(queue, "approve_and_publish", return_value=published) as publish,
+            ):
+                controller._run(run_id, "sol-low", "Continue safely", True)
+            self.assertEqual(
+                add.call_args.kwargs["automation_authorization_id"], authorization_id
+            )
+            target.assert_called_once_with(queued["id"], authorization_id)
+            publish.assert_called_once_with(queued["id"], queued["commit_sha"])
+            state = controller.public_state()
+            self.assertEqual(state["run"]["state"], "published")
+            self.assertTrue(state["automation"]["enabled"])
+            self.assertNotIn("authorization_id", state["automation"])
+
     def test_planned_priorities_expose_completion_and_advance_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1652,6 +1714,122 @@ class ApprovalQueueTests(unittest.TestCase):
             self.assertEqual(stored["branch"], "agent/dash-test")
             with self.assertRaises(QueueError):
                 queue.dismiss_failed(record_id, commit)
+
+    def test_cumulative_ready_tickets_form_one_exact_batch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            first_id, second_id = "1" * 16, "2" * 16
+            first_sha, second_sha = "a" * 40, "b" * 40
+            authorization_id = "c" * 32
+            queue._update(lambda state: state["records"].extend([
+                {
+                    "id": first_id, "ticket_id": "ONE", "state": "ready",
+                    "dependency_index": 1, "commit_sha": first_sha,
+                    "branch": "agent/one", "changed_paths": ["one.cfg"],
+                    "automation_authorized": True,
+                    "automation_authorization_id": authorization_id,
+                },
+                {
+                    "id": second_id, "ticket_id": "TWO", "state": "ready",
+                    "dependency_index": 2, "commit_sha": second_sha,
+                    "branch": "agent/two", "changed_paths": ["two.cfg"],
+                    "depends_on_id": first_id, "depends_on_commit": first_sha,
+                    "automation_authorized": True,
+                    "automation_authorization_id": authorization_id,
+                },
+            ]))
+            public = queue.public_state()
+            self.assertEqual(len(public["batches"]), 1)
+            batch = public["batches"][0]
+            self.assertEqual(
+                [item["id"] for item in batch["members"]],
+                [first_id, second_id],
+            )
+            self.assertEqual(
+                queue.autonomous_publication_target(second_id, authorization_id),
+                {"kind": "batch", "id": batch["id"]},
+            )
+
+    def test_batch_publication_uses_final_head_and_completes_every_member(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            first_id, second_id = "1" * 16, "2" * 16
+            first_sha, second_sha = "a" * 40, "b" * 40
+            queue._update(lambda state: state["records"].extend([
+                {
+                    "id": first_id, "ticket_id": "ONE", "state": "ready",
+                    "dependency_index": 1, "commit_sha": first_sha,
+                    "branch": "agent/one", "changed_paths": ["one.cfg"],
+                },
+                {
+                    "id": second_id, "ticket_id": "TWO", "state": "ready",
+                    "dependency_index": 2, "commit_sha": second_sha,
+                    "branch": "agent/two", "changed_paths": ["two.cfg"],
+                    "depends_on_id": first_id, "depends_on_commit": first_sha,
+                },
+            ]))
+            batch_id = queue.public_state()["batches"][0]["id"]
+
+            def publish_final(record: dict) -> None:
+                self.assertEqual(record["id"], second_id)
+                queue._update_record(
+                    second_id, state="published", pr_number=27,
+                    pr_url="https://example.invalid/27", merge_sha="c" * 40,
+                )
+
+            with (
+                mock.patch.object(queue, "_worktree", return_value=root),
+                mock.patch.object(queue, "_is_ancestor", return_value=True),
+                mock.patch.object(queue, "_publish", side_effect=publish_final),
+            ):
+                records = queue.approve_and_publish_batch(batch_id)
+            self.assertEqual([item["state"] for item in records], ["published", "published"])
+            self.assertTrue(all(item["pr_number"] == 27 for item in records))
+
+    def test_stale_cleanup_deletes_only_exact_clean_local_worktree_and_branch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            root = base / "project"
+            worktrees = base / "project-worktrees"
+            root.mkdir()
+            self.git(root, "init", "-b", "main")
+            self.git(root, "config", "user.email", "test@example.invalid")
+            self.git(root, "config", "user.name", "Dashboard Test")
+            (root / "base.txt").write_text("base\n", encoding="utf-8")
+            self.git(root, "add", "base.txt")
+            self.git(root, "commit", "-m", "fixture")
+            worktree = worktrees / "stale-ticket"
+            self.git(root, "worktree", "add", "-b", "agent/stale-ticket", str(worktree), "main")
+            (worktree / "candidate.txt").write_text("candidate\n", encoding="utf-8")
+            self.git(worktree, "add", "candidate.txt")
+            self.git(worktree, "commit", "-m", "candidate")
+            commit = self.git(worktree, "rev-parse", "HEAD")
+            queue = ApprovalQueue(root)
+            record_id = "3" * 16
+            queue._update(lambda state: state["records"].append({
+                "id": record_id, "ticket_id": "STALE", "state": "stale",
+                "dependency_index": 1, "commit_sha": commit,
+                "branch": "agent/stale-ticket", "worktree_name": worktree.name,
+                "changed_paths": ["candidate.txt"], "pr_number": None, "pr_url": None,
+            }))
+            queue._update(lambda state: state["records"].append({
+                "id": "4" * 16, "ticket_id": "DEPENDENT", "state": "stale",
+                "dependency_index": 2, "commit_sha": "f" * 40,
+                "branch": "agent/dependent", "depends_on_id": record_id,
+                "depends_on_commit": commit,
+            }))
+            with self.assertRaisesRegex(QueueError, "still depends"):
+                queue.discard_local_remnants(record_id, commit)
+            queue._update(lambda state: next(
+                item for item in state["records"] if item.get("id") == "4" * 16
+            ).update({"state": "discarded"}))
+            queue.discard_local_remnants(record_id, commit)
+            self.assertFalse(worktree.exists())
+            self.assertNotIn("agent/stale-ticket", self.git(root, "branch", "--list"))
+            self.assertEqual(queue.public_state()["records"], [])
+            self.assertEqual(queue.read()["records"][0]["state"], "discarded")
 
     def test_failed_queue_item_blocks_normal_planning_but_can_be_excluded_for_recode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
