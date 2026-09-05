@@ -26,6 +26,7 @@ import ticket_runner  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from autonomy import (  # noqa: E402
     AutonomyController,
+    BACKLOG_SCHEMA,
     ControlError,
     TICKET_SCHEMA,
     validate_strict_output_schema,
@@ -445,6 +446,173 @@ class CoordinationControlTests(unittest.TestCase):
                 [(item["id"], item["status"]) for item in priorities],
                 [("done", "completed"), ("next", "completed"), ("later", "pending")],
             )
+
+    def test_generated_backlog_schema_is_strict(self) -> None:
+        validate_strict_output_schema(BACKLOG_SCHEMA)
+
+    def test_generated_priorities_follow_static_catalog_and_track_completion(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "agent" / "dashboard" / "static" / "planned-tickets.json"
+            catalog.parent.mkdir(parents=True)
+            catalog.write_text(json.dumps({"tickets": [{
+                "id": "static-done", "status": "completed",
+                "label": "Static done", "brief": "Already complete",
+            }]}), encoding="utf-8")
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir()
+            runtime.joinpath("generated-planned-tickets.json").write_text(
+                json.dumps({"schema_version": 1, "tickets": [
+                    {
+                        "id": "generated-batch-01",
+                        "summary": "generated-batch-01: First",
+                        "impact": "First impact",
+                        "worker": "implementer",
+                        "objective": "generated-batch-01: First objective",
+                        "allowed_paths": ["addons/first.cfg"],
+                        "validation_profile": "static-text",
+                        "validation_root": None,
+                    },
+                    {
+                        "id": "generated-batch-02",
+                        "summary": "generated-batch-02: Second",
+                        "impact": "Second impact",
+                        "worker": "fast-fix",
+                        "objective": "generated-batch-02: Second objective",
+                        "allowed_paths": ["addons/second.cfg"],
+                        "validation_profile": "static-text",
+                        "validation_root": None,
+                    },
+                ]}), encoding="utf-8",
+            )
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            priorities = controller._planned_priorities([
+                {"purpose": "generated-batch-01: First", "impact": "Complete"}
+            ])
+            self.assertEqual(
+                [(item["id"], item["status"], item["source"]) for item in priorities],
+                [
+                    ("static-done", "completed", "static"),
+                    ("generated-batch-01", "completed", "generated"),
+                    ("generated-batch-02", "pending", "generated"),
+                ],
+            )
+
+    def test_generated_ticket_selection_uses_no_planner_call(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            source = {
+                "id": "generated-batch-02",
+                "summary": "generated-batch-02: Second",
+                "impact": "Second impact",
+                "worker": "fast-fix",
+                "objective": "generated-batch-02: Second objective",
+                "allowed_paths": ["addons/second.cfg"],
+                "validation_profile": "static-text",
+                "validation_root": None,
+            }
+            runtime.joinpath("generated-planned-tickets.json").write_text(
+                json.dumps({"schema_version": 1, "tickets": [source]}),
+                encoding="utf-8",
+            )
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            inventory = {"planned_priorities": [{
+                "id": source["id"], "status": "pending", "source": "generated",
+            }]}
+            with (
+                mock.patch.object(controller, "_reject_overlapping_proposal") as overlap,
+                mock.patch.object(controller, "_build_ticket") as build,
+            ):
+                proposal = controller._next_generated_priority(inventory)
+            self.assertEqual(proposal["summary"], source["summary"])
+            self.assertEqual(proposal["ticket"]["worker"], "fast-fix")
+            overlap.assert_called_once()
+            build.assert_called_once()
+
+    def test_priority_exhaustion_requires_no_pending_ticket(self) -> None:
+        self.assertTrue(AutonomyController._priorities_exhausted({
+            "planned_priorities": [{"status": "completed"}],
+        }))
+        self.assertFalse(AutonomyController._priorities_exhausted({
+            "planned_priorities": [{"status": "pending"}],
+        }))
+
+    def test_refill_uses_one_model_call_and_persists_multiple_tickets(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            response = {
+                "action": "refill",
+                "summary": "Four-ticket roadmap increment",
+                "impact": "Continue bounded autonomous development",
+                "tickets": [
+                    {
+                        "summary": "First ticket", "impact": "First impact",
+                        "worker": "implementer", "objective": "First objective",
+                        "allowed_paths": ["addons/first.cfg"],
+                        "validation_profile": "static-text", "validation_root": None,
+                    },
+                    {
+                        "summary": "Second ticket", "impact": "Second impact",
+                        "worker": "fast-fix", "objective": "Second objective",
+                        "allowed_paths": ["addons/second.cfg"],
+                        "validation_profile": "static-text", "validation_root": None,
+                    },
+                ],
+            }
+
+            def run_planner(command, **_kwargs):
+                output = Path(command[command.index("-o") + 1])
+                output.write_text(json.dumps(response), encoding="utf-8")
+                return subprocess.CompletedProcess(command, 0, "", "")
+
+            def validate_ticket(_run_id, proposal, _brief, **_kwargs):
+                return {"task_id": "TEST", **proposal["ticket"]}
+
+            inventory = {
+                "main_head": "a" * 40,
+                "planned_priorities": [{
+                    "id": "old", "status": "completed", "source": "static",
+                }],
+                "recently_published": [], "approval_queue": [],
+                "open_pull_requests": [],
+            }
+            with (
+                mock.patch.object(ticket_runner, "resolve_codex_executable", return_value="/usr/bin/codex"),
+                mock.patch("autonomy.subprocess.run", side_effect=run_planner) as planner,
+                mock.patch.object(controller, "_reject_overlapping_proposal"),
+                mock.patch.object(controller, "_build_ticket", side_effect=validate_ticket),
+                mock.patch.object(controller, "_planned_priorities", side_effect=lambda _recent: [
+                    {
+                        "id": item["id"], "status": "pending", "source": "generated",
+                        "label": item["summary"], "brief": item["objective"],
+                    }
+                    for item in controller._generated_backlog()["tickets"]
+                ]),
+            ):
+                proposal = controller._refill_backlog(
+                    "abc123def456", "sol-low", "Continue autonomously", inventory
+                )
+            saved = controller._generated_backlog()
+            self.assertEqual(len(saved["tickets"]), 2)
+            self.assertTrue(proposal["summary"].startswith("generated-"))
+            self.assertEqual(planner.call_count, 1)
 
     def test_completed_priority_retires_failed_historical_contract(self) -> None:
         self.assertTrue(AutonomyController._contract_matches_completed_priority(

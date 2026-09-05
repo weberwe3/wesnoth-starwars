@@ -4,10 +4,10 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-05 during Legends content-governance work<br>
-**Main before this snapshot:** `ce836bed0345c16ba56f176d5c204dab1ee03ded`<br>
-**Active governance ticket:** Legends terminology, namespace, originality, and distribution directives<br>
-**Next intended game-development ticket:** the highest-priority safe ticket after the ranged-combat proof of concept
+**Last continuity refresh:** 2026-09-05 during autonomous backlog-refill work<br>
+**Main before this snapshot:** `43468c6`<br>
+**Active governance ticket:** token-efficient autonomous backlog replenishment<br>
+**Next intended game-development ticket:** coordinator-generated after the documented prototype catalog is exhausted
 
 ---
 
@@ -970,6 +970,7 @@ When updating this file:
 | 2026-09-05 | DASH-026 exact recode selection | Bind Recode with AI directly to the selected failed queue ID, commit, branch, managed worktree, and recorded ticket contract instead of asking Sol to rediscover the already selected ticket |
 | 2026-09-05 | DASH-027 queue governance controls | Add exact local stale-remnant deletion, cumulative dependency-batch publication, and automation-session-bound publication after a complete non-deleting local PASS |
 | 2026-09-05 | Legends content directives | Require authentic post-ROTJ Expanded Universe terminology, original prose and implementation, `sw_` project IDs, Wesnoth-ready commented code, and free official add-on-server distribution |
+| 2026-09-05 | Autonomous backlog refill | Generate four bounded tickets in one compact Sol call when no safe backlog work remains, then let Python select and revalidate them without repeated planning calls |
 
 ---
 
@@ -986,3 +987,5 @@ The failed-ticket Recode control is an exact-record operation, not a general pla
 DASH-027 requires its dedicated governance change to merge first. It binds standing publication authority to one live automation-toggle session and only records that authority after a non-deleting worktree completes all local gates. The controller then uses the same exact-commit push, PR, exact-head CI, protected merge, and local-main synchronization path as a manual approval. Cumulative queued dependencies are grouped only when stored predecessor identities and Git ancestry both verify; the final cumulative commit is the sole PR head. Failed or stale local remnants can be recoded, or deleted only through an exact confirmed action that refuses dirty, remote, PR-owned, mismatched, or still-dependent branches and retains audit evidence.
 
 The controlled content policy now makes post-Return of the Jedi Expanded Universe (Legends) terminology an affirmative fidelity requirement while retaining the existing original-expression boundary. New project-owned WML/Lua IDs use the `sw_` namespace; player-facing fields use full lore names; dialogue, story prose, macros, terrain logic, events, and scenarios are newly authored; and the add-on remains structured for free distribution through the official Wesnoth add-on server. Requests for code artifacts should receive complete, scoped, commented WML/Lua that fits the stated Wesnoth directory and turn-based hex framework.
+
+Continuous automation now treats backlog maintenance as a coordinator responsibility. After existing or resumable work and the documented priority catalog are exhausted, one compact read-only Sol call proposes four ordered implementation contracts. Python rejects unsafe or overlapping entries, stores only validated contracts in ignored runtime state, starts the first immediately, and revalidates and selects later entries without another planner call. It requests a new set only after the prior set is exhausted or unusable. All existing worktree, scope, validation, tester, reviewer, deletion, publication, and three-failure gates remain unchanged.

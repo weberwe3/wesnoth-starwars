@@ -102,6 +102,15 @@ activity log. Resolve the listed pull request, queued ticket, or documented
 dependency before enabling automation again. Control-plane failures record a
 redacted diagnostic and required action instead of only a generic stop message.
 
+When every existing and documented priority is complete, or the current
+planner finds no remaining safe ticket, continuous automation makes one compact
+read-only Sol call to generate a new ordered set of four bounded implementation
+contracts. Python validates and stores the safe set under ignored runtime state,
+starts its first ticket immediately, and selects later entries without another
+planning call. Unsafe or overlapping entries are skipped. A new set is requested
+only when the prior set is exhausted or no longer usable; an empty or unsafe
+refill pauses visibly rather than retrying in a token-consuming loop.
+
 Automation treats a managed branch/worktree from a nonterminal ticket as
 resumable work. It also resumes an eligible open PR when its exact published
 head, clean managed worktree, original contract, repository ownership, and path
