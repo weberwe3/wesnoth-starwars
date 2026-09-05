@@ -59,12 +59,28 @@ async function loadPlannedTickets() {
 
 function renderQueue(control) {
   const records = control.approval_queue || [];
+  const batches = control.approval_batches || [];
   const firstReady = records.find(item => item.state === "ready")?.id;
   const ticketActive = ["planning", "executing", "publishing"].includes(control.run?.state);
-  $("approval-queue").innerHTML = records.slice().reverse().map(item => {
+  const groupedIds = new Set(batches.flatMap(batch => (batch.members || []).map(item => item.id)));
+  const batchCards = batches.slice().reverse().map(batch => {
+    const members = batch.members || [];
+    const publishable = members[0]?.id === firstReady && !ticketActive;
+    const tickets = members.map((item, index) => `<li><b>${index + 1}. ${esc(item.ticket_id)}</b><span>${esc(item.purpose)}</span><code>${esc(item.commit_sha)}</code></li>`).join("");
+    const paths = (batch.changed_paths || []).map(path => `<li>${esc(path)}</li>`).join("");
+    return `<article class="queue-card queue-batch state-ready">
+      <div class="queue-summary"><div><span class="queue-ticket">${esc(batch.ticket_id)}</span><h3>${esc(batch.purpose)}</h3><p>${esc(batch.impact)}</p></div>
+      <div class="queue-action"><span class="state-tag">Verified sequence</span><button type="button" class="publish-batch-button" data-batch-id="${esc(batch.id)}" ${publishable && !controlBusy ? "" : "disabled"}>Approve batch &amp; publish</button></div></div>
+      <details><summary>Ordered tickets and cumulative publication evidence</summary><div class="queue-details">
+        <ol class="batch-members">${tickets}</ol><dl><dt>Final exact head</dt><dd>${esc(batch.commit_sha)}</dd><dt>Publication branch</dt><dd>${esc(batch.branch)}</dd><dt>Dependency proof</dt><dd>Each later commit contains its exact predecessor</dd></dl>
+        <div><strong>Combined changed paths</strong><ul>${paths}</ul></div>
+      </div></details></article>`;
+  });
+  const recordCards = records.filter(item => !groupedIds.has(item.id)).slice().reverse().map(item => {
     const publishable = item.state === "ready" && item.id === firstReady && !ticketActive;
     const newerRevision = records.some(other => other.id !== item.id && other.branch === item.branch && !["published", "rejected", "stale", "failed"].includes(other.state));
-    const recoverable = item.state === "failed" && Boolean(item.commit_sha) && !ticketActive && !newerRevision;
+    const needsRecovery = ["failed", "stale"].includes(item.state);
+    const recoverable = needsRecovery && Boolean(item.commit_sha) && !ticketActive && !newerRevision;
     const commit = item.commit_sha || "Pending deletion approval";
     const paths = (item.changed_paths || []).map(path => `<li>${esc(path)}</li>`).join("");
     const deletion = (item.deleted_paths || []).length
@@ -72,13 +88,14 @@ function renderQueue(control) {
     return `<article class="queue-card state-${esc(item.state)}">
       <div class="queue-summary"><div><span class="queue-ticket">${esc(item.ticket_id)}</span><h3>${esc(item.purpose)}</h3><p>${esc(item.impact)}</p></div>
       <div class="queue-action"><span class="state-tag">${esc(displayState(item.state))}</span>
-        ${item.state === "failed" ? `<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="remove-ticket-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${Boolean(item.commit_sha) && !ticketActive && !controlBusy ? "" : "disabled"}>Remove from queue</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
+        ${needsRecovery ? `<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="delete-stale-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" data-ticket-id="${esc(item.ticket_id)}" data-branch="${esc(item.branch)}" ${recoverable && !controlBusy ? "" : "disabled"}>Delete code &amp; entry</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
       </div></div>
       <details><summary>Ticket impact and publication evidence</summary><div class="queue-details">
         ${deletion}<dl><dt>Exact commit</dt><dd>${esc(commit)}</dd><dt>Branch</dt><dd>${esc(item.branch)}</dd><dt>Local gates</dt><dd>${esc(item.validation)}</dd><dt>Reviewer</dt><dd>${esc(item.reviewer)}</dd><dt>Publication</dt><dd>${item.pr_number ? `PR #${esc(item.pr_number)} · ${esc(displayState(item.state))}` : esc(displayState(item.state))}</dd></dl>
         <div><strong>Changed paths</strong><ul>${paths}</ul></div>${item.error ? `<p class="queue-error">${esc(item.error)}</p>` : ""}
       </div></details></article>`;
-  }).join("") || '<p class="empty">No validated tickets awaiting approval</p>';
+  });
+  $("approval-queue").innerHTML = [...batchCards, ...recordCards].join("") || '<p class="empty">No validated tickets awaiting approval</p>';
 }
 
 function renderActivity(data, control) {
@@ -327,13 +344,21 @@ $("planned-ticket").addEventListener("change", event => {
 });
 
 $("approval-queue").addEventListener("click", event => {
-  const button = event.target.closest(".publish-button, .recode-button, .remove-ticket-button");
+  const button = event.target.closest(".publish-button, .publish-batch-button, .recode-button, .delete-stale-button");
   if (!button) return;
+  if (button.classList.contains("publish-batch-button")) {
+    controlAction({action: "approve_publish_batch", batch_id: button.dataset.batchId});
+    return;
+  }
   let action = "approve_publish";
   if (button.classList.contains("recode-button")) action = "recode_ticket";
-  if (button.classList.contains("remove-ticket-button")) {
-    if (!window.confirm("Remove this failed ticket from the approval queue? Its files, branch, worktree, commits, pull request, and audit history will be preserved.")) return;
-    action = "remove_failed_ticket";
+  if (button.classList.contains("delete-stale-button")) {
+    const shortCommit = (button.dataset.commitSha || "").slice(0, 12);
+    const confirmed = window.confirm(
+      `Permanently delete only the clean local worktree and branch for ${button.dataset.ticketId}?\n\nBranch: ${button.dataset.branch}\nCommit: ${shortCommit}\n\nThis removes the card but retains a non-secret audit event. It will be refused if the branch is dirty, remote, in a pull request, mismatched, or needed by another ticket.`
+    );
+    if (!confirmed) return;
+    action = "delete_stale_ticket";
   }
   controlAction({action, record_id: button.dataset.recordId, commit_sha: button.dataset.commitSha});
 });
