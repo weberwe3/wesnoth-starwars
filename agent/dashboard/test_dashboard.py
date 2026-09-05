@@ -894,6 +894,16 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertIn("did not run", failure["detail"])
         self.assertNotIn("ContextOverflowError", failure["detail"])
 
+    def test_tester_fallback_diagnostic_names_both_provider_failures(self) -> None:
+        failure = recovery_policy.classify_tester_fallback(
+            ticket_runner.MODEL_CIRCUIT_OPEN,
+            124,
+        )
+        self.assertEqual(failure["class"], "tester_provider_failure")
+        self.assertIn("circuit is open", failure["detail"])
+        self.assertIn("Terra Medium", failure["detail"])
+        self.assertIn("timed out", failure["detail"])
+
     def test_control_bridge_forwards_verified_codex_path(self) -> None:
         text = (ROOT / "agent" / "dashboard" / "control-bridge.ps1").read_text(
             encoding="utf-8"
@@ -1226,6 +1236,61 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         )
         self.assertEqual(invoked, ["tester", "reviewer"])
         self.assertIsNone(result["reviewer_intermediate_exit_code"])
+
+    def test_terra_medium_tests_when_primary_tester_circuit_is_open(self) -> None:
+        result, invoked = self._evaluate(
+            [
+                (ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open"),
+                (0, "VERDICT: APPROVE"),
+            ],
+            terra_response=(0, "VERDICT: PASS"),
+        )
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["tester_primary_exit_code"], ticket_runner.MODEL_CIRCUIT_OPEN)
+        self.assertEqual(result["tester_terra_exit_code"], 0)
+        self.assertTrue(result["tester_terra_pass"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-terra")
+        self.assertEqual(invoked, ["tester", "reviewer"])
+
+    def test_explicit_primary_tester_failure_does_not_seek_second_opinion(self) -> None:
+        result, invoked = self._evaluate(
+            [(0, "VERDICT: FAIL — candidate defect")],
+            terra_response=(0, "VERDICT: PASS"),
+        )
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["failure"]["class"], "tester_change_request")
+        self.assertIsNone(result["tester_terra_exit_code"])
+        self.assertEqual(invoked, ["tester"])
+
+    def test_terra_cannot_test_its_own_implementation(self) -> None:
+        result, invoked = self._evaluate(
+            [(ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open")],
+            terra_response=(0, "VERDICT: PASS"),
+            terra_implemented=True,
+        )
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["failure"]["class"], "tester_provider_failure")
+        self.assertIn("withheld", result["failure"]["detail"])
+        self.assertIsNone(result["tester_terra_exit_code"])
+        self.assertEqual(invoked, ["tester"])
+
+    def test_terra_tester_cannot_later_be_terra_reviewer(self) -> None:
+        result, invoked = self._evaluate(
+            [
+                (ticket_runner.MODEL_CIRCUIT_OPEN, "tester circuit open"),
+                (1, "primary reviewer unavailable"),
+                (1, "intermediate reviewer unavailable"),
+                (1, "fallback reviewer unavailable"),
+            ],
+            terra_response=(0, "VERDICT: PASS"),
+        )
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-terra")
+        self.assertIsNone(result["reviewer_terra_exit_code"])
+        self.assertEqual(
+            invoked,
+            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
+        )
 
     def test_gemini_38_runs_after_non_decisive_nemotron(self) -> None:
         result, invoked = self._evaluate([
