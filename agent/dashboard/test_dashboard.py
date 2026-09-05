@@ -868,6 +868,43 @@ class ApprovalQueueTests(unittest.TestCase):
             self.assertEqual(result["headRefOid"], expected)
             self.assertEqual(run.call_count, 1)
 
+    def test_ci_registration_waits_for_required_exact_head_check(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            expected = "a" * 40
+            empty = json.dumps({
+                "headRefOid": expected,
+                "statusCheckRollup": [],
+            })
+            registered = json.dumps({
+                "headRefOid": expected,
+                "statusCheckRollup": [{
+                    "name": "repository-gates",
+                    "status": "QUEUED",
+                    "conclusion": "",
+                }],
+            })
+            with (
+                mock.patch("approval_queue._run", side_effect=[empty, registered]) as run,
+                mock.patch.object(approval_queue, "CI_REGISTRATION_INTERVAL_SECONDS", 0),
+            ):
+                checks = queue._wait_for_ci_registration(15, expected, root)
+            self.assertEqual(checks[0]["name"], "repository-gates")
+            self.assertEqual(run.call_count, 2)
+
+    def test_ci_registration_rejects_a_changed_pr_head(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            changed = json.dumps({
+                "headRefOid": "b" * 40,
+                "statusCheckRollup": [{"name": "repository-gates"}],
+            })
+            with mock.patch("approval_queue._run", return_value=changed):
+                with self.assertRaisesRegex(QueueError, "PR head changed"):
+                    queue._wait_for_ci_registration(15, "a" * 40, root)
+
     def test_remove_failed_ticket_hides_only_queue_record(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
