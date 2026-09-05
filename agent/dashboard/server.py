@@ -123,7 +123,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             return
         path = urlsplit(self.path).path
         remote_view = self.headers.get("X-Wesnoth-LAN-View") == "1"
-        if remote_view and path in {"/api/status", "/api/control"} and not self._valid_lan_token():
+        if remote_view and path in {
+            "/api/status", "/api/control", "/api/planned-tickets",
+        } and not self._valid_lan_token():
             self._json({"error": "This device needs the secure LAN access link"}, HTTPStatus.FORBIDDEN)
             return
         if path == "/api/status":
@@ -141,6 +143,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             state["access"] = self._access_state(remote_view)
             state["csrf_token"] = self.server.csrf_token  # type: ignore[attr-defined]
             self._json(state)
+            return
+        if path == "/api/planned-tickets":
+            self._json(self.server.controller.pending_planned_tickets())  # type: ignore[attr-defined]
             return
         if path == "/":
             self.path = "/index.html"

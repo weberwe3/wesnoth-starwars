@@ -4,9 +4,9 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-05 during autonomous backlog-refill work<br>
-**Main before this snapshot:** `43468c6`<br>
-**Active governance ticket:** token-efficient autonomous backlog replenishment<br>
+**Last continuity refresh:** 2026-09-05 during rolling-ticket and Fast-Fix fallback work<br>
+**Main before this snapshot:** `d492ac8`<br>
+**Active governance ticket:** live pending-ticket selector and Terra Low Fast-Fix fallback<br>
 **Next intended game-development ticket:** coordinator-generated after the documented prototype catalog is exhausted
 
 ---

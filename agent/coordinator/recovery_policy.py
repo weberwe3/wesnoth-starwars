@@ -41,9 +41,9 @@ def can_attempt(attempts_used: int, failure: dict[str, Any], enabled: bool) -> b
 
 
 def should_use_terra_fallback(worker: str, return_code: int, used: bool) -> bool:
-    """Allow one Terra fallback only for a failed primary Implementer call."""
+    """Allow one bounded Terra fallback for a failed implementation worker call."""
 
-    return worker == "implementer" and return_code != 0 and not used
+    return worker in {"implementer", "fast-fix"} and return_code != 0 and not used
 
 
 def model_finding(output: str, fallback: str) -> str:
@@ -78,6 +78,7 @@ def classify_implementer_fallback(
     primary_rc: int,
     terra_output: str,
     terra_rc: int,
+    fallback_label: str = "Terra Medium",
 ) -> dict[str, Any]:
     """Describe two provider failures without exposing either provider's raw output."""
 
@@ -99,15 +100,15 @@ def classify_implementer_fallback(
         action = "Restart the updated dashboard launcher, then resume the preserved ticket."
         failure_class = "implementer_fallback_unavailable"
     elif terra_rc == 124:
-        terra = "The Terra Medium fallback timed out."
+        terra = f"The {fallback_label} fallback timed out."
         action = "Check Codex availability and resume the preserved ticket when capacity returns."
         failure_class = "implementer_fallback_failure"
     elif any(marker in terra_text for marker in ("usage limit", "rate limit", "quota")):
-        terra = "The Terra Medium fallback reached its Codex usage limit."
+        terra = f"The {fallback_label} fallback reached its Codex usage limit."
         action = "Resume the preserved ticket after Codex capacity resets."
         failure_class = "implementer_fallback_failure"
     else:
-        terra = f"The Terra Medium fallback exited with code {terra_rc}."
+        terra = f"The {fallback_label} fallback exited with code {terra_rc}."
         action = "Inspect the bounded provider diagnostics before resuming the preserved ticket."
         failure_class = "implementer_fallback_failure"
     return _failure(

@@ -214,9 +214,10 @@ def invoke_managed_agent(
 
 
 def invoke_terra(
-    *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int
+    *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
+    reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
-    """Run one sandboxed Terra Medium fallback through the Codex application."""
+    """Run one sandboxed Terra fallback through the Codex application."""
 
     executable = resolve_codex_executable()
     if not executable:
@@ -227,7 +228,7 @@ def invoke_terra(
     command = [
         executable, "exec", "-C", _codex_path(worktree, windows_binary),
         "-s", sandbox, "-m", "gpt-5.6-terra",
-        "-c", 'model_reasoning_effort="medium"',
+        "-c", f'model_reasoning_effort="{reasoning_effort}"',
         "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
         "--color", "never", "-",
     ]
@@ -311,29 +312,29 @@ def invoke_terra_implementer(
 def invoke_managed_terra(
     *, policy: ModelPolicy, run_sequence: int, status: RuntimeStatus,
     worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
-    decisive_verdicts: tuple[str, ...] = (),
+    decisive_verdicts: tuple[str, ...] = (), reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
     model = "openai/gpt-5.6-terra"
     available, wait = policy.before_attempt(model, run_sequence)
     if not available:
         output = (
-            "[COORDINATOR] Terra Medium skipped: provider-failure circuit remains open "
+            f"[COORDINATOR] Terra {reasoning_effort.title()} skipped: provider-failure circuit remains open "
             "for this worktree run.\n"
         )
         log_file.write_text(output, encoding="utf-8")
         status.event(
-            "Skipped Terra Medium", level="warning", source="coordinator",
+            f"Skipped Terra {reasoning_effort.title()}", level="warning", source="coordinator",
             detail="A recent Codex failure suppresses Terra for two later worktree runs.",
         )
         return MODEL_CIRCUIT_OPEN, output
     if wait:
         status.event(
-            "Rate-limit pacing delayed Terra Medium", source="coordinator",
+            f"Rate-limit pacing delayed Terra {reasoning_effort.title()}", source="coordinator",
             detail=f"Launch delayed {wait:.2f} seconds.",
         )
     rc, output = invoke_terra(
         worktree=worktree, prompt=prompt, log_file=log_file,
-        sandbox=sandbox, timeout=timeout,
+        sandbox=sandbox, timeout=timeout, reasoning_effort=reasoning_effort,
     )
     decisive = not decisive_verdicts or any(
         core.contains_verdict(output, verdict) for verdict in decisive_verdicts
@@ -1892,9 +1893,7 @@ Return your normal structured implementation report.
             detail="Implementation and successful earlier gates were not rerun.",
         )
     else:
-        terra_available_at_start = (
-            resolve_codex_executable() is not None if ticket["worker"] == "implementer" else None
-        )
+        terra_available_at_start = resolve_codex_executable() is not None
         if terra_available_at_start is False:
             status.event(
                 "Terra fallback preflight unavailable",
@@ -1919,14 +1918,17 @@ Return your normal structured implementation report.
         implementation_failure = None
         terra_fallback = {
             "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
-            "reasoning_effort": "medium", "available_at_start": terra_available_at_start,
+            "reasoning_effort": "medium" if ticket["worker"] == "implementer" else "low",
+            "available_at_start": terra_available_at_start,
             "exit_code": None,
         }
         if recovery_policy.should_use_terra_fallback(ticket["worker"], impl_rc, False):
+            terra_effort = terra_fallback["reasoning_effort"]
+            terra_label = f"Terra {terra_effort.title()}"
             terra_fallback["used"] = True
-            status.handoff("coordinator", "implementer", "GPT-OSS to Terra Medium fallback")
-            status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
-            status.set_worker("implementer", "active", "Running single Terra fallback")
+            status.handoff("coordinator", ticket["worker"], f"Primary worker to {terra_label} fallback")
+            status.set_assignment(ticket["worker"], "OpenAI", f"GPT-5.6 Terra · {terra_effort.title()}")
+            status.set_worker(ticket["worker"], "active", f"Running single {terra_label} fallback")
             terra_prompt = implementation_prompt.replace(
                 "Do not execute commands or tests.",
                 "You may use read-only inspection commands and apply patches. Do not run tests, "
@@ -1941,15 +1943,16 @@ Return your normal structured implementation report.
                 log_file=log_dir / "implementer-terra-fallback.txt",
                 sandbox="workspace-write",
                 timeout=TERRA_IMPLEMENTER_TIMEOUT,
+                reasoning_effort=terra_effort,
             )
             terra_fallback["exit_code"] = terra_rc
             if terra_rc != 0:
                 implementation_failure = recovery_policy.classify_implementer_fallback(
-                    impl_output, primary_impl_rc, terra_output, terra_rc
+                    impl_output, primary_impl_rc, terra_output, terra_rc, terra_label
                 )
             impl_rc = 0 if terra_rc == 0 else recovery_policy.TERRA_FALLBACK_FAILURE
             status.set_worker(
-                "implementer", "idle" if terra_rc == 0 else "error",
+                ticket["worker"], "idle" if terra_rc == 0 else "error",
                 "Terra fallback returned" if terra_rc == 0 else "Terra fallback failed",
                 error=None if terra_rc == 0 else f"Terra exited with code {terra_rc}",
             )
@@ -2154,6 +2157,29 @@ Inspect the existing candidate and make the smallest correction.
             log_file=log_dir / f"recovery-{attempt}-fast-fix.jsonl",
             timeout=IMPLEMENTER_TIMEOUT,
         )
+        fast_fix_primary_rc = impl_rc
+        terra_recovery_rc = None
+        if recovery_policy.should_use_terra_fallback("fast-fix", impl_rc, False):
+            status.handoff("fast-fix", "fast-fix", "Fast-Fix to Terra Light fallback")
+            status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Terra · Low")
+            status.set_worker("fast-fix", "active", "Running single Terra Light fallback")
+            terra_repair_prompt = repair_prompt.replace(
+                "Do not execute commands or tests.",
+                "You may use read-only inspection commands and apply patches. Do not run tests, "
+                "package managers, network commands, or Git write commands.",
+            )
+            terra_recovery_rc, _ = invoke_managed_terra(
+                policy=model_policy,
+                run_sequence=run_sequence,
+                status=status,
+                worktree=worktree,
+                prompt=terra_repair_prompt,
+                log_file=log_dir / f"recovery-{attempt}-terra-light.txt",
+                sandbox="workspace-write",
+                timeout=TERRA_IMPLEMENTER_TIMEOUT,
+                reasoning_effort="low",
+            )
+            impl_rc = terra_recovery_rc
         status.set_worker(
             "fast-fix",
             "idle" if impl_rc == 0 else "error",
@@ -2166,6 +2192,8 @@ Inspect the existing candidate and make the smallest correction.
             "diagnostic": failure["detail"],
             "corrective_action": plan["corrective_action"],
             "fast_fix_exit_code": impl_rc,
+            "fast_fix_primary_exit_code": fast_fix_primary_rc,
+            "terra_light_fallback_exit_code": terra_recovery_rc,
         })
 
 

@@ -116,6 +116,33 @@ class RuntimeStatusTests(unittest.TestCase):
                 server.server_close()
                 thread.join(timeout=2)
 
+    def test_server_exposes_dynamic_pending_ticket_endpoint(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            server = create_server(0, Path(directory) / "state.json")
+            server.controller.pending_planned_tickets = mock.Mock(return_value={
+                "tickets": [{
+                    "id": "generated-next", "label": "Next", "brief": "Do next work",
+                    "source": "generated",
+                }]
+            })
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+                connection.request(
+                    "GET", "/api/planned-tickets",
+                    headers={"Host": f"127.0.0.1:{server.server_port}"},
+                )
+                response = connection.getresponse()
+                payload = json.loads(response.read())
+                self.assertEqual(response.status, 200)
+                self.assertEqual(payload["tickets"][0]["id"], "generated-next")
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
 
 class CoordinationControlTests(unittest.TestCase):
     @staticmethod
@@ -501,6 +528,31 @@ class CoordinationControlTests(unittest.TestCase):
                     ("generated-batch-02", "pending", "generated"),
                 ],
             )
+
+    def test_pending_planned_tickets_is_a_rolling_uncompleted_list(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "agent" / "dashboard" / "static" / "planned-tickets.json"
+            catalog.parent.mkdir(parents=True)
+            catalog.write_text(json.dumps({"tickets": [
+                {"id": "done", "status": "completed", "label": "Done", "brief": "Done"},
+                {"id": "next", "status": "pending", "label": "Next", "brief": "Next brief"},
+            ]}), encoding="utf-8")
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            self.assertEqual(controller.pending_planned_tickets(), {"tickets": [{
+                "id": "next", "label": "Next", "brief": "Next brief", "source": "static",
+            }]})
+
+    def test_browser_polls_dynamic_planned_ticket_endpoint(self) -> None:
+        source = (ROOT / "agent" / "dashboard" / "static" / "app.js").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('fetch("/api/planned-tickets"', source)
+        self.assertNotIn('fetch("/planned-tickets.json"', source)
 
     def test_generated_ticket_selection_uses_no_planner_call(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1091,11 +1143,29 @@ class CoordinationControlTests(unittest.TestCase):
             )
             self.assertIsNone(AutonomyController._cached_plan(runtime, "b" * 64))
 
-    def test_terra_fallback_is_single_and_implementer_only(self) -> None:
+    def test_terra_fallback_is_single_for_both_implementation_workers(self) -> None:
         self.assertTrue(recovery_policy.should_use_terra_fallback("implementer", 1, False))
+        self.assertTrue(recovery_policy.should_use_terra_fallback("fast-fix", 1, False))
         self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 1, True))
-        self.assertFalse(recovery_policy.should_use_terra_fallback("fast-fix", 1, False))
         self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 0, False))
+        self.assertFalse(recovery_policy.should_use_terra_fallback("tester", 1, False))
+
+    def test_terra_fallback_accepts_low_reasoning_for_fast_fix(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "terra-light.txt"
+            completed = subprocess.CompletedProcess([], 0, stdout="candidate returned\n")
+            with (
+                mock.patch.object(
+                    ticket_runner, "resolve_codex_executable", return_value="/opt/codex"
+                ),
+                mock.patch("ticket_runner.subprocess.run", return_value=completed) as run,
+            ):
+                code, _ = ticket_runner.invoke_terra(
+                    worktree=Path(directory), prompt="fixture", log_file=log,
+                    sandbox="workspace-write", timeout=300, reasoning_effort="low",
+                )
+            self.assertEqual(code, 0)
+            self.assertIn('model_reasoning_effort="low"', run.call_args.args[0])
 
     def test_launcher_supplied_codex_path_survives_missing_path_entry(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

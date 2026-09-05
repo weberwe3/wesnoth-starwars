@@ -36,25 +36,22 @@ function duration(start, end = Date.now()) {
   return [Math.floor(seconds / 3600), Math.floor(seconds % 3600 / 60), seconds % 60].map(v => String(v).padStart(2, "0")).join(":");
 }
 
-async function loadPlannedTickets() {
+function loadPlannedTickets(catalog) {
   const picker = $("planned-ticket");
-  try {
-    const response = await fetch("/planned-tickets.json", {cache: "no-store"});
-    if (!response.ok) throw new Error("Planned tickets unavailable");
-    const catalog = await response.json();
-    if (!Array.isArray(catalog.tickets)) throw new Error("Invalid ticket catalog");
-    picker.replaceChildren(new Option("Choose a planned ticket…", ""));
-    for (const ticket of catalog.tickets) {
-      if (!ticket || typeof ticket.id !== "string" || typeof ticket.label !== "string" || typeof ticket.brief !== "string") continue;
-      plannedTickets.set(ticket.id, ticket.brief);
-      picker.add(new Option(ticket.label, ticket.id));
-    }
-    ticketCatalogReady = plannedTickets.size > 0;
-    if (controlSnapshot) renderControl(controlSnapshot);
-  } catch (_) {
-    picker.replaceChildren(new Option("Planned tickets unavailable", ""));
-    picker.disabled = true;
+  if (!Array.isArray(catalog.tickets)) throw new Error("Invalid ticket catalog");
+  const selected = picker.value;
+  plannedTickets.clear();
+  picker.replaceChildren(new Option("Choose an outstanding ticket…", ""));
+  for (const ticket of catalog.tickets) {
+    if (!ticket || typeof ticket.id !== "string" || typeof ticket.label !== "string" || typeof ticket.brief !== "string") continue;
+    plannedTickets.set(ticket.id, ticket.brief);
+    picker.add(new Option(ticket.label, ticket.id));
   }
+  ticketCatalogReady = plannedTickets.size > 0;
+  picker.value = plannedTickets.has(selected) ? selected : "";
+  $("planned-ticket-status").textContent = ticketCatalogReady
+    ? "Choose an outstanding ticket to load its editable brief."
+    : "No outstanding planned tickets. The coordinator will replenish the backlog in autonomous mode.";
 }
 
 function renderQueue(control) {
@@ -224,11 +221,13 @@ function updateElapsed() {
 
 async function refresh() {
   try {
-    const [statusResponse, controlResponse] = await Promise.all([
+    const [statusResponse, controlResponse, ticketsResponse] = await Promise.all([
       fetch("/api/status", {cache: "no-store", headers: apiHeaders()}),
       fetch("/api/control", {cache: "no-store", headers: apiHeaders()}),
+      fetch("/api/planned-tickets", {cache: "no-store", headers: apiHeaders()}),
     ]);
-    if (!statusResponse.ok || !controlResponse.ok) throw new Error("Status unavailable");
+    if (!statusResponse.ok || !controlResponse.ok || !ticketsResponse.ok) throw new Error("Status unavailable");
+    loadPlannedTickets(await ticketsResponse.json());
     const control = await controlResponse.json();
     controlToken = control.csrf_token || null;
     delete control.csrf_token;
@@ -393,7 +392,6 @@ $("exit-button").addEventListener("click", () => {
   controlAction({action: "shutdown"});
 });
 
-loadPlannedTickets();
 refresh();
 setInterval(refresh, 1500);
 setInterval(updateElapsed, 1000);

@@ -46,6 +46,13 @@ coordinator must continue seamlessly while a validated generated ticket is
 available and retain every normal worktree, scope, validation, review,
 publication, deletion, and three-failure safety boundary.
 
+The dashboard planned-ticket selector is a rolling view of pending static and
+coordinator-generated tickets; completed tickets must not remain selectable.
+When the primary Fast-Fix model fails, the coordinator may invoke one GPT-5.6
+Terra fallback at low reasoning in the same isolated worktree. It retains the
+original objective and allowed paths and receives no authority to test, commit,
+publish, merge, delete, or broaden scope.
+
 ## Wesnoth requirements
 
 - Target the Wesnoth 1.19/1.20-generation engine unless a task states otherwise.
