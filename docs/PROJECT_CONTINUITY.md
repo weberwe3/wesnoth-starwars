@@ -4,10 +4,10 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-04 during autonomous queue governance design<br>
-**Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`<br>
-**Active infrastructure ticket:** DASH-005 bounded autonomous error recovery<br>
-**Next intended game-development ticket:** reconcile open `ENGINE-002` PR #15 before new overlapping work
+**Last continuity refresh:** 2026-09-04 during DASH-012 resilient cancellation and retry work<br>
+**Main at snapshot:** `148d1e03b40de105e2349bb69621c7dcd6d4fbd8`<br>
+**Active infrastructure ticket:** DASH-012 always-available exit and resilient bounded retry<br>
+**Next intended game-development ticket:** resume the preserved scenario-validation worktree after DASH-012 is live
 
 ---
 
@@ -954,12 +954,13 @@ When updating this file:
 | 2026-09-04 | DASH-008 / PR #22 | Merged strict structured-output required-field repair, deterministic schema preflight, and bounded secret-free planner failure diagnostics |
 | 2026-09-04 | DASH-009 / PR #23 | Merged bounded post-push GitHub head confirmation, duplicate queue-ownership prevention, and exact-record AI recode and non-destructive queue-removal controls |
 | 2026-09-04 | DASH-010 / PR #25 | Merged continuous priority scheduling: the active Automation toggle authorizes fresh bounded tickets, skips queue/PR-owned priorities, advances through independent safe work, and sequences publication around exact-head CI registration/current-main checks while retaining manual publication/deletion gates |
-| 2026-09-04 | DASH-011 live-state scheduling and reviewer routing (implementation in progress) | Make live queue/GitHub evidence authoritative over stale continuity snapshots, expose published history and planned priorities to Sol, and route review through Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash |
+| 2026-09-04 | DASH-011 / PR #26 | Merged live-state scheduling, publication/priorities context, and reviewer routing through Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash |
+| 2026-09-04 | DASH-012 resilient cancellation and retry (implementation in progress) | Make Exit available during active work with exact-run cancellation and preserved remnants; retain both bounded retries when recovery-planner invocation fails; require bounded large-file reads |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, DASH-010 is merged through PR #25 and ENGINE-002 is merged through PR #15 at `c61c0dc418213379d19350580bde0c3c4a5d5d98`. The first post-merge scheduler pass started automatically but paused because the continuity prose still described PR #15 as open while live GitHub and queue inventory correctly showed it published. DASH-011 is being implemented to make live mutable state authoritative, provide recent publication and planned-priority data directly to Sol, and advance to the next independent priority instead of stopping on stale prose. The reviewer chain is also changing to Nemotron primary, Gemini 3.8 Flash intermediate, and Gemini 3.6 Flash final fallback. Exact-commit publication and file-deletion approval remain manual boundaries.
+At this snapshot, DASH-011 is merged through PR #26 at `148d1e03b40de105e2349bb69621c7dcd6d4fbd8`. The next autonomous scenario-validation ticket created a clean managed worktree, but GPT-OSS exceeded its provider context limit after reading a large source file in one request; Terra returned without a change; and an exception in recovery planning prevented the eligible bounded retry from starting. The secure bridge then failed to publish its fixed result, leaving the dashboard in `executing` until timeout while the idle-only Exit rule blocked shutdown. DASH-012 is being implemented to retain retry eligibility through a deterministic repair brief, require bounded source inspection, make bridge health/cancellation session-aware, and allow Exit to cancel only the active secure process while preserving its branch, worktree, and evidence. Exact-commit publication and file-deletion approval remain manual boundaries.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.

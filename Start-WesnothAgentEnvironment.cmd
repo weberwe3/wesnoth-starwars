@@ -28,7 +28,7 @@ if defined WSLENV (
 )
 
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$arguments=@('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File','%CONTROL_BRIDGE%','-Distro','%DISTRO%','-ProjectLinuxPath','%PROJECT%'); Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -WindowStyle Hidden"
+  "$arguments=@('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File','%CONTROL_BRIDGE%','-Distro','%DISTRO%','-ProjectLinuxPath','%PROJECT%','-SessionId','%DASHBOARD_SESSION%'); Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -WindowStyle Hidden"
 if errorlevel 1 exit /b %errorlevel%
 
 wsl.exe -d "%DISTRO%" --cd "%PROJECT%" -e /bin/bash ./agent/dashboard/start-dashboard.sh

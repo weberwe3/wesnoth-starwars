@@ -199,6 +199,7 @@ Known provider observations:
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
 - When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
 - A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
+- Implementer and Fast-Fix agents must inspect large source files through targeted search and bounded reads rather than requesting an entire large file in one tool call. This keeps provider context/token limits from turning ordinary scoped work into avoidable infrastructure failures.
 - A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. The reviewer order is Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash.
 - A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
@@ -490,6 +491,13 @@ or expanded paths, and rerun every applicable deterministic, engine, tester,
 and reviewer gate. A complete PASS resets the recovery counter. Failure after
 the second attempt pauses automation and leaves the candidate uncommitted.
 
+The selected coordinator model is advisory inside this bounded loop. If its
+recovery-planning call fails, Python must retain the retry by deriving the
+narrow repair brief from the existing structured failure and required-action
+fields. The same original allowed paths, complete gate rerun, and two-attempt
+ceiling still apply; planner unavailability must not silently bypass an
+otherwise eligible retry.
+
 The coordinator must stop immediately, without spending recovery attempts, for
 errors an implementation ticket cannot safely resolve: dirty or unexpected
 repository state; deletion approval; missing human approval; protected-path,
@@ -591,13 +599,16 @@ unpaired LAN request. A paired LAN device receives the same governed controls as
 localhost. Mutations additionally retain exact-origin, per-process CSRF,
 allowlisted-action, request-size, and deterministic controller validation.
 
-An **Exit dashboard** action may be accepted from localhost or a paired LAN
-device only while no planning, ticket-execution, or publication operation is
-active. The server must complete its shutdown and remove its own
-PID/version/session records before signaling exit. A session-specific marker
-may then close only the CMD process tree that launched that dashboard session;
-unrelated consoles, processes, and WSL distributions must not be targeted. The
-same signal stops the LAN proxy.
+An **Exit dashboard** action is available from localhost or a paired LAN device
+at all times. When a governed operation is active, Exit must first disable
+automation, record an interrupted state, signal cancellation for the exact
+active run, and preserve its branch, worktree, and local evidence for later
+continuation. The native control bridge must terminate only that run's secure
+child process tree. The server then completes shutdown, removes its own
+PID/version/session records, and writes a session-specific marker that may close
+only the CMD process tree which launched that dashboard session. Unrelated
+consoles, processes, WSL distributions, branches, and worktrees must not be
+targeted. The same session signal stops the LAN proxy.
 
 ### Stage 8 - Commit and GitHub publication
 
@@ -878,7 +889,8 @@ The local Agent Manager dashboard displays:
 - ticket approval queue with expandable purpose and impact summaries;
 - activity log and errors with accessible error-detail dialogs;
 - paired private-LAN access with the reachable address shown under system health;
-- a safe-state Exit dashboard action scoped to its associated launcher console;
+- an always-available Exit dashboard action that cancels only its active run,
+  preserves work, and closes its associated launcher console;
 - view diff/logs;
 - retry eligible infrastructure failures;
 - never bypass mandatory gates.

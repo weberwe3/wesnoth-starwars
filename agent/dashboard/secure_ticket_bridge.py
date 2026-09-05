@@ -40,11 +40,17 @@ def main() -> int:
         if sys.argv[3] not in {"low", "medium", "high"}:
             raise SystemExit("ERROR: invalid recovery effort")
         command.extend(["--recovery-effort", sys.argv[3]])
-    completed = subprocess.run(
-        command,
-        cwd=ROOT,
-        check=False,
-    )
+    bridge_error = False
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=ROOT,
+            check=False,
+        )
+        return_code = completed.returncode
+    except (OSError, subprocess.SubprocessError):
+        return_code = 125
+        bridge_error = True
     failure = None
     try:
         state = json.loads((ROOT / "agent/runtime/dashboard-state.json").read_text(encoding="utf-8"))
@@ -64,12 +70,20 @@ def main() -> int:
             }
     except (OSError, json.JSONDecodeError, TypeError):
         failure = None
-    payload_value = {"return_code": completed.returncode}
-    if completed.returncode != 0:
+    payload_value = {"return_code": return_code}
+    if return_code != 0:
         payload_value["failure"] = failure or {
-            "class": "ticket_failure",
-            "detail": "The deterministic ticket runner stopped without a safe diagnostic.",
-            "required_action": "Review local ticket evidence before retrying.",
+            "class": "secure_bridge_failure" if bridge_error else "ticket_failure",
+            "detail": (
+                "The secure ticket bridge could not start the deterministic runner."
+                if bridge_error else
+                "The deterministic ticket runner stopped without a safe diagnostic."
+            ),
+            "required_action": (
+                "Restart the secure Windows launcher and resume the preserved ticket."
+                if bridge_error else
+                "Review local ticket evidence before retrying."
+            ),
             "eligible": False,
             "attempt": 0,
             "limit": 2,
@@ -89,7 +103,7 @@ def main() -> int:
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
-    return completed.returncode
+    return return_code
 
 
 if __name__ == "__main__":

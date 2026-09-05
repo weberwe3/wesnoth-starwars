@@ -771,6 +771,26 @@ STRUCTURED FAILURE:
     return plan
 
 
+def plan_recovery_or_fallback(**kwargs: object) -> tuple[dict, bool]:
+    """Keep eligible recovery bounded even when its advisory planner is unavailable."""
+
+    failure = kwargs["failure"]
+    if not isinstance(failure, dict):
+        raise TypeError("failure must be a structured mapping")
+    try:
+        return plan_recovery(**kwargs), False
+    except Exception:
+        return {
+            "action": "repair",
+            "summary": "Recovery planner unavailable; using the structured gate diagnosis.",
+            "corrective_action": recovery_policy.safe_text(
+                failure.get("required_action"),
+                "Inspect the structured failure and make the smallest in-scope correction.",
+                1200,
+            ),
+        }, True
+
+
 def evaluate_candidate(
     *,
     status: RuntimeStatus,
@@ -1290,48 +1310,26 @@ Return your normal structured implementation report.
             return evaluation["exit_code"]
 
         next_attempt = attempt + 1
-        try:
-            plan = plan_recovery(
-                worktree=worktree,
-                log_dir=log_dir,
-                ticket=ticket,
-                failure=failure,
-                attempt=next_attempt,
-                effort=recovery_effort,
-                governance_prompt=governance_prompt,
-            )
-        except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
-            planner_failure = {
-                "class": "recovery_planner_failure",
-                "detail": recovery_policy.safe_text(exc, "The recovery planner did not complete."),
-                "required_action": "Check Codex availability before enabling automation again.",
-                "eligible": False,
-                "attempt": attempt,
-                "limit": recovery_policy.MAX_RECOVERY_ATTEMPTS,
-            }
-            status.finish(
-                False,
-                "Recovery planner stopped safely",
-                detail=planner_failure["detail"],
-                failure_class=planner_failure["class"],
-                required_action=planner_failure["required_action"],
+        plan, planner_fallback = plan_recovery_or_fallback(
+            worktree=worktree,
+            log_dir=log_dir,
+            ticket=ticket,
+            failure=failure,
+            attempt=next_attempt,
+            effort=recovery_effort,
+            governance_prompt=governance_prompt,
+        )
+        if planner_fallback:
+            status.event(
+                "Recovery planner unavailable; deterministic retry retained",
+                kind="recovery",
+                level="warning",
+                detail=plan["summary"],
+                failure_class=failure["class"],
+                required_action=plan["corrective_action"],
                 recovery_attempt=attempt,
                 recovery_limit=recovery_policy.MAX_RECOVERY_ATTEMPTS,
             )
-            evaluation["failure"] = planner_failure
-            result = {
-                "task_id": task_id, "branch": branch, "worktree": str(worktree),
-                "logs": str(log_dir), "governance_references": governance_references,
-                "reference_package": reference_package, "worker": ticket["worker"],
-                "implementation_exit_code": impl_rc,
-                "primary_implementation_exit_code": primary_impl_rc,
-                "terra_implementer_fallback": terra_fallback,
-                **evaluation,
-                "recovery_attempts": recovery_attempts, "final_verdict": "FAIL",
-                "commit_created": False, "merge_performed": False,
-            }
-            save_result(log_dir, result)
-            return 13
         if plan["action"] == "stop":
             failure = {
                 **failure,

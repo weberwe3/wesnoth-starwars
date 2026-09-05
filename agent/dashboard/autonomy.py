@@ -181,6 +181,42 @@ class AutonomyController:
 
             return self.store.update(change)
 
+    def request_shutdown(self) -> dict:
+        """Stop scheduling and signal only the active governed run for cancellation."""
+
+        with self._lock:
+            current = self.store.read()
+            run_id = current["run"].get("run_id")
+            active = current["run"].get("state") in {
+                "planning", "executing", "publishing",
+            }
+
+            def change(state: dict) -> None:
+                state["automation"]["enabled"] = False
+                if active and state["run"].get("run_id") == run_id:
+                    state["run"].update({
+                        "state": "interrupted",
+                        "completed_at": utc_now(),
+                        "summary": "Dashboard exit requested; active work preserved",
+                        "error": None,
+                    })
+
+            updated = self.store.update(change)
+            if active and isinstance(run_id, str) and re.fullmatch(r"[a-f0-9]{12}", run_id):
+                marker = self.store.path.parent / f"secure-run-cancel.{run_id}"
+                marker.write_text("cancel\n", encoding="utf-8")
+                os.chmod(marker, 0o600)
+                self.queue.event(
+                    "Dashboard exit requested",
+                    level="warning",
+                    detail=(
+                        "The active ticket process was asked to stop. Its branch, worktree, "
+                        "and local evidence are preserved for continuation."
+                    ),
+                    ticket_id=str(current["run"].get("ticket_id") or ""),
+                )
+            return updated
+
     def start(self, brief: str) -> dict:
         with self._lock:
             return self._start_locked(brief, continuous=False)
@@ -827,6 +863,8 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         os.replace(temporary, request_path)
         deadline = dt.datetime.now().timestamp() + TICKET_TIMEOUT_SECONDS
         while dt.datetime.now().timestamp() < deadline and not result_path.exists():
+            if (self.root / "agent" / "runtime" / f"secure-run-cancel.{run_id}").exists():
+                raise ControlError("Ticket execution was cancelled by dashboard shutdown")
             threading.Event().wait(1)
         try:
             result = json.loads(result_path.read_text(encoding="utf-8"))

@@ -557,6 +557,22 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertFalse(recovery_policy.can_attempt(0, eligible, False))
         self.assertFalse(recovery_policy.can_attempt(0, {"eligible": False}, True))
 
+    def test_recovery_planner_failure_keeps_bounded_retry(self) -> None:
+        failure = {
+            "class": "implementation_or_validation_failure",
+            "detail": "no repository change was produced",
+            "required_action": "Use one scoped repair attempt.",
+            "eligible": True,
+        }
+        with mock.patch.object(ticket_runner, "plan_recovery", side_effect=ValueError("fixture")):
+            plan, used_fallback = ticket_runner.plan_recovery_or_fallback(
+                worktree=Path("."), log_dir=Path("."), ticket={}, failure=failure,
+                attempt=1, effort="low", governance_prompt="fixture",
+            )
+        self.assertTrue(used_fallback)
+        self.assertEqual(plan["action"], "repair")
+        self.assertEqual(plan["corrective_action"], failure["required_action"])
+
     def test_terra_fallback_is_single_and_implementer_only(self) -> None:
         self.assertTrue(recovery_policy.should_use_terra_fallback("implementer", 1, False))
         self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 1, True))
@@ -729,6 +745,45 @@ class CoordinationControlTests(unittest.TestCase):
             result = json.loads(response.read())
             self.assertEqual(response.status, 202)
             self.assertEqual(result["shutdown"], "accepted")
+            connection.close()
+            thread.join(timeout=2)
+            self.assertFalse(thread.is_alive())
+            server.server_close()
+
+    def test_active_dashboard_shutdown_cancels_only_current_run(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            control_file = base / "control.json"
+            server = create_server(0, base / "state.json", control_file)
+            server.controller.store.update(lambda state: (
+                state["automation"].update({"enabled": True}),
+                state["run"].update({
+                    "state": "executing", "run_id": "a1b2c3d4e5f6",
+                    "ticket_id": "DASH-TEST", "completed_at": None,
+                }),
+            ))
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+            host = f"127.0.0.1:{server.server_port}"
+            connection.request("GET", "/api/control", headers={"Host": host})
+            control = json.loads(connection.getresponse().read())
+            connection.request(
+                "POST", "/api/control", body=json.dumps({"action": "shutdown"}),
+                headers={
+                    "Host": host,
+                    "Origin": f"http://127.0.0.1:{server.server_port}",
+                    "Content-Type": "application/json",
+                    "X-Wesnoth-CSRF": control["csrf_token"],
+                },
+            )
+            response = connection.getresponse()
+            result = json.loads(response.read())
+            self.assertEqual(response.status, 202)
+            self.assertEqual(result["shutdown"], "accepted")
+            self.assertEqual(result["run"]["state"], "interrupted")
+            self.assertFalse(result["automation"]["enabled"])
+            self.assertTrue((base / "secure-run-cancel.a1b2c3d4e5f6").is_file())
             connection.close()
             thread.join(timeout=2)
             self.assertFalse(thread.is_alive())
