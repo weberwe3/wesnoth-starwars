@@ -15,6 +15,7 @@ import subprocess
 import sys
 
 import coordinator as core
+from model_policy import AGENT_MODELS, ModelPolicy, failure_kind
 import reference_package as reference_pkg
 import recovery_policy
 from runtime_status import RuntimeStatus, runtime_status_path
@@ -27,6 +28,8 @@ INTERMEDIATE_REVIEWER_TIMEOUT = 90
 FALLBACK_REVIEWER_TIMEOUT = 180
 RECOVERY_PLANNER_TIMEOUT = 300
 TERRA_IMPLEMENTER_TIMEOUT = 600
+TERRA_REVIEWER_TIMEOUT = 300
+MODEL_CIRCUIT_OPEN = 88
 
 VALID_WORKERS = {"implementer", "fast-fix"}
 VALID_PROFILES = {"static-text", "wesnoth-addon-static"}
@@ -162,10 +165,58 @@ def invoke_agent(
     return rc, output
 
 
-def invoke_terra_implementer(
-    *, worktree: Path, prompt: str, log_file: Path
+def invoke_managed_agent(
+    *,
+    policy: ModelPolicy,
+    run_sequence: int,
+    status: RuntimeStatus,
+    opencode: str,
+    worktree: Path,
+    agent: str,
+    prompt: str,
+    log_file: Path,
+    timeout: int,
+    decisive_verdicts: tuple[str, ...] = (),
 ) -> tuple[int, str]:
-    """Run the single sandboxed Terra Medium Implementer fallback."""
+    """Pace one model launch and persist a two-run failure circuit."""
+
+    model = AGENT_MODELS[agent]
+    available, wait = policy.before_attempt(model, run_sequence)
+    if not available:
+        output = (
+            f"[COORDINATOR] {model} skipped: provider-failure circuit remains open "
+            "for this worktree run.\n"
+        )
+        log_file.write_text(output, encoding="utf-8")
+        status.event(
+            f"Skipped {model}", level="warning", source="coordinator",
+            detail="A recent provider failure suppresses this model for two later worktree runs.",
+        )
+        return MODEL_CIRCUIT_OPEN, output
+    if wait:
+        status.event(
+            f"Rate-limit pacing delayed {model}", source="coordinator",
+            detail=f"Launch delayed {wait:.2f} seconds to respect the free-tier RPM ceiling.",
+        )
+    rc, output = invoke_agent(
+        opencode=opencode, worktree=worktree, agent=agent, prompt=prompt,
+        log_file=log_file, timeout=timeout,
+    )
+    decisive = not decisive_verdicts or any(
+        core.contains_verdict(output, verdict) for verdict in decisive_verdicts
+    )
+    failure = failure_kind(rc, output, decisive=decisive)
+    if failure:
+        policy.record_failure(model, run_sequence, failure)
+    else:
+        policy.record_success(model)
+    return rc, output
+
+
+def invoke_terra(
+    *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int
+) -> tuple[int, str]:
+    """Run one sandboxed Terra Medium fallback through the Codex application."""
 
     executable = resolve_codex_executable()
     if not executable:
@@ -175,7 +226,7 @@ def invoke_terra_implementer(
     windows_binary = executable.lower().endswith(".exe")
     command = [
         executable, "exec", "-C", _codex_path(worktree, windows_binary),
-        "-s", "workspace-write", "-m", "gpt-5.6-terra",
+        "-s", sandbox, "-m", "gpt-5.6-terra",
         "-c", 'model_reasoning_effort="medium"',
         "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
         "--color", "never", "-",
@@ -191,7 +242,7 @@ def invoke_terra_implementer(
         completed = subprocess.run(
             command, cwd=worktree, env=environment, input=prompt, text=True,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            timeout=TERRA_IMPLEMENTER_TIMEOUT, check=False,
+            timeout=timeout, check=False,
         )
         output = completed.stdout or ""
         log_file.write_text(output, encoding="utf-8")
@@ -200,6 +251,58 @@ def invoke_terra_implementer(
         output = str(exc.stdout or "") + "\n[COORDINATOR] TERRA FALLBACK TIMEOUT\n"
         log_file.write_text(output, encoding="utf-8")
         return 124, output
+
+
+def invoke_terra_implementer(
+    *, worktree: Path, prompt: str, log_file: Path
+) -> tuple[int, str]:
+    """Compatibility wrapper for the Terra implementation path."""
+
+    return invoke_terra(
+        worktree=worktree,
+        prompt=prompt,
+        log_file=log_file,
+        sandbox="workspace-write",
+        timeout=TERRA_IMPLEMENTER_TIMEOUT,
+    )
+
+
+def invoke_managed_terra(
+    *, policy: ModelPolicy, run_sequence: int, status: RuntimeStatus,
+    worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
+    decisive_verdicts: tuple[str, ...] = (),
+) -> tuple[int, str]:
+    model = "openai/gpt-5.6-terra"
+    available, wait = policy.before_attempt(model, run_sequence)
+    if not available:
+        output = (
+            "[COORDINATOR] Terra Medium skipped: provider-failure circuit remains open "
+            "for this worktree run.\n"
+        )
+        log_file.write_text(output, encoding="utf-8")
+        status.event(
+            "Skipped Terra Medium", level="warning", source="coordinator",
+            detail="A recent Codex failure suppresses Terra for two later worktree runs.",
+        )
+        return MODEL_CIRCUIT_OPEN, output
+    if wait:
+        status.event(
+            "Rate-limit pacing delayed Terra Medium", source="coordinator",
+            detail=f"Launch delayed {wait:.2f} seconds.",
+        )
+    rc, output = invoke_terra(
+        worktree=worktree, prompt=prompt, log_file=log_file,
+        sandbox=sandbox, timeout=timeout,
+    )
+    decisive = not decisive_verdicts or any(
+        core.contains_verdict(output, verdict) for verdict in decisive_verdicts
+    )
+    failure = failure_kind(rc, output, decisive=decisive)
+    if failure:
+        policy.record_failure(model, run_sequence, failure)
+    else:
+        policy.record_success(model)
+    return rc, output
 
 
 def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
@@ -950,6 +1053,9 @@ def evaluate_candidate(
     google_available: bool,
     implementer_rc: int,
     attempt: int,
+    policy: ModelPolicy,
+    run_sequence: int,
+    terra_implemented: bool,
     implementation_failure: dict | None = None,
 ) -> dict:
     suffix = "" if attempt == 0 else f"-recovery-{attempt}"
@@ -1006,13 +1112,17 @@ DETERMINISTIC VALIDATION:
 Independently inspect the changed project files. Do not execute commands, edit files, or use the web.
 Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
 """.strip()
-    tester_rc, tester_output = invoke_agent(
+    tester_rc, tester_output = invoke_managed_agent(
+        policy=policy,
+        run_sequence=run_sequence,
+        status=status,
         opencode=opencode,
         worktree=worktree,
         agent="tester",
         prompt=tester_prompt,
         log_file=log_dir / f"tester{suffix}.jsonl",
         timeout=TESTER_TIMEOUT,
+        decisive_verdicts=("PASS", "FAIL"),
     )
     tester_pass = tester_rc == 0 and core.contains_verdict(tester_output, "PASS")
     status.set_worker(
@@ -1062,13 +1172,17 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
     primary_output = ""
     primary_approve = False
     primary_request_changes = False
-    primary_rc, primary_output = invoke_agent(
+    primary_rc, primary_output = invoke_managed_agent(
+        policy=policy,
+        run_sequence=run_sequence,
+        status=status,
         opencode=opencode,
         worktree=worktree,
         agent="reviewer",
         prompt=reviewer_prompt,
         log_file=log_dir / f"reviewer-primary{suffix}.jsonl",
         timeout=PRIMARY_REVIEWER_TIMEOUT,
+        decisive_verdicts=("APPROVE", "REQUEST_CHANGES"),
     )
     primary_approve = primary_rc == 0 and core.contains_verdict(primary_output, "APPROVE")
     primary_request_changes = primary_rc == 0 and core.contains_verdict(primary_output, "REQUEST_CHANGES")
@@ -1081,6 +1195,10 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
     fallback_output = ""
     fallback_approve = False
     fallback_request_changes = False
+    terra_rc = None
+    terra_output = ""
+    terra_approve = False
+    terra_request_changes = False
     reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
     reviewer_approve = False
     decisive_output = primary_output
@@ -1106,13 +1224,17 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
             status.handoff("reviewer", "reviewer-fallback", "Intermediate review activated")
             status.set_assignment("reviewer-fallback", "Google", "gemini-3.8-flash")
             status.set_worker("reviewer-fallback", "active", "Independent intermediate review")
-            intermediate_rc, intermediate_output = invoke_agent(
+            intermediate_rc, intermediate_output = invoke_managed_agent(
+                policy=policy,
+                run_sequence=run_sequence,
+                status=status,
                 opencode=opencode,
                 worktree=worktree,
                 agent="reviewer-intermediate",
                 prompt=reviewer_prompt,
                 log_file=log_dir / f"reviewer-intermediate{suffix}.jsonl",
                 timeout=INTERMEDIATE_REVIEWER_TIMEOUT,
+                decisive_verdicts=("APPROVE", "REQUEST_CHANGES"),
             )
             intermediate_approve = intermediate_rc == 0 and core.contains_verdict(intermediate_output, "APPROVE")
             intermediate_request_changes = intermediate_rc == 0 and core.contains_verdict(intermediate_output, "REQUEST_CHANGES")
@@ -1136,13 +1258,17 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
                 status.handoff("reviewer-fallback", "reviewer-fallback", "Final fallback review activated")
                 status.set_assignment("reviewer-fallback", "Google", "gemini-3.6-flash")
                 status.set_worker("reviewer-fallback", "active", "Independent final fallback review")
-                fallback_rc, fallback_output = invoke_agent(
+                fallback_rc, fallback_output = invoke_managed_agent(
+                    policy=policy,
+                    run_sequence=run_sequence,
+                    status=status,
                     opencode=opencode,
                     worktree=worktree,
                     agent="reviewer-fallback",
                     prompt=reviewer_prompt,
                     log_file=log_dir / f"reviewer-fallback{suffix}.jsonl",
                     timeout=FALLBACK_REVIEWER_TIMEOUT,
+                    decisive_verdicts=("APPROVE", "REQUEST_CHANGES"),
                 )
                 fallback_approve = fallback_rc == 0 and core.contains_verdict(fallback_output, "APPROVE")
                 fallback_request_changes = fallback_rc == 0 and core.contains_verdict(fallback_output, "REQUEST_CHANGES")
@@ -1165,6 +1291,49 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
                     error="Nemotron was non-decisive and Google credentials are unavailable",
                 )
 
+    if not reviewer_approve and not decisive_changes and not terra_implemented:
+        status.handoff("reviewer-fallback", "reviewer-fallback", "Terra final review activated")
+        status.set_assignment("reviewer-fallback", "OpenAI", "GPT-5.6 Terra · Medium")
+        status.set_worker("reviewer-fallback", "active", "Independent Terra final review")
+        terra_reviewer_prompt = reviewer_prompt.replace(
+            "Do not execute commands, edit files, invoke another agent, or use the web.",
+            "You may use read-only inspection commands. Do not edit files, invoke another "
+            "agent, run tests, or use the web.",
+        )
+        terra_rc, terra_output = invoke_managed_terra(
+            policy=policy,
+            run_sequence=run_sequence,
+            status=status,
+            worktree=worktree,
+            prompt=terra_reviewer_prompt,
+            log_file=log_dir / f"reviewer-terra{suffix}.txt",
+            sandbox="read-only",
+            timeout=TERRA_REVIEWER_TIMEOUT,
+            decisive_verdicts=("APPROVE", "REQUEST_CHANGES"),
+        )
+        terra_approve = terra_rc == 0 and core.contains_verdict(terra_output, "APPROVE")
+        terra_request_changes = terra_rc == 0 and core.contains_verdict(
+            terra_output, "REQUEST_CHANGES"
+        )
+        reviewer_used = "openai/gpt-5.6-terra"
+        reviewer_approve = terra_approve
+        decisive_output = terra_output
+        decisive_rc = terra_rc
+        decisive_changes = terra_request_changes
+        status.set_worker(
+            "reviewer-fallback",
+            "idle" if terra_approve else "error",
+            "Approved" if terra_approve else "Terra final review did not approve",
+            error=None if terra_approve else "Terra final reviewer was unavailable or requested changes",
+        )
+    elif not reviewer_approve and not decisive_changes and terra_implemented:
+        status.event(
+            "Terra reviewer fallback withheld",
+            level="warning",
+            source="coordinator",
+            detail="Terra implemented this candidate and cannot independently review its own work.",
+        )
+
     status.gate(
         "Independent review",
         "pass" if reviewer_approve else "fail",
@@ -1185,6 +1354,9 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
         "reviewer_fallback_exit_code": fallback_rc,
         "reviewer_fallback_approve": fallback_approve,
         "reviewer_fallback_request_changes": fallback_request_changes,
+        "reviewer_terra_exit_code": terra_rc,
+        "reviewer_terra_approve": terra_approve,
+        "reviewer_terra_request_changes": terra_request_changes,
         "reviewer_used": reviewer_used,
         "reviewer_approve": reviewer_approve,
     }
@@ -1333,6 +1505,8 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     status.handoff("coordinator", ticket["worker"], "Implementation assigned")
     status.set_worker("coordinator", "idle", "Monitoring ticket gates")
     status.set_worker(ticket["worker"], "active", ticket["objective"])
+    model_policy = ModelPolicy(root / "agent" / "runtime")
+    run_sequence = model_policy.begin_run(task_id)
 
     continuation_instruction = (
         "This ticket is resuming an existing isolated worktree. Inspect and preserve all "
@@ -1382,7 +1556,10 @@ Return your normal structured implementation report.
             source="coordinator",
         )
 
-    impl_rc, impl_output = invoke_agent(
+    impl_rc, impl_output = invoke_managed_agent(
+        policy=model_policy,
+        run_sequence=run_sequence,
+        status=status,
         opencode=opencode,
         worktree=worktree,
         agent=ticket["worker"],
@@ -1408,10 +1585,15 @@ Return your normal structured implementation report.
             "You may use read-only inspection commands and apply patches. Do not run tests, "
             "package managers, network commands, or Git write commands.",
         )
-        terra_rc, terra_output = invoke_terra_implementer(
+        terra_rc, terra_output = invoke_managed_terra(
+            policy=model_policy,
+            run_sequence=run_sequence,
+            status=status,
             worktree=worktree,
             prompt=terra_prompt,
             log_file=log_dir / "implementer-terra-fallback.txt",
+            sandbox="workspace-write",
+            timeout=TERRA_IMPLEMENTER_TIMEOUT,
         )
         terra_fallback["exit_code"] = terra_rc
         if terra_rc != 0:
@@ -1445,6 +1627,11 @@ Return your normal structured implementation report.
             google_available=google_available,
             implementer_rc=impl_rc,
             attempt=attempt,
+            policy=model_policy,
+            run_sequence=run_sequence,
+            terra_implemented=(
+                terra_fallback["used"] and terra_fallback["exit_code"] == 0
+            ),
             implementation_failure=implementation_failure if attempt == 0 else None,
         )
         if attempt and recovery_attempts:
@@ -1603,7 +1790,10 @@ COORDINATOR CORRECTIVE ACTION:
 
 Inspect the existing candidate and make the smallest correction.
 """.strip()
-        impl_rc, _ = invoke_agent(
+        impl_rc, _ = invoke_managed_agent(
+            policy=model_policy,
+            run_sequence=run_sequence,
+            status=status,
             opencode=opencode,
             worktree=worktree,
             agent="fast-fix",

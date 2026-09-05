@@ -190,7 +190,8 @@ Baseline routing:
 | Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash` | Independent read-only test evaluation |
 | Primary reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Preferred independent review |
 | Intermediate reviewer | Google - `google/gemini-3.8-flash` | First reviewer fallback for infrastructure/non-decisive primary failure |
-| Final fallback reviewer | Google - `google/gemini-3.6-flash` | Final reviewer fallback when Nemotron and Gemini 3.8 Flash are unavailable or non-decisive |
+| Second fallback reviewer | Google - `google/gemini-3.6-flash` | Reviewer fallback when Nemotron and Gemini 3.8 Flash are unavailable or non-decisive |
+| Final fallback reviewer | OpenAI Codex - `gpt-5.6-terra` at medium reasoning | Final independent reviewer only when every earlier reviewer is unavailable or non-decisive and Terra did not implement the candidate |
 
 Routing is policy, not permanence. Models may change if availability, capability, retirement, quota, or quality changes. The role separation and fallback rules are more important than any specific model.
 
@@ -200,7 +201,7 @@ Known provider observations:
 - When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
 - A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
 - Implementer and Fast-Fix agents must inspect large source files through targeted search and reads of no more than 120 lines per call rather than requesting an entire large file. Tester/reviewer reads are bounded to 160 lines. This keeps provider context/token limits from turning ordinary scoped work into avoidable infrastructure failures.
-- A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. The reviewer order is Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash.
+- A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. The reviewer order is Nemotron, Gemini 3.8 Flash, Gemini 3.6 Flash, then Terra Medium when reviewer independence permits it.
 - A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
 
@@ -419,7 +420,7 @@ Tester must not modify files or compensate for deterministic failures.
 
 ### Stage 6 - Reviewer
 
-Nemotron runs as the independent primary reviewer. Gemini 3.8 Flash is used only when Nemotron is unavailable or non-decisive due to infrastructure conditions such as timeout, quota failure, or malformed output. Gemini 3.6 Flash is the final fallback only when both earlier reviewers are unavailable or non-decisive.
+Nemotron runs as the independent primary reviewer. Gemini 3.8 Flash is used only when Nemotron is unavailable or non-decisive due to infrastructure conditions such as timeout, quota failure, or malformed output. Gemini 3.6 Flash follows only when both earlier reviewers are unavailable or non-decisive. Terra Medium is the final reviewer fallback only when all three earlier reviewers are unavailable or non-decisive and Terra did not implement the candidate; a model must never review its own implementation.
 
 **No reviewer shopping:** if any reviewer substantively requests changes, the result is not sent to a later fallback solely to seek approval.
 
@@ -524,6 +525,16 @@ coordinator must minimize usage without weakening gates by:
   predictable rolling per-minute quota failures and unnecessary fallbacks; and
 - invoking reviewer fallbacks only for infrastructure/non-decisive outcomes,
   never as duplicate review or verdict shopping.
+
+The ticket runner also applies persistent per-model launch pacing at published
+free-tier ceilings: 30 RPM for Groq GPT-OSS 120B, 40 RPM for NVIDIA Nemotron,
+and 300 RPM for Cloudflare Workers AI GLM. Services that publish only an
+account- or project-specific active quota remain provider-managed rather than
+receiving an invented repository value. A timeout, quota error, process error,
+or non-decisive response opens that model's circuit for the next two worktree
+runs. A valid negative content verdict is not a provider failure and does not
+open the circuit. State is persisted in the ignored runtime directory so a
+new runner process cannot immediately repeat a known failing provider call.
 
 Cache entries contain no credentials or raw prompts, expire automatically, and
 are invalidated by any authoritative inventory change. Resource saving must
