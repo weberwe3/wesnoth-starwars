@@ -557,6 +557,61 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertFalse(recovery_policy.can_attempt(0, eligible, False))
         self.assertFalse(recovery_policy.can_attempt(0, {"eligible": False}, True))
 
+    def test_recovery_planner_failure_keeps_bounded_retry(self) -> None:
+        failure = {
+            "class": "implementation_or_validation_failure",
+            "detail": "no repository change was produced",
+            "required_action": "Use one scoped repair attempt.",
+            "eligible": True,
+        }
+        with mock.patch.object(ticket_runner, "plan_recovery", side_effect=ValueError("fixture")) as planner:
+            plan, used_fallback = ticket_runner.plan_recovery_or_fallback(
+                worktree=Path("."), log_dir=Path("."), ticket={}, failure=failure,
+                attempt=1, effort="low", governance_prompt="fixture",
+            )
+        self.assertTrue(used_fallback)
+        planner.assert_not_called()
+        self.assertEqual(plan["action"], "repair")
+        self.assertEqual(plan["corrective_action"], failure["required_action"])
+
+    def test_compact_validation_evidence_omits_verbose_process_state(self) -> None:
+        evidence = ticket_runner.compact_validation_evidence({
+            "pass": True,
+            "git_status": [{"path": "fixture.txt", "raw": "verbose"}],
+            "scope": {"changed_paths": ["fixture.txt"], "violations": []},
+            "static": {"checks": [{"name": "utf8:fixture.txt", "pass": True}]},
+            "profile": "static-text",
+            "profile_result": {"pass": True},
+        })
+        self.assertNotIn("git_status", evidence)
+        self.assertEqual(evidence["changed_paths"], ["fixture.txt"])
+        self.assertTrue(evidence["static_checks"][0]["pass"])
+
+    def test_single_verified_remnant_avoids_sol_planning(self) -> None:
+        proposal = AutonomyController._single_resume_proposal({
+            "resumable_local_work": [{
+                "name": "agent/interrupted", "previous_task_id": "ENGINE-TEST",
+                "worker": "implementer", "objective": "Continue fixture",
+                "allowed_paths": ["fixture.txt"], "validation_profile": "static-text",
+                "validation_root": None,
+            }],
+            "resumable_pull_requests": [],
+        })
+        self.assertEqual(proposal["action"], "run_ticket")
+        self.assertEqual(proposal["ticket"]["resume_branch"], "agent/interrupted")
+        self.assertIsNone(proposal["ticket"]["resume_pr_number"])
+
+    def test_unchanged_planning_decision_is_cached(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = Path(directory)
+            proposal = {"action": "stop", "summary": "Blocked", "impact": "None", "ticket": None}
+            AutonomyController._cache_plan(runtime, "a" * 64, proposal)
+            self.assertEqual(
+                AutonomyController._cached_plan(runtime, "a" * 64),
+                proposal,
+            )
+            self.assertIsNone(AutonomyController._cached_plan(runtime, "b" * 64))
+
     def test_terra_fallback_is_single_and_implementer_only(self) -> None:
         self.assertTrue(recovery_policy.should_use_terra_fallback("implementer", 1, False))
         self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 1, True))
@@ -729,6 +784,45 @@ class CoordinationControlTests(unittest.TestCase):
             result = json.loads(response.read())
             self.assertEqual(response.status, 202)
             self.assertEqual(result["shutdown"], "accepted")
+            connection.close()
+            thread.join(timeout=2)
+            self.assertFalse(thread.is_alive())
+            server.server_close()
+
+    def test_active_dashboard_shutdown_cancels_only_current_run(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            control_file = base / "control.json"
+            server = create_server(0, base / "state.json", control_file)
+            server.controller.store.update(lambda state: (
+                state["automation"].update({"enabled": True}),
+                state["run"].update({
+                    "state": "executing", "run_id": "a1b2c3d4e5f6",
+                    "ticket_id": "DASH-TEST", "completed_at": None,
+                }),
+            ))
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+            host = f"127.0.0.1:{server.server_port}"
+            connection.request("GET", "/api/control", headers={"Host": host})
+            control = json.loads(connection.getresponse().read())
+            connection.request(
+                "POST", "/api/control", body=json.dumps({"action": "shutdown"}),
+                headers={
+                    "Host": host,
+                    "Origin": f"http://127.0.0.1:{server.server_port}",
+                    "Content-Type": "application/json",
+                    "X-Wesnoth-CSRF": control["csrf_token"],
+                },
+            )
+            response = connection.getresponse()
+            result = json.loads(response.read())
+            self.assertEqual(response.status, 202)
+            self.assertEqual(result["shutdown"], "accepted")
+            self.assertEqual(result["run"]["state"], "interrupted")
+            self.assertFalse(result["automation"]["enabled"])
+            self.assertTrue((base / "secure-run-cancel.a1b2c3d4e5f6").is_file())
             connection.close()
             thread.join(timeout=2)
             self.assertFalse(thread.is_alive())
@@ -984,6 +1078,20 @@ class ApprovalQueueTests(unittest.TestCase):
                 controller._queued_context(exclude_id="2" * 16),
                 [],
             )
+
+    def test_continuous_automation_observes_completion_cooldown(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            with mock.patch("autonomy.time.monotonic", return_value=100.0):
+                controller._last_completion_monotonic = 50.0
+                self.assertFalse(controller._cooldown_complete())
+                controller._last_completion_monotonic = 39.0
+                self.assertTrue(controller._cooldown_complete())
 
 
 if __name__ == "__main__":

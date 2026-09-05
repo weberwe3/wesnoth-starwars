@@ -243,7 +243,7 @@ def build_governance_prompt(package: dict) -> str:
     lines = [
         "MANDATORY PROJECT REFERENCES",
         "",
-        "Before performing substantive work, read all of these files:",
+        "The deterministic coordinator verified these controlled files:",
         "",
     ]
 
@@ -277,6 +277,21 @@ def build_governance_prompt(package: dict) -> str:
         "and report the conflict rather than improvising.",
         "",
         "Do not modify any controlled reference-package artifact.",
+        "",
+        "AUTHORITATIVE GOVERNANCE DIGEST",
+        "",
+        "- Work only on the stated objective and allowed paths.",
+        "- Preserve existing useful work; do not restart, reset, or discard it.",
+        "- Never access secrets or environment values.",
+        "- Never commit, push, merge, rewrite history, or alter governance.",
+        "- Use original content and do not copy protected Star Wars expression or assets.",
+        "- Python owns execution, validation, retry ceilings, and publication gates.",
+        "- Tester and reviewer roles are read-only and independent.",
+        "",
+        "For routine bounded work, this verified digest is the equivalent coordinator-supplied",
+        "snapshot required by AGENTS.md; do not reread the full controlled references.",
+        "Open a relevant controlled-reference section only if the ticket is ambiguous or",
+        "appears to conflict with this digest, then stop and report an actual conflict.",
     ])
 
     return "\n".join(lines)

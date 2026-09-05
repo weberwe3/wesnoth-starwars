@@ -1,6 +1,7 @@
 param(
     [string]$Distro = "Ubuntu-24.04",
     [string]$ProjectLinuxPath = "/home/willj/projects/wesnoth-starwars",
+    [string]$SessionId,
     [switch]$Once
 )
 
@@ -8,12 +9,15 @@ $ErrorActionPreference = "Stop"
 
 if ($Distro -notmatch '^[A-Za-z0-9._-]+$' -or
     $ProjectLinuxPath -notmatch '^/[A-Za-z0-9._/-]+$' -or
-    $ProjectLinuxPath.Contains('..')) {
+    $ProjectLinuxPath.Contains('..') -or
+    (-not $Once -and $SessionId -notmatch '^[A-Za-z0-9-]{8,80}$')) {
     throw "Unsafe control-bridge configuration."
 }
 
 $secureLauncher = Join-Path $env:LOCALAPPDATA "WesnothAgentManager\Start-WesnothAgentShell.ps1"
 $mutex = [Threading.Mutex]::new($false, "Local\WesnothAgentControlBridge")
+$runtime = Join-Path (Split-Path -Parent $PSScriptRoot) "runtime"
+$shutdownMarker = Join-Path $runtime "dashboard.shutdown.$SessionId"
 
 function Invoke-Mailbox([string[]]$MailboxArguments) {
     $output = & wsl.exe -d $Distro --cd $ProjectLinuxPath -e python3 `
@@ -34,6 +38,9 @@ if (-not $mutex.WaitOne(0)) {
 
 try {
     while ($true) {
+        if (Test-Path -LiteralPath $shutdownMarker) {
+            break
+        }
         Write-Health "online" "Secure bridge ready"
         if ($Once) {
             break
@@ -72,9 +79,24 @@ try {
             }
             $process = [Diagnostics.Process]::Start($info)
             $process.StandardInput.Close()
-            if (-not $process.WaitForExit(1200000)) {
-                $process.Kill()
-                throw "Secure ticket runner timed out."
+            $deadline = [DateTime]::UtcNow.AddMinutes(20)
+            $cancelMarker = Join-Path $runtime "secure-run-cancel.$runId"
+            $shutdownRequested = $false
+            while (-not $process.HasExited) {
+                if ((Test-Path -LiteralPath $cancelMarker) -or
+                    (Test-Path -LiteralPath $shutdownMarker)) {
+                    $shutdownRequested = Test-Path -LiteralPath $shutdownMarker
+                    & taskkill.exe /PID $process.Id /T /F *> $null
+                    $process.WaitForExit(5000) | Out-Null
+                    throw "Secure ticket runner was cancelled."
+                }
+                if ([DateTime]::UtcNow -ge $deadline) {
+                    & taskkill.exe /PID $process.Id /T /F *> $null
+                    $process.WaitForExit(5000) | Out-Null
+                    throw "Secure ticket runner timed out."
+                }
+                Write-Health "executing" "Deterministic ticket gates running"
+                Start-Sleep -Milliseconds 1000
             }
             if ((Invoke-Mailbox @("result", $runId)) -ne "ready") {
                 throw "Secure ticket runner returned no structured result."
@@ -88,6 +110,9 @@ try {
         }
         finally {
             Invoke-Mailbox @("cleanup", $runId) | Out-Null
+        }
+        if ($shutdownRequested -or (Test-Path -LiteralPath $shutdownMarker)) {
+            break
         }
     }
 }

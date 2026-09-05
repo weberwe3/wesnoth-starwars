@@ -126,6 +126,7 @@ def main() -> int:
         run_id = valid_run_id(sys.argv[2])
         ACCEPTED.unlink(missing_ok=True)
         (RUNTIME / f"secure-bootstrap-{run_id}.sh").unlink(missing_ok=True)
+        (RUNTIME / f"secure-run-cancel.{run_id}").unlink(missing_ok=True)
         return 0
     raise SystemExit("ERROR: unsupported bridge mailbox command")
 

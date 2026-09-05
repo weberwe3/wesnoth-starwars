@@ -37,6 +37,11 @@ Read AGENTS.md and obey it.
 
 Implement exactly the assigned ticket and keep the change narrowly scoped.
 
+Inspect large source files with targeted search and bounded reads of no more than
+120 lines at a time. Never request an entire large file in one tool call. When
+the coordinator supplies a verified governance digest, use it instead of
+rereading the full controlled references unless the ticket is ambiguous.
+
 You may inspect and edit only project files permitted by your tool policy.
 
 You may not:

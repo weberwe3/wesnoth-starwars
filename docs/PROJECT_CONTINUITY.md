@@ -4,10 +4,10 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-04 during autonomous queue governance design<br>
-**Main at snapshot:** `102d962841b04b37f6b2eedfc8861d7a96299106`<br>
-**Active infrastructure ticket:** DASH-005 bounded autonomous error recovery<br>
-**Next intended game-development ticket:** reconcile open `ENGINE-002` PR #15 before new overlapping work
+**Last continuity refresh:** 2026-09-04 during DASH-012/DASH-013 resilience and resource-efficiency work<br>
+**Main at snapshot:** `148d1e03b40de105e2349bb69621c7dcd6d4fbd8`<br>
+**Active infrastructure ticket:** DASH-012/DASH-013 always-available exit, resilient retry, and model-usage optimization<br>
+**Next intended game-development ticket:** resume the preserved scenario-validation worktree after DASH-012 is live
 
 ---
 
@@ -954,12 +954,14 @@ When updating this file:
 | 2026-09-04 | DASH-008 / PR #22 | Merged strict structured-output required-field repair, deterministic schema preflight, and bounded secret-free planner failure diagnostics |
 | 2026-09-04 | DASH-009 / PR #23 | Merged bounded post-push GitHub head confirmation, duplicate queue-ownership prevention, and exact-record AI recode and non-destructive queue-removal controls |
 | 2026-09-04 | DASH-010 / PR #25 | Merged continuous priority scheduling: the active Automation toggle authorizes fresh bounded tickets, skips queue/PR-owned priorities, advances through independent safe work, and sequences publication around exact-head CI registration/current-main checks while retaining manual publication/deletion gates |
-| 2026-09-04 | DASH-011 live-state scheduling and reviewer routing (implementation in progress) | Make live queue/GitHub evidence authoritative over stale continuity snapshots, expose published history and planned priorities to Sol, and route review through Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash |
+| 2026-09-04 | DASH-011 / PR #26 | Merged live-state scheduling, publication/priorities context, and reviewer routing through Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash |
+| 2026-09-04 | DASH-012 resilient cancellation and retry (implementation in progress) | Make Exit available during active work with exact-run cancellation and preserved remnants; retain both bounded retries when recovery-planner invocation fails; require bounded large-file reads |
+| 2026-09-04 | DASH-013 resource-efficient orchestration (implementation in progress) | Avoid redundant Sol calls with deterministic remnant resume and inventory-bound planning cache; compact governance/validation prompts; prefer Fast-Fix for small mechanical work; add a 60-second inter-ticket quota cooldown |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, DASH-010 is merged through PR #25 and ENGINE-002 is merged through PR #15 at `c61c0dc418213379d19350580bde0c3c4a5d5d98`. The first post-merge scheduler pass started automatically but paused because the continuity prose still described PR #15 as open while live GitHub and queue inventory correctly showed it published. DASH-011 is being implemented to make live mutable state authoritative, provide recent publication and planned-priority data directly to Sol, and advance to the next independent priority instead of stopping on stale prose. The reviewer chain is also changing to Nemotron primary, Gemini 3.8 Flash intermediate, and Gemini 3.6 Flash final fallback. Exact-commit publication and file-deletion approval remain manual boundaries.
+At this snapshot, DASH-011 is merged through PR #26 at `148d1e03b40de105e2349bb69621c7dcd6d4fbd8`. The next autonomous scenario-validation ticket created a clean managed worktree, but GPT-OSS exceeded its provider context limit after reading a large source file in one request; Terra returned without a change; and an exception in recovery planning prevented the eligible bounded retry from starting. The secure bridge then failed to publish its fixed result, leaving the dashboard in `executing` until timeout while the idle-only Exit rule blocked shutdown. DASH-012/DASH-013 are being implemented together before publication: exact-run cancellation preserves the interrupted worktree; structured deterministic failures retain both retries; a sole verified remnant bypasses Sol planning; unchanged planning decisions use a short inventory-bound cache; prompts use compact verified governance and validation evidence; worker reads are bounded; small mechanical work prefers Fast-Fix; and a 60-second inter-ticket cooldown reduces rolling-quota failures. Current provider research found Groq's free GPT-OSS tier especially constrained by an 8K TPM and 200K daily-token allowance, Cloudflare's free Workers AI allocation shared across 10,000 neurons per day, Google limits dependent on the active project/tier, and OpenCode's Ling free availability explicitly temporary. Exact-commit publication and file-deletion approval remain manual boundaries.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.

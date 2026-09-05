@@ -264,7 +264,8 @@ function renderControl(control) {
   $("dashboard-lan-url").href = secureLanUrl || lanUrl || "#";
   $("copy-lan-button").disabled = !secureLanUrl;
   $("copy-lan-button").dataset.url = secureLanUrl;
-  $("exit-button").disabled = !access.shutdown_available || running || controlBusy || !controlToken;
+  $("exit-button").disabled = !access.shutdown_available || controlBusy || !controlToken;
+  $("exit-button").textContent = running ? "Exit & preserve work" : "Exit dashboard";
   $("dashboard-action-status").textContent = access.remote
     ? "Secure LAN device paired. All governed controls are available."
     : access.lan_proxy_online

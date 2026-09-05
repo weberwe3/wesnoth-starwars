@@ -34,11 +34,13 @@ current code. It refuses to interrupt active planning, execution, or
 publication work, and it reports success only after the localhost health check
 passes.
 
-**Exit dashboard** is available on localhost and paired LAN devices. It refuses
-to interrupt planning, ticket execution, or publication. When idle or at another
-safe stopping state, it closes the HTTP server, removes its PID/version/session
-files, stops the LAN proxy, and signals only the matching Windows launcher CMD
-process tree to close. It does not target unrelated consoles or WSL processes.
+**Exit dashboard** is available at all times on localhost and paired LAN devices.
+During an active operation it disables automation, cancels only the associated
+secure child process tree, and preserves the ticket branch, worktree, and local
+evidence for continuation. It then closes the HTTP server, removes its
+PID/version/session files, stops the LAN proxy, and signals only the matching
+Windows launcher CMD process tree to close. It does not target unrelated
+consoles, WSL processes, branches, or worktrees.
 
 For the Windows startup workflow, use `Start-WesnothAgentEnvironment.cmd`.
 It starts a hidden native Windows control bridge, starts the dashboard, and
@@ -70,10 +72,24 @@ runner makes one sandboxed GPT-5.6 Terra attempt at medium reasoning and shows
 the live assignment in the Implementer card and activity log. Failure of both
 providers stops the ticket without starting an unbounded retry cycle.
 
+Eligible implementation and gate failures receive at most two scoped repair
+attempts. If the Sol recovery-planning call itself is unavailable, Python keeps
+the retry sequence moving with the existing structured failure and required
+action as the narrow repair brief; it does not widen scope or increase the
+attempt limit.
+
 The green **Automation** switch lets the selected Sol effort plan another
 bounded ticket after each safe completion. Turning it off prevents the next
 ticket from starting; it does not interrupt an active gate mid-operation.
 Switching back to **Python** restores the manual Python/Bash workflow.
+
+To conserve provider and Codex limits, Python resumes a sole verified unfinished
+ticket without calling Sol, reuses a 15-minute planning decision only while the
+entire authoritative inventory fingerprint is unchanged, and waits 60 seconds
+between completed autonomous tickets. Model prompts use a verified compact
+governance digest and bounded validation summaries. Mechanical one- or two-file
+work is preferentially routed to the free Fast-Fix role. These optimizations do
+not skip deterministic validation, testing, review, approval, CI, or merge gates.
 
 If Sol cannot identify a safe non-overlapping ticket, automation enters a
 visible amber **Paused** state and records the exact planning reason in the

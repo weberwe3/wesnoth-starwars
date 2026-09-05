@@ -86,12 +86,20 @@ Do not claim tests passed based on inspection. The deterministic coordinator exe
 
 ## Mandatory Project References
 
-Before substantive work on any ticket, every agent MUST read:
+Before substantive work on any ticket, every agent MUST either read:
 
 1. `docs/PROJECT_SCOPE_AND_FEATURE_SET.md`
 2. `docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md`
 
-These two Markdown documents are the canonical machine-readable project references supplied to LLM roles. They define project scope, architecture, security boundaries, validation policy, copyright constraints, and development objectives. Ticket instructions may refine a task but may not silently override these references. If a ticket conflicts with either reference, stop and report the conflict.
+or receive the deterministic coordinator's verified reference identity and
+authoritative governance digest for those exact files. Routine bounded workers,
+testers, and reviewers should use that supplied digest and avoid rereading the
+full references on every call. A project-level planner, fresh session, ambiguous
+ticket, or apparent conflict must read the relevant full references. These two
+Markdown documents remain canonical and define project scope, architecture,
+security boundaries, validation policy, copyright constraints, and development
+objectives. Ticket instructions may refine a task but may not silently override
+them. If a ticket conflicts with either reference, stop and report the conflict.
 
 The controlled reference package is governed by:
 

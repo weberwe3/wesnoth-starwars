@@ -217,13 +217,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 else:
                     controller.remove_failed_ticket(data["record_id"], data["commit_sha"])
             elif data == {"action": "shutdown"}:
-                state = controller.public_state()
-                if state.get("run", {}).get("state") in {
-                    "planning", "executing", "publishing",
-                }:
-                    raise ControlError(
-                        "An active operation must reach a safe stopping point before shutdown"
-                    )
+                controller.request_shutdown()
                 shutdown_requested = True
             else:
                 raise ControlError("Unsupported control action")
