@@ -88,13 +88,33 @@ def build_governance_prompt(package: dict) -> str:
 
 
 def resolve_codex_executable() -> str | None:
-    """Resolve Codex from PATH or the trusted launcher-provided absolute path."""
+    """Resolve the trusted Codex install in normal and stripped WSL environments."""
 
     candidates = [
         os.environ.get("WESNOTH_CODEX_EXE"),
         shutil.which("codex"),
         shutil.which("codex.exe"),
     ]
+    home_name = Path.home().name
+    if re.fullmatch(r"[A-Za-z0-9._-]+", home_name):
+        codex_root = (
+            Path("/mnt/c/Users") / home_name
+            / "AppData/Local/OpenAI/Codex/bin"
+        )
+        try:
+            install_dirs = sorted(
+                (
+                    entry for entry in codex_root.iterdir()
+                    if entry.is_dir()
+                    and not entry.is_symlink()
+                    and re.fullmatch(r"[A-Za-z0-9._-]{1,80}", entry.name)
+                ),
+                key=lambda entry: entry.stat().st_mtime,
+                reverse=True,
+            )
+        except OSError:
+            install_dirs = []
+        candidates.extend(str(entry / "codex.exe") for entry in install_dirs)
     for value in candidates:
         if not value:
             continue

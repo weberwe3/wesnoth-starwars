@@ -776,6 +776,43 @@ class CoordinationControlTests(unittest.TestCase):
             ):
                 self.assertEqual(ticket_runner.resolve_codex_executable(), str(executable))
 
+    def test_installed_codex_path_survives_stripped_secure_environment(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory) / "home" / "fixture-user"
+            executable = (
+                Path(directory) / "mnt" / "c" / "Users" / "fixture-user"
+                / "AppData" / "Local" / "OpenAI" / "Codex" / "bin"
+                / "current" / "codex.exe"
+            )
+            executable.parent.mkdir(parents=True)
+            executable.write_text("fixture\n", encoding="utf-8")
+            real_path = ticket_runner.Path
+
+            def mapped_path(value):
+                path = real_path(value)
+                if path == real_path("/mnt/c/Users"):
+                    return real_path(directory) / "mnt" / "c" / "Users"
+                return path
+
+            with (
+                mock.patch.dict(os.environ, {}, clear=True),
+                mock.patch("ticket_runner.Path", side_effect=mapped_path),
+                mock.patch("ticket_runner.shutil.which", return_value=None),
+            ):
+                ticket_runner.Path.home.return_value = home
+                self.assertEqual(
+                    ticket_runner.resolve_codex_executable(), str(executable)
+                )
+
+    def test_sol_and_terra_share_codex_resolver(self) -> None:
+        source = (ROOT / "agent" / "dashboard" / "autonomy.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "executable = ticket_runner.resolve_codex_executable()",
+            source,
+        )
+
     def test_missing_terra_executable_writes_diagnostic(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             log = Path(directory) / "terra.txt"
