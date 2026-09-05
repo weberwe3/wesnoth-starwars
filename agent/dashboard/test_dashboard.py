@@ -1675,6 +1675,103 @@ class ApprovalQueueTests(unittest.TestCase):
                 [],
             )
 
+    def test_exact_recode_uses_selected_branch_and_recorded_contract_without_sol(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            worktree = base / "managed-worktree"
+            worktree.mkdir()
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            commit = "a" * 40
+            failed = {
+                "id": "2" * 16,
+                "ticket_id": "DASH-FAILED",
+                "branch": "agent/dash-failed",
+                "commit_sha": commit,
+                "impact": "Repairs the selected candidate.",
+                "pr_number": None,
+            }
+            evidence = {
+                "task_id": "DASH-FAILED",
+                "worker": "implementer",
+                "objective": "Repair one bounded fixture",
+                "allowed_paths": ["addons/example.cfg"],
+                "validation_profile": "static-text",
+                "validation_root": None,
+            }
+            completed = subprocess.CompletedProcess([], 0, stdout=commit + "\n")
+            with (
+                mock.patch.object(
+                    controller, "_ticket_evidence",
+                    return_value={"agent/dash-failed": evidence},
+                ),
+                mock.patch.object(
+                    ticket_runner, "resolve_resume_worktree", return_value=worktree
+                ),
+                mock.patch.object(
+                    ticket_runner, "read_resume_changes",
+                    return_value=(["M addons/example.cfg"], ["addons/example.cfg"]),
+                ),
+                mock.patch.object(
+                    ticket_runner, "validate_resume_scope", return_value={"pass": True}
+                ),
+                mock.patch.object(
+                    ticket_runner, "inspect_local_resume_reconciliation",
+                    return_value={"safe": True, "mode": "clean-fast-forward"},
+                ),
+                mock.patch("autonomy.subprocess.run", return_value=completed),
+                mock.patch.object(controller, "_plan") as planner,
+            ):
+                proposal = controller._exact_recode_proposal(failed)
+            planner.assert_not_called()
+            self.assertEqual(proposal["action"], "run_ticket")
+            self.assertEqual(
+                proposal["ticket"]["resume_branch"], "agent/dash-failed"
+            )
+            self.assertEqual(
+                proposal["ticket"]["objective"], "Repair one bounded fixture"
+            )
+            self.assertEqual(
+                proposal["_planning_inventory"]["local_agent_branches"][0]["head"],
+                commit,
+            )
+
+    def test_exact_recode_rejects_changed_worktree_head(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            worktree = base / "managed-worktree"
+            worktree.mkdir()
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            evidence = {
+                "task_id": "DASH-FAILED", "worker": "implementer",
+                "objective": "Repair fixture", "allowed_paths": ["fixture.txt"],
+                "validation_profile": "static-text", "validation_root": None,
+            }
+            completed = subprocess.CompletedProcess([], 0, stdout="b" * 40 + "\n")
+            with (
+                mock.patch.object(
+                    controller, "_ticket_evidence",
+                    return_value={"agent/dash-failed": evidence},
+                ),
+                mock.patch.object(
+                    ticket_runner, "resolve_resume_worktree", return_value=worktree
+                ),
+                mock.patch("autonomy.subprocess.run", return_value=completed),
+            ):
+                with self.assertRaisesRegex(ControlError, "exact worktree head"):
+                    controller._exact_recode_proposal({
+                        "id": "2" * 16, "ticket_id": "DASH-FAILED",
+                        "branch": "agent/dash-failed", "commit_sha": "a" * 40,
+                        "pr_number": None,
+                    })
+
     def test_continuous_automation_observes_completion_cooldown(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)

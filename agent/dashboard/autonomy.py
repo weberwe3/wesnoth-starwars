@@ -414,13 +414,24 @@ class AutonomyController:
         recode_record: dict | None = None,
     ) -> None:
         try:
-            proposal = self._plan(
-                run_id,
-                mode,
-                brief,
-                queue_exclude_id=(recode_record or {}).get("id"),
-                fresh_start_authorized=continuous,
-            )
+            if recode_record is not None:
+                proposal = self._exact_recode_proposal(recode_record)
+                self.queue.event(
+                    "Sol ticket selection avoided for exact recode",
+                    detail=(
+                        "The selected failed queue ID, commit, branch, and recorded ticket "
+                        "contract deterministically identify the only permitted worktree."
+                    ),
+                    ticket_id=str(recode_record.get("ticket_id") or ""),
+                )
+            else:
+                proposal = self._plan(
+                    run_id,
+                    mode,
+                    brief,
+                    queue_exclude_id=None,
+                    fresh_start_authorized=continuous,
+                )
             if recode_record is not None and (
                 proposal.get("action") != "run_ticket"
                 or (proposal.get("ticket") or {}).get("resume_branch")
@@ -595,6 +606,109 @@ class AutonomyController:
             )
             if continuous:
                 self._disable_automation("Autonomous coordination stopped safely")
+
+    def _exact_recode_proposal(self, failed: dict) -> dict:
+        """Bind recode to the already authorized queue record without model selection."""
+
+        branch = failed.get("branch")
+        commit_sha = failed.get("commit_sha")
+        if (
+            not isinstance(branch, str)
+            or not re.fullmatch(r"agent/[a-zA-Z0-9._/-]+", branch)
+            or not isinstance(commit_sha, str)
+            or not re.fullmatch(r"[0-9a-f]{40}", commit_sha)
+        ):
+            raise ControlError("The selected failed ticket has invalid branch identity")
+
+        pr_number = failed.get("pr_number")
+        if pr_number is not None:
+            inventory = self._planning_inventory(queue_exclude_id=failed.get("id"))
+            item = next((
+                candidate for candidate in inventory.get("resumable_pull_requests", [])
+                if isinstance(candidate, dict)
+                and candidate.get("number") == pr_number
+                and candidate.get("name") == branch
+                and candidate.get("head_sha") == commit_sha
+            ), None)
+            if item is None:
+                raise ControlError(
+                    "The failed ticket pull request is no longer open at the exact approved head"
+                )
+            proposal = self._resume_item_proposal(item)
+            proposal.update({
+                "summary": f"Recode {failed.get('ticket_id')} on its exact pull-request branch",
+                "impact": str(failed.get("impact") or (
+                    "Repairs the selected pull-request candidate without selecting other work."
+                )),
+                "_planning_inventory": inventory,
+            })
+            return proposal
+
+        evidence = self._ticket_evidence(include_passed=True).get(branch)
+        if evidence is None:
+            raise ControlError("The selected failed ticket has no recorded ticket contract")
+        try:
+            worktree = ticket_runner.resolve_resume_worktree(self.root, branch)
+        except SystemExit as exc:
+            raise ControlError(
+                "The selected failed ticket no longer has its managed worktree"
+            ) from exc
+
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=worktree,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            text=True, timeout=30, check=False,
+        )
+        if completed.returncode != 0 or completed.stdout.strip() != commit_sha:
+            raise ControlError(
+                "The selected failed commit is no longer the exact worktree head"
+            )
+
+        _, changed_paths = ticket_runner.read_resume_changes(worktree)
+        scope = ticket_runner.validate_resume_scope(
+            changed_paths, evidence.get("allowed_paths") or []
+        )
+        if not changed_paths:
+            raise ControlError("The selected failed ticket has no candidate changes to recode")
+        if not scope["pass"]:
+            raise ControlError(
+                "The selected failed ticket now contains protected or out-of-scope changes"
+            )
+        reconciliation = ticket_runner.inspect_local_resume_reconciliation(worktree)
+        if not reconciliation["safe"]:
+            raise ControlError(
+                str(reconciliation.get("reason") or (
+                    "The selected failed worktree cannot be reconciled with current main safely"
+                ))
+            )
+
+        item = {
+            "name": branch,
+            "head": commit_sha,
+            "worktree": worktree.name,
+            "changed_paths": changed_paths,
+            "previous_task_id": evidence.get("task_id"),
+            "worker": evidence.get("worker"),
+            "objective": evidence.get("objective"),
+            "allowed_paths": evidence.get("allowed_paths"),
+            "validation_profile": evidence.get("validation_profile"),
+            "validation_root": evidence.get("validation_root"),
+            "number": None,
+            "head_sha": None,
+        }
+        proposal = self._resume_item_proposal(item)
+        proposal.update({
+            "summary": f"Recode {failed.get('ticket_id')} on its exact failed branch",
+            "impact": str(failed.get("impact") or (
+                "Repairs the selected candidate without creating or selecting other work."
+            )),
+            "_planning_inventory": {
+                "local_agent_branches": [item],
+                "resumable_pull_requests": [],
+                "replaceable_pull_requests": [],
+            },
+        })
+        return proposal
 
     def _plan(
         self,

@@ -967,6 +967,7 @@ When updating this file:
 | 2026-09-05 | DASH-021 tester resilience | Route unavailable or non-decisive GLM tester runs to one read-only Terra Medium fallback while prohibiting tester shopping and model self-testing/self-review |
 | 2026-09-05 | DASH-022 through DASH-024 provider resilience | Extend slow tester execution time, canonicalize directory scopes, block Cloudflare after daily free-allocation exhaustion until its UTC reset, and use Luna Medium as the independent tester fallback |
 | 2026-09-05 | DASH-025 stage-local model recovery | Remove unreliable Google free-tier reviewers from autonomous routing, use Luna Light after Nemotron, and resume unchanged failed candidates at Tester or Reviewer without replaying successful earlier stages |
+| 2026-09-05 | DASH-026 exact recode selection | Bind Recode with AI directly to the selected failed queue ID, commit, branch, managed worktree, and recorded ticket contract instead of asking Sol to rediscover the already selected ticket |
 
 ---
 
@@ -977,3 +978,5 @@ At this snapshot, resume-state hardening is merged through PR #30. The subsequen
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.
 
 The current reviewer route is Nemotron followed immediately by a read-only GPT-5.6 Luna Light fallback. Gemini 3.6 Flash repeatedly exhausted the project's 20-request daily free allowance, while Gemini 3.8 Flash also produced protocol and timeout failures; neither Google model remains in unattended reviewer routing. Provider-only Tester or Reviewer failures now record the candidate-content digest and the first failed stage. A later resume may reuse earlier gate evidence only when that digest is unchanged; any candidate-content change invalidates the checkpoint and restores full validation.
+
+The failed-ticket Recode control is an exact-record operation, not a general planning request. Its queue ID and commit are revalidated, its current worktree HEAD must still equal that commit, its original recorded contract and changed-path scope must remain safe, and reconciliation with current `main` must be provably non-destructive. Sol no longer selects a branch during recode; the selected worktree's Implementer performs the repair after Python has deterministically reconstructed the ticket. Open-PR recodes additionally require the PR to remain open at the exact recorded head.
