@@ -681,9 +681,21 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         candidates = list(inventory.get("resumable_local_work") or [])
         candidates.extend(inventory.get("resumable_pull_requests") or [])
         unique = {item.get("name"): item for item in candidates if isinstance(item, dict)}
-        if len(unique) != 1:
+        if not unique:
             return None
-        item = next(iter(unique.values()))
+        contracts = {
+            json.dumps({
+                "worker": item.get("worker"),
+                "objective": item.get("objective"),
+                "allowed_paths": item.get("allowed_paths"),
+                "validation_profile": item.get("validation_profile"),
+                "validation_root": item.get("validation_root"),
+            }, sort_keys=True, separators=(",", ":"))
+            for item in unique.values()
+        }
+        if len(contracts) != 1:
+            return None
+        item = max(unique.values(), key=lambda value: str(value.get("name") or ""))
         task_id = str(item.get("previous_task_id") or "unfinished ticket")
         return {
             "action": "run_ticket",
@@ -706,6 +718,11 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
 
     @staticmethod
     def _blocked_resume_proposal(inventory: dict) -> dict | None:
+        if (
+            inventory.get("resumable_local_work")
+            or inventory.get("resumable_pull_requests")
+        ):
+            return None
         blocked = inventory.get("blocked_local_work") or []
         if not blocked:
             return None
