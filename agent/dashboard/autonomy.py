@@ -218,6 +218,21 @@ class AutonomyController:
             "autonomous_failure_streak": self._read_failure_streak(),
         }
 
+    def pending_planned_tickets(self) -> dict:
+        """Expose only the current rolling backlog; completed work stays out of the UI."""
+
+        tickets = [
+            {
+                "id": item["id"],
+                "label": item["label"],
+                "brief": item["brief"],
+                "source": item["source"],
+            }
+            for item in self._planned_priorities()
+            if item.get("status") == "pending"
+        ]
+        return {"tickets": tickets}
+
     def set_mode(self, mode: str) -> dict:
         if mode not in VALID_MODES:
             raise ControlError("Unsupported coordinator mode")

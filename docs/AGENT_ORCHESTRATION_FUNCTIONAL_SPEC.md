@@ -191,7 +191,7 @@ Baseline routing:
 | Role | Provider / model | Purpose |
 |---|---|---|
 | Implementer | Groq - `groq/openai/gpt-oss-120b`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Main bounded implementation work |
-| Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free` | Small mechanical corrections |
+| Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free`; one fallback: OpenAI `gpt-5.6-terra` at low reasoning | Small mechanical corrections |
 | Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Independent read-only test evaluation |
 | Primary reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Preferred independent review |
 | Intermediate reviewer | Google - `google/gemini-3.8-flash` | First reviewer fallback for infrastructure/non-decisive primary failure |
@@ -203,13 +203,19 @@ Routing is policy, not permanence. Models may change if availability, capability
 Known provider observations:
 
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
-- When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
+- When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. When the primary Fast-Fix process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at low reasoning in that worktree. Each fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not test, commit, merge, push, delete, or broaden scope.
 - A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
 - When GLM-4.7 Flash is unavailable or returns no decisive tester verdict, the coordinator may invoke Terra Medium once as the independent read-only tester fallback. A substantive GLM `FAIL` remains authoritative and must not be bypassed. Terra must be withheld from testing when Terra implemented the candidate, and Terra must be withheld from final review when it already tested the candidate.
 - Implementer and Fast-Fix agents must inspect large source files through targeted search and reads of no more than 120 lines per call rather than requesting an entire large file. Tester/reviewer reads are bounded to 160 lines. This keeps provider context/token limits from turning ordinary scoped work into avoidable infrastructure failures.
 - A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. The reviewer order is Nemotron, Gemini 3.8 Flash, Gemini 3.6 Flash, then Terra Medium when reviewer independence permits it.
 - A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
+
+The dashboard planned-ticket selector is a live rolling view derived from the
+coordinator's validated planning inventory. It contains pending static and
+generated tickets only, refreshes while the dashboard is open, and removes a
+ticket after publication evidence marks it complete. This display performs no
+model call and does not replace Python's ticket validation at execution time.
 
 ## 6. OpenCode Agent Security Model
 

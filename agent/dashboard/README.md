@@ -67,10 +67,21 @@ ID and allowlisted recovery effort, derives all paths itself, and publishes a
 numeric result plus a bounded secret-free failure diagnostic. The resulting work occurs in the normal isolated worktree and passes
 through deterministic validation, tester, and reviewer gates.
 
+The planned-ticket menu is a live rolling backlog. It refreshes with normal
+dashboard polling, includes pending static and coordinator-generated tickets,
+and omits completed tickets. This local structured-state refresh consumes no
+model tokens.
+
 GPT-OSS 120B remains the primary Implementer. If that process fails, the
 runner makes one sandboxed GPT-5.6 Terra attempt at medium reasoning and shows
 the live assignment in the Implementer card and activity log. Failure of both
 providers stops the ticket without starting an unbounded retry cycle.
+
+Ling remains the primary Fast-Fix model. If it fails, the runner makes one
+sandboxed GPT-5.6 Terra attempt at low reasoning in the same worktree. Terra
+inherits the exact objective and allowed paths and remains subject to every
+deterministic gate; it cannot test, commit, publish, merge, delete, or expand
+the ticket.
 
 Eligible implementation and gate failures receive at most two scoped repair
 attempts. If the Sol recovery-planning call itself is unavailable, Python keeps
