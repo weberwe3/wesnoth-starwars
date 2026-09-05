@@ -36,6 +36,8 @@ Responsibilities:
 
 - maintain high-level architecture and project direction;
 - define bounded tickets;
+- replenish the ordered implementation backlog when continuous automation has
+  no safe existing, resumable, or documented pending ticket;
 - choose validation expectations;
 - interpret failures;
 - design changes to deterministic tooling;
@@ -456,6 +458,11 @@ When automation is enabled:
   selects the highest-priority independent safe ticket remaining;
 - Sol may read the controlled references and continuity ledger, prioritize the
   planned backlog, and propose one bounded ticket at a time;
+- when no safe current backlog ticket exists, Sol may generate one small ordered
+  set of bounded implementation contracts in a single compact read-only call;
+  Python validates and persists the safe contracts under ignored runtime state,
+  selects them in order without another planning call, and requests another set
+  only after the current generated set is exhausted or no longer safe;
 - Python remains the authoritative state machine and must validate each ticket,
   create its isolated worktree, enforce path scope, and run every applicable
   deterministic, engine, tester, and reviewer gate;
@@ -535,6 +542,16 @@ coordinator must minimize usage without weakening gates by:
   predictable rolling per-minute quota failures and unnecessary fallbacks; and
 - invoking reviewer fallbacks only for infrastructure/non-decisive outcomes,
   never as duplicate review or verdict shopping.
+
+Backlog replenishment follows the same resource rule. The coordinator sends
+only a compact inventory of completed priorities, recent publication impacts,
+queued work, open pull requests, current `main`, and the owner brief. One call
+generates a small ordered set; subsequent ticket selection is deterministic and
+requires no Sol call. Every selected contract is revalidated against current
+repository state before execution. Invalid or overlapping generated entries are
+skipped, and a new set is requested only when no generated entry remains safe.
+If the refill model cannot produce any safe bounded implementation contract,
+automation pauses with the specific reason instead of looping or burning tokens.
 
 The ticket runner also applies persistent per-model launch pacing at published
 free-tier ceilings: 30 RPM for Groq GPT-OSS 120B, 40 RPM for NVIDIA Nemotron,

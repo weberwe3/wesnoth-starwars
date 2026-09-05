@@ -290,6 +290,7 @@ def build_governance_prompt(package: dict) -> str:
         "- Author WML/Lua and assets from scratch for free non-commercial Wesnoth add-on distribution; never extract proprietary game content.",
         "- When code is requested as output, provide complete scoped Wesnoth-ready files or snippets with useful mechanics comments.",
         "- Python owns execution, validation, retry ceilings, and publication gates.",
+        "- In continuous mode, one compact Sol call may refill a small ticket backlog; Python revalidates and selects each contract without another planning call.",
         "- Tester and reviewer roles are read-only and independent.",
         "",
         "For routine bounded work, this verified digest is the equivalent coordinator-supplied",

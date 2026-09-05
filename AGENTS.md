@@ -37,6 +37,15 @@ After changing code:
 The deterministic coordinator, not an LLM worker, executes tests and records
 their real exit codes and output.
 
+In continuous automation, the coordinator also maintains the bounded ticket
+backlog. When no existing, resumable, or documented safe ticket remains, it may
+use one compact read-only Sol call to generate a small ordered set of new
+implementation tickets. Python must validate and persist those contracts, then
+select each ticket deterministically without another planning call. The
+coordinator must continue seamlessly while a validated generated ticket is
+available and retain every normal worktree, scope, validation, review,
+publication, deletion, and three-failure safety boundary.
+
 ## Wesnoth requirements
 
 - Target the Wesnoth 1.19/1.20-generation engine unless a task states otherwise.

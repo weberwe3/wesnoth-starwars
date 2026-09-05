@@ -27,6 +27,8 @@ MAX_BRIEF_LENGTH = 1000
 PLANNER_CACHE_SECONDS = 900
 AUTOMATION_COOLDOWN_SECONDS = 60
 AUTONOMOUS_WORKTREE_FAILURE_LIMIT = 3
+GENERATED_BACKLOG_FILE = "generated-planned-tickets.json"
+GENERATED_BACKLOG_SIZE = 4
 AUTONOMOUS_RETRYABLE_FAILURES = {
     "implementation_or_validation_failure",
     "provider_or_worker_failure",
@@ -104,6 +106,46 @@ TICKET_SCHEMA = {
                     },
                 },
             ]
+        },
+    },
+}
+
+BACKLOG_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["action", "summary", "impact", "tickets"],
+    "properties": {
+        "action": {"type": "string", "enum": ["refill", "stop"]},
+        "summary": {"type": "string", "minLength": 1, "maxLength": 500},
+        "impact": {"type": "string", "minLength": 1, "maxLength": 1200},
+        "tickets": {
+            "type": "array", "minItems": 0, "maxItems": 5,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": [
+                    "summary", "impact", "worker", "objective",
+                    "allowed_paths", "validation_profile", "validation_root",
+                ],
+                "properties": {
+                    "summary": {"type": "string", "minLength": 1, "maxLength": 500},
+                    "impact": {"type": "string", "minLength": 1, "maxLength": 1200},
+                    "worker": {
+                        "type": "string", "enum": ["implementer", "fast-fix"],
+                    },
+                    "objective": {"type": "string", "minLength": 1, "maxLength": 1200},
+                    "allowed_paths": {
+                        "type": "array", "minItems": 1, "maxItems": 20,
+                        "items": {"type": "string", "minLength": 1, "maxLength": 240},
+                    },
+                    "validation_profile": {
+                        "type": "string",
+                        "enum": ["static-text", "wesnoth-addon-static"],
+                    },
+                    "validation_root": {"type": ["string", "null"], "maxLength": 240},
+                },
+            },
         },
     },
 }
@@ -866,6 +908,17 @@ class AutonomyController:
                 detail="Python resumed the only verified unfinished ticket contract.",
             )
             return deterministic
+        if fresh_start_authorized:
+            generated = self._next_generated_priority(inventory)
+            if generated is not None:
+                self.queue.event(
+                    "Generated backlog ticket selected without a Sol call",
+                    detail="Python selected the highest-priority pending generated contract.",
+                    ticket_id=generated["ticket"]["objective"].split(":", 1)[0],
+                )
+                return generated
+            if self._priorities_exhausted(inventory):
+                return self._refill_backlog(run_id, mode, brief, inventory)
         fingerprint = hashlib.sha256(json.dumps({
             "mode": mode,
             "brief": brief,
@@ -977,11 +1030,232 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 run_id, proposal, brief,
                 fresh_start_authorized=fresh_start_authorized,
             )
+        if proposal["action"] == "stop" and fresh_start_authorized:
+            return self._refill_backlog(run_id, mode, brief, inventory)
         self._cache_plan(
             runtime,
             fingerprint,
             {key: value for key, value in proposal.items() if not key.startswith("_")},
         )
+        return proposal
+
+    @staticmethod
+    def _priorities_exhausted(inventory: dict) -> bool:
+        priorities = inventory.get("planned_priorities") or []
+        return not any(
+            isinstance(item, dict) and item.get("status") == "pending"
+            for item in priorities
+        )
+
+    def _generated_backlog(self) -> dict:
+        path = self.root / "agent" / "runtime" / GENERATED_BACKLOG_FILE
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {"tickets": []}
+        if not isinstance(value, dict) or value.get("schema_version") != 1:
+            return {"tickets": []}
+        tickets = value.get("tickets")
+        if not isinstance(tickets, list):
+            return {"tickets": []}
+        return {**value, "tickets": tickets[:5]}
+
+    def _next_generated_priority(self, inventory: dict) -> dict | None:
+        pending = [
+            item for item in inventory.get("planned_priorities") or []
+            if isinstance(item, dict)
+            and item.get("source") == "generated"
+            and item.get("status") == "pending"
+        ]
+        sources = {
+            item.get("id"): item
+            for item in self._generated_backlog()["tickets"]
+            if isinstance(item, dict)
+        }
+        for item in pending:
+            source = sources.get(item.get("id"))
+            if source is None:
+                continue
+            proposal = {
+                "action": "run_ticket",
+                "summary": source.get("summary"),
+                "impact": source.get("impact"),
+                "ticket": {
+                    "worker": source.get("worker"),
+                    "objective": source.get("objective"),
+                    "allowed_paths": source.get("allowed_paths"),
+                    "validation_profile": source.get("validation_profile"),
+                    "validation_root": source.get("validation_root"),
+                    "resume_branch": None,
+                    "resume_pr_number": None,
+                    "resume_pr_head_sha": None,
+                    "replace_pr_number": None,
+                    "replace_pr_head_sha": None,
+                    "replace_pr_branch": None,
+                },
+                "_planning_inventory": inventory,
+            }
+            try:
+                self._reject_overlapping_proposal(proposal["ticket"], inventory)
+                self._build_ticket(
+                    "generated000", proposal, "continuous automation",
+                    fresh_start_authorized=True,
+                )
+            except (ControlError, SystemExit, ValueError):
+                continue
+            return proposal
+        return None
+
+    def _refill_backlog(
+        self, run_id: str, mode: str, brief: str, inventory: dict
+    ) -> dict:
+        """Generate several bounded contracts once, then select them without more planning calls."""
+
+        runtime = self.root / "agent" / "runtime"
+        runtime.mkdir(parents=True, exist_ok=True)
+        os.chmod(runtime, 0o700)
+        executable = ticket_runner.resolve_codex_executable()
+        if not executable:
+            raise ControlError("Codex CLI is unavailable")
+        schema_path = runtime / f"sol-backlog-schema-{run_id}.json"
+        output_path = runtime / f"sol-backlog-proposal-{run_id}.json"
+        validate_strict_output_schema(BACKLOG_SCHEMA)
+        schema_path.write_text(json.dumps(BACKLOG_SCHEMA, indent=2) + "\n", encoding="utf-8")
+        os.chmod(schema_path, 0o600)
+        windows_binary = executable.lower().endswith(".exe")
+        root_arg = self._command_path(self.root, windows_binary)
+        schema_arg = self._command_path(schema_path, windows_binary)
+        output_arg = self._command_path(output_path, windows_binary)
+        compact = {
+            "main": inventory.get("main_head"),
+            "completed": [
+                item.get("id") for item in inventory.get("planned_priorities") or []
+                if isinstance(item, dict) and item.get("status") == "completed"
+            ][-25:],
+            "recent": [
+                {key: item.get(key) for key in ("purpose", "impact", "changed_paths")}
+                for item in (inventory.get("recently_published") or [])[-12:]
+                if isinstance(item, dict)
+            ],
+            "queued": inventory.get("approval_queue") or [],
+            "open_prs": inventory.get("open_pull_requests") or [],
+        }
+        prompt = f"""Plan the next {GENERATED_BACKLOG_SIZE} small ordered implementation tickets for this
+Wesnoth Star Wars project. Read AGENTS.md and docs/PROJECT_CONTINUITY.md. Output only
+the schema JSON. Do not edit files or propose governance, dashboard, security, or
+already completed work. Tickets must be independently reviewable, narrowly scoped,
+safe to run sequentially from protected main, and use exact files or directory/**
+patterns. Use wesnoth-addon-static with the add-on root for game WML; otherwise use
+static-text and null. Prefer fast-fix only for unambiguous one- or two-file work.
+If no safe implementation sequence exists, return stop with an empty tickets list.
+Owner brief: {json.dumps(brief)}
+Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
+"""
+        command = [
+            executable, "exec", "-C", root_arg, "-s", "read-only",
+            "-m", "gpt-5.6-sol", "-c",
+            f'model_reasoning_effort="{VALID_MODES[mode]["effort"]}"',
+            "--ephemeral", "--ignore-user-config", "--color", "never",
+            "--output-schema", schema_arg, "-o", output_arg, "-",
+        ]
+        environment = {
+            key: value for key, value in os.environ.items()
+            if not SENSITIVE_ENV.search(key)
+        }
+        completed = subprocess.run(
+            command, cwd=self.root, env=environment, input=prompt, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            timeout=PLANNER_TIMEOUT_SECONDS, check=False,
+        )
+        if completed.returncode != 0:
+            raise ControlError(self._planner_failure_detail(completed))
+        try:
+            response = json.loads(output_path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError) as exc:
+            raise ControlError("Sol backlog planner returned no valid proposal") from exc
+        if response.get("action") == "stop":
+            return {
+                "action": "stop",
+                "summary": str(response.get("summary") or "No safe backlog can be generated"),
+                "impact": str(response.get("impact") or "Autonomous work remains paused."),
+                "ticket": None,
+                "_planning_inventory": inventory,
+            }
+        if response.get("action") != "refill" or not isinstance(response.get("tickets"), list):
+            raise ControlError("Sol backlog planner returned an unsupported action")
+
+        generation_id = uuid.uuid4().hex[:8]
+        accepted = []
+        for index, raw in enumerate(response["tickets"][:5], start=1):
+            if not isinstance(raw, dict):
+                continue
+            ticket_id = f"generated-{generation_id}-{index:02d}"
+            proposal = {
+                "action": "run_ticket",
+                "summary": f"{ticket_id}: {str(raw.get('summary') or '')}",
+                "impact": str(raw.get("impact") or ""),
+                "ticket": {
+                    "worker": raw.get("worker"),
+                    "objective": f"{ticket_id}: {str(raw.get('objective') or '')}",
+                    "allowed_paths": raw.get("allowed_paths"),
+                    "validation_profile": raw.get("validation_profile"),
+                    "validation_root": raw.get("validation_root"),
+                    "resume_branch": None,
+                    "resume_pr_number": None,
+                    "resume_pr_head_sha": None,
+                    "replace_pr_number": None,
+                    "replace_pr_head_sha": None,
+                    "replace_pr_branch": None,
+                },
+                "_planning_inventory": inventory,
+            }
+            try:
+                self._reject_overlapping_proposal(proposal["ticket"], inventory)
+                validated = self._build_ticket(
+                    run_id, proposal, brief, fresh_start_authorized=True,
+                )
+            except (ControlError, SystemExit, ValueError):
+                continue
+            accepted.append({
+                "id": ticket_id,
+                "summary": proposal["summary"],
+                "impact": proposal["impact"],
+                **{
+                    key: validated.get(key)
+                    for key in (
+                        "worker", "objective", "allowed_paths",
+                        "validation_profile", "validation_root",
+                    )
+                },
+            })
+        if not accepted:
+            raise ControlError("Sol backlog planner produced no safe bounded ticket contracts")
+        backlog_path = runtime / GENERATED_BACKLOG_FILE
+        temporary = backlog_path.with_suffix(f".{run_id}.tmp")
+        temporary.write_text(json.dumps({
+            "schema_version": 1,
+            "generation_id": generation_id,
+            "source_main_sha": inventory.get("main_head"),
+            "created_at": utc_now(),
+            "tickets": accepted,
+        }, indent=2) + "\n", encoding="utf-8")
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, backlog_path)
+        self.queue.event(
+            "Autonomous backlog replenished",
+            level="success",
+            detail=(
+                f"Sol generated {len(accepted)} bounded tickets in one compact call. "
+                "Python will select and revalidate them without additional planning calls."
+            ),
+        )
+        updated_inventory = dict(inventory)
+        updated_inventory["planned_priorities"] = self._planned_priorities(
+            inventory.get("recently_published") or []
+        )
+        proposal = self._next_generated_priority(updated_inventory)
+        if proposal is None:
+            raise ControlError("Generated backlog could not select its first safe ticket")
         return proposal
 
     @staticmethod
@@ -1684,7 +1958,15 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
     def _planned_priorities(
         self, recently_published: list[dict] | None = None
     ) -> list[dict[str, str]]:
-        """Return the repository-owned priority catalog as bounded planning data."""
+        """Return static and generated priorities as bounded planning data."""
+
+        published_history = [
+            item for item in self.queue.public_state()["records"]
+            if item.get("state") == "published"
+        ]
+        if recently_published is None:
+            recently_published = published_history
+        completion_evidence = [*published_history, *recently_published]
 
         path = self.root / "agent" / "dashboard" / "static" / "planned-tickets.json"
         try:
@@ -1706,11 +1988,11 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 all(isinstance(field, str) for field in (ticket_id, label, brief))
                 and status in {"pending", "completed"}
             ):
-                if status == "pending" and recently_published:
+                if status == "pending" and completion_evidence:
                     marker = ticket_id.casefold()
                     evidence = " ".join(
                         str(record.get(field) or "")
-                        for record in recently_published
+                        for record in completion_evidence
                         for field in ("purpose", "impact")
                     ).casefold()
                     if marker in evidence:
@@ -1720,7 +2002,31 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                     "label": label[:160],
                     "brief": brief[:1200],
                     "status": status,
+                    "source": "static",
                 })
+        for item in self._generated_backlog()["tickets"]:
+            if not isinstance(item, dict):
+                continue
+            ticket_id = item.get("id")
+            summary = item.get("summary")
+            objective = item.get("objective")
+            if not all(isinstance(field, str) and field for field in (
+                ticket_id, summary, objective,
+            )):
+                continue
+            marker = ticket_id.casefold()
+            evidence = " ".join(
+                str(record.get(field) or "")
+                for record in completion_evidence
+                for field in ("ticket_id", "purpose", "impact")
+            ).casefold()
+            planned.append({
+                "id": ticket_id[:80],
+                "label": summary[:160],
+                "brief": objective[:1200],
+                "status": "completed" if marker in evidence else "pending",
+                "source": "generated",
+            })
         return planned
 
     @staticmethod

@@ -40,6 +40,8 @@ def main() -> int:
     assert "WML/Lua IDs with sw_" in normalized_prompt
     assert "free non-commercial Wesnoth add-on distribution" in normalized_prompt
     assert "complete scoped Wesnoth-ready files or snippets" in normalized_prompt
+    assert "one compact Sol call may refill a small ticket backlog" in normalized_prompt
+    assert "without another planning call" in normalized_prompt
 
     print("Controlled files:", len(package["controlled_paths"]))
     print("Canonical LLM references:", len(references))
