@@ -24,6 +24,7 @@ from scenario_launch_selftest import find_wesnoth_executable
 
 IMPLEMENTER_TIMEOUT = 240
 TESTER_TIMEOUT = 180
+TERRA_TESTER_TIMEOUT = 300
 PRIMARY_REVIEWER_TIMEOUT = 75
 INTERMEDIATE_REVIEWER_TIMEOUT = 90
 FALLBACK_REVIEWER_TIMEOUT = 180
@@ -1271,7 +1272,7 @@ Treat available deterministic local facts as authoritative.
 Independently inspect the changed project files. Do not execute commands, edit files, or use the web.
 Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
 """.strip()
-    tester_rc, tester_output = invoke_managed_agent(
+    tester_primary_rc, tester_primary_output = invoke_managed_agent(
         policy=policy,
         run_sequence=run_sequence,
         status=status,
@@ -1283,7 +1284,62 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
         timeout=TESTER_TIMEOUT,
         decisive_verdicts=("PASS", "FAIL"),
     )
-    tester_pass = tester_rc == 0 and core.contains_verdict(tester_output, "PASS")
+    tester_primary_pass = (
+        tester_primary_rc == 0
+        and core.contains_verdict(tester_primary_output, "PASS")
+    )
+    tester_primary_fail = (
+        tester_primary_rc == 0
+        and core.contains_verdict(tester_primary_output, "FAIL")
+    )
+    tester_used = AGENT_MODELS["tester"]
+    tester_rc = tester_primary_rc
+    tester_output = tester_primary_output
+    tester_pass = tester_primary_pass
+    tester_terra_rc = None
+    tester_terra_pass = False
+    tester_terra_fail = False
+    terra_tested = False
+    if not tester_pass and not tester_primary_fail and not terra_implemented:
+        status.handoff("tester", "tester", "Terra Medium tester fallback activated")
+        status.set_assignment("tester", "OpenAI", "GPT-5.6 Terra · Medium")
+        status.set_worker("tester", "active", "Independent Terra fallback testing")
+        terra_tester_prompt = tester_prompt.replace(
+            "Do not execute commands, edit files, or use the web.",
+            "You may use read-only inspection commands. Do not edit files, run tests, "
+            "invoke another agent, or use the web.",
+        )
+        tester_terra_rc, tester_terra_output = invoke_managed_terra(
+            policy=policy,
+            run_sequence=run_sequence,
+            status=status,
+            worktree=worktree,
+            prompt=terra_tester_prompt,
+            log_file=log_dir / f"tester-terra{suffix}.txt",
+            sandbox="read-only",
+            timeout=TERRA_TESTER_TIMEOUT,
+            decisive_verdicts=("PASS", "FAIL"),
+        )
+        terra_tested = True
+        tester_terra_pass = (
+            tester_terra_rc == 0
+            and core.contains_verdict(tester_terra_output, "PASS")
+        )
+        tester_terra_fail = (
+            tester_terra_rc == 0
+            and core.contains_verdict(tester_terra_output, "FAIL")
+        )
+        tester_used = "openai/gpt-5.6-terra"
+        tester_rc = tester_terra_rc
+        tester_output = tester_terra_output
+        tester_pass = tester_terra_pass
+    elif not tester_pass and not tester_primary_fail and terra_implemented:
+        status.event(
+            "Terra tester fallback withheld",
+            level="warning",
+            source="coordinator",
+            detail="Terra implemented this candidate and cannot independently test its own work.",
+        )
     status.set_worker(
         "tester",
         "idle" if tester_pass else "error",
@@ -1293,7 +1349,7 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
     status.gate(
         "Independent tester",
         "pass" if tester_pass else "fail",
-        "PASS" if tester_pass else "FAIL or non-decisive response",
+        f"{tester_used}: " + ("PASS" if tester_pass else "FAIL or non-decisive response"),
     )
     if not tester_pass:
         return {
@@ -1301,9 +1357,23 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
             "exit_code": 11,
             "validation": validation,
             "tester_exit_code": tester_rc,
+            "tester_used": tester_used,
+            "tester_primary_exit_code": tester_primary_rc,
+            "tester_primary_pass": tester_primary_pass,
+            "tester_primary_fail": tester_primary_fail,
+            "tester_terra_exit_code": tester_terra_rc,
+            "tester_terra_pass": tester_terra_pass,
+            "tester_terra_fail": tester_terra_fail,
             "tester_pass": False,
             "reviewer_approve": None,
-            "failure": recovery_policy.classify_tester(tester_output, tester_rc),
+            "failure": (
+                recovery_policy.classify_tester(tester_output, tester_rc)
+                if tester_primary_fail or tester_terra_fail
+                else recovery_policy.classify_tester_fallback(
+                    tester_primary_rc,
+                    tester_terra_rc,
+                )
+            ),
         }
 
     status.handoff("tester", "reviewer", "Verified change sent to reviewer")
@@ -1324,7 +1394,7 @@ DETERMINISTIC VALIDATION:
 DETERMINISTIC LOCAL CONTEXT:
 {json.dumps(deterministic_context, separators=(',', ':'))}
 
-TESTER: exit code {tester_rc}; PASS={tester_pass}
+TESTER: {tester_used}; exit code {tester_rc}; PASS={tester_pass}
 
 Treat available deterministic local facts as authoritative.
 Perform an independent final review. Inspect the relevant changed files yourself.
@@ -1454,7 +1524,7 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
                     error="Nemotron was non-decisive and Google credentials are unavailable",
                 )
 
-    if not reviewer_approve and not decisive_changes and not terra_implemented:
+    if not reviewer_approve and not decisive_changes and not terra_implemented and not terra_tested:
         status.handoff("reviewer-fallback", "reviewer-fallback", "Terra final review activated")
         status.set_assignment("reviewer-fallback", "OpenAI", "GPT-5.6 Terra · Medium")
         status.set_worker("reviewer-fallback", "active", "Independent Terra final review")
@@ -1489,12 +1559,15 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
             "Approved" if terra_approve else "Terra final review did not approve",
             error=None if terra_approve else "Terra final reviewer was unavailable or requested changes",
         )
-    elif not reviewer_approve and not decisive_changes and terra_implemented:
+    elif not reviewer_approve and not decisive_changes and (terra_implemented or terra_tested):
         status.event(
             "Terra reviewer fallback withheld",
             level="warning",
             source="coordinator",
-            detail="Terra implemented this candidate and cannot independently review its own work.",
+            detail=(
+                "Terra already implemented or tested this candidate and cannot independently "
+                "review its own prior work."
+            ),
         )
 
     status.gate(
@@ -1507,6 +1580,13 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
         "exit_code": 0 if reviewer_approve else 12,
         "validation": validation,
         "tester_exit_code": tester_rc,
+        "tester_used": tester_used,
+        "tester_primary_exit_code": tester_primary_rc,
+        "tester_primary_pass": tester_primary_pass,
+        "tester_primary_fail": tester_primary_fail,
+        "tester_terra_exit_code": tester_terra_rc,
+        "tester_terra_pass": tester_terra_pass,
+        "tester_terra_fail": tester_terra_fail,
         "tester_pass": tester_pass,
         "reviewer_primary_exit_code": primary_rc,
         "reviewer_primary_approve": primary_approve,

@@ -187,7 +187,7 @@ Baseline routing:
 |---|---|---|
 | Implementer | Groq - `groq/openai/gpt-oss-120b`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Main bounded implementation work |
 | Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free` | Small mechanical corrections |
-| Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash` | Independent read-only test evaluation |
+| Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Independent read-only test evaluation |
 | Primary reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Preferred independent review |
 | Intermediate reviewer | Google - `google/gemini-3.8-flash` | First reviewer fallback for infrastructure/non-decisive primary failure |
 | Second fallback reviewer | Google - `google/gemini-3.6-flash` | Reviewer fallback when Nemotron and Gemini 3.8 Flash are unavailable or non-decisive |
@@ -200,6 +200,7 @@ Known provider observations:
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
 - When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
 - A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
+- When GLM-4.7 Flash is unavailable or returns no decisive tester verdict, the coordinator may invoke Terra Medium once as the independent read-only tester fallback. A substantive GLM `FAIL` remains authoritative and must not be bypassed. Terra must be withheld from testing when Terra implemented the candidate, and Terra must be withheld from final review when it already tested the candidate.
 - Implementer and Fast-Fix agents must inspect large source files through targeted search and reads of no more than 120 lines per call rather than requesting an entire large file. Tester/reviewer reads are bounded to 160 lines. This keeps provider context/token limits from turning ordinary scoped work into avoidable infrastructure failures.
 - A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. The reviewer order is Nemotron, Gemini 3.8 Flash, Gemini 3.6 Flash, then Terra Medium when reviewer independence permits it.
 - A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
@@ -414,13 +415,15 @@ Engine validation should become an automatic trusted coordinator gate rather tha
 
 ### Stage 5 - Tester
 
-A separate read-only model evaluates the implementation against the objective and available evidence.
+A separate read-only model evaluates the implementation against the objective and available evidence. GLM-4.7 Flash is primary. Terra Medium may run once when GLM is unavailable or non-decisive, provided Terra did not implement the candidate.
 
 Tester must not modify files or compensate for deterministic failures.
 
+**No tester shopping:** a substantive tester `FAIL` is a gate failure. The coordinator may use the fallback only for provider, timeout, circuit-open, malformed-output, or other non-decisive infrastructure conditions.
+
 ### Stage 6 - Reviewer
 
-Nemotron runs as the independent primary reviewer. Gemini 3.8 Flash is used only when Nemotron is unavailable or non-decisive due to infrastructure conditions such as timeout, quota failure, or malformed output. Gemini 3.6 Flash follows only when both earlier reviewers are unavailable or non-decisive. Terra Medium is the final reviewer fallback only when all three earlier reviewers are unavailable or non-decisive and Terra did not implement the candidate; a model must never review its own implementation.
+Nemotron runs as the independent primary reviewer. Gemini 3.8 Flash is used only when Nemotron is unavailable or non-decisive due to infrastructure conditions such as timeout, quota failure, or malformed output. Gemini 3.6 Flash follows only when both earlier reviewers are unavailable or non-decisive. Terra Medium is the final reviewer fallback only when all three earlier reviewers are unavailable or non-decisive and Terra did not implement or test the candidate; a model must never review its own implementation or prior testing.
 
 **No reviewer shopping:** if any reviewer substantively requests changes, the result is not sent to a later fallback solely to seek approval.
 

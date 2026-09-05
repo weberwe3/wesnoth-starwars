@@ -206,6 +206,31 @@ def classify_tester(output: str, return_code: int) -> dict[str, Any]:
     )
 
 
+def classify_tester_fallback(primary_rc: int, terra_rc: int | None) -> dict[str, Any]:
+    """Describe exhaustion of the independent tester provider chain."""
+
+    def reason(label: str, code: int | None) -> str:
+        if code is None:
+            return f"{label} was withheld because Terra implemented the candidate."
+        if code == 88:
+            return f"{label} was skipped because its provider-failure circuit is open."
+        if code == 127:
+            return f"{label} was unavailable to the secure runner."
+        if code == 124:
+            return f"{label} timed out."
+        if code == 0:
+            return f"{label} returned no decisive PASS or FAIL verdict."
+        return f"{label} exited with code {code}."
+
+    return _failure(
+        "tester_provider_failure",
+        reason("GLM-4.7 Flash tester", primary_rc)
+        + " " + reason("Terra Medium tester fallback", terra_rc),
+        "Allow the autonomous worktree retry policy to re-evaluate provider availability.",
+        eligible=False,
+    )
+
+
 def classify_reviewer(
     output: str,
     return_code: int | None,
