@@ -679,6 +679,24 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertEqual(proposal["ticket"]["resume_branch"], "agent/interrupted")
         self.assertIsNone(proposal["ticket"]["resume_pr_number"])
 
+    def test_equivalent_retries_resume_the_newest_worktree_without_sol(self) -> None:
+        contract = {
+            "worker": "implementer", "objective": "Continue fixture",
+            "allowed_paths": ["fixture.txt"], "validation_profile": "static-text",
+            "validation_root": None,
+        }
+        proposal = AutonomyController._single_resume_proposal({
+            "resumable_local_work": [
+                {**contract, "name": "agent/retry-20260904-120000", "previous_task_id": "OLD"},
+                {**contract, "name": "agent/retry-20260904-130000", "previous_task_id": "NEW"},
+            ],
+            "resumable_pull_requests": [],
+        })
+        self.assertEqual(
+            proposal["ticket"]["resume_branch"], "agent/retry-20260904-130000"
+        )
+        self.assertIn("NEW", proposal["summary"])
+
     def test_blocked_remnant_stops_before_sol_planning(self) -> None:
         proposal = AutonomyController._blocked_resume_proposal({
             "blocked_local_work": [{
@@ -689,6 +707,12 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertEqual(proposal["action"], "stop")
         self.assertIn("ENGINE-TEST", proposal["summary"])
         self.assertIn("out-of-scope", proposal["impact"])
+
+    def test_blocked_historical_remnant_does_not_hide_safe_resume(self) -> None:
+        self.assertIsNone(AutonomyController._blocked_resume_proposal({
+            "resumable_local_work": [{"name": "agent/safe"}],
+            "blocked_local_work": [{"previous_task_id": "OLD", "reason": "Preserved"}],
+        }))
 
     def test_unchanged_planning_decision_is_cached(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
