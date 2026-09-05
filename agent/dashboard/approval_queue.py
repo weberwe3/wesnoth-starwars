@@ -531,7 +531,10 @@ class ApprovalQueue:
             raise QueueError("Failed ticket no longer matches the selected commit")
         return {
             key: record.get(key)
-            for key in ("id", "ticket_id", "purpose", "impact", "branch", "commit_sha")
+            for key in (
+                "id", "ticket_id", "purpose", "impact", "branch", "commit_sha",
+                "pr_number", "pr_url",
+            )
         }
 
     def dismiss_failed(
