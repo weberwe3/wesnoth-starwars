@@ -26,11 +26,9 @@ IMPLEMENTER_TIMEOUT = 240
 TESTER_TIMEOUT = 300
 LUNA_TESTER_TIMEOUT = 300
 PRIMARY_REVIEWER_TIMEOUT = 75
-INTERMEDIATE_REVIEWER_TIMEOUT = 90
-FALLBACK_REVIEWER_TIMEOUT = 180
 RECOVERY_PLANNER_TIMEOUT = 300
 TERRA_IMPLEMENTER_TIMEOUT = 600
-TERRA_REVIEWER_TIMEOUT = 300
+LUNA_REVIEWER_TIMEOUT = 300
 MODEL_CIRCUIT_OPEN = 88
 
 VALID_WORKERS = {"implementer", "fast-fix"}
@@ -256,9 +254,10 @@ def invoke_terra(
 
 
 def invoke_luna(
-    *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int
+    *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
+    reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
-    """Run one sandboxed Luna Medium fallback through the Codex application."""
+    """Run one sandboxed Luna fallback through the Codex application."""
 
     executable = resolve_codex_executable()
     if not executable:
@@ -269,7 +268,7 @@ def invoke_luna(
     command = [
         executable, "exec", "-C", _codex_path(worktree, windows_binary),
         "-s", sandbox, "-m", "gpt-5.6-luna",
-        "-c", 'model_reasoning_effort="medium"',
+        "-c", f'model_reasoning_effort="{reasoning_effort}"',
         "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
         "--color", "never", "-",
     ]
@@ -351,28 +350,29 @@ def invoke_managed_luna(
     *, policy: ModelPolicy, run_sequence: int, status: RuntimeStatus,
     worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
     decisive_verdicts: tuple[str, ...] = (),
+    reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
     model = "openai/gpt-5.6-luna"
     available, wait = policy.before_attempt(model, run_sequence)
     if not available:
         output = (
-            "[COORDINATOR] Luna Medium skipped: provider-failure circuit remains open "
+            f"[COORDINATOR] Luna {reasoning_effort.title()} skipped: provider-failure circuit remains open "
             "for this worktree run.\n"
         )
         log_file.write_text(output, encoding="utf-8")
         status.event(
-            "Skipped Luna Medium", level="warning", source="coordinator",
+            f"Skipped Luna {reasoning_effort.title()}", level="warning", source="coordinator",
             detail="A recent Codex failure suppresses Luna for two later worktree runs.",
         )
         return MODEL_CIRCUIT_OPEN, output
     if wait:
         status.event(
-            "Rate-limit pacing delayed Luna Medium", source="coordinator",
+            f"Rate-limit pacing delayed Luna {reasoning_effort.title()}", source="coordinator",
             detail=f"Launch delayed {wait:.2f} seconds.",
         )
     rc, output = invoke_luna(
         worktree=worktree, prompt=prompt, log_file=log_file,
-        sandbox=sandbox, timeout=timeout,
+        sandbox=sandbox, timeout=timeout, reasoning_effort=reasoning_effort,
     )
     decisive = not decisive_verdicts or any(
         core.contains_verdict(output, verdict) for verdict in decisive_verdicts
@@ -603,6 +603,85 @@ def _read_git_changes_against(
 
 def read_git_changes(worktree: Path) -> tuple[list[str], list[str]]:
     return _read_git_changes_against(worktree, "main")
+
+
+def candidate_digest(worktree: Path) -> str:
+    """Fingerprint candidate contents without depending on its moving Git base."""
+
+    _, paths = read_git_changes(worktree)
+    digest = hashlib.sha256()
+    for relative in paths:
+        digest.update(relative.encode("utf-8") + b"\0")
+        path = worktree / relative
+        if not path.exists():
+            digest.update(b"deleted\0")
+            continue
+        if path.is_symlink() or not path.is_file():
+            digest.update(b"unsupported\0")
+            continue
+        digest.update(b"file\0")
+        with path.open("rb") as stream:
+            for block in iter(lambda: stream.read(65536), b""):
+                digest.update(block)
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def ticket_contract_digest(ticket: dict) -> str:
+    """Bind reusable evidence to the security-relevant ticket contract."""
+
+    contract = {
+        key: ticket.get(key)
+        for key in ("objective", "allowed_paths", "worker", "validation_profile", "validation_root")
+    }
+    encoded = json.dumps(contract, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def load_stage_checkpoint(
+    root: Path, branch: str, worktree: Path, ticket: dict
+) -> dict | None:
+    """Reuse successful gates only for an unchanged, previously failed candidate."""
+
+    current_digest = candidate_digest(worktree)
+    contract_digest = ticket_contract_digest(ticket)
+    results = sorted(
+        (root / "agent" / "logs").glob("*/result.json"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    for path in results:
+        try:
+            result = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if result.get("branch") != branch or result.get("final_verdict") != "FAIL":
+            continue
+        if result.get("ticket_contract_digest") != contract_digest:
+            return None
+        if result.get("candidate_digest") != current_digest:
+            return None
+        stage = result.get("resume_stage")
+        if stage not in {"tester", "reviewer"}:
+            return None
+        validation = result.get("validation")
+        if not isinstance(validation, dict) or validation.get("pass") is not True:
+            return None
+        if stage == "reviewer" and result.get("tester_pass") is not True:
+            return None
+        return {"stage": stage, "result": result, "source": str(path)}
+    return None
+
+
+def resumable_stage(evaluation: dict) -> str | None:
+    """Return the first failed model gate whose predecessors remain reusable."""
+
+    failure_class = (evaluation.get("failure") or {}).get("class")
+    if failure_class == "reviewer_provider_failure" and evaluation.get("tester_pass") is True:
+        return "reviewer"
+    if failure_class == "tester_provider_failure":
+        return "tester"
+    return None
 
 
 def read_resume_changes(worktree: Path) -> tuple[list[str], list[str]]:
@@ -1283,23 +1362,33 @@ def evaluate_candidate(
     log_dir: Path,
     governance_prompt: str,
     opencode: str,
-    google_available: bool,
     implementer_rc: int,
     attempt: int,
     policy: ModelPolicy,
     run_sequence: int,
-    terra_implemented: bool,
     implementation_failure: dict | None = None,
+    resume_checkpoint: dict | None = None,
 ) -> dict:
     suffix = "" if attempt == 0 else f"-recovery-{attempt}"
     task_id = ticket["task_id"]
+    resume_stage = resume_checkpoint.get("stage") if resume_checkpoint else None
+    prior = resume_checkpoint.get("result", {}) if resume_checkpoint else {}
     status.handoff(ticket["worker"] if attempt == 0 else "fast-fix", "validation", "Candidate sent to deterministic validation")
-    status.set_worker("validation", "active", "Running deterministic gates")
-    validation = run_validation(
-        worktree=worktree,
-        ticket=ticket,
-        implementer_rc=implementer_rc,
-    )
+    if resume_stage in {"tester", "reviewer"}:
+        validation = prior["validation"]
+        status.set_worker("validation", "idle", "Reused unchanged deterministic evidence")
+        status.event(
+            "Unchanged candidate resumed at failed model stage",
+            source="coordinator",
+            detail=f"Successful validation was reused; execution resumes at {resume_stage}.",
+        )
+    else:
+        status.set_worker("validation", "active", "Running deterministic gates")
+        validation = run_validation(
+            worktree=worktree,
+            ticket=ticket,
+            implementer_rc=implementer_rc,
+        )
     (log_dir / f"validation{suffix}.json").write_text(
         json.dumps(validation, indent=2) + "\n"
     )
@@ -1350,35 +1439,43 @@ Treat available deterministic local facts as authoritative.
 Independently inspect the changed project files. Do not execute commands, edit files, or use the web.
 Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
 """.strip()
-    tester_primary_rc, tester_primary_output = invoke_managed_agent(
-        policy=policy,
-        run_sequence=run_sequence,
-        status=status,
-        opencode=opencode,
-        worktree=worktree,
-        agent="tester",
-        prompt=tester_prompt,
-        log_file=log_dir / f"tester{suffix}.jsonl",
-        timeout=TESTER_TIMEOUT,
-        decisive_verdicts=("PASS", "FAIL"),
-    )
-    tester_primary_pass = (
-        tester_primary_rc == 0
-        and core.contains_verdict(tester_primary_output, "PASS")
-    )
-    tester_primary_fail = (
-        tester_primary_rc == 0
-        and core.contains_verdict(tester_primary_output, "FAIL")
-    )
-    tester_used = AGENT_MODELS["tester"]
-    tester_rc = tester_primary_rc
-    tester_output = tester_primary_output
-    tester_pass = tester_primary_pass
-    tester_luna_rc = None
+    tester_primary_rc = prior.get("tester_primary_exit_code") if resume_stage == "reviewer" else None
+    tester_primary_output = ""
+    tester_primary_pass = bool(prior.get("tester_primary_pass")) if resume_stage == "reviewer" else False
+    tester_primary_fail = bool(prior.get("tester_primary_fail")) if resume_stage == "reviewer" else False
+    tester_used = prior.get("tester_used", AGENT_MODELS["tester"]) if resume_stage == "reviewer" else AGENT_MODELS["tester"]
+    tester_rc = prior.get("tester_exit_code") if resume_stage == "reviewer" else None
+    tester_output = ""
+    tester_pass = bool(prior.get("tester_pass")) if resume_stage == "reviewer" else False
+    tester_luna_rc = prior.get("tester_luna_exit_code") if resume_stage == "reviewer" else None
     tester_luna_output = ""
-    tester_luna_pass = False
-    tester_luna_fail = False
-    if not tester_pass and not tester_primary_fail:
+    tester_luna_pass = bool(prior.get("tester_luna_pass")) if resume_stage == "reviewer" else False
+    tester_luna_fail = bool(prior.get("tester_luna_fail")) if resume_stage == "reviewer" else False
+    if resume_stage != "reviewer":
+        tester_primary_rc, tester_primary_output = invoke_managed_agent(
+            policy=policy,
+            run_sequence=run_sequence,
+            status=status,
+            opencode=opencode,
+            worktree=worktree,
+            agent="tester",
+            prompt=tester_prompt,
+            log_file=log_dir / f"tester{suffix}.jsonl",
+            timeout=TESTER_TIMEOUT,
+            decisive_verdicts=("PASS", "FAIL"),
+        )
+        tester_primary_pass = (
+            tester_primary_rc == 0
+            and core.contains_verdict(tester_primary_output, "PASS")
+        )
+        tester_primary_fail = (
+            tester_primary_rc == 0
+            and core.contains_verdict(tester_primary_output, "FAIL")
+        )
+        tester_rc = tester_primary_rc
+        tester_output = tester_primary_output
+        tester_pass = tester_primary_pass
+    if resume_stage != "reviewer" and not tester_pass and not tester_primary_fail:
         status.handoff("tester", "tester", "Luna Medium tester fallback activated")
         status.set_assignment("tester", "OpenAI", "GPT-5.6 Luna · Medium")
         status.set_worker("tester", "active", "Independent Luna fallback testing")
@@ -1492,18 +1589,10 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
     primary_approve = primary_rc == 0 and core.contains_verdict(primary_output, "APPROVE")
     primary_request_changes = primary_rc == 0 and core.contains_verdict(primary_output, "REQUEST_CHANGES")
 
-    intermediate_rc = None
-    intermediate_output = ""
-    intermediate_approve = False
-    intermediate_request_changes = False
-    fallback_rc = None
-    fallback_output = ""
-    fallback_approve = False
-    fallback_request_changes = False
-    terra_rc = None
-    terra_output = ""
-    terra_approve = False
-    terra_request_changes = False
+    luna_reviewer_rc = None
+    luna_reviewer_output = ""
+    luna_reviewer_approve = False
+    luna_reviewer_request_changes = False
     reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
     reviewer_approve = False
     decisive_output = primary_output
@@ -1525,121 +1614,44 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
         status.set_worker("reviewer", "idle", "Approved")
     else:
         status.set_worker("reviewer", "waiting", "Unavailable or non-decisive")
-        if google_available:
-            status.handoff("reviewer", "reviewer-fallback", "Intermediate review activated")
-            status.set_assignment("reviewer-fallback", "Google", "gemini-3.8-flash")
-            status.set_worker("reviewer-fallback", "active", "Independent intermediate review")
-            intermediate_rc, intermediate_output = invoke_managed_agent(
-                policy=policy,
-                run_sequence=run_sequence,
-                status=status,
-                opencode=opencode,
-                worktree=worktree,
-                agent="reviewer-intermediate",
-                prompt=reviewer_prompt,
-                log_file=log_dir / f"reviewer-intermediate{suffix}.jsonl",
-                timeout=INTERMEDIATE_REVIEWER_TIMEOUT,
-                decisive_verdicts=("APPROVE", "REQUEST_CHANGES"),
-            )
-            intermediate_approve = intermediate_rc == 0 and core.contains_verdict(intermediate_output, "APPROVE")
-            intermediate_request_changes = intermediate_rc == 0 and core.contains_verdict(intermediate_output, "REQUEST_CHANGES")
-        if intermediate_request_changes:
-            reviewer_used = "google/gemini-3.8-flash"
-            reviewer_approve = False
-            decisive_output = intermediate_output
-            decisive_rc = intermediate_rc
-            decisive_changes = True
-            status.set_worker("reviewer-fallback", "error", "Changes requested", error="Intermediate reviewer requested changes")
-        elif intermediate_approve:
-            reviewer_used = "google/gemini-3.8-flash"
-            reviewer_approve = True
-            decisive_output = intermediate_output
-            decisive_rc = intermediate_rc
-            decisive_changes = False
-            status.set_worker("reviewer-fallback", "idle", "Approved")
-        else:
-            status.set_worker("reviewer-fallback", "waiting", "Intermediate unavailable or non-decisive")
-            if google_available:
-                status.handoff("reviewer-fallback", "reviewer-fallback", "Final fallback review activated")
-                status.set_assignment("reviewer-fallback", "Google", "gemini-3.6-flash")
-                status.set_worker("reviewer-fallback", "active", "Independent final fallback review")
-                fallback_rc, fallback_output = invoke_managed_agent(
-                    policy=policy,
-                    run_sequence=run_sequence,
-                    status=status,
-                    opencode=opencode,
-                    worktree=worktree,
-                    agent="reviewer-fallback",
-                    prompt=reviewer_prompt,
-                    log_file=log_dir / f"reviewer-fallback{suffix}.jsonl",
-                    timeout=FALLBACK_REVIEWER_TIMEOUT,
-                    decisive_verdicts=("APPROVE", "REQUEST_CHANGES"),
-                )
-                fallback_approve = fallback_rc == 0 and core.contains_verdict(fallback_output, "APPROVE")
-                fallback_request_changes = fallback_rc == 0 and core.contains_verdict(fallback_output, "REQUEST_CHANGES")
-                reviewer_used = "google/gemini-3.6-flash"
-                reviewer_approve = fallback_approve
-                decisive_output = fallback_output
-                decisive_rc = fallback_rc
-                decisive_changes = fallback_request_changes
-                status.set_worker(
-                    "reviewer-fallback",
-                    "idle" if fallback_approve else "error",
-                    "Approved" if fallback_approve else "Final fallback review rejected change",
-                    error=None if fallback_approve else "Final fallback reviewer did not approve",
-                )
-            else:
-                status.set_worker(
-                    "reviewer-fallback",
-                    "error",
-                    "Google fallbacks unavailable",
-                    error="Nemotron was non-decisive and Google credentials are unavailable",
-                )
-
-    if not reviewer_approve and not decisive_changes and not terra_implemented:
-        status.handoff("reviewer-fallback", "reviewer-fallback", "Terra final review activated")
-        status.set_assignment("reviewer-fallback", "OpenAI", "GPT-5.6 Terra · Medium")
-        status.set_worker("reviewer-fallback", "active", "Independent Terra final review")
-        terra_reviewer_prompt = reviewer_prompt.replace(
+        status.handoff("reviewer", "reviewer-fallback", "Luna Light review activated")
+        status.set_assignment("reviewer-fallback", "OpenAI", "GPT-5.6 Luna · Light")
+        status.set_worker("reviewer-fallback", "active", "Independent Luna Light review")
+        luna_reviewer_prompt = reviewer_prompt.replace(
             "Do not execute commands, edit files, invoke another agent, or use the web.",
             "You may use read-only inspection commands. Do not edit files, invoke another "
             "agent, run tests, or use the web.",
         )
-        terra_rc, terra_output = invoke_managed_terra(
+        luna_reviewer_rc, luna_reviewer_output = invoke_managed_luna(
             policy=policy,
             run_sequence=run_sequence,
             status=status,
             worktree=worktree,
-            prompt=terra_reviewer_prompt,
-            log_file=log_dir / f"reviewer-terra{suffix}.txt",
+            prompt=luna_reviewer_prompt,
+            log_file=log_dir / f"reviewer-luna{suffix}.txt",
             sandbox="read-only",
-            timeout=TERRA_REVIEWER_TIMEOUT,
+            timeout=LUNA_REVIEWER_TIMEOUT,
             decisive_verdicts=("APPROVE", "REQUEST_CHANGES"),
+            reasoning_effort="low",
         )
-        terra_approve = terra_rc == 0 and core.contains_verdict(terra_output, "APPROVE")
-        terra_request_changes = terra_rc == 0 and core.contains_verdict(
-            terra_output, "REQUEST_CHANGES"
+        luna_reviewer_approve = (
+            luna_reviewer_rc == 0
+            and core.contains_verdict(luna_reviewer_output, "APPROVE")
         )
-        reviewer_used = "openai/gpt-5.6-terra"
-        reviewer_approve = terra_approve
-        decisive_output = terra_output
-        decisive_rc = terra_rc
-        decisive_changes = terra_request_changes
+        luna_reviewer_request_changes = (
+            luna_reviewer_rc == 0
+            and core.contains_verdict(luna_reviewer_output, "REQUEST_CHANGES")
+        )
+        reviewer_used = "openai/gpt-5.6-luna"
+        reviewer_approve = luna_reviewer_approve
+        decisive_output = luna_reviewer_output
+        decisive_rc = luna_reviewer_rc
+        decisive_changes = luna_reviewer_request_changes
         status.set_worker(
             "reviewer-fallback",
-            "idle" if terra_approve else "error",
-            "Approved" if terra_approve else "Terra final review did not approve",
-            error=None if terra_approve else "Terra final reviewer was unavailable or requested changes",
-        )
-    elif not reviewer_approve and not decisive_changes and terra_implemented:
-        status.event(
-            "Terra reviewer fallback withheld",
-            level="warning",
-            source="coordinator",
-            detail=(
-                "Terra already implemented or tested this candidate and cannot independently "
-                "review its own prior work."
-            ),
+            "idle" if luna_reviewer_approve else "error",
+            "Approved" if luna_reviewer_approve else "Luna Light review did not approve",
+            error=None if luna_reviewer_approve else "Luna Light reviewer was unavailable or requested changes",
         )
 
     status.gate(
@@ -1663,15 +1675,15 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
         "reviewer_primary_exit_code": primary_rc,
         "reviewer_primary_approve": primary_approve,
         "reviewer_primary_request_changes": primary_request_changes,
-        "reviewer_intermediate_exit_code": intermediate_rc,
-        "reviewer_intermediate_approve": intermediate_approve,
-        "reviewer_intermediate_request_changes": intermediate_request_changes,
-        "reviewer_fallback_exit_code": fallback_rc,
-        "reviewer_fallback_approve": fallback_approve,
-        "reviewer_fallback_request_changes": fallback_request_changes,
-        "reviewer_terra_exit_code": terra_rc,
-        "reviewer_terra_approve": terra_approve,
-        "reviewer_terra_request_changes": terra_request_changes,
+        "reviewer_intermediate_exit_code": None,
+        "reviewer_intermediate_approve": False,
+        "reviewer_intermediate_request_changes": False,
+        "reviewer_fallback_exit_code": luna_reviewer_rc,
+        "reviewer_fallback_approve": luna_reviewer_approve,
+        "reviewer_fallback_request_changes": luna_reviewer_request_changes,
+        "reviewer_luna_exit_code": luna_reviewer_rc,
+        "reviewer_luna_approve": luna_reviewer_approve,
+        "reviewer_luna_request_changes": luna_reviewer_request_changes,
         "reviewer_used": reviewer_used,
         "reviewer_approve": reviewer_approve,
     }
@@ -1703,7 +1715,7 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
         status.fail_system("Ticket runner stopped: OpenCode unavailable")
         return 3
 
-    google_available = core.provider_preflight()
+    core.provider_preflight()
 
     timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     task_id = ticket["task_id"]
@@ -1860,67 +1872,87 @@ Implement the smallest change that completely satisfies the objective.
 Return your normal structured implementation report.
 """.strip()
 
-    terra_available_at_start = (
-        resolve_codex_executable() is not None if ticket["worker"] == "implementer" else None
+    stage_checkpoint = (
+        load_stage_checkpoint(root, branch, worktree, ticket) if resume_branch else None
     )
-    if terra_available_at_start is False:
+    if stage_checkpoint:
+        prior = stage_checkpoint["result"]
+        impl_rc = int(prior.get("implementation_exit_code", 0))
+        primary_impl_rc = int(prior.get("primary_implementation_exit_code", impl_rc))
+        terra_fallback = prior.get("terra_implementer_fallback") or {
+            "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
+            "reasoning_effort": "medium", "available_at_start": None,
+            "exit_code": None,
+        }
+        implementation_failure = None
+        status.set_worker(ticket["worker"], "idle", "Unchanged implementation reused")
         status.event(
-            "Terra fallback preflight unavailable",
-            level="warning",
-            detail="The secure runner could not resolve its launcher-provided Codex executable.",
+            f"Resuming at {stage_checkpoint['stage']} stage",
             source="coordinator",
+            detail="Implementation and successful earlier gates were not rerun.",
         )
-
-    impl_rc, impl_output = invoke_managed_agent(
-        policy=model_policy,
-        run_sequence=run_sequence,
-        status=status,
-        opencode=opencode,
-        worktree=worktree,
-        agent=ticket["worker"],
-        prompt=implementation_prompt,
-        log_file=log_dir / "implementer.jsonl",
-        timeout=IMPLEMENTER_TIMEOUT,
-    )
-
-    primary_impl_rc = impl_rc
-    implementation_failure = None
-    terra_fallback = {
-        "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
-        "reasoning_effort": "medium", "available_at_start": terra_available_at_start,
-        "exit_code": None,
-    }
-    if recovery_policy.should_use_terra_fallback(ticket["worker"], impl_rc, False):
-        terra_fallback["used"] = True
-        status.handoff("coordinator", "implementer", "GPT-OSS to Terra Medium fallback")
-        status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
-        status.set_worker("implementer", "active", "Running single Terra fallback")
-        terra_prompt = implementation_prompt.replace(
-            "Do not execute commands or tests.",
-            "You may use read-only inspection commands and apply patches. Do not run tests, "
-            "package managers, network commands, or Git write commands.",
+    else:
+        terra_available_at_start = (
+            resolve_codex_executable() is not None if ticket["worker"] == "implementer" else None
         )
-        terra_rc, terra_output = invoke_managed_terra(
+        if terra_available_at_start is False:
+            status.event(
+                "Terra fallback preflight unavailable",
+                level="warning",
+                detail="The secure runner could not resolve its launcher-provided Codex executable.",
+                source="coordinator",
+            )
+
+        impl_rc, impl_output = invoke_managed_agent(
             policy=model_policy,
             run_sequence=run_sequence,
             status=status,
+            opencode=opencode,
             worktree=worktree,
-            prompt=terra_prompt,
-            log_file=log_dir / "implementer-terra-fallback.txt",
-            sandbox="workspace-write",
-            timeout=TERRA_IMPLEMENTER_TIMEOUT,
+            agent=ticket["worker"],
+            prompt=implementation_prompt,
+            log_file=log_dir / "implementer.jsonl",
+            timeout=IMPLEMENTER_TIMEOUT,
         )
-        terra_fallback["exit_code"] = terra_rc
-        if terra_rc != 0:
-            implementation_failure = recovery_policy.classify_implementer_fallback(
-                impl_output, primary_impl_rc, terra_output, terra_rc
+
+        primary_impl_rc = impl_rc
+        implementation_failure = None
+        terra_fallback = {
+            "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
+            "reasoning_effort": "medium", "available_at_start": terra_available_at_start,
+            "exit_code": None,
+        }
+        if recovery_policy.should_use_terra_fallback(ticket["worker"], impl_rc, False):
+            terra_fallback["used"] = True
+            status.handoff("coordinator", "implementer", "GPT-OSS to Terra Medium fallback")
+            status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
+            status.set_worker("implementer", "active", "Running single Terra fallback")
+            terra_prompt = implementation_prompt.replace(
+                "Do not execute commands or tests.",
+                "You may use read-only inspection commands and apply patches. Do not run tests, "
+                "package managers, network commands, or Git write commands.",
             )
-        impl_rc = 0 if terra_rc == 0 else recovery_policy.TERRA_FALLBACK_FAILURE
-        status.set_worker(
-            "implementer", "idle" if terra_rc == 0 else "error",
-            "Terra fallback returned" if terra_rc == 0 else "Terra fallback failed",
-            error=None if terra_rc == 0 else f"Terra exited with code {terra_rc}",
-        )
+            terra_rc, terra_output = invoke_managed_terra(
+                policy=model_policy,
+                run_sequence=run_sequence,
+                status=status,
+                worktree=worktree,
+                prompt=terra_prompt,
+                log_file=log_dir / "implementer-terra-fallback.txt",
+                sandbox="workspace-write",
+                timeout=TERRA_IMPLEMENTER_TIMEOUT,
+            )
+            terra_fallback["exit_code"] = terra_rc
+            if terra_rc != 0:
+                implementation_failure = recovery_policy.classify_implementer_fallback(
+                    impl_output, primary_impl_rc, terra_output, terra_rc
+                )
+            impl_rc = 0 if terra_rc == 0 else recovery_policy.TERRA_FALLBACK_FAILURE
+            status.set_worker(
+                "implementer", "idle" if terra_rc == 0 else "error",
+                "Terra fallback returned" if terra_rc == 0 else "Terra fallback failed",
+                error=None if terra_rc == 0 else f"Terra exited with code {terra_rc}",
+            )
 
     print(f"[2/5] Implementation exit code: {impl_rc}")
     status.set_worker(
@@ -1939,15 +1971,12 @@ Return your normal structured implementation report.
             log_dir=log_dir,
             governance_prompt=governance_prompt,
             opencode=opencode,
-            google_available=google_available,
             implementer_rc=impl_rc,
             attempt=attempt,
             policy=model_policy,
             run_sequence=run_sequence,
-            terra_implemented=(
-                terra_fallback["used"] and terra_fallback["exit_code"] == 0
-            ),
             implementation_failure=implementation_failure if attempt == 0 else None,
+            resume_checkpoint=stage_checkpoint if attempt == 0 else None,
         )
         if attempt and recovery_attempts:
             recovery_attempts[-1]["changed_paths"] = (
@@ -1970,6 +1999,9 @@ Return your normal structured implementation report.
                 "terra_implementer_fallback": terra_fallback,
                 **{key: value for key, value in evaluation.items() if key not in {"pass", "exit_code"}},
                 "recovery_attempts": recovery_attempts,
+                "candidate_digest": candidate_digest(worktree),
+                "ticket_contract_digest": ticket_contract_digest(ticket),
+                "resume_stage": None,
                 "final_verdict": "PASS",
                 "commit_created": False,
                 "merge_performed": False,
@@ -2002,6 +2034,9 @@ Return your normal structured implementation report.
                 **{key: value for key, value in evaluation.items() if key not in {"pass", "exit_code"}},
                 "failure": failure,
                 "recovery_attempts": recovery_attempts,
+                "candidate_digest": candidate_digest(worktree),
+                "ticket_contract_digest": ticket_contract_digest(ticket),
+                "resume_stage": resumable_stage({**evaluation, "failure": failure}),
                 "final_verdict": "FAIL",
                 "commit_created": False,
                 "merge_performed": False,
@@ -2060,6 +2095,9 @@ Return your normal structured implementation report.
                 "terra_implementer_fallback": terra_fallback,
                 **evaluation,
                 "recovery_attempts": recovery_attempts, "final_verdict": "FAIL",
+                "candidate_digest": candidate_digest(worktree),
+                "ticket_contract_digest": ticket_contract_digest(ticket),
+                "resume_stage": resumable_stage(evaluation),
                 "commit_created": False, "merge_performed": False,
             }
             save_result(log_dir, result)

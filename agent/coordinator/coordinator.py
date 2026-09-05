@@ -126,11 +126,6 @@ def provider_preflight() -> bool:
         if not os.environ.get(name)
     ]
 
-    google_available = bool(
-        os.environ.get("GOOGLE_GENERATIVE_AI_API_KEY")
-        or os.environ.get("GEMINI_API_KEY")
-    )
-
     print("PROVIDER PREFLIGHT:")
     print(
         "  Groq:       "
@@ -147,10 +142,7 @@ def provider_preflight() -> bool:
             else "MISSING"
         )
     )
-    print(
-        "  Google:     "
-        + ("PRESENT" if google_available else "MISSING — fallback only")
-    )
+    print("  Google:     DISABLED — free-tier reviewer route is not reliable")
     print()
 
     if missing:
@@ -163,7 +155,7 @@ def provider_preflight() -> bool:
         )
         raise SystemExit(6)
 
-    return google_available
+    return False
 
 
 def verify_main_baseline(root: Path) -> None:

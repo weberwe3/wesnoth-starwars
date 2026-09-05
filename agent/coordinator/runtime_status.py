@@ -45,8 +45,8 @@ ROLE_ASSIGNMENTS = {
     },
     "reviewer-fallback": {
         "label": "Reviewer-Fallback",
-        "provider": "Unknown",
-        "model": "Unknown — configuration not verified",
+        "provider": "OpenAI",
+        "model": "GPT-5.6 Luna · Light",
     },
 }
 
@@ -64,7 +64,6 @@ def _configured_assignments(root: Path | None) -> dict[str, dict[str, str]]:
         "fast-fix": "fast-fix.md",
         "tester": "tester.md",
         "reviewer": "reviewer.md",
-        "reviewer-fallback": "reviewer-intermediate.md",
     }
     provider_names = {
         "groq": "Groq",

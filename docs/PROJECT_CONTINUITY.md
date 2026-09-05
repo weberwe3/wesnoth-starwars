@@ -281,9 +281,7 @@ Intended system roles:
 - **free/low-cost hosted worker LLMs** — bounded implementation work in isolated branches/worktrees;
 - **tester LLM** — independent inspection after deterministic gates;
 - **reviewer LLM** — final independent model review;
-- **intermediate reviewer** — Gemini 3.8 Flash only when the primary Nemotron reviewer is unavailable/non-decisive for infrastructure reasons;
-- **second fallback reviewer** — Gemini 3.6 Flash only when Nemotron and Gemini 3.8 Flash are unavailable/non-decisive for infrastructure reasons;
-- **final fallback reviewer** — Terra Medium only when all earlier reviewers are unavailable/non-decisive and Terra did not implement the candidate.
+- **reviewer fallback** — GPT-5.6 Luna Light only when the primary Nemotron reviewer is unavailable/non-decisive for infrastructure reasons.
 
 Workers do not control `main`.
 
@@ -323,16 +321,12 @@ Routing used during the infrastructure baseline:
 - fast-fix: `opencode/ling-3.0-flash-fin-free`
 - tester: `cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash`
 - primary reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
-- intermediate reviewer: `google/gemini-3.8-flash`
-- second fallback reviewer: `google/gemini-3.6-flash`
-- final fallback reviewer: `openai/gpt-5.6-terra` at medium reasoning, subject to reviewer independence
+- reviewer fallback: Codex `openai/gpt-5.6-luna` at low reasoning through the local Codex application
 
 Observed behavior:
 
-- Google reviewers may encounter free-tier quota/429/timeouts;
-- Gemini 3.8 Flash is the only intermediate reviewer when Nemotron has an infrastructure/unavailability/non-decisive failure;
-- Gemini 3.6 Flash follows only when Nemotron and Gemini 3.8 Flash have infrastructure/unavailability/non-decisive failures;
-- Terra Medium is the final reviewer fallback only after all three hosted reviewers are unavailable/non-decisive and only if Terra did not implement that candidate;
+- Google reviewers are disabled in unattended routing because Gemini 3.6 repeatedly exhausted its 20-request project free-tier daily allowance and Gemini 3.8 also produced protocol and timeout failures;
+- Luna Light follows Nemotron only for infrastructure/unavailability/non-decisive failures;
 - model launches use published free-tier ceilings where universal values exist (Groq GPT-OSS 30 RPM, NVIDIA Nemotron 40 RPM, Cloudflare GLM 300 RPM), while account/project-specific quotas remain provider-managed;
 - a provider/process/timeout/non-decisive failure suppresses that model for the next two worktree runs, while a valid negative verdict does not;
 - a substantive `REQUEST_CHANGES` from any reviewer must not be bypassed by a later fallback.
@@ -971,6 +965,8 @@ When updating this file:
 | 2026-09-05 | DASH-019 model resilience | Pace model launches at published free-tier ceilings, persist a two-worktree-run circuit after provider failures, and add independent Terra Medium as the final reviewer fallback |
 | 2026-09-05 | DASH-020 autonomous failure resolution | Prove and fast-forward dirty unfinished work when current-main changes are disjoint, supply installed-engine facts to bounded recovery, and retry a recoverable preserved worktree up to three consecutive autonomous runs before a detailed fail-closed pause |
 | 2026-09-05 | DASH-021 tester resilience | Route unavailable or non-decisive GLM tester runs to one read-only Terra Medium fallback while prohibiting tester shopping and model self-testing/self-review |
+| 2026-09-05 | DASH-022 through DASH-024 provider resilience | Extend slow tester execution time, canonicalize directory scopes, block Cloudflare after daily free-allocation exhaustion until its UTC reset, and use Luna Medium as the independent tester fallback |
+| 2026-09-05 | DASH-025 stage-local model recovery | Remove unreliable Google free-tier reviewers from autonomous routing, use Luna Light after Nemotron, and resume unchanged failed candidates at Tester or Reviewer without replaying successful earlier stages |
 
 ---
 
@@ -979,3 +975,5 @@ When updating this file:
 At this snapshot, resume-state hardening is merged through PR #30. The subsequent scenario-validation attempt exposed three independent issues: GPT-OSS exceeded Groq's 8K request limit after requesting oversized source reads; the secure launcher did not expose the installed Codex executable to Terra; and the inherited ticket contract targeted protected coordinator paths that autonomous workers may never modify. DASH-017 addressed those infrastructure defects without weakening protection, but a real secure-run regression showed that launcher forwarding alone was not reliable across the nested Windows-to-WSL process boundary. DASH-018 makes Sol planning and Terra use the same hardened resolver and adds a bounded fallback lookup for the verified current user's Codex installation even when the secure process has an intentionally stripped PATH. DASH-019 adds free-tier-aware model launch pacing, a persistent two-worktree-run circuit for provider/process/timeout/non-decisive failures, and a final independent Terra Medium reviewer after Nemotron, Gemini 3.8 Flash, and Gemini 3.6 Flash. DASH-020 safely resumes disjoint dirty work and adds a three-run per-worktree failure ceiling. The next real failure showed GLM-4.7 Flash being correctly skipped by its provider circuit with code 88, but the tester stage had no independent fallback and exhausted the worktree limit without evaluating the candidate. DASH-021 adds one read-only Terra Medium tester fallback for unavailable or non-decisive GLM runs. A substantive GLM `FAIL` remains authoritative, Terra cannot test its own implementation, and a Terra tester cannot later act as the independent Terra reviewer. Security, scope, repository, reconciliation, deletion-approval, and publication boundaries still stop immediately. Exact-commit publication and file-deletion approval remain manual boundaries.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.
+
+The current reviewer route is Nemotron followed immediately by a read-only GPT-5.6 Luna Light fallback. Gemini 3.6 Flash repeatedly exhausted the project's 20-request daily free allowance, while Gemini 3.8 Flash also produced protocol and timeout failures; neither Google model remains in unattended reviewer routing. Provider-only Tester or Reviewer failures now record the candidate-content digest and the first failed stage. A later resume may reuse earlier gate evidence only when that digest is unchanged; any candidate-content change invalidates the checkpoint and restores full validation.
