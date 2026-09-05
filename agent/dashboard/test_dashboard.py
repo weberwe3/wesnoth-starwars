@@ -1208,7 +1208,8 @@ class ModelPolicyTests(unittest.TestCase):
             ],
             300,
         )
-        self.assertIsNone(model_policy.MODEL_RPM["google/gemini-3.8-flash"])
+        self.assertNotIn("google/gemini-3.8-flash", model_policy.MODEL_RPM)
+        self.assertNotIn("google/gemini-3.6-flash", model_policy.MODEL_RPM)
         self.assertIsNone(model_policy.MODEL_RPM["openai/gpt-5.6-luna"])
 
     def test_cloudflare_daily_neuron_exhaustion_is_quota_failure(self) -> None:
@@ -1311,10 +1312,8 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         self,
         responses: list[tuple[int, str]],
         *,
-        google_available: bool = True,
-        terra_response: tuple[int, str] = (1, "Terra unavailable"),
         luna_response: tuple[int, str] = (1, "Luna unavailable"),
-        terra_implemented: bool = False,
+        resume_checkpoint: dict | None = None,
     ) -> tuple[dict, list[str]]:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
@@ -1332,8 +1331,6 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             with mock.patch.object(ticket_runner, "run_validation", return_value={"pass": True}), mock.patch.object(
                 ticket_runner, "invoke_agent", side_effect=invoke
             ), mock.patch.object(
-                ticket_runner, "invoke_terra", return_value=terra_response
-            ), mock.patch.object(
                 ticket_runner, "invoke_luna", return_value=luna_response
             ):
                 result = ticket_runner.evaluate_candidate(
@@ -1348,12 +1345,11 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
                     log_dir=log_dir,
                     governance_prompt="Controlled references loaded.",
                     opencode="opencode",
-                    google_available=google_available,
                     implementer_rc=0,
                     attempt=0,
                     policy=policy,
                     run_sequence=run_sequence,
-                    terra_implemented=terra_implemented,
+                    resume_checkpoint=resume_checkpoint,
                 )
             return result, invoked
 
@@ -1402,112 +1398,132 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
                 (0, "VERDICT: APPROVE"),
             ],
             luna_response=(0, "VERDICT: PASS"),
-            terra_implemented=True,
         )
         self.assertTrue(result["pass"])
         self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
         self.assertEqual(result["tester_luna_exit_code"], 0)
         self.assertEqual(invoked, ["tester", "reviewer"])
 
-    def test_luna_tester_allows_independent_terra_reviewer(self) -> None:
+    def test_luna_light_reviews_after_non_decisive_nemotron(self) -> None:
         result, invoked = self._evaluate(
             [
-                (ticket_runner.MODEL_CIRCUIT_OPEN, "tester circuit open"),
+                (0, "VERDICT: PASS"),
                 (1, "primary reviewer unavailable"),
-                (1, "intermediate reviewer unavailable"),
-                (1, "fallback reviewer unavailable"),
             ],
-            luna_response=(0, "VERDICT: PASS"),
-            terra_response=(0, "VERDICT: APPROVE"),
+            luna_response=(0, "VERDICT: APPROVE"),
         )
         self.assertTrue(result["pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
-        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-terra")
-        self.assertEqual(result["reviewer_terra_exit_code"], 0)
-        self.assertEqual(
-            invoked,
-            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
-        )
-
-    def test_gemini_38_runs_after_non_decisive_nemotron(self) -> None:
-        result, invoked = self._evaluate([
-            (0, "VERDICT: PASS"),
-            (1, "primary infrastructure failure"),
-            (0, "VERDICT: APPROVE"),
-        ])
-        self.assertTrue(result["pass"])
-        self.assertEqual(result["reviewer_used"], "google/gemini-3.8-flash")
-        self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
-        self.assertIsNone(result["reviewer_fallback_exit_code"])
-
-    def test_gemini_36_runs_after_nemotron_and_gemini_38_are_non_decisive(self) -> None:
-        result, invoked = self._evaluate([
-            (0, "VERDICT: PASS"),
-            (1, "primary infrastructure failure"),
-            (1, "intermediate infrastructure failure"),
-            (0, "VERDICT: APPROVE"),
-        ])
-        self.assertTrue(result["pass"])
-        self.assertEqual(result["reviewer_used"], "google/gemini-3.6-flash")
-        self.assertEqual(
-            invoked,
-            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
-        )
-
-    def test_intermediate_request_changes_is_authoritative(self) -> None:
-        result, invoked = self._evaluate([
-            (0, "VERDICT: PASS"),
-            (1, "primary infrastructure failure"),
-            (0, "VERDICT: REQUEST_CHANGES"),
-        ])
-        self.assertFalse(result["pass"])
-        self.assertEqual(result["reviewer_used"], "google/gemini-3.8-flash")
-        self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
-        self.assertIsNone(result["reviewer_fallback_exit_code"])
-
-    def test_terra_runs_after_three_non_decisive_reviewers(self) -> None:
-        result, invoked = self._evaluate(
-            [
-                (0, "VERDICT: PASS"),
-                (1, "primary infrastructure failure"),
-                (1, "intermediate infrastructure failure"),
-                (1, "fallback infrastructure failure"),
-            ],
-            terra_response=(0, "VERDICT: APPROVE"),
-        )
-        self.assertTrue(result["pass"])
-        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-terra")
-        self.assertEqual(result["reviewer_terra_exit_code"], 0)
-        self.assertEqual(
-            invoked,
-            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
-        )
-
-    def test_terra_cannot_review_its_own_implementation(self) -> None:
-        result, _ = self._evaluate(
-            [
-                (0, "VERDICT: PASS"),
-                (1, "primary infrastructure failure"),
-                (1, "intermediate infrastructure failure"),
-                (1, "fallback infrastructure failure"),
-            ],
-            terra_response=(0, "VERDICT: APPROVE"),
-            terra_implemented=True,
-        )
-        self.assertFalse(result["pass"])
-        self.assertIsNone(result["reviewer_terra_exit_code"])
-
-    def test_missing_google_credential_still_runs_primary_nemotron(self) -> None:
-        result, invoked = self._evaluate(
-            [(0, "VERDICT: PASS"), (0, "VERDICT: APPROVE")],
-            google_available=False,
-        )
-        self.assertTrue(result["pass"])
+        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["reviewer_luna_exit_code"], 0)
         self.assertEqual(invoked, ["tester", "reviewer"])
-        self.assertEqual(result["reviewer_used"], "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b")
-        self.assertEqual(result["reviewer_primary_exit_code"], 0)
-        self.assertIsNone(result["reviewer_intermediate_exit_code"])
-        self.assertIsNone(result["reviewer_fallback_exit_code"])
+        self.assertEqual(result["reviewer_fallback_exit_code"], 0)
+
+    def test_luna_light_request_changes_is_authoritative(self) -> None:
+        result, invoked = self._evaluate(
+            [
+                (0, "VERDICT: PASS"),
+                (1, "primary infrastructure failure"),
+            ],
+            luna_response=(0, "VERDICT: REQUEST_CHANGES"),
+        )
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["failure"]["class"], "reviewer_change_request")
+        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(invoked, ["tester", "reviewer"])
+
+    def test_luna_light_can_review_when_terra_implemented(self) -> None:
+        result, invoked = self._evaluate(
+            [
+                (0, "VERDICT: PASS"),
+                (1, "primary infrastructure failure"),
+            ],
+            luna_response=(0, "VERDICT: APPROVE"),
+        )
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(invoked, ["tester", "reviewer"])
+
+    def test_reviewer_checkpoint_skips_validation_and_tester(self) -> None:
+        checkpoint = {
+            "stage": "reviewer",
+            "result": {
+                "validation": {"pass": True},
+                "tester_exit_code": 0,
+                "tester_used": "openai/gpt-5.6-luna",
+                "tester_primary_exit_code": 88,
+                "tester_primary_pass": False,
+                "tester_primary_fail": False,
+                "tester_luna_exit_code": 0,
+                "tester_luna_pass": True,
+                "tester_luna_fail": False,
+                "tester_pass": True,
+            },
+        }
+        result, invoked = self._evaluate(
+            [(0, "VERDICT: APPROVE")], resume_checkpoint=checkpoint
+        )
+        self.assertTrue(result["pass"])
+        self.assertEqual(invoked, ["reviewer"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
+
+
+class StageCheckpointTests(unittest.TestCase):
+    def test_unchanged_reviewer_failure_resumes_at_reviewer(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result_dir = root / "agent/logs/RUN"
+            result_dir.mkdir(parents=True)
+            worktree = root / "worktree"
+            worktree.mkdir()
+            ticket = {
+                "objective": "Fixture", "allowed_paths": ["fixture.txt"],
+                "worker": "implementer", "validation_profile": "static-text",
+                "validation_root": None,
+            }
+            (result_dir / "result.json").write_text(json.dumps({
+                "branch": "agent/example",
+                "final_verdict": "FAIL",
+                "candidate_digest": "a" * 64,
+                "ticket_contract_digest": ticket_runner.ticket_contract_digest(ticket),
+                "resume_stage": "reviewer",
+                "validation": {"pass": True},
+                "tester_pass": True,
+            }))
+            with mock.patch.object(
+                ticket_runner, "candidate_digest", return_value="a" * 64
+            ):
+                checkpoint = ticket_runner.load_stage_checkpoint(
+                    root, "agent/example", worktree, ticket
+                )
+            self.assertEqual(checkpoint["stage"], "reviewer")
+
+    def test_changed_candidate_invalidates_stage_checkpoint(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result_dir = root / "agent/logs/RUN"
+            result_dir.mkdir(parents=True)
+            worktree = root / "worktree"
+            worktree.mkdir()
+            ticket = {
+                "objective": "Fixture", "allowed_paths": ["fixture.txt"],
+                "worker": "implementer", "validation_profile": "static-text",
+                "validation_root": None,
+            }
+            (result_dir / "result.json").write_text(json.dumps({
+                "branch": "agent/example",
+                "final_verdict": "FAIL",
+                "candidate_digest": "a" * 64,
+                "ticket_contract_digest": ticket_runner.ticket_contract_digest(ticket),
+                "resume_stage": "tester",
+                "validation": {"pass": True},
+            }))
+            with mock.patch.object(
+                ticket_runner, "candidate_digest", return_value="b" * 64
+            ):
+                checkpoint = ticket_runner.load_stage_checkpoint(
+                    root, "agent/example", worktree, ticket
+                )
+            self.assertIsNone(checkpoint)
 
 
 class ApprovalQueueTests(unittest.TestCase):

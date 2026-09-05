@@ -27,8 +27,6 @@ MODEL_RPM: dict[str, int | None] = {
     "opencode/ling-3.0-flash-fin-free": None,
     "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash": 300,
     "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b": 40,
-    "google/gemini-3.8-flash": None,
-    "google/gemini-3.6-flash": None,
     "openai/gpt-5.6-sol": None,
     "openai/gpt-5.6-terra": None,
     "openai/gpt-5.6-luna": None,
@@ -39,8 +37,6 @@ MODEL_LIMIT_SOURCE = {
     "opencode/ling-3.0-flash-fin-free": "provider/account assigned",
     "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash": "published free tier",
     "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b": "published free tier",
-    "google/gemini-3.8-flash": "provider/project assigned",
-    "google/gemini-3.6-flash": "provider/project assigned",
     "openai/gpt-5.6-sol": "Codex account managed",
     "openai/gpt-5.6-terra": "Codex account managed",
     "openai/gpt-5.6-luna": "Codex account managed",
@@ -51,8 +47,6 @@ AGENT_MODELS = {
     "fast-fix": "opencode/ling-3.0-flash-fin-free",
     "tester": "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash",
     "reviewer": "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
-    "reviewer-intermediate": "google/gemini-3.8-flash",
-    "reviewer-fallback": "google/gemini-3.6-flash",
 }
 
 
