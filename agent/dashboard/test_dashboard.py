@@ -1123,6 +1123,10 @@ class CoordinationControlTests(unittest.TestCase):
 
 
 class ModelPolicyTests(unittest.TestCase):
+    def test_tester_execution_budgets_allow_slow_provider_responses(self) -> None:
+        self.assertEqual(ticket_runner.TESTER_TIMEOUT, 300)
+        self.assertEqual(ticket_runner.TERRA_TESTER_TIMEOUT, 300)
+
     def test_published_free_tier_launch_limits(self) -> None:
         self.assertEqual(model_policy.MODEL_RPM["groq/openai/gpt-oss-120b"], 30)
         self.assertEqual(
