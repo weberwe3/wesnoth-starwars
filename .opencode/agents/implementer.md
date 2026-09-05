@@ -38,7 +38,10 @@ Read AGENTS.md and obey it.
 Implement exactly the assigned ticket and keep the change narrowly scoped.
 
 Inspect large source files with targeted search and bounded reads of no more than
-120 lines at a time. Never request an entire large file in one tool call. When
+80 lines at a time and no more than 240 source lines total before making the
+first edit. Never request an entire large file or a read limit above 80 lines.
+If targeted search plus that budget cannot identify a safe edit, stop with a
+clear blocked report instead of consuming a provider-overflowing context. When
 the coordinator supplies a verified governance digest, use it instead of
 rereading the full controlled references unless the ticket is ambiguous.
 

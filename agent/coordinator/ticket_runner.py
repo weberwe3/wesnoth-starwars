@@ -87,6 +87,28 @@ def build_governance_prompt(package: dict) -> str:
     return reference_pkg.build_governance_prompt(package)
 
 
+def resolve_codex_executable() -> str | None:
+    """Resolve Codex from PATH or the trusted launcher-provided absolute path."""
+
+    candidates = [
+        os.environ.get("WESNOTH_CODEX_EXE"),
+        shutil.which("codex"),
+        shutil.which("codex.exe"),
+    ]
+    for value in candidates:
+        if not value:
+            continue
+        path = Path(value)
+        if (
+            path.is_absolute()
+            and path.name.casefold() in {"codex", "codex.exe"}
+            and path.is_file()
+            and not path.is_symlink()
+        ):
+            return str(path)
+    return None
+
+
 def invoke_agent(
     *,
     opencode: str,
@@ -125,9 +147,11 @@ def invoke_terra_implementer(
 ) -> tuple[int, str]:
     """Run the single sandboxed Terra Medium Implementer fallback."""
 
-    executable = shutil.which("codex") or shutil.which("codex.exe")
+    executable = resolve_codex_executable()
     if not executable:
-        return 127, "Codex Terra fallback is unavailable."
+        output = "Codex Terra fallback executable is unavailable to the secure runner."
+        log_file.write_text(output + "\n", encoding="utf-8")
+        return 127, output
     windows_binary = executable.lower().endswith(".exe")
     command = [
         executable, "exec", "-C", _codex_path(worktree, windows_binary),
@@ -158,7 +182,7 @@ def invoke_terra_implementer(
         return 124, output
 
 
-def load_ticket(path: Path) -> dict:
+def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
     try:
         ticket = json.loads(path.read_text())
     except Exception as exc:
@@ -222,6 +246,10 @@ def load_ticket(path: Path) -> dict:
         if pattern.startswith("/") or ".." in Path(pattern).parts:
             raise SystemExit(
                 f"ERROR: unsafe allowed_paths entry: {pattern!r}"
+            )
+        if not allow_protected_evidence and pattern_can_touch_protected(pattern):
+            raise SystemExit(
+                f"ERROR: allowed_paths may not target a protected path: {pattern!r}"
             )
 
     profile = ticket.get("validation_profile")
@@ -295,6 +323,16 @@ def is_protected(path: str) -> bool:
 def path_allowed(path: str, patterns: list[str]) -> bool:
     path = path.replace("\\", "/")
     return any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
+
+
+def pattern_can_touch_protected(pattern: str) -> bool:
+    normalized = pattern.replace("\\", "/")
+    candidates = set(PROTECTED_EXACT)
+    candidates.update(prefix + "sentinel" for prefix in PROTECTED_PREFIXES)
+    candidates.update({"agent/runtime/sentinel", "agent/logs/sentinel", ".git/sentinel"})
+    return is_protected(normalized) or any(
+        path_allowed(candidate, [normalized]) for candidate in candidates
+    )
 
 
 def _read_git_changes_against(
@@ -753,7 +791,7 @@ def plan_recovery(
     effort: str,
     governance_prompt: str,
 ) -> dict:
-    executable = shutil.which("codex") or shutil.which("codex.exe")
+    executable = resolve_codex_executable()
     if not executable:
         raise RuntimeError("Codex recovery planner is unavailable")
     schema_path = log_dir / f"recovery-{attempt}-schema.json"
@@ -892,6 +930,7 @@ def evaluate_candidate(
     google_available: bool,
     implementer_rc: int,
     attempt: int,
+    implementation_failure: dict | None = None,
 ) -> dict:
     suffix = "" if attempt == 0 else f"-recovery-{attempt}"
     task_id = ticket["task_id"]
@@ -923,7 +962,9 @@ def evaluate_candidate(
             "validation": validation,
             "tester_pass": None,
             "reviewer_approve": None,
-            "failure": recovery_policy.classify_validation(validation, implementer_rc),
+            "failure": recovery_policy.classify_validation(
+                validation, implementer_rc, implementation_failure
+            ),
         }
 
     status.handoff("validation", "tester", "Validated change sent to tester")
@@ -1297,6 +1338,11 @@ You may modify ONLY paths matching these patterns:
 
 Do not modify any other project path.
 
+PROVIDER INPUT BUDGET:
+Use targeted search before reading large files. Read no more than 80 lines per
+tool call and no more than 240 source lines total before the first edit. Never
+request a read limit above 80. If that is insufficient, return a blocked report.
+
 Do not execute commands or tests.
 Do not commit, merge, or push.
 
@@ -1304,6 +1350,17 @@ Implement the smallest change that completely satisfies the objective.
 
 Return your normal structured implementation report.
 """.strip()
+
+    terra_available_at_start = (
+        resolve_codex_executable() is not None if ticket["worker"] == "implementer" else None
+    )
+    if terra_available_at_start is False:
+        status.event(
+            "Terra fallback preflight unavailable",
+            level="warning",
+            detail="The secure runner could not resolve its launcher-provided Codex executable.",
+            source="coordinator",
+        )
 
     impl_rc, impl_output = invoke_agent(
         opencode=opencode,
@@ -1315,9 +1372,11 @@ Return your normal structured implementation report.
     )
 
     primary_impl_rc = impl_rc
+    implementation_failure = None
     terra_fallback = {
         "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
-        "reasoning_effort": "medium", "exit_code": None,
+        "reasoning_effort": "medium", "available_at_start": terra_available_at_start,
+        "exit_code": None,
     }
     if recovery_policy.should_use_terra_fallback(ticket["worker"], impl_rc, False):
         terra_fallback["used"] = True
@@ -1329,12 +1388,16 @@ Return your normal structured implementation report.
             "You may use read-only inspection commands and apply patches. Do not run tests, "
             "package managers, network commands, or Git write commands.",
         )
-        terra_rc, _ = invoke_terra_implementer(
+        terra_rc, terra_output = invoke_terra_implementer(
             worktree=worktree,
             prompt=terra_prompt,
             log_file=log_dir / "implementer-terra-fallback.txt",
         )
         terra_fallback["exit_code"] = terra_rc
+        if terra_rc != 0:
+            implementation_failure = recovery_policy.classify_implementer_fallback(
+                impl_output, primary_impl_rc, terra_output, terra_rc
+            )
         impl_rc = 0 if terra_rc == 0 else recovery_policy.TERRA_FALLBACK_FAILURE
         status.set_worker(
             "implementer", "idle" if terra_rc == 0 else "error",
@@ -1362,6 +1425,7 @@ Return your normal structured implementation report.
             google_available=google_available,
             implementer_rc=impl_rc,
             attempt=attempt,
+            implementation_failure=implementation_failure if attempt == 0 else None,
         )
         if attempt and recovery_attempts:
             recovery_attempts[-1]["changed_paths"] = (

@@ -85,6 +85,9 @@ jobs:
       - name: Test dashboard telemetry
         run: python3 -m unittest agent/dashboard/test_dashboard.py
 
+      - name: Test deterministic scenario validation
+        run: python3 agent/coordinator/scenario_launch_selftest.py
+
       - name: Verify coordinator reference enforcement
         env:
           PYTHONPATH: agent/coordinator

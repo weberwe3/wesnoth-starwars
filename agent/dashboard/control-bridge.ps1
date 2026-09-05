@@ -18,6 +18,26 @@ $secureLauncher = Join-Path $env:LOCALAPPDATA "WesnothAgentManager\Start-Wesnoth
 $mutex = [Threading.Mutex]::new($false, "Local\WesnothAgentControlBridge")
 $runtime = Join-Path (Split-Path -Parent $PSScriptRoot) "runtime"
 $shutdownMarker = Join-Path $runtime "dashboard.shutdown.$SessionId"
+$codexRoot = Join-Path $env:LOCALAPPDATA "OpenAI\Codex\bin"
+$codexWindows = Get-ChildItem -LiteralPath $codexRoot -Directory -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    ForEach-Object { Join-Path $_.FullName "codex.exe" } |
+    Where-Object {
+        (Test-Path -LiteralPath $_ -PathType Leaf) -and
+        -not ((Get-Item -LiteralPath $_).Attributes -band [IO.FileAttributes]::ReparsePoint)
+    } |
+    Select-Object -First 1
+$codexLinux = $null
+if ($codexWindows) {
+    $translated = & wsl.exe -d $Distro -e wslpath -u $codexWindows
+    if ($LASTEXITCODE -eq 0) {
+        $candidate = [string]($translated | Select-Object -Last 1)
+        $candidate = $candidate.Trim()
+        if ($candidate -match '^/mnt/[a-z]/Users/[A-Za-z0-9._ -]+/AppData/Local/OpenAI/Codex/bin/[A-Za-z0-9._-]+/codex\.exe$') {
+            $codexLinux = $candidate
+        }
+    }
+}
 
 function Invoke-Mailbox([string[]]$MailboxArguments) {
     $output = & wsl.exe -d $Distro --cd $ProjectLinuxPath -e python3 `
@@ -72,11 +92,18 @@ try {
                 "$windowsModules;$($env:PSModulePath)"
             $info.EnvironmentVariables["BASH_ENV"] = $bootstrapLinux
             $existingWslEnv = $info.EnvironmentVariables["WSLENV"]
-            $info.EnvironmentVariables["WSLENV"] = if ($existingWslEnv) {
-                "$existingWslEnv`:BASH_ENV"
-            } else {
-                "BASH_ENV"
+            $forwardWslEnv = @()
+            if ($existingWslEnv) {
+                $forwardWslEnv += $existingWslEnv -split ":"
             }
+            $forwardWslEnv += "BASH_ENV"
+            if ($codexLinux) {
+                $info.EnvironmentVariables["WESNOTH_CODEX_EXE"] = $codexLinux
+                $forwardWslEnv += "WESNOTH_CODEX_EXE"
+            }
+            $info.EnvironmentVariables["WSLENV"] = (
+                $forwardWslEnv | Where-Object { $_ } | Select-Object -Unique
+            ) -join ":"
             $process = [Diagnostics.Process]::Start($info)
             $process.StandardInput.Close()
             $deadline = [DateTime]::UtcNow.AddMinutes(20)

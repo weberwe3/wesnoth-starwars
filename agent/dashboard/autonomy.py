@@ -870,7 +870,10 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         temporary = runtime / f"validate-{run_id}.json"
         temporary.write_text(json.dumps(ticket), encoding="utf-8")
         try:
-            validated = ticket_runner.load_ticket(temporary)
+            try:
+                validated = ticket_runner.load_ticket(temporary)
+            except SystemExit as exc:
+                raise ControlError("Generated ticket contract failed protected-path validation") from exc
         finally:
             temporary.unlink(missing_ok=True)
         for pattern in validated["allowed_paths"]:
@@ -958,11 +961,20 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
 
     @staticmethod
     def _pattern_can_touch_protected(pattern: str) -> bool:
-        normalized = pattern.replace("\\", "/")
-        candidates = set(ticket_runner.PROTECTED_EXACT)
-        candidates.update(prefix + "sentinel" for prefix in ticket_runner.PROTECTED_PREFIXES)
-        candidates.update({"agent/runtime/sentinel", "agent/logs/sentinel", ".git/sentinel"})
-        return any(ticket_runner.path_allowed(candidate, [normalized]) for candidate in candidates)
+        return ticket_runner.pattern_can_touch_protected(pattern)
+
+    @staticmethod
+    def _contract_matches_completed_priority(evidence: dict, priorities: list[dict]) -> bool:
+        identity = " ".join((
+            str(evidence.get("task_id") or ""),
+            str(evidence.get("objective") or ""),
+        )).casefold()
+        return any(
+            item.get("status") == "completed"
+            and isinstance(item.get("id"), str)
+            and item["id"].casefold() in identity
+            for item in priorities
+        )
 
     @staticmethod
     def _command_path(path: Path, windows_binary: bool) -> str:
@@ -1090,11 +1102,13 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         unfinished = self._unfinished_ticket_evidence()
         all_evidence = self._ticket_evidence(include_passed=True)
         main_head = checked(["git", "rev-parse", "main"]).strip()
+        documented_priorities = self._planned_priorities()
 
         managed_root = (self.root.parent / f"{self.root.name}-worktrees").resolve()
         worktrees = self._managed_worktrees(checked(["git", "worktree", "list", "--porcelain"]), managed_root)
         branches = []
         blocked_branches = []
+        retired_branches = []
         branch_heads: dict[str, str] = {}
         branch_output = checked([
             "git", "for-each-ref", "--format=%(refname:short)|%(objectname)",
@@ -1124,6 +1138,29 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             worktree = worktrees.get(name)
             evidence = unfinished.get(name)
             if worktree is None or evidence is None:
+                continue
+            if self._contract_matches_completed_priority(evidence, documented_priorities):
+                retired_branches.append({
+                    "name": name,
+                    "previous_task_id": evidence["task_id"],
+                    "reason": (
+                        "The repository priority catalog marks this ticket objective complete; "
+                        "its preserved worktree is historical evidence, not resumable work."
+                    ),
+                })
+                continue
+            if any(
+                ticket_runner.pattern_can_touch_protected(pattern)
+                for pattern in evidence["allowed_paths"]
+            ):
+                retired_branches.append({
+                    "name": name,
+                    "previous_task_id": evidence["task_id"],
+                    "reason": (
+                        "The original autonomous contract targets a protected coordinator "
+                        "or governance path and cannot be resumed by a worker."
+                    ),
+                })
                 continue
             dirty = checked([
                 "git", "-C", str(worktree), "status", "--porcelain=v1",
@@ -1287,6 +1324,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             "planned_priorities": self._planned_priorities(recently_published),
             "resumable_local_work": branches,
             "blocked_local_work": blocked_branches,
+            "retired_local_work": retired_branches,
             "resumable_pull_requests": resumable_prs,
             "replaceable_pull_requests": replaceable_prs,
             "local_agent_branches": branches,
@@ -1382,7 +1420,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         )
         for path in ticket_files:
             try:
-                ticket = ticket_runner.load_ticket(path)
+                ticket = ticket_runner.load_ticket(path, allow_protected_evidence=True)
             except (OSError, SystemExit, ValueError):
                 continue
             task_id = ticket["task_id"]

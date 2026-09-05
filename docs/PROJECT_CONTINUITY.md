@@ -4,10 +4,10 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-04 during DASH-012/DASH-013 resilience and resource-efficiency work<br>
-**Main at snapshot:** `148d1e03b40de105e2349bb69621c7dcd6d4fbd8`<br>
-**Active infrastructure ticket:** DASH-012/DASH-013 always-available exit, resilient retry, and model-usage optimization<br>
-**Next intended game-development ticket:** resume the preserved scenario-validation worktree after DASH-012 is live
+**Last continuity refresh:** 2026-09-04 during DASH-017 provider-preflight and scenario-validation repair<br>
+**Main before this snapshot:** `5318cfd35e6557e6adc7932b86cb63c4da8811eb`<br>
+**Active infrastructure ticket:** DASH-017 secure Codex fallback discovery and protected-contract retirement<br>
+**Next intended game-development ticket:** the first bounded playable scenario-skeleton increment
 
 ---
 
@@ -52,11 +52,13 @@ The project has:
 - a controlled reference package with Markdown canonical LLM references and two preserved DOCX human/archive counterparts;
 - SHA-256 reference-package provenance;
 - GitHub Actions deterministic CI with no model-provider secrets;
-- an initial Wesnoth add-on root and textdomain registration from `ENGINE-001`.
+- an initial Wesnoth add-on root and textdomain registration from `ENGINE-001`;
+- a registered `ENGINE-002` campaign and first scenario;
+- a deterministic installed-engine preprocessing harness for that scenario.
 
 ### What should happen next
 
-`ENGINE-002` should register a minimal campaign and first launchable scenario, followed by scenario launch validation and automatic local Wesnoth preprocessing/engine validation as appropriate.
+Scenario validation is complete. The next bounded game ticket should advance the playable scenario skeleton while retaining static and installed-engine checks appropriate to its scope.
 
 Do not reopen the infrastructure/reference design unless a concrete defect or new requirement justifies it. The project is now ready to prioritize actual game development.
 
@@ -956,12 +958,15 @@ When updating this file:
 | 2026-09-04 | DASH-010 / PR #25 | Merged continuous priority scheduling: the active Automation toggle authorizes fresh bounded tickets, skips queue/PR-owned priorities, advances through independent safe work, and sequences publication around exact-head CI registration/current-main checks while retaining manual publication/deletion gates |
 | 2026-09-04 | DASH-011 / PR #26 | Merged live-state scheduling, publication/priorities context, and reviewer routing through Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash |
 | 2026-09-04 | DASH-012 / DASH-013 / PR #27 | Merged resilient active-run cancellation, preserved-remnant recovery, two bounded retries, deterministic remnant resumption, inventory-bound planning cache, compact prompts, Fast-Fix preference, and inter-ticket quota cooldown |
-| 2026-09-04 | DASH-014 resume-state hardening | Distinguish a clean pre-edit interrupted worktree from an invalid empty final result; reconcile clean unpublished remnants with current main; block unsafe paths, oversized scopes, conflicts, and dirty outdated bases without discarding work or spending a Sol planning call |
+| 2026-09-04 | DASH-014 / PR #28 | Distinguish a clean pre-edit interrupted worktree from an invalid empty final result; reconcile clean unpublished remnants with current main; block unsafe paths, oversized scopes, conflicts, and dirty outdated bases without discarding work or spending a Sol planning call |
+| 2026-09-04 | DASH-015 / PR #29 | Compute interrupted-ticket ownership from its merge base so newer `main` files are not misclassified as ticket remnants |
+| 2026-09-04 | DASH-016 / PR #30 | Deterministically collapse equivalent empty retries to the newest worktree and prevent an older preserved blocker from hiding safe resumable work |
+| 2026-09-04 | DASH-017 provider and scenario repair | Forward a verified Codex executable into the secure runner, report distinct provider/fallback failures, retire stale protected self-modification contracts without deleting evidence, enforce a smaller Groq read budget, and add bounded real-engine ENGINE-002 preprocessing evidence |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, DASH-012 and DASH-013 are merged through PR #27. Autonomous resumption now treats a clean, exact-contract worktree as a valid interrupted ticket before its first edit instead of conflating it with a failed empty implementation. Clean unpublished remnants are brought forward to current `main` without rewriting history; in-scope dirty remnants already based on current `main` continue in place; and protected, unsupported, oversized, conflicting, or dirty outdated states stop with a specific preservation diagnostic before another Sol planning call is spent. Final candidate validation still requires a non-empty scoped change, so allowing an empty pre-edit resume does not weaken completion gates. Current provider research found Groq's free GPT-OSS tier especially constrained by an 8K TPM and 200K daily-token allowance, Cloudflare's free Workers AI allocation shared across 10,000 neurons per day, Google limits dependent on the active project/tier, and OpenCode's Ling free availability explicitly temporary. Exact-commit publication and file-deletion approval remain manual boundaries.
+At this snapshot, resume-state hardening is merged through PR #30. The subsequent scenario-validation attempt exposed three independent issues: GPT-OSS exceeded Groq's 8K request limit after requesting oversized source reads; the secure launcher did not expose the installed Codex executable to Terra; and the inherited ticket contract targeted protected coordinator paths that autonomous workers may never modify. DASH-017 resolves those infrastructure defects without weakening protection: worker reads have a smaller explicit budget, the launcher forwards only a verified local Codex executable path, failures identify the provider stage accurately, and stale protected contracts are retired from autonomous scheduling while their worktrees and evidence remain preserved. The manually authorized deterministic scenario harness stages the add-on in an isolated temporary userdata tree, runs the installed Wesnoth 1.19.27 preprocessor with the campaign define, records only bounded secret-free evidence, and confirms cleanup. Scenario validation is marked complete so scheduling can advance to scenario-skeleton work. Exact-commit publication and file-deletion approval remain manual boundaries.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.
