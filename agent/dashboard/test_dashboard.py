@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from unittest import mock
 
@@ -924,6 +925,30 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertIn("unavailable", output)
             self.assertEqual(log.read_text(encoding="utf-8").strip(), output)
 
+    def test_luna_fallback_uses_medium_reasoning_and_requested_sandbox(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "luna.txt"
+            completed = subprocess.CompletedProcess([], 0, stdout="VERDICT: PASS\n")
+            with (
+                mock.patch.object(
+                    ticket_runner, "resolve_codex_executable", return_value="/opt/codex"
+                ),
+                mock.patch("ticket_runner.subprocess.run", return_value=completed) as run,
+            ):
+                code, output = ticket_runner.invoke_luna(
+                    worktree=Path(directory),
+                    prompt="fixture",
+                    log_file=log,
+                    sandbox="read-only",
+                    timeout=300,
+                )
+            command = run.call_args.args[0]
+            self.assertEqual(code, 0)
+            self.assertEqual(output, "VERDICT: PASS\n")
+            self.assertIn("gpt-5.6-luna", command)
+            self.assertIn('model_reasoning_effort="medium"', command)
+            self.assertEqual(command[command.index("-s") + 1], "read-only")
+
     def test_fallback_diagnostic_distinguishes_context_and_missing_codex(self) -> None:
         failure = recovery_policy.classify_implementer_fallback(
             "ContextOverflowError: Request too large for tokens per minute",
@@ -943,7 +968,7 @@ class CoordinationControlTests(unittest.TestCase):
         )
         self.assertEqual(failure["class"], "tester_provider_failure")
         self.assertIn("circuit is open", failure["detail"])
-        self.assertIn("Terra Medium", failure["detail"])
+        self.assertIn("Luna Medium", failure["detail"])
         self.assertIn("timed out", failure["detail"])
 
     def test_control_bridge_forwards_verified_codex_path(self) -> None:
@@ -1167,7 +1192,7 @@ class CoordinationControlTests(unittest.TestCase):
 class ModelPolicyTests(unittest.TestCase):
     def test_tester_execution_budgets_allow_slow_provider_responses(self) -> None:
         self.assertEqual(ticket_runner.TESTER_TIMEOUT, 300)
-        self.assertEqual(ticket_runner.TERRA_TESTER_TIMEOUT, 300)
+        self.assertEqual(ticket_runner.LUNA_TESTER_TIMEOUT, 300)
 
     def test_published_free_tier_launch_limits(self) -> None:
         self.assertEqual(model_policy.MODEL_RPM["groq/openai/gpt-oss-120b"], 30)
@@ -1184,6 +1209,63 @@ class ModelPolicyTests(unittest.TestCase):
             300,
         )
         self.assertIsNone(model_policy.MODEL_RPM["google/gemini-3.8-flash"])
+        self.assertIsNone(model_policy.MODEL_RPM["openai/gpt-5.6-luna"])
+
+    def test_cloudflare_daily_neuron_exhaustion_is_quota_failure(self) -> None:
+        output = (
+            'Too Many Requests: {"statusCode":429,"message":'
+            '"used up your daily free allocation"}'
+        )
+        self.assertEqual(model_policy.failure_kind(1, output), "quota")
+        failure = recovery_policy.classify_tester_fallback(
+            1, 127, output, "Luna unavailable"
+        )
+        self.assertIn("exhausted its provider quota", failure["detail"])
+        self.assertIn("Luna Medium", failure["detail"])
+
+    def test_cloudflare_daily_quota_blocks_all_models_until_utc_midnight(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            now = [1_788_613_668.0]
+            policy = model_policy.ModelPolicy(
+                Path(directory), clock=lambda: now[0], sleeper=lambda _: None
+            )
+            glm = "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash"
+            nemotron = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
+            luna = "openai/gpt-5.6-luna"
+            run = policy.begin_run("DAILY-QUOTA")
+            self.assertTrue(policy.before_attempt(glm, run)[0])
+            policy.record_failure(
+                glm,
+                run,
+                "quota",
+                "Too Many Requests: used up your daily free allocation of 10,000 neurons",
+            )
+            reset = float((int(now[0]) // 86_400 + 1) * 86_400)
+            self.assertFalse(policy.before_attempt(glm, run + 1)[0])
+            self.assertFalse(policy.before_attempt(nemotron, run + 1)[0])
+            self.assertTrue(policy.before_attempt(luna, run + 1)[0])
+            self.assertIn(
+                time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(reset)),
+                policy.unavailable_reason(glm, run + 1),
+            )
+            state = policy.public_state(run + 1)
+            self.assertEqual(state[glm]["blocked_until"], reset)
+            self.assertFalse(state[nemotron]["available_this_run"])
+
+            now[0] = reset
+            self.assertTrue(policy.before_attempt(glm, run + 1)[0])
+            self.assertTrue(policy.before_attempt(nemotron, run + 1)[0])
+            self.assertIsNone(policy.public_state(run + 1)[glm]["blocked_until"])
+
+    def test_non_daily_cloudflare_failure_keeps_two_run_circuit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            policy = model_policy.ModelPolicy(Path(directory))
+            model = "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash"
+            first = policy.begin_run("ONE")
+            policy.record_failure(model, first, "quota", "ordinary rate limit")
+            self.assertFalse(policy.before_attempt(model, first + 1)[0])
+            self.assertFalse(policy.before_attempt(model, first + 2)[0])
+            self.assertTrue(policy.before_attempt(model, first + 3)[0])
 
     def test_provider_failure_skips_exactly_two_later_runs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1231,6 +1313,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         *,
         google_available: bool = True,
         terra_response: tuple[int, str] = (1, "Terra unavailable"),
+        luna_response: tuple[int, str] = (1, "Luna unavailable"),
         terra_implemented: bool = False,
     ) -> tuple[dict, list[str]]:
         with tempfile.TemporaryDirectory() as directory:
@@ -1248,7 +1331,11 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             run_sequence = policy.begin_run("REVIEW-CHAIN")
             with mock.patch.object(ticket_runner, "run_validation", return_value={"pass": True}), mock.patch.object(
                 ticket_runner, "invoke_agent", side_effect=invoke
-            ), mock.patch.object(ticket_runner, "invoke_terra", return_value=terra_response):
+            ), mock.patch.object(
+                ticket_runner, "invoke_terra", return_value=terra_response
+            ), mock.patch.object(
+                ticket_runner, "invoke_luna", return_value=luna_response
+            ):
                 result = ticket_runner.evaluate_candidate(
                     status=status,
                     ticket={
@@ -1283,44 +1370,46 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         self.assertEqual(invoked, ["tester", "reviewer"])
         self.assertIsNone(result["reviewer_intermediate_exit_code"])
 
-    def test_terra_medium_tests_when_primary_tester_circuit_is_open(self) -> None:
+    def test_luna_medium_tests_when_primary_tester_circuit_is_open(self) -> None:
         result, invoked = self._evaluate(
             [
                 (ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open"),
                 (0, "VERDICT: APPROVE"),
             ],
-            terra_response=(0, "VERDICT: PASS"),
+            luna_response=(0, "VERDICT: PASS"),
         )
         self.assertTrue(result["pass"])
         self.assertEqual(result["tester_primary_exit_code"], ticket_runner.MODEL_CIRCUIT_OPEN)
-        self.assertEqual(result["tester_terra_exit_code"], 0)
-        self.assertTrue(result["tester_terra_pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-terra")
+        self.assertEqual(result["tester_luna_exit_code"], 0)
+        self.assertTrue(result["tester_luna_pass"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
         self.assertEqual(invoked, ["tester", "reviewer"])
 
     def test_explicit_primary_tester_failure_does_not_seek_second_opinion(self) -> None:
         result, invoked = self._evaluate(
             [(0, "VERDICT: FAIL — candidate defect")],
-            terra_response=(0, "VERDICT: PASS"),
+            luna_response=(0, "VERDICT: PASS"),
         )
         self.assertFalse(result["pass"])
         self.assertEqual(result["failure"]["class"], "tester_change_request")
-        self.assertIsNone(result["tester_terra_exit_code"])
+        self.assertIsNone(result["tester_luna_exit_code"])
         self.assertEqual(invoked, ["tester"])
 
-    def test_terra_cannot_test_its_own_implementation(self) -> None:
+    def test_luna_can_test_a_terra_implementation(self) -> None:
         result, invoked = self._evaluate(
-            [(ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open")],
-            terra_response=(0, "VERDICT: PASS"),
+            [
+                (ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open"),
+                (0, "VERDICT: APPROVE"),
+            ],
+            luna_response=(0, "VERDICT: PASS"),
             terra_implemented=True,
         )
-        self.assertFalse(result["pass"])
-        self.assertEqual(result["failure"]["class"], "tester_provider_failure")
-        self.assertIn("withheld", result["failure"]["detail"])
-        self.assertIsNone(result["tester_terra_exit_code"])
-        self.assertEqual(invoked, ["tester"])
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["tester_luna_exit_code"], 0)
+        self.assertEqual(invoked, ["tester", "reviewer"])
 
-    def test_terra_tester_cannot_later_be_terra_reviewer(self) -> None:
+    def test_luna_tester_allows_independent_terra_reviewer(self) -> None:
         result, invoked = self._evaluate(
             [
                 (ticket_runner.MODEL_CIRCUIT_OPEN, "tester circuit open"),
@@ -1328,11 +1417,13 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
                 (1, "intermediate reviewer unavailable"),
                 (1, "fallback reviewer unavailable"),
             ],
-            terra_response=(0, "VERDICT: PASS"),
+            luna_response=(0, "VERDICT: PASS"),
+            terra_response=(0, "VERDICT: APPROVE"),
         )
-        self.assertFalse(result["pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-terra")
-        self.assertIsNone(result["reviewer_terra_exit_code"])
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-terra")
+        self.assertEqual(result["reviewer_terra_exit_code"], 0)
         self.assertEqual(
             invoked,
             ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],

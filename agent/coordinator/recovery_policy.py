@@ -206,12 +206,17 @@ def classify_tester(output: str, return_code: int) -> dict[str, Any]:
     )
 
 
-def classify_tester_fallback(primary_rc: int, terra_rc: int | None) -> dict[str, Any]:
+def classify_tester_fallback(
+    primary_rc: int,
+    luna_rc: int | None,
+    primary_output: str = "",
+    luna_output: str = "",
+) -> dict[str, Any]:
     """Describe exhaustion of the independent tester provider chain."""
 
-    def reason(label: str, code: int | None) -> str:
+    def reason(label: str, code: int | None, output: str) -> str:
         if code is None:
-            return f"{label} was withheld because Terra implemented the candidate."
+            return f"{label} was not invoked."
         if code == 88:
             return f"{label} was skipped because its provider-failure circuit is open."
         if code == 127:
@@ -220,12 +225,18 @@ def classify_tester_fallback(primary_rc: int, terra_rc: int | None) -> dict[str,
             return f"{label} timed out."
         if code == 0:
             return f"{label} returned no decisive PASS or FAIL verdict."
+        folded = output.casefold()
+        if any(marker in folded for marker in (
+            "too many requests", '"statuscode":429', "daily free allocation",
+            "rate limit", "rate_limit", "quota", "resource_exhausted",
+        )):
+            return f"{label} exhausted its provider quota or rate limit."
         return f"{label} exited with code {code}."
 
     return _failure(
         "tester_provider_failure",
-        reason("GLM-4.7 Flash tester", primary_rc)
-        + " " + reason("Terra Medium tester fallback", terra_rc),
+        reason("GLM-4.7 Flash tester", primary_rc, primary_output)
+        + " " + reason("Luna Medium tester fallback", luna_rc, luna_output),
         "Allow the autonomous worktree retry policy to re-evaluate provider availability.",
         eligible=False,
     )

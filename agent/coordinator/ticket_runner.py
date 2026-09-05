@@ -24,7 +24,7 @@ from scenario_launch_selftest import find_wesnoth_executable
 
 IMPLEMENTER_TIMEOUT = 240
 TESTER_TIMEOUT = 300
-TERRA_TESTER_TIMEOUT = 300
+LUNA_TESTER_TIMEOUT = 300
 PRIMARY_REVIEWER_TIMEOUT = 75
 INTERMEDIATE_REVIEWER_TIMEOUT = 90
 FALLBACK_REVIEWER_TIMEOUT = 180
@@ -180,7 +180,7 @@ def invoke_managed_agent(
     timeout: int,
     decisive_verdicts: tuple[str, ...] = (),
 ) -> tuple[int, str]:
-    """Pace one model launch and persist a two-run failure circuit."""
+    """Pace one model launch and persist its bounded availability policy."""
 
     model = AGENT_MODELS[agent]
     available, wait = policy.before_attempt(model, run_sequence)
@@ -192,7 +192,7 @@ def invoke_managed_agent(
         log_file.write_text(output, encoding="utf-8")
         status.event(
             f"Skipped {model}", level="warning", source="coordinator",
-            detail="A recent provider failure suppresses this model for two later worktree runs.",
+            detail=policy.unavailable_reason(model, run_sequence),
         )
         return MODEL_CIRCUIT_OPEN, output
     if wait:
@@ -209,7 +209,7 @@ def invoke_managed_agent(
     )
     failure = failure_kind(rc, output, decisive=decisive)
     if failure:
-        policy.record_failure(model, run_sequence, failure)
+        policy.record_failure(model, run_sequence, failure, output)
     else:
         policy.record_success(model)
     return rc, output
@@ -251,6 +251,46 @@ def invoke_terra(
         return completed.returncode, output
     except subprocess.TimeoutExpired as exc:
         output = str(exc.stdout or "") + "\n[COORDINATOR] TERRA FALLBACK TIMEOUT\n"
+        log_file.write_text(output, encoding="utf-8")
+        return 124, output
+
+
+def invoke_luna(
+    *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int
+) -> tuple[int, str]:
+    """Run one sandboxed Luna Medium fallback through the Codex application."""
+
+    executable = resolve_codex_executable()
+    if not executable:
+        output = "Codex Luna fallback executable is unavailable to the secure runner."
+        log_file.write_text(output + "\n", encoding="utf-8")
+        return 127, output
+    windows_binary = executable.lower().endswith(".exe")
+    command = [
+        executable, "exec", "-C", _codex_path(worktree, windows_binary),
+        "-s", sandbox, "-m", "gpt-5.6-luna",
+        "-c", 'model_reasoning_effort="medium"',
+        "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
+        "--color", "never", "-",
+    ]
+    environment = {
+        key: value for key, value in core.make_test_env().items()
+        if not re.search(
+            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
+            key, re.IGNORECASE,
+        )
+    }
+    try:
+        completed = subprocess.run(
+            command, cwd=worktree, env=environment, input=prompt, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            timeout=timeout, check=False,
+        )
+        output = completed.stdout or ""
+        log_file.write_text(output, encoding="utf-8")
+        return completed.returncode, output
+    except subprocess.TimeoutExpired as exc:
+        output = str(exc.stdout or "") + "\n[COORDINATOR] LUNA FALLBACK TIMEOUT\n"
         log_file.write_text(output, encoding="utf-8")
         return 124, output
 
@@ -301,7 +341,45 @@ def invoke_managed_terra(
     )
     failure = failure_kind(rc, output, decisive=decisive)
     if failure:
-        policy.record_failure(model, run_sequence, failure)
+        policy.record_failure(model, run_sequence, failure, output)
+    else:
+        policy.record_success(model)
+    return rc, output
+
+
+def invoke_managed_luna(
+    *, policy: ModelPolicy, run_sequence: int, status: RuntimeStatus,
+    worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
+    decisive_verdicts: tuple[str, ...] = (),
+) -> tuple[int, str]:
+    model = "openai/gpt-5.6-luna"
+    available, wait = policy.before_attempt(model, run_sequence)
+    if not available:
+        output = (
+            "[COORDINATOR] Luna Medium skipped: provider-failure circuit remains open "
+            "for this worktree run.\n"
+        )
+        log_file.write_text(output, encoding="utf-8")
+        status.event(
+            "Skipped Luna Medium", level="warning", source="coordinator",
+            detail="A recent Codex failure suppresses Luna for two later worktree runs.",
+        )
+        return MODEL_CIRCUIT_OPEN, output
+    if wait:
+        status.event(
+            "Rate-limit pacing delayed Luna Medium", source="coordinator",
+            detail=f"Launch delayed {wait:.2f} seconds.",
+        )
+    rc, output = invoke_luna(
+        worktree=worktree, prompt=prompt, log_file=log_file,
+        sandbox=sandbox, timeout=timeout,
+    )
+    decisive = not decisive_verdicts or any(
+        core.contains_verdict(output, verdict) for verdict in decisive_verdicts
+    )
+    failure = failure_kind(rc, output, decisive=decisive)
+    if failure:
+        policy.record_failure(model, run_sequence, failure, output)
     else:
         policy.record_success(model)
     return rc, output
@@ -1296,50 +1374,42 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
     tester_rc = tester_primary_rc
     tester_output = tester_primary_output
     tester_pass = tester_primary_pass
-    tester_terra_rc = None
-    tester_terra_pass = False
-    tester_terra_fail = False
-    terra_tested = False
-    if not tester_pass and not tester_primary_fail and not terra_implemented:
-        status.handoff("tester", "tester", "Terra Medium tester fallback activated")
-        status.set_assignment("tester", "OpenAI", "GPT-5.6 Terra · Medium")
-        status.set_worker("tester", "active", "Independent Terra fallback testing")
-        terra_tester_prompt = tester_prompt.replace(
+    tester_luna_rc = None
+    tester_luna_output = ""
+    tester_luna_pass = False
+    tester_luna_fail = False
+    if not tester_pass and not tester_primary_fail:
+        status.handoff("tester", "tester", "Luna Medium tester fallback activated")
+        status.set_assignment("tester", "OpenAI", "GPT-5.6 Luna · Medium")
+        status.set_worker("tester", "active", "Independent Luna fallback testing")
+        luna_tester_prompt = tester_prompt.replace(
             "Do not execute commands, edit files, or use the web.",
             "You may use read-only inspection commands. Do not edit files, run tests, "
             "invoke another agent, or use the web.",
         )
-        tester_terra_rc, tester_terra_output = invoke_managed_terra(
+        tester_luna_rc, tester_luna_output = invoke_managed_luna(
             policy=policy,
             run_sequence=run_sequence,
             status=status,
             worktree=worktree,
-            prompt=terra_tester_prompt,
-            log_file=log_dir / f"tester-terra{suffix}.txt",
+            prompt=luna_tester_prompt,
+            log_file=log_dir / f"tester-luna{suffix}.txt",
             sandbox="read-only",
-            timeout=TERRA_TESTER_TIMEOUT,
+            timeout=LUNA_TESTER_TIMEOUT,
             decisive_verdicts=("PASS", "FAIL"),
         )
-        terra_tested = True
-        tester_terra_pass = (
-            tester_terra_rc == 0
-            and core.contains_verdict(tester_terra_output, "PASS")
+        tester_luna_pass = (
+            tester_luna_rc == 0
+            and core.contains_verdict(tester_luna_output, "PASS")
         )
-        tester_terra_fail = (
-            tester_terra_rc == 0
-            and core.contains_verdict(tester_terra_output, "FAIL")
+        tester_luna_fail = (
+            tester_luna_rc == 0
+            and core.contains_verdict(tester_luna_output, "FAIL")
         )
-        tester_used = "openai/gpt-5.6-terra"
-        tester_rc = tester_terra_rc
-        tester_output = tester_terra_output
-        tester_pass = tester_terra_pass
-    elif not tester_pass and not tester_primary_fail and terra_implemented:
-        status.event(
-            "Terra tester fallback withheld",
-            level="warning",
-            source="coordinator",
-            detail="Terra implemented this candidate and cannot independently test its own work.",
-        )
+        tester_used = "openai/gpt-5.6-luna"
+        tester_rc = tester_luna_rc
+        tester_output = tester_luna_output
+        tester_pass = tester_luna_pass
     status.set_worker(
         "tester",
         "idle" if tester_pass else "error",
@@ -1361,17 +1431,19 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
             "tester_primary_exit_code": tester_primary_rc,
             "tester_primary_pass": tester_primary_pass,
             "tester_primary_fail": tester_primary_fail,
-            "tester_terra_exit_code": tester_terra_rc,
-            "tester_terra_pass": tester_terra_pass,
-            "tester_terra_fail": tester_terra_fail,
+            "tester_luna_exit_code": tester_luna_rc,
+            "tester_luna_pass": tester_luna_pass,
+            "tester_luna_fail": tester_luna_fail,
             "tester_pass": False,
             "reviewer_approve": None,
             "failure": (
                 recovery_policy.classify_tester(tester_output, tester_rc)
-                if tester_primary_fail or tester_terra_fail
+                if tester_primary_fail or tester_luna_fail
                 else recovery_policy.classify_tester_fallback(
                     tester_primary_rc,
-                    tester_terra_rc,
+                    tester_luna_rc,
+                    tester_primary_output,
+                    tester_luna_output,
                 )
             ),
         }
@@ -1524,7 +1596,7 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
                     error="Nemotron was non-decisive and Google credentials are unavailable",
                 )
 
-    if not reviewer_approve and not decisive_changes and not terra_implemented and not terra_tested:
+    if not reviewer_approve and not decisive_changes and not terra_implemented:
         status.handoff("reviewer-fallback", "reviewer-fallback", "Terra final review activated")
         status.set_assignment("reviewer-fallback", "OpenAI", "GPT-5.6 Terra · Medium")
         status.set_worker("reviewer-fallback", "active", "Independent Terra final review")
@@ -1559,7 +1631,7 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
             "Approved" if terra_approve else "Terra final review did not approve",
             error=None if terra_approve else "Terra final reviewer was unavailable or requested changes",
         )
-    elif not reviewer_approve and not decisive_changes and (terra_implemented or terra_tested):
+    elif not reviewer_approve and not decisive_changes and terra_implemented:
         status.event(
             "Terra reviewer fallback withheld",
             level="warning",
@@ -1584,9 +1656,9 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
         "tester_primary_exit_code": tester_primary_rc,
         "tester_primary_pass": tester_primary_pass,
         "tester_primary_fail": tester_primary_fail,
-        "tester_terra_exit_code": tester_terra_rc,
-        "tester_terra_pass": tester_terra_pass,
-        "tester_terra_fail": tester_terra_fail,
+        "tester_luna_exit_code": tester_luna_rc,
+        "tester_luna_pass": tester_luna_pass,
+        "tester_luna_fail": tester_luna_fail,
         "tester_pass": tester_pass,
         "reviewer_primary_exit_code": primary_rc,
         "reviewer_primary_approve": primary_approve,
