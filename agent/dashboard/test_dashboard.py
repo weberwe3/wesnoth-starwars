@@ -541,6 +541,81 @@ class CoordinationControlTests(unittest.TestCase):
                 worktree.resolve(),
             )
 
+    def test_clean_exact_contract_worktree_is_safe_to_resume(self) -> None:
+        result = ticket_runner.validate_resume_scope([], ["addons/example.cfg"])
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["state"], "clean")
+        self.assertFalse(ticket_runner.validate_scope([], ["addons/example.cfg"])["pass"])
+
+    def test_resume_scope_still_rejects_unsafe_paths(self) -> None:
+        protected = ticket_runner.validate_resume_scope(["AGENTS.md"], ["**"])
+        outside = ticket_runner.validate_resume_scope(
+            ["addons/other.cfg"], ["addons/example.cfg"]
+        )
+        self.assertFalse(protected["pass"])
+        self.assertFalse(outside["pass"])
+
+    def test_clean_local_remnant_advances_to_current_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "project"
+            worktree = parent / "project-worktrees" / "interrupted"
+            root.mkdir()
+
+            def git(cwd: Path, *args: str) -> str:
+                return subprocess.run(
+                    ["git", *args], cwd=cwd, check=True, text=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                ).stdout.strip()
+
+            git(root, "init", "-b", "main")
+            git(root, "config", "user.email", "tests@example.invalid")
+            git(root, "config", "user.name", "Dashboard Tests")
+            (root / "base.txt").write_text("base\n", encoding="utf-8")
+            git(root, "add", "base.txt")
+            git(root, "commit", "-m", "base")
+            worktree.parent.mkdir()
+            git(root, "worktree", "add", "-b", "agent/interrupted", str(worktree), "main")
+            (root / "main.txt").write_text("new main\n", encoding="utf-8")
+            git(root, "add", "main.txt")
+            git(root, "commit", "-m", "advance main")
+
+            self.assertTrue(ticket_runner.prepare_local_resume(root, worktree))
+            self.assertEqual(git(worktree, "rev-parse", "HEAD"), git(root, "rev-parse", "main"))
+            self.assertFalse(ticket_runner.prepare_local_resume(root, worktree))
+
+    def test_dirty_outdated_local_remnant_is_preserved_and_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "project"
+            worktree = parent / "project-worktrees" / "interrupted"
+            root.mkdir()
+
+            def git(cwd: Path, *args: str) -> str:
+                return subprocess.run(
+                    ["git", *args], cwd=cwd, check=True, text=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                ).stdout.strip()
+
+            git(root, "init", "-b", "main")
+            git(root, "config", "user.email", "tests@example.invalid")
+            git(root, "config", "user.name", "Dashboard Tests")
+            (root / "base.txt").write_text("base\n", encoding="utf-8")
+            git(root, "add", "base.txt")
+            git(root, "commit", "-m", "base")
+            worktree.parent.mkdir()
+            git(root, "worktree", "add", "-b", "agent/interrupted", str(worktree), "main")
+            (worktree / "partial.txt").write_text("partial\n", encoding="utf-8")
+            (root / "main.txt").write_text("new main\n", encoding="utf-8")
+            git(root, "add", "main.txt")
+            git(root, "commit", "-m", "advance main")
+            original_head = git(worktree, "rev-parse", "HEAD")
+
+            with self.assertRaisesRegex(SystemExit, "uncommitted changes"):
+                ticket_runner.prepare_local_resume(root, worktree)
+            self.assertEqual(git(worktree, "rev-parse", "HEAD"), original_head)
+            self.assertEqual((worktree / "partial.txt").read_text(), "partial\n")
+
     def test_public_queue_drops_private_worktree_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
@@ -600,6 +675,17 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertEqual(proposal["action"], "run_ticket")
         self.assertEqual(proposal["ticket"]["resume_branch"], "agent/interrupted")
         self.assertIsNone(proposal["ticket"]["resume_pr_number"])
+
+    def test_blocked_remnant_stops_before_sol_planning(self) -> None:
+        proposal = AutonomyController._blocked_resume_proposal({
+            "blocked_local_work": [{
+                "previous_task_id": "ENGINE-TEST",
+                "reason": "Interrupted work contains an out-of-scope path.",
+            }],
+        })
+        self.assertEqual(proposal["action"], "stop")
+        self.assertIn("ENGINE-TEST", proposal["summary"])
+        self.assertIn("out-of-scope", proposal["impact"])
 
     def test_unchanged_planning_decision_is_cached(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
