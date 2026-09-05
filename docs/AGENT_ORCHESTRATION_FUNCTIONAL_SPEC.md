@@ -456,10 +456,14 @@ When automation is enabled:
 - Python remains the authoritative state machine and must validate each ticket,
   create its isolated worktree, enforce path scope, and run every applicable
   deterministic, engine, tester, and reviewer gate;
-- a passing ticket may be committed locally to its ticket branch and added to a
-  FIFO approval queue, but it must not be pushed, opened as a PR, merged, or
-  applied to protected `main` without a separate explicit human approval for
-  that exact queued commit;
+- a passing ticket is committed locally to its ticket branch and added to a
+  FIFO approval queue. In manual mode, it must not be pushed, opened as a PR,
+  merged, or applied to protected `main` without a separate explicit human
+  approval for that exact queued commit. While continuous automation remains
+  enabled, the owner's toggle decision is standing publication authorization
+  for each subsequently completed non-deleting ticket that has a full local
+  PASS; Python may then start the fixed exact-commit publication pipeline
+  automatically, but may not waive, infer, or skip any publication gate;
 - subsequent dependent tickets may be based on the preceding queued head so
   unattended work can continue, but approvals and publication must occur in
   dependency order; rejecting or invalidating an upstream item makes dependent
@@ -571,8 +575,10 @@ changed paths, branch, base SHA, exact commit SHA, validation evidence, reviewer
 verdict, and publication state. Queue records must expose no credential values.
 
 The dashboard may present one approval action for the fixed publication
-pipeline. That action is authorization for the exact queued commit only. The
-deterministic controller must then, in order:
+pipeline. In manual mode, that action is authorization for the exact queued
+commit only. In continuous automation mode, the enabled toggle supplies the
+same authorization only for a subsequently completed non-deleting ticket with
+a full local PASS. The deterministic controller must then, in order:
 
 1. verify that the queue record, branch, commit, diff, dependency order, and
    local PASS evidence are unchanged;
@@ -583,10 +589,32 @@ deterministic controller must then, in order:
    conversation rule passes; and
 6. synchronize local `main` and update structured queue evidence.
 
-A single approval does not authorize later commits, other queue items, direct
-pushes to `main`, force pushes, branch-protection bypass, or credential access.
-Any head change, failed check, merge conflict, unexpected remote state, or
-policy rejection terminates the pipeline and requires a new review/approval.
+A single manual approval does not authorize later commits, other queue items,
+direct pushes to `main`, force pushes, branch-protection bypass, or credential
+access. Continuous automation authorizes later qualifying tickets only while
+the toggle remains enabled; the first head change, failed check, merge conflict,
+unexpected remote state, policy rejection, unresolved deletion, or publication
+failure cancels that standing authorization, disables automation, and requires
+a new owner decision.
+
+When queued tickets form a verified dependency chain, the dashboard may group
+them into one ordered batch entry. A batch approval must bind every member's
+queue ID and exact commit SHA, verify that each later member contains its stated
+predecessor, and publish only the final cumulative head through one pull request.
+The local PASS evidence for every member remains mandatory. The resulting PR
+and merge evidence is recorded on every member. Independent, ambiguous, stale,
+deleting, or non-cumulative records must not be grouped, and partial batch
+failure stops fail-closed without publishing a different head.
+
+A failed or stale queue entry may offer an exact **Recode with AI** action and
+an exact **Delete local remnants** action. Recode must preserve the recorded
+contract, branch, useful remnants, and allowed paths. Deletion requires a
+separate confirmation bound to the queue ID, commit, managed worktree, and
+`agent/` branch; it may remove only a clean local worktree and its exact local
+branch. It must refuse `main`, protected paths, dirty or mismatched worktrees,
+newer queue ownership, open pull requests, or any remote branch. The queue card
+may disappear, but a non-secret audit event remains. No other worktree, branch,
+remote object, file, or queue record is targeted.
 
 #### File deletion approval
 
@@ -608,8 +636,9 @@ may proceed while this gate is unresolved.
 
 The dashboard places validated local commits in a **Ticket approval queue**.
 Each item has an expandable summary of purpose, expected mod impact, files,
-gates, dependencies, and publication state. The per-ticket approval action is
-enabled only when deterministic prerequisites are satisfied.
+gates, dependencies, and publication state. Verified cumulative dependency
+chains appear as one expandable ordered batch. Per-ticket and batch approval
+actions are enabled only when deterministic prerequisites are satisfied.
 
 The former routing-history surface becomes **Activity log and errors**. It
 combines structured coordinator, routing, validation, approval, and publication
@@ -917,11 +946,14 @@ Extend deterministic tooling to optionally:
 - store PR identifier in result metadata;
 - query required check status;
 - refuse merge until checks pass;
-- require explicit human/architect authorization for merge at the current maturity level.
+- require explicit human/architect authorization for merge in manual mode, or
+  an enabled continuous-automation authorization for a subsequently completed,
+  fully passing, non-deleting exact queued commit;
 - bind a dashboard publication approval to one exact queued commit and execute
   the fixed push/PR/exact-head-CI/protected-merge sequence without broad shell
   input from the browser;
-- maintain FIFO dependency ordering for queued autonomous tickets; and
+- maintain FIFO dependency ordering for queued autonomous tickets, including
+  exact cumulative batch publication when a dependency chain is verified; and
 - pause before any file deletion until an exact deletion manifest is explicitly
   approved through the Codex-routed approval channel.
 
