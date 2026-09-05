@@ -10,6 +10,7 @@ from typing import Any
 
 MAX_RECOVERY_ATTEMPTS = 2
 TERRA_FALLBACK_FAILURE = 86
+CODEX_WRITE_SANDBOX_UNAVAILABLE = 89
 _SENSITIVE = re.compile(
     r"(?i)(api[_-]?key|token|secret|password|credential|private[_-]?key)"
     r"\s*[\"']?\s*[:=]\s*[\"']?[^\"'\s,;]+"
@@ -98,6 +99,13 @@ def classify_implementer_fallback(
     if terra_rc == 127:
         terra = "The secure runner could not locate the Codex executable, so Terra did not run."
         action = "Restart the updated dashboard launcher, then resume the preserved ticket."
+        failure_class = "implementer_fallback_unavailable"
+    elif terra_rc == CODEX_WRITE_SANDBOX_UNAVAILABLE:
+        terra = f"The {fallback_label} fallback was restricted to a read-only sandbox."
+        action = (
+            "Restart the updated dashboard launcher. If workspace-write remains unavailable, "
+            "inspect the Codex host policy before resuming the preserved ticket."
+        )
         failure_class = "implementer_fallback_unavailable"
     elif terra_rc == 124:
         terra = f"The {fallback_label} fallback timed out."

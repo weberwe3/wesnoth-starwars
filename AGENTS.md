@@ -53,6 +53,11 @@ Terra fallback at low reasoning in the same isolated worktree. It retains the
 original objective and allowed paths and receives no authority to test, commit,
 publish, merge, delete, or broaden scope.
 
+Every Codex implementation fallback must request the application-supported
+auto-reviewed workspace-write mode and verify the effective sandbox reported by
+Codex. A silent downgrade to read-only is an infrastructure hard stop, not a
+successful worker result and not an eligible code-recovery attempt.
+
 ## Wesnoth requirements
 
 - Target the Wesnoth 1.19/1.20-generation engine unless a task states otherwise.

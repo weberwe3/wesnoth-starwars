@@ -1153,7 +1153,9 @@ class CoordinationControlTests(unittest.TestCase):
     def test_terra_fallback_accepts_low_reasoning_for_fast_fix(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             log = Path(directory) / "terra-light.txt"
-            completed = subprocess.CompletedProcess([], 0, stdout="candidate returned\n")
+            completed = subprocess.CompletedProcess(
+                [], 0, stdout="sandbox: workspace-write\ncandidate returned\n"
+            )
             with (
                 mock.patch.object(
                     ticket_runner, "resolve_codex_executable", return_value="/opt/codex"
@@ -1166,6 +1168,47 @@ class CoordinationControlTests(unittest.TestCase):
                 )
             self.assertEqual(code, 0)
             self.assertIn('model_reasoning_effort="low"', run.call_args.args[0])
+            self.assertIn("--approve-for-me", run.call_args.args[0])
+
+    def test_terra_write_fallback_rejects_silent_read_only_downgrade(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "terra-read-only.txt"
+            completed = subprocess.CompletedProcess(
+                [], 0, stdout="sandbox: read-only\nNo files changed.\n"
+            )
+            with (
+                mock.patch.object(
+                    ticket_runner, "resolve_codex_executable", return_value="/opt/codex"
+                ),
+                mock.patch("ticket_runner.subprocess.run", return_value=completed),
+            ):
+                code, _ = ticket_runner.invoke_terra(
+                    worktree=Path(directory), prompt="fixture", log_file=log,
+                    sandbox="workspace-write", timeout=300, reasoning_effort="low",
+                )
+            self.assertEqual(code, recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE)
+            failure = recovery_policy.classify_implementer_fallback(
+                "primary failed", 1, "sandbox: read-only", code, "Terra Light"
+            )
+            self.assertEqual(failure["class"], "implementer_fallback_unavailable")
+            self.assertFalse(failure["eligible"])
+            self.assertIn("read-only sandbox", failure["detail"])
+
+    def test_terra_write_fallback_requires_sandbox_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "terra-missing-header.txt"
+            completed = subprocess.CompletedProcess([], 0, stdout="No files changed.\n")
+            with (
+                mock.patch.object(
+                    ticket_runner, "resolve_codex_executable", return_value="/opt/codex"
+                ),
+                mock.patch("ticket_runner.subprocess.run", return_value=completed),
+            ):
+                code, _ = ticket_runner.invoke_terra(
+                    worktree=Path(directory), prompt="fixture", log_file=log,
+                    sandbox="workspace-write", timeout=300,
+                )
+            self.assertEqual(code, recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE)
 
     def test_launcher_supplied_codex_path_survives_missing_path_entry(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

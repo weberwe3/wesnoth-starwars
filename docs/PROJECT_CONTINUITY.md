@@ -4,9 +4,9 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-05 during rolling-ticket and Fast-Fix fallback work<br>
-**Main before this snapshot:** `d492ac8`<br>
-**Active governance ticket:** live pending-ticket selector and Terra Low Fast-Fix fallback<br>
+**Last continuity refresh:** 2026-09-05 during Codex write-sandbox repair<br>
+**Main before this snapshot:** `3814748`<br>
+**Active governance ticket:** fail-closed Codex workspace-write fallback enforcement<br>
 **Next intended game-development ticket:** coordinator-generated after the documented prototype catalog is exhausted
 
 ---
