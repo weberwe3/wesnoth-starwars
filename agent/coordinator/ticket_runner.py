@@ -297,13 +297,16 @@ def path_allowed(path: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
 
 
-def read_git_changes(worktree: Path) -> tuple[list[str], list[str]]:
+def _read_git_changes_against(
+    worktree: Path,
+    base: str,
+) -> tuple[list[str], list[str]]:
     rc, candidate_output = core.git(
         worktree,
         "diff",
         "--name-status",
         "-M",
-        "main",
+        base,
     )
     core.require_success(rc, candidate_output, "Read candidate changes from main")
 
@@ -355,6 +358,21 @@ def read_git_changes(worktree: Path) -> tuple[list[str], list[str]]:
             paths.append(path)
 
     return entries, sorted(set(paths))
+
+
+def read_git_changes(worktree: Path) -> tuple[list[str], list[str]]:
+    return _read_git_changes_against(worktree, "main")
+
+
+def read_resume_changes(worktree: Path) -> tuple[list[str], list[str]]:
+    """Read branch-owned and dirty remnants without attributing newer main changes."""
+
+    rc, merge_base = core.git(worktree, "merge-base", "main", "HEAD")
+    core.require_success(rc, merge_base, "Find interrupted ticket merge base")
+    base = merge_base.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", base):
+        raise SystemExit("ERROR: interrupted ticket merge base was malformed.")
+    return _read_git_changes_against(worktree, base)
 
 
 def resolve_resume_worktree(root: Path, branch: str) -> Path:
@@ -1184,7 +1202,7 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     print()
 
     if resume_branch:
-        _, existing_paths = read_git_changes(worktree)
+        _, existing_paths = read_resume_changes(worktree)
         existing_scope = validate_resume_scope(existing_paths, ticket["allowed_paths"])
         if not existing_scope["pass"]:
             violations = "; ".join(existing_scope["violations"][:5])

@@ -1113,7 +1113,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "--untracked-files=all",
             ]).splitlines()
             try:
-                _, changed_paths = ticket_runner.read_git_changes(worktree)
+                _, changed_paths = ticket_runner.read_resume_changes(worktree)
             except SystemExit as exc:
                 raise ControlError("Could not inspect an interrupted ticket worktree") from exc
             scope = ticket_runner.validate_resume_scope(
