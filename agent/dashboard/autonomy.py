@@ -10,7 +10,6 @@ import json
 import os
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import threading
 import time
@@ -572,7 +571,7 @@ class AutonomyController:
                 detail="The brief and authoritative planning inventory are unchanged.",
             )
             return cached
-        executable = shutil.which("codex") or shutil.which("codex.exe")
+        executable = ticket_runner.resolve_codex_executable()
         if not executable:
             raise ControlError("Codex CLI is unavailable")
         schema_path = runtime / f"sol-ticket-schema-{run_id}.json"
