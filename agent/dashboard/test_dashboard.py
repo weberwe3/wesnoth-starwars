@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import http.client
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -204,6 +205,30 @@ class CoordinationControlTests(unittest.TestCase):
                     "abc123def456", proposal, "Start a fresh ticket"
                 )
 
+    def test_ticket_loader_rejects_stale_protected_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "ticket.json"
+            path.write_text(json.dumps({
+                "task_id": "PROTECTED-TEST",
+                "worker": "implementer",
+                "objective": "Attempt coordinator self-modification",
+                "allowed_paths": ["agent/coordinator/ticket_runner.py"],
+                "validation_profile": "static-text",
+                "validation_root": None,
+                "resume_branch": None,
+                "resume_pr_number": None,
+                "resume_pr_head_sha": None,
+                "replace_pr_number": None,
+                "replace_pr_head_sha": None,
+                "replace_pr_branch": None,
+            }), encoding="utf-8")
+            with self.assertRaisesRegex(SystemExit, "protected path"):
+                ticket_runner.load_ticket(path)
+            evidence = ticket_runner.load_ticket(path, allow_protected_evidence=True)
+            self.assertEqual(
+                evidence["allowed_paths"], ["agent/coordinator/ticket_runner.py"]
+            )
+
     def test_deterministic_mode_rejects_continuous_automation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
@@ -314,6 +339,16 @@ class CoordinationControlTests(unittest.TestCase):
                 [(item["id"], item["status"]) for item in priorities],
                 [("done", "completed"), ("next", "completed"), ("later", "pending")],
             )
+
+    def test_completed_priority_retires_failed_historical_contract(self) -> None:
+        self.assertTrue(AutonomyController._contract_matches_completed_priority(
+            {"task_id": "ENGINE-002", "objective": "Register campaign"},
+            [{"id": "engine-002", "status": "completed"}],
+        ))
+        self.assertFalse(AutonomyController._contract_matches_completed_priority(
+            {"task_id": "ENGINE-003", "objective": "Next work"},
+            [{"id": "engine-002", "status": "completed"}],
+        ))
 
     def test_resume_restores_original_ticket_contract(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -730,6 +765,46 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 1, True))
         self.assertFalse(recovery_policy.should_use_terra_fallback("fast-fix", 1, False))
         self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 0, False))
+
+    def test_launcher_supplied_codex_path_survives_missing_path_entry(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            executable = Path(directory) / "codex.exe"
+            executable.write_text("fixture\n", encoding="utf-8")
+            with (
+                mock.patch.dict(os.environ, {"WESNOTH_CODEX_EXE": str(executable)}),
+                mock.patch("ticket_runner.shutil.which", return_value=None),
+            ):
+                self.assertEqual(ticket_runner.resolve_codex_executable(), str(executable))
+
+    def test_missing_terra_executable_writes_diagnostic(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "terra.txt"
+            with mock.patch.object(ticket_runner, "resolve_codex_executable", return_value=None):
+                code, output = ticket_runner.invoke_terra_implementer(
+                    worktree=Path(directory), prompt="fixture", log_file=log
+                )
+            self.assertEqual(code, 127)
+            self.assertIn("unavailable", output)
+            self.assertEqual(log.read_text(encoding="utf-8").strip(), output)
+
+    def test_fallback_diagnostic_distinguishes_context_and_missing_codex(self) -> None:
+        failure = recovery_policy.classify_implementer_fallback(
+            "ContextOverflowError: Request too large for tokens per minute",
+            1,
+            "Codex executable unavailable",
+            127,
+        )
+        self.assertEqual(failure["class"], "implementer_fallback_unavailable")
+        self.assertIn("token limit", failure["detail"])
+        self.assertIn("did not run", failure["detail"])
+        self.assertNotIn("ContextOverflowError", failure["detail"])
+
+    def test_control_bridge_forwards_verified_codex_path(self) -> None:
+        text = (ROOT / "agent" / "dashboard" / "control-bridge.ps1").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('EnvironmentVariables["WESNOTH_CODEX_EXE"]', text)
+        self.assertIn('forwardWslEnv += "WESNOTH_CODEX_EXE"', text)
 
     def test_failed_terra_fallback_is_not_recoverable(self) -> None:
         failure = recovery_policy.classify_validation(

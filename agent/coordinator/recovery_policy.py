@@ -73,7 +73,56 @@ def _failure(
     }
 
 
-def classify_validation(validation: dict[str, Any], implementer_rc: int) -> dict[str, Any]:
+def classify_implementer_fallback(
+    primary_output: str,
+    primary_rc: int,
+    terra_output: str,
+    terra_rc: int,
+) -> dict[str, Any]:
+    """Describe two provider failures without exposing either provider's raw output."""
+
+    primary_text = primary_output.casefold()
+    terra_text = terra_output.casefold()
+    if any(marker in primary_text for marker in (
+        "contextoverflowerror", "request too large", "tokens per minute",
+    )):
+        primary = "GPT-OSS exceeded the Groq request/context token limit."
+    elif any(marker in primary_text for marker in ("rate_limit", "rate limit", "quota")):
+        primary = "GPT-OSS was rate-limited by Groq."
+    elif primary_rc == 124:
+        primary = "GPT-OSS timed out."
+    else:
+        primary = f"GPT-OSS exited with code {primary_rc}."
+
+    if terra_rc == 127:
+        terra = "The secure runner could not locate the Codex executable, so Terra did not run."
+        action = "Restart the updated dashboard launcher, then resume the preserved ticket."
+        failure_class = "implementer_fallback_unavailable"
+    elif terra_rc == 124:
+        terra = "The Terra Medium fallback timed out."
+        action = "Check Codex availability and resume the preserved ticket when capacity returns."
+        failure_class = "implementer_fallback_failure"
+    elif any(marker in terra_text for marker in ("usage limit", "rate limit", "quota")):
+        terra = "The Terra Medium fallback reached its Codex usage limit."
+        action = "Resume the preserved ticket after Codex capacity resets."
+        failure_class = "implementer_fallback_failure"
+    else:
+        terra = f"The Terra Medium fallback exited with code {terra_rc}."
+        action = "Inspect the bounded provider diagnostics before resuming the preserved ticket."
+        failure_class = "implementer_fallback_failure"
+    return _failure(
+        failure_class,
+        f"{primary} {terra}",
+        action,
+        eligible=False,
+    )
+
+
+def classify_validation(
+    validation: dict[str, Any],
+    implementer_rc: int,
+    implementation_failure: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     scope = validation.get("scope") or {}
     violations = scope.get("violations") or []
     if violations:
@@ -104,6 +153,8 @@ def classify_validation(validation: dict[str, Any], implementer_rc: int) -> dict
 
     changed = scope.get("changed_paths") or []
     if implementer_rc == TERRA_FALLBACK_FAILURE:
+        if implementation_failure:
+            return implementation_failure
         return _failure(
             "implementer_fallback_failure",
             "Both the primary Implementer and its single Terra Medium fallback failed.",
