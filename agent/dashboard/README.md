@@ -203,3 +203,9 @@ request. Nonzero planner exits are mapped to bounded, secret-free diagnostic
 classes; raw Codex output and prompt content are never exposed in the dashboard.
 
 Override the port with `WESNOTH_DASHBOARD_PORT`.
+
+Write-capable Codex fallbacks use a launcher-created native Windows worktree
+root at `%USERPROFILE%\Documents\Codex\WesnothAgentWorktrees`, exposed to WSL
+through `WESNOTH_AGENT_WORKTREE_ROOT`. This avoids Windows Codex treating a WSL
+UNC worktree as unwritable. Legacy WSL worktrees remain discoverable for safe
+exact-branch resumption; they are never silently discarded.

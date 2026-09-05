@@ -20,6 +20,7 @@ import reference_package as reference_pkg
 import recovery_policy
 from runtime_status import RuntimeStatus, runtime_status_path
 from scenario_launch_selftest import find_wesnoth_executable
+import worktree_paths
 
 
 IMPLEMENTER_TIMEOUT = 240
@@ -225,15 +226,31 @@ def invoke_terra(
         log_file.write_text(output + "\n", encoding="utf-8")
         return 127, output
     windows_binary = executable.lower().endswith(".exe")
+    codex_worktree = _codex_path(worktree, windows_binary)
+    if (
+        sandbox == "workspace-write"
+        and windows_binary
+        and not re.fullmatch(r"[A-Za-z]:\\[^\r\n]+", codex_worktree)
+    ):
+        output = (
+            "Codex write fallback requires a native Windows worktree; "
+            "UNC and WSL-only paths are refused before model launch."
+        )
+        log_file.write_text(output + "\n", encoding="utf-8")
+        return recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE, output
     command = [
-        executable, "exec", "-C", _codex_path(worktree, windows_binary),
-        "-s", sandbox, "-m", "gpt-5.6-terra",
+        executable, "exec", "-C", codex_worktree,
+        "-m", "gpt-5.6-terra",
         "-c", f'model_reasoning_effort="{reasoning_effort}"',
         "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
         "--color", "never", "-",
     ]
     if sandbox == "workspace-write":
+        # Current Codex selects workspace-write as part of automatic review and
+        # rejects combining --approve-for-me with an explicit --sandbox flag.
         command.insert(command.index("--ephemeral"), "--approve-for-me")
+    else:
+        command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
     environment = {
         key: value for key, value in core.make_test_env().items()
         if not re.search(
@@ -250,11 +267,14 @@ def invoke_terra(
         output = completed.stdout or ""
         log_file.write_text(output, encoding="utf-8")
         reported = re.search(r"(?mi)^sandbox:\s*([^\s]+)", output)
+        approval = re.search(r"(?mi)^approval:\s*([^\s]+)", output)
         if (
             sandbox == "workspace-write"
             and (
                 reported is None
-                or reported.group(1).casefold() != "workspace-write"
+                or reported.group(1).casefold() not in {"read-only", "workspace-write"}
+                or approval is None
+                or approval.group(1).casefold() != "on-request"
             )
         ):
             return recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE, output
@@ -350,6 +370,11 @@ def invoke_managed_terra(
     decisive = not decisive_verdicts or any(
         core.contains_verdict(output, verdict) for verdict in decisive_verdicts
     )
+    if rc == recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE:
+        # A local path/sandbox configuration defect is not a provider failure.
+        # Clear an earlier false provider circuit so the repaired native path can run.
+        policy.record_success(model)
+        return rc, output
     failure = failure_kind(rc, output, decisive=decisive)
     if failure:
         policy.record_failure(model, run_sequence, failure, output)
@@ -781,16 +806,40 @@ def resolve_resume_worktree(root: Path, branch: str) -> Path:
 
     rc, output = core.git(root, "worktree", "list", "--porcelain")
     core.require_success(rc, output, "Inventory resumable worktrees")
-    managed_root = (root.parent / f"{root.name}-worktrees").resolve()
+    managed_roots = worktree_paths.managed_worktree_roots(root)
+    primary_root = managed_roots[0]
     current_path: Path | None = None
     for line in output.splitlines() + [""]:
         if line.startswith("worktree "):
             current_path = Path(line.removeprefix("worktree ")).resolve()
         elif line == f"branch refs/heads/{branch}" and current_path is not None:
-            try:
-                current_path.relative_to(managed_root)
-            except ValueError as exc:
-                raise SystemExit("ERROR: resume worktree is outside the managed root.") from exc
+            if not worktree_paths.contains_managed_worktree(root, current_path):
+                raise SystemExit("ERROR: resume worktree is outside the managed root.")
+            if current_path.parent != primary_root:
+                primary_root.mkdir(parents=True, exist_ok=True)
+                destination = (primary_root / current_path.name).resolve()
+                if destination.exists():
+                    raise SystemExit("ERROR: migrated resume worktree target already exists.")
+                rc, moved = core.git(
+                    root, "worktree", "move", str(current_path), str(destination)
+                )
+                if rc != 0:
+                    rc, dirty = core.git(
+                        current_path, "status", "--porcelain=v1", "--untracked-files=all"
+                    )
+                    core.require_success(rc, dirty, "Inspect legacy resume worktree")
+                    if dirty.strip():
+                        raise SystemExit(
+                            "ERROR: a dirty legacy worktree could not be moved to the "
+                            "Codex-compatible root; all remnants were preserved."
+                        )
+                    rc, removed = core.git(root, "worktree", "remove", str(current_path))
+                    core.require_success(rc, removed, "Retire clean legacy worktree registration")
+                    rc, added = core.git(
+                        root, "worktree", "add", str(destination), branch
+                    )
+                    core.require_success(rc, added, "Recreate exact clean branch in native root")
+                current_path = destination
             rc, active = core.git(current_path, "branch", "--show-current")
             core.require_success(rc, active, "Verify resumed ticket branch")
             if active.strip() != branch:
@@ -1733,7 +1782,7 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     task_id = ticket["task_id"]
 
     resume_branch = ticket.get("resume_branch")
-    worktree_base = root.parent / f"{root.name}-worktrees"
+    worktree_base = worktree_paths.managed_worktree_root(root)
     if resume_branch:
         branch = resume_branch
         worktree = resolve_resume_worktree(root, branch)
