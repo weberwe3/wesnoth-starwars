@@ -1,7 +1,7 @@
 ---
 description: Independently reviews correctness, architecture, regressions, and test coverage
 mode: all
-model: google/gemini-3.6-flash
+model: cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b
 permission:
   "*": deny
   read:

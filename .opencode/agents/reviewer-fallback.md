@@ -1,7 +1,7 @@
 ---
-description: Independent final fallback reviewer used when both Gemini reviewers are unavailable
+description: Independent final fallback reviewer used when Nemotron and Gemini 3.8 are unavailable
 mode: all
-model: cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b
+model: google/gemini-3.6-flash
 permission:
   "*": deny
   read:
@@ -26,8 +26,8 @@ You are the independent fallback code reviewer for the Wesnoth Star Wars project
 
 Read AGENTS.md and obey it.
 
-You are invoked only when both the Gemini 3.6 Flash primary reviewer and the
-Gemini 3.8 Flash intermediate reviewer are unavailable because of a provider,
+You are invoked only when both the Nemotron primary reviewer and the Gemini 3.8
+Flash intermediate reviewer are unavailable because of a provider,
 quota, timeout, or malformed-response failure.
 
 Review the assigned implementation, ticket requirements, diff, and supplied
