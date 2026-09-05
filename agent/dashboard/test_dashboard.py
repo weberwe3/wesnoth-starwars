@@ -23,6 +23,7 @@ from coordination_control import ControlStore  # noqa: E402
 import recovery_policy  # noqa: E402
 import model_policy  # noqa: E402
 import ticket_runner  # noqa: E402
+import worktree_paths  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from autonomy import (  # noqa: E402
     AutonomyController,
@@ -1154,7 +1155,9 @@ class CoordinationControlTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             log = Path(directory) / "terra-light.txt"
             completed = subprocess.CompletedProcess(
-                [], 0, stdout="sandbox: workspace-write\ncandidate returned\n"
+                [], 0, stdout=(
+                    "approval: on-request\nsandbox: read-only\ncandidate returned\n"
+                )
             )
             with (
                 mock.patch.object(
@@ -1169,6 +1172,27 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn('model_reasoning_effort="low"', run.call_args.args[0])
             self.assertIn("--approve-for-me", run.call_args.args[0])
+            self.assertNotIn("-s", run.call_args.args[0])
+
+    def test_terra_accepts_codex_auto_review_base_sandbox_header(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "terra-auto-review.txt"
+            completed = subprocess.CompletedProcess(
+                [], 0, stdout=(
+                    "approval: on-request\nsandbox: read-only\npatch: completed\n"
+                )
+            )
+            with (
+                mock.patch.object(
+                    ticket_runner, "resolve_codex_executable", return_value="/opt/codex"
+                ),
+                mock.patch("ticket_runner.subprocess.run", return_value=completed),
+            ):
+                code, _ = ticket_runner.invoke_terra(
+                    worktree=Path(directory), prompt="fixture", log_file=log,
+                    sandbox="workspace-write", timeout=300,
+                )
+            self.assertEqual(code, 0)
 
     def test_terra_write_fallback_rejects_silent_read_only_downgrade(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1209,6 +1233,110 @@ class CoordinationControlTests(unittest.TestCase):
                     sandbox="workspace-write", timeout=300,
                 )
             self.assertEqual(code, recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE)
+
+    def test_windows_codex_refuses_unc_write_workspace_before_launch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "terra-unc.txt"
+            with (
+                mock.patch.object(
+                    ticket_runner,
+                    "resolve_codex_executable",
+                    return_value="C:\\Codex\\codex.exe",
+                ),
+                mock.patch.object(
+                    ticket_runner,
+                    "_codex_path",
+                    return_value=r"\\wsl.localhost\Ubuntu-24.04\home\fixture\ticket",
+                ),
+                mock.patch("ticket_runner.subprocess.run") as run,
+            ):
+                code, output = ticket_runner.invoke_terra(
+                    worktree=Path(directory), prompt="fixture", log_file=log,
+                    sandbox="workspace-write", timeout=300,
+                )
+            self.assertEqual(code, recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE)
+            self.assertIn("native Windows worktree", output)
+            run.assert_not_called()
+
+    def test_configured_native_worktree_root_retains_legacy_discovery(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            repo = base / "project"
+            repo.mkdir()
+            native = base / "Codex" / "WesnothAgentWorktrees"
+            with mock.patch.dict(
+                os.environ, {worktree_paths.WORKTREE_ROOT_ENV: str(native)}
+            ):
+                self.assertEqual(worktree_paths.managed_worktree_root(repo), native.resolve())
+                self.assertEqual(
+                    worktree_paths.managed_worktree_roots(repo),
+                    (native.resolve(), (base / "project-worktrees").resolve()),
+                )
+
+    def test_clean_legacy_resume_moves_to_configured_native_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            repo = base / "project"
+            repo.mkdir()
+            subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True,
+                           stdout=subprocess.DEVNULL)
+            subprocess.run(["git", "config", "user.name", "Fixture"], cwd=repo, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "fixture@example.invalid"],
+                cwd=repo, check=True,
+            )
+            (repo / "fixture.txt").write_text("baseline\n", encoding="utf-8")
+            subprocess.run(["git", "add", "fixture.txt"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-m", "baseline"], cwd=repo, check=True,
+                           stdout=subprocess.DEVNULL)
+            legacy = base / "project-worktrees" / "ticket"
+            legacy.parent.mkdir()
+            branch = "agent/native-resume"
+            subprocess.run(
+                ["git", "worktree", "add", "-b", branch, str(legacy)],
+                cwd=repo, check=True, stdout=subprocess.DEVNULL,
+            )
+            native = base / "Codex" / "WesnothAgentWorktrees"
+            with mock.patch.dict(
+                os.environ, {worktree_paths.WORKTREE_ROOT_ENV: str(native)}
+            ):
+                resolved = ticket_runner.resolve_resume_worktree(repo, branch)
+            self.assertEqual(resolved, (native / "ticket").resolve())
+            self.assertTrue(resolved.is_dir())
+            self.assertFalse(legacy.exists())
+            self.assertEqual(
+                subprocess.run(
+                    ["git", "branch", "--show-current"], cwd=resolved,
+                    check=True, text=True, stdout=subprocess.PIPE,
+                ).stdout.strip(),
+                branch,
+            )
+
+    def test_local_sandbox_failure_does_not_open_terra_provider_circuit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = Path(directory) / "runtime"
+            policy = model_policy.ModelPolicy(runtime)
+            run_sequence = policy.begin_run("NATIVE-WRITE")
+            policy.record_failure("openai/gpt-5.6-terra", run_sequence, "process")
+            status = mock.Mock()
+            log = Path(directory) / "terra.txt"
+            with mock.patch.object(
+                ticket_runner,
+                "invoke_terra",
+                return_value=(
+                    recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE,
+                    "native Windows worktree required",
+                ),
+            ):
+                code, _ = ticket_runner.invoke_managed_terra(
+                    policy=policy, run_sequence=run_sequence + 3, status=status,
+                    worktree=Path(directory), prompt="fixture", log_file=log,
+                    sandbox="workspace-write", timeout=300,
+                )
+            self.assertEqual(code, recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE)
+            self.assertTrue(
+                policy.before_attempt("openai/gpt-5.6-terra", run_sequence + 4)[0]
+            )
 
     def test_launcher_supplied_codex_path_survives_missing_path_entry(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1320,6 +1448,17 @@ class CoordinationControlTests(unittest.TestCase):
         )
         self.assertIn('EnvironmentVariables["WESNOTH_CODEX_EXE"]', text)
         self.assertIn('forwardWslEnv += "WESNOTH_CODEX_EXE"', text)
+        self.assertIn('EnvironmentVariables["WESNOTH_AGENT_WORKTREE_ROOT"]', text)
+        self.assertIn('forwardWslEnv += "WESNOTH_AGENT_WORKTREE_ROOT"', text)
+
+    def test_batch_launcher_exports_codex_compatible_worktree_root(self) -> None:
+        text = (ROOT / "Start-WesnothAgentEnvironment.cmd").read_text(encoding="utf-8")
+        self.assertIn(
+            "WESNOTH_AGENT_WORKTREE_ROOT=/mnt/c/Users/%USERNAME%/Documents/Codex/"
+            "WesnothAgentWorktrees",
+            text,
+        )
+        self.assertIn("WESNOTH_AGENT_WORKTREE_ROOT/u", text)
 
     def test_failed_terra_fallback_is_not_recoverable(self) -> None:
         failure = recovery_policy.classify_validation(

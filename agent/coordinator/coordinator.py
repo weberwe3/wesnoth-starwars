@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+import worktree_paths
 from typing import Optional
 
 from runtime_status import RuntimeStatus, runtime_status_path
@@ -242,7 +243,7 @@ def _run_smoke(root: Path) -> int:
 
     # Keep Git worktrees outside the main worktree. Nested worktrees make
     # repository status and cleanup unnecessarily confusing.
-    worktree_base = root.parent / f"{root.name}-worktrees"
+    worktree_base = worktree_paths.managed_worktree_root(root)
     worktree = worktree_base / f"coord-smoke-{timestamp}"
 
     log_dir = root / "agent" / "logs" / task_id

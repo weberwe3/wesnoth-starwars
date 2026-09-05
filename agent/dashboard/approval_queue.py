@@ -15,6 +15,8 @@ import tempfile
 import threading
 from typing import Any, Callable
 
+import worktree_paths
+
 
 BRANCH = re.compile(r"agent/[a-z0-9][a-z0-9._/-]{0,180}")
 HEX_SHA = re.compile(r"[0-9a-f]{40}")
@@ -313,11 +315,8 @@ class ApprovalQueue:
         if not isinstance(worktree_value, str):
             raise QueueError("Ticket result contains no worktree")
         worktree = Path(worktree_value).resolve()
-        expected_parent = (self.root.parent / f"{self.root.name}-worktrees").resolve()
-        try:
-            worktree.relative_to(expected_parent)
-        except ValueError as exc:
-            raise QueueError("Ticket worktree is outside the managed worktree root") from exc
+        if not worktree_paths.contains_managed_worktree(self.root, worktree):
+            raise QueueError("Ticket worktree is outside the managed worktree root")
         if not worktree.is_dir():
             raise QueueError("Ticket worktree is unavailable")
         if _run(["git", "branch", "--show-current"], worktree) != branch:
@@ -843,12 +842,12 @@ class ApprovalQueue:
         worktree_name = record.get("worktree_name")
         if not isinstance(worktree_name, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", worktree_name):
             raise QueueError("Queue worktree identity is invalid")
-        worktree = (self.root.parent / f"{self.root.name}-worktrees" / worktree_name).resolve()
-        expected_parent = (self.root.parent / f"{self.root.name}-worktrees").resolve()
         try:
-            worktree.relative_to(expected_parent)
-        except ValueError as exc:
-            raise QueueError("Queue worktree is outside the managed root") from exc
+            worktree = worktree_paths.named_worktree(
+                self.root, worktree_name, must_exist=False
+            )
+        except RuntimeError as exc:
+            raise QueueError(str(exc)) from exc
         if worktree.exists():
             if _run(["git", "branch", "--show-current"], worktree) != branch:
                 raise QueueError("Managed worktree branch no longer matches the queue")
@@ -1114,10 +1113,10 @@ class ApprovalQueue:
         name = record.get("worktree_name")
         if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", name):
             raise QueueError("Queue worktree identity is invalid")
-        path = (self.root.parent / f"{self.root.name}-worktrees" / name).resolve()
-        if not path.is_dir():
-            raise QueueError("Queue worktree is unavailable")
-        return path
+        try:
+            return worktree_paths.named_worktree(self.root, name, must_exist=True)
+        except RuntimeError as exc:
+            raise QueueError(str(exc)) from exc
 
     def _update_record(self, record_id: str, **values: Any) -> None:
         def change(state: dict[str, Any]) -> None:

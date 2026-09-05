@@ -53,10 +53,13 @@ Terra fallback at low reasoning in the same isolated worktree. It retains the
 original objective and allowed paths and receives no authority to test, commit,
 publish, merge, delete, or broaden scope.
 
-Every Codex implementation fallback must request the application-supported
-auto-reviewed workspace-write mode and verify the effective sandbox reported by
-Codex. A silent downgrade to read-only is an infrastructure hard stop, not a
-successful worker result and not an eligible code-recovery attempt.
+Every Codex implementation fallback must use the application-supported
+auto-reviewed write path from a native Windows-backed managed worktree. Current
+Codex releases report the base command sandbox as read-only while automatic
+review applies approved patches, so Python must verify `approval: on-request`,
+the native worktree location, the process result, and the resulting Git diff.
+Missing approval evidence or a UNC/WSL-only write path is an infrastructure hard
+stop, not a provider failure or an eligible code-recovery attempt.
 
 ## Wesnoth requirements
 

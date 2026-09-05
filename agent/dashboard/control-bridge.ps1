@@ -101,6 +101,12 @@ try {
                 $info.EnvironmentVariables["WESNOTH_CODEX_EXE"] = $codexLinux
                 $forwardWslEnv += "WESNOTH_CODEX_EXE"
             }
+            $managedRoot = $env:WESNOTH_AGENT_WORKTREE_ROOT
+            if ($managedRoot -notmatch '^/mnt/[a-z]/Users/[A-Za-z0-9._ -]+/Documents/Codex/WesnothAgentWorktrees$') {
+                throw "Invalid Codex-compatible worktree root."
+            }
+            $info.EnvironmentVariables["WESNOTH_AGENT_WORKTREE_ROOT"] = $managedRoot
+            $forwardWslEnv += "WESNOTH_AGENT_WORKTREE_ROOT"
             $info.EnvironmentVariables["WSLENV"] = (
                 $forwardWslEnv | Where-Object { $_ } | Select-Object -Unique
             ) -join ":"

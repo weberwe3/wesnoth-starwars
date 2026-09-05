@@ -971,6 +971,7 @@ When updating this file:
 | 2026-09-05 | DASH-027 queue governance controls | Add exact local stale-remnant deletion, cumulative dependency-batch publication, and automation-session-bound publication after a complete non-deleting local PASS |
 | 2026-09-05 | Legends content directives | Require authentic post-ROTJ Expanded Universe terminology, original prose and implementation, `sw_` project IDs, Wesnoth-ready commented code, and free official add-on-server distribution |
 | 2026-09-05 | Autonomous backlog refill | Generate four bounded tickets in one compact Sol call when no safe backlog work remains, then let Python select and revalidate them without repeated planning calls |
+| 2026-09-05 | Native Codex fallback repair | Move new write-capable fallback worktrees to a launcher-managed Windows-backed root, preserve legacy worktree discovery, use Codex automatic review without an incompatible sandbox flag, and stop treating the CLI's read-only base-shell header as a failed patch path |
 
 ---
 
@@ -989,3 +990,15 @@ DASH-027 requires its dedicated governance change to merge first. It binds stand
 The controlled content policy now makes post-Return of the Jedi Expanded Universe (Legends) terminology an affirmative fidelity requirement while retaining the existing original-expression boundary. New project-owned WML/Lua IDs use the `sw_` namespace; player-facing fields use full lore names; dialogue, story prose, macros, terrain logic, events, and scenarios are newly authored; and the add-on remains structured for free distribution through the official Wesnoth add-on server. Requests for code artifacts should receive complete, scoped, commented WML/Lua that fits the stated Wesnoth directory and turn-based hex framework.
 
 Continuous automation now treats backlog maintenance as a coordinator responsibility. After existing or resumable work and the documented priority catalog are exhausted, one compact read-only Sol call proposes four ordered implementation contracts. Python rejects unsafe or overlapping entries, stores only validated contracts in ignored runtime state, starts the first immediately, and revalidates and selects later entries without another planner call. It requests a new set only after the prior set is exhausted or unusable. All existing worktree, scope, validation, tester, reviewer, deletion, publication, and three-failure gates remain unchanged.
+
+Write-capable Terra fallbacks now run only from the stable Windows-backed
+`Documents\Codex\WesnothAgentWorktrees` root. The launcher exports its WSL path
+without exposing credentials, the coordinator creates new ticket worktrees
+there, and legacy WSL worktrees remain visible for exact-branch resumption. The
+installed Codex CLI rejects combining `--approve-for-me` with an explicit
+workspace-write sandbox flag and reports a read-only base shell even while its
+automatic review path successfully applies an approved patch. The wrapper now
+uses the supported flag combination, requires on-request approval evidence and
+a native drive-letter path, and leaves the resulting Git diff and all existing
+deterministic gates authoritative. Local path/sandbox configuration failures no
+longer poison Terra's provider-availability circuit.

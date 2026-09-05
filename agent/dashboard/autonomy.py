@@ -19,6 +19,7 @@ from coordination_control import ControlStore, VALID_MODES, utc_now
 from approval_queue import ApprovalQueue, QueueError
 import recovery_policy
 import ticket_runner
+import worktree_paths
 
 
 PLANNER_TIMEOUT_SECONDS = 300
@@ -1741,8 +1742,10 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
         main_head = checked(["git", "rev-parse", "main"]).strip()
         documented_priorities = self._planned_priorities()
 
-        managed_root = (self.root.parent / f"{self.root.name}-worktrees").resolve()
-        worktrees = self._managed_worktrees(checked(["git", "worktree", "list", "--porcelain"]), managed_root)
+        managed_roots = worktree_paths.managed_worktree_roots(self.root)
+        worktrees = self._managed_worktrees(
+            checked(["git", "worktree", "list", "--porcelain"]), managed_roots
+        )
         branches = []
         blocked_branches = []
         retired_branches = []
@@ -2057,9 +2060,12 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
         }
 
     @staticmethod
-    def _managed_worktrees(output: str, managed_root: Path) -> dict[str, Path]:
+    def _managed_worktrees(
+        output: str, managed_root: Path | tuple[Path, ...]
+    ) -> dict[str, Path]:
         """Parse only worktrees inside the deterministic coordinator's root."""
 
+        roots = (managed_root,) if isinstance(managed_root, Path) else managed_root
         found: dict[str, Path] = {}
         current_path: Path | None = None
         for line in output.splitlines() + [""]:
@@ -2067,9 +2073,9 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 current_path = Path(line.removeprefix("worktree ")).resolve()
             elif line.startswith("branch refs/heads/") and current_path is not None:
                 branch = line.removeprefix("branch refs/heads/")
-                try:
-                    current_path.relative_to(managed_root)
-                except ValueError:
+                if not any(
+                    current_path == root or root in current_path.parents for root in roots
+                ):
                     continue
                 if re.fullmatch(r"agent/[a-zA-Z0-9._/-]+", branch):
                     found[branch] = current_path

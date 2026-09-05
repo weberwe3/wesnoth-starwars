@@ -7,6 +7,14 @@ set "CONTROL_BRIDGE=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwar
 set "LAN_PROXY=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwars\agent\dashboard\lan-view-proxy.ps1"
 set "LAN_FIREWALL=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwars\agent\dashboard\configure-lan-firewall.ps1"
 set "SESSION_WATCHER=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwars\agent\dashboard\launcher-session-watcher.ps1"
+set "WESNOTH_AGENT_WORKTREE_WINDOWS=%USERPROFILE%\Documents\Codex\WesnothAgentWorktrees"
+set "WESNOTH_AGENT_WORKTREE_ROOT=/mnt/c/Users/%USERNAME%/Documents/Codex/WesnothAgentWorktrees"
+
+if not exist "%WESNOTH_AGENT_WORKTREE_WINDOWS%" mkdir "%WESNOTH_AGENT_WORKTREE_WINDOWS%"
+if not exist "%WESNOTH_AGENT_WORKTREE_WINDOWS%" (
+  echo Could not create the Codex-compatible worktree directory.
+  exit /b 1
+)
 
 if not exist "%SECURE_LAUNCHER%" (
   echo Secure launcher not found: %SECURE_LAUNCHER%
@@ -22,9 +30,9 @@ for /f "usebackq delims=" %%I in (`powershell.exe -NoLogo -NoProfile -Command "[
 set "WESNOTH_DASHBOARD_LAN_URL=http://%LAN_IP%:8765"
 set "WESNOTH_DASHBOARD_SESSION_ID=%DASHBOARD_SESSION%"
 if defined WSLENV (
-  set "WSLENV=%WSLENV%:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u"
+  set "WSLENV=%WSLENV%:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
 ) else (
-  set "WSLENV=WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u"
+  set "WSLENV=WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
 )
 
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^

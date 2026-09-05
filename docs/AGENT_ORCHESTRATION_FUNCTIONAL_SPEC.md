@@ -113,11 +113,19 @@ Ticket branches:
 
 `agent/<ticket-id-lowercase>-<timestamp>`
 
-Ticket worktrees are created outside the main worktree, under:
+Ticket worktrees are created outside the main worktree. Write-capable Codex
+fallbacks use the launcher-configured Windows-backed root exposed in WSL as:
 
-`~/projects/wesnoth-starwars-worktrees/`
+`/mnt/c/Users/<Windows user>/Documents/Codex/WesnothAgentWorktrees/`
 
 Workers operate only inside their assigned worktree.
+
+The coordinator continues to inventory the former
+`~/projects/wesnoth-starwars-worktrees/` root so unfinished tickets are not
+abandoned. On exact-branch resumption it moves the registered worktree to the
+Windows-backed root. If a cross-filesystem move is unavailable, Python may
+recreate only an unchanged clean worktree at the exact existing branch; dirty
+remnants are preserved and processing stops rather than discarding work.
 
 ### 3.6 GitHub
 
@@ -203,8 +211,8 @@ Routing is policy, not permanence. Models may change if availability, capability
 Known provider observations:
 
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
-- When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. When the primary Fast-Fix process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at low reasoning in that worktree. Each fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not test, commit, merge, push, delete, or broaden scope.
-- Codex implementation fallbacks request the CLI's auto-reviewed workspace-write mode and verify the effective sandbox reported in the subprocess transcript. If Codex reports read-only or any mode other than workspace-write, Python classifies the fallback as unavailable and stops that worktree run immediately. A zero process exit code without the requested write sandbox is never implementation success and must not consume repeated no-change recovery attempts.
+- When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. When the primary Fast-Fix process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at low reasoning in that worktree. Each fallback uses the Codex CLI's auto-reviewed write path from a native Windows-backed worktree, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not test, commit, merge, push, delete, or broaden scope.
+- Codex 0.153.4 reports `sandbox: read-only` for its base command sandbox even when `--approve-for-me` is active and approved patches are applied through automatic review. Python therefore requires a native drive-letter worktree, invokes `--approve-for-me` without the incompatible explicit `--sandbox workspace-write` option, requires `approval: on-request` transcript evidence, and then relies on the process result plus deterministic Git diff, scope, protected-path, validation, tester, and reviewer gates. A UNC or WSL-only worktree, missing approval evidence, or unsupported sandbox report is a local infrastructure hard stop. It must not be recorded as a provider failure or open Terra's two-run provider circuit.
 - A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
 - When GLM-4.7 Flash is unavailable or returns no decisive tester verdict, the coordinator may invoke Terra Medium once as the independent read-only tester fallback. A substantive GLM `FAIL` remains authoritative and must not be bypassed. Terra must be withheld from testing when Terra implemented the candidate, and Terra must be withheld from final review when it already tested the candidate.
 - Implementer and Fast-Fix agents must inspect large source files through targeted search and reads of no more than 120 lines per call rather than requesting an entire large file. Tester/reviewer reads are bounded to 160 lines. This keeps provider context/token limits from turning ordinary scoped work into avoidable infrastructure failures.
@@ -246,7 +254,7 @@ Security rules:
 - tester/reviewer roles are read-only;
 - deterministic test execution belongs to Python, not the LLM worker.
 
-The Terra Implementer fallback is a narrowly authorized exception to the OpenCode worker tool profile. Codex runs with its `workspace-write` sandbox, no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Deterministic scope and protected-path gates remain authoritative immediately after it returns; sandbox access never grants publication or governance authority.
+The Terra Implementer fallback is a narrowly authorized exception to the OpenCode worker tool profile. Codex runs through automatic review in a native Windows-backed managed worktree, with no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Its base shell may remain read-only while approved patch operations write through the application review path. Deterministic Git diff, scope, and protected-path gates remain authoritative immediately after it returns; patch approval never grants publication or governance authority.
 
 Tool denial is an application-level security boundary. It is not claimed to be equivalent to a separately virtualized OS sandbox.
 
@@ -321,7 +329,7 @@ Failure stops the run.
 For a new ticket, create:
 
 - branch: `agent/<ticket>-<timestamp>`;
-- worktree: `~/projects/wesnoth-starwars-worktrees/<ticket>-<timestamp>`.
+- worktree: `/mnt/c/Users/<Windows user>/Documents/Codex/WesnothAgentWorktrees/<ticket>-<timestamp>` when launched through the supported Windows workflow.
 
 No worker edits the main worktree.
 
