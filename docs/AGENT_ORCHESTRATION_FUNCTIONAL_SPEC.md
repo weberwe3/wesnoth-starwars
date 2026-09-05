@@ -188,9 +188,9 @@ Baseline routing:
 | Implementer | Groq - `groq/openai/gpt-oss-120b`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Main bounded implementation work |
 | Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free` | Small mechanical corrections |
 | Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash` | Independent read-only test evaluation |
-| Primary reviewer | Google - `google/gemini-3.6-flash` | Independent review when quota is available |
+| Primary reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Preferred independent review |
 | Intermediate reviewer | Google - `google/gemini-3.8-flash` | First reviewer fallback for infrastructure/non-decisive primary failure |
-| Final fallback reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Final reviewer fallback when both Gemini reviewers are unavailable or non-decisive |
+| Final fallback reviewer | Google - `google/gemini-3.6-flash` | Final reviewer fallback when Nemotron and Gemini 3.8 Flash are unavailable or non-decisive |
 
 Routing is policy, not permanence. Models may change if availability, capability, retirement, quota, or quality changes. The role separation and fallback rules are more important than any specific model.
 
@@ -199,7 +199,7 @@ Known provider observations:
 - Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
 - When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. The fallback uses workspace-write sandboxing, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not commit, merge, push, broaden scope, or run as a Fast-Fix fallback.
 - A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
-- A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. Gemini 3.8 Flash is the only intermediate reviewer between Gemini 3.6 Flash and Nemotron.
+- A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. The reviewer order is Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash.
 - A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
 
@@ -418,11 +418,9 @@ Tester must not modify files or compensate for deterministic failures.
 
 ### Stage 6 - Reviewer
 
-Primary reviewer runs independently.
+Nemotron runs as the independent primary reviewer. Gemini 3.8 Flash is used only when Nemotron is unavailable or non-decisive due to infrastructure conditions such as timeout, quota failure, or malformed output. Gemini 3.6 Flash is the final fallback only when both earlier reviewers are unavailable or non-decisive.
 
-Fallback reviewer is used only when primary review is unavailable or non-decisive due to infrastructure conditions such as timeout or quota failure.
-
-**No reviewer shopping:** if the primary reviewer substantively requests changes, the result is not sent to a fallback solely to seek approval.
+**No reviewer shopping:** if any reviewer substantively requests changes, the result is not sent to a later fallback solely to seek approval.
 
 ### Stage 7 - Local verdict
 
@@ -441,8 +439,13 @@ When automation is enabled:
 - Sol must inventory and resume safe unfinished ticket work before proposing a
   new ticket; this includes eligible open pull requests, and stale remnants are
   continuation context rather than grounds to discard prior work;
-- a fresh ticket is permitted only when the owner-provided coordinator brief
-  explicitly authorizes a fresh/new ticket or starting from scratch;
+- switching automation on authorizes Sol to create one fresh bounded ticket at a
+  time without requiring repeated fresh-start wording in the coordinator brief;
+- structured live GitHub, worktree, approval-queue, and publication evidence is
+  authoritative for mutable execution state; continuity prose is planning context
+  and must not keep a merged or otherwise completed ticket artificially active;
+- after excluding active/queued/published priorities and unsafe dependencies, Sol
+  selects the highest-priority independent safe ticket remaining;
 - Sol may read the controlled references and continuity ledger, prioritize the
   planned backlog, and propose one bounded ticket at a time;
 - Python remains the authoritative state machine and must validate each ticket,

@@ -279,8 +279,8 @@ Intended system roles:
 - **free/low-cost hosted worker LLMs** — bounded implementation work in isolated branches/worktrees;
 - **tester LLM** — independent inspection after deterministic gates;
 - **reviewer LLM** — final independent model review;
-- **intermediate reviewer** — Gemini 3.8 Flash only when the primary reviewer is unavailable/non-decisive for infrastructure reasons;
-- **final fallback reviewer** — Nemotron only when both Gemini reviewers are unavailable/non-decisive for infrastructure reasons.
+- **intermediate reviewer** — Gemini 3.8 Flash only when the primary Nemotron reviewer is unavailable/non-decisive for infrastructure reasons;
+- **final fallback reviewer** — Gemini 3.6 Flash only when Nemotron and Gemini 3.8 Flash are unavailable/non-decisive for infrastructure reasons.
 
 Workers do not control `main`.
 
@@ -319,16 +319,16 @@ Routing used during the infrastructure baseline:
 - implementer: `groq/openai/gpt-oss-120b`, with one `gpt-5.6-terra` medium fallback after primary Implementer process failure
 - fast-fix: `opencode/ling-3.0-flash-fin-free`
 - tester: `cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash`
-- primary reviewer: `google/gemini-3.6-flash`
+- primary reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
 - intermediate reviewer: `google/gemini-3.8-flash`
-- final fallback reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
+- final fallback reviewer: `google/gemini-3.6-flash`
 
 Observed behavior:
 
-- Google primary reviewer sometimes encounters free-tier quota/429/timeouts;
-- Gemini 3.8 Flash is the only intermediate reviewer when Gemini 3.6 Flash has an infrastructure/unavailability/non-decisive failure;
-- Nemotron is permitted only when both Gemini reviewers have infrastructure/unavailability/non-decisive failures;
-- a substantive `REQUEST_CHANGES` from either Gemini reviewer must not be bypassed by a later fallback.
+- Google reviewers may encounter free-tier quota/429/timeouts;
+- Gemini 3.8 Flash is the only intermediate reviewer when Nemotron has an infrastructure/unavailability/non-decisive failure;
+- Gemini 3.6 Flash is the final fallback only when Nemotron and Gemini 3.8 Flash have infrastructure/unavailability/non-decisive failures;
+- a substantive `REQUEST_CHANGES` from any reviewer must not be bypassed by a later fallback.
 
 Provider choices may change over time; the role boundaries and fail-closed policy matter more than a specific model name.
 
@@ -953,12 +953,13 @@ When updating this file:
 | 2026-09-04 | DASH-007 / PR #21 | Merged exact-head, contract-backed open-PR resumption with append-only main reconciliation, a fail-closed same-contract replacement path that preserves retired branches, and Gemini 3.8 Flash between Gemini 3.6 Flash and Nemotron in the reviewer fallback chain |
 | 2026-09-04 | DASH-008 / PR #22 | Merged strict structured-output required-field repair, deterministic schema preflight, and bounded secret-free planner failure diagnostics |
 | 2026-09-04 | DASH-009 / PR #23 | Merged bounded post-push GitHub head confirmation, duplicate queue-ownership prevention, and exact-record AI recode and non-destructive queue-removal controls |
-| 2026-09-04 | DASH-010 continuous priority scheduling (implementation in progress) | Make the active Automation toggle authorize fresh bounded tickets, skip queue/PR-owned priorities, continue with the highest-priority independent safe work, and sequence publication around exact-head CI registration/current-main checks while retaining manual publication/deletion gates |
+| 2026-09-04 | DASH-010 / PR #25 | Merged continuous priority scheduling: the active Automation toggle authorizes fresh bounded tickets, skips queue/PR-owned priorities, advances through independent safe work, and sequences publication around exact-head CI registration/current-main checks while retaining manual publication/deletion gates |
+| 2026-09-04 | DASH-011 live-state scheduling and reviewer routing (implementation in progress) | Make live queue/GitHub evidence authoritative over stale continuity snapshots, expose published history and planned priorities to Sol, and route review through Nemotron, Gemini 3.8 Flash, then Gemini 3.6 Flash |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, the project has completed the infrastructure/reference foundation and local autonomous Agent Manager needed for controlled AI-assisted development. DASH-009 is merged through PR #23. `ENGINE-002` remains represented by open PR #15, a managed worktree, and a failed publication record whose exact-head CI subsequently passed. The failure exposed two ordering conditions: GitHub may not register a new PR check immediately after push, and an approved commit can become behind `main` while it waits in the queue. DASH-010 is being implemented so Automation authorizes fresh bounded tickets, skips owned priorities, selects the highest-priority independent safe work, waits conditionally for exact-head CI registration, and routes behind-main tickets to AI recode/revalidation rather than emitting a generic CLI failure. Exact-commit publication and file-deletion approval remain manual boundaries.
+At this snapshot, DASH-010 is merged through PR #25 and ENGINE-002 is merged through PR #15 at `c61c0dc418213379d19350580bde0c3c4a5d5d98`. The first post-merge scheduler pass started automatically but paused because the continuity prose still described PR #15 as open while live GitHub and queue inventory correctly showed it published. DASH-011 is being implemented to make live mutable state authoritative, provide recent publication and planned-priority data directly to Sol, and advance to the next independent priority instead of stopping on stale prose. The reviewer chain is also changing to Nemotron primary, Gemini 3.8 Flash intermediate, and Gemini 3.6 Flash final fallback. Exact-commit publication and file-deletion approval remain manual boundaries.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.

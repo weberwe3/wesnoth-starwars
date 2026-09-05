@@ -517,6 +517,13 @@ class AutonomyController:
         prompt = f"""You are the bounded planning layer for the Wesnoth Star Wars project.
 Read AGENTS.md, docs/PROJECT_CONTINUITY.md, and the controlled references before deciding.
 Do not modify files, execute write operations, expose secrets, or propose governance/reference changes.
+For mutable execution status, the structured inventory below is authoritative over
+prose snapshots in PROJECT_CONTINUITY.md. Treat a PR or queue claim in prose as stale
+when it is absent from open_pull_requests and approval_queue. Treat completed
+planned_priorities and entries in recently_published as completed and advance to
+the highest-priority pending planned priority. For a fresh planned priority, begin
+summary and objective with its exact planned-priority id so later scheduler passes
+can identify it deterministically.
 Resume safe interrupted ticket work or a safe open pull request before proposing any fresh implementation.
 Choose at most one small implementation ticket aligned with current documented priorities.
 When continuous_automation is true, treat the automation switch as owner authorization
@@ -958,6 +965,19 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 })
 
         queued_context = self._queued_context(exclude_id=queue_exclude_id)
+        recently_published = [
+            {
+                "ticket_id": item.get("ticket_id"),
+                "purpose": item.get("purpose"),
+                "impact": item.get("impact"),
+                "changed_paths": item.get("changed_paths"),
+                "branch": item.get("branch"),
+                "pr_number": item.get("pr_number"),
+                "merge_sha": item.get("merge_sha"),
+            }
+            for item in self.queue.public_state()["records"][-20:]
+            if item.get("state") == "published"
+        ]
         owned_branches = {
             item.get("branch") for item in queued_context if item.get("branch")
         }
@@ -1048,12 +1068,56 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 resumable_prs.append(candidate)
         return {
             "approval_queue": queued_context,
+            "recently_published": recently_published,
+            "planned_priorities": self._planned_priorities(recently_published),
             "resumable_local_work": branches,
             "resumable_pull_requests": resumable_prs,
             "replaceable_pull_requests": replaceable_prs,
             "local_agent_branches": branches,
             "open_pull_requests": safe_prs,
         }
+
+    def _planned_priorities(
+        self, recently_published: list[dict] | None = None
+    ) -> list[dict[str, str]]:
+        """Return the repository-owned priority catalog as bounded planning data."""
+
+        path = self.root / "agent" / "dashboard" / "static" / "planned-tickets.json"
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return []
+        tickets = value.get("tickets") if isinstance(value, dict) else None
+        if not isinstance(tickets, list):
+            return []
+        planned = []
+        for item in tickets[:50]:
+            if not isinstance(item, dict):
+                continue
+            ticket_id = item.get("id")
+            label = item.get("label")
+            brief = item.get("brief")
+            status = item.get("status", "pending")
+            if (
+                all(isinstance(field, str) for field in (ticket_id, label, brief))
+                and status in {"pending", "completed"}
+            ):
+                if status == "pending" and recently_published:
+                    marker = ticket_id.casefold()
+                    evidence = " ".join(
+                        str(record.get(field) or "")
+                        for record in recently_published
+                        for field in ("purpose", "impact")
+                    ).casefold()
+                    if marker in evidence:
+                        status = "completed"
+                planned.append({
+                    "id": ticket_id[:80],
+                    "label": label[:160],
+                    "brief": brief[:1200],
+                    "status": status,
+                })
+        return planned
 
     @staticmethod
     def _represented_pr_branches(pull_requests: list[object]) -> set[str]:

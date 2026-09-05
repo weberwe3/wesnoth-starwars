@@ -292,6 +292,29 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertIsNone(ticket["resume_branch"])
             self.assertEqual(ticket["worker"], "implementer")
 
+    def test_planned_priorities_expose_completion_and_advance_order(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "agent" / "dashboard" / "static" / "planned-tickets.json"
+            catalog.parent.mkdir(parents=True)
+            catalog.write_text(json.dumps({"tickets": [
+                {"id": "done", "status": "completed", "label": "Done", "brief": "Done"},
+                {"id": "next", "status": "pending", "label": "Next", "brief": "Next"},
+                {"id": "later", "status": "pending", "label": "Later", "brief": "Later"},
+            ]}), encoding="utf-8")
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            priorities = controller._planned_priorities([
+                {"purpose": "next: completed ticket", "impact": "Validated"}
+            ])
+            self.assertEqual(
+                [(item["id"], item["status"]) for item in priorities],
+                [("done", "completed"), ("next", "completed"), ("later", "pending")],
+            )
+
     def test_resume_restores_original_ticket_contract(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
@@ -751,7 +774,20 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
                 )
             return result, invoked
 
-    def test_gemini_38_approves_before_nemotron(self) -> None:
+    def test_nemotron_is_primary_reviewer(self) -> None:
+        result, invoked = self._evaluate([
+            (0, "VERDICT: PASS"),
+            (0, "VERDICT: APPROVE"),
+        ])
+        self.assertTrue(result["pass"])
+        self.assertEqual(
+            result["reviewer_used"],
+            "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
+        )
+        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertIsNone(result["reviewer_intermediate_exit_code"])
+
+    def test_gemini_38_runs_after_non_decisive_nemotron(self) -> None:
         result, invoked = self._evaluate([
             (0, "VERDICT: PASS"),
             (1, "primary infrastructure failure"),
@@ -762,7 +798,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
         self.assertIsNone(result["reviewer_fallback_exit_code"])
 
-    def test_nemotron_runs_only_after_both_gemini_reviewers_are_non_decisive(self) -> None:
+    def test_gemini_36_runs_after_nemotron_and_gemini_38_are_non_decisive(self) -> None:
         result, invoked = self._evaluate([
             (0, "VERDICT: PASS"),
             (1, "primary infrastructure failure"),
@@ -770,10 +806,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             (0, "VERDICT: APPROVE"),
         ])
         self.assertTrue(result["pass"])
-        self.assertEqual(
-            result["reviewer_used"],
-            "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
-        )
+        self.assertEqual(result["reviewer_used"], "google/gemini-3.6-flash")
         self.assertEqual(
             invoked,
             ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
@@ -790,15 +823,17 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
         self.assertIsNone(result["reviewer_fallback_exit_code"])
 
-    def test_missing_google_credential_skips_both_gemini_reviewers(self) -> None:
+    def test_missing_google_credential_still_runs_primary_nemotron(self) -> None:
         result, invoked = self._evaluate(
             [(0, "VERDICT: PASS"), (0, "VERDICT: APPROVE")],
             google_available=False,
         )
         self.assertTrue(result["pass"])
-        self.assertEqual(invoked, ["tester", "reviewer-fallback"])
-        self.assertIsNone(result["reviewer_primary_exit_code"])
+        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertEqual(result["reviewer_used"], "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b")
+        self.assertEqual(result["reviewer_primary_exit_code"], 0)
         self.assertIsNone(result["reviewer_intermediate_exit_code"])
+        self.assertIsNone(result["reviewer_fallback_exit_code"])
 
 
 class ApprovalQueueTests(unittest.TestCase):

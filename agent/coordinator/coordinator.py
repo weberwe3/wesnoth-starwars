@@ -523,48 +523,43 @@ VERDICT: REQUEST_CHANGES
     reviewer_used = None
     reviewer_pass = False
 
-    if google_available:
-        reviewer_primary_rc, reviewer_primary_output = invoke_agent(
-            opencode=opencode,
-            worktree=worktree,
-            agent="reviewer",
-            prompt=reviewer_prompt,
-            log_file=log_dir / "reviewer-primary.jsonl",
-        )
+    reviewer_primary_rc, reviewer_primary_output = invoke_agent(
+        opencode=opencode,
+        worktree=worktree,
+        agent="reviewer",
+        prompt=reviewer_prompt,
+        log_file=log_dir / "reviewer-primary.jsonl",
+    )
 
-        reviewer_primary_approve = (
-            reviewer_primary_rc == 0
-            and contains_verdict(reviewer_primary_output, "APPROVE")
-        )
+    reviewer_primary_approve = (
+        reviewer_primary_rc == 0
+        and contains_verdict(reviewer_primary_output, "APPROVE")
+    )
 
-        reviewer_primary_request_changes = (
-            reviewer_primary_rc == 0
-            and contains_verdict(
-                reviewer_primary_output,
-                "REQUEST_CHANGES",
-            )
+    reviewer_primary_request_changes = (
+        reviewer_primary_rc == 0
+        and contains_verdict(
+            reviewer_primary_output,
+            "REQUEST_CHANGES",
         )
+    )
 
-        print(
-            f"      Primary reviewer exit code: {reviewer_primary_rc}; "
-            f"APPROVE={reviewer_primary_approve}; "
-            f"REQUEST_CHANGES={reviewer_primary_request_changes}"
-        )
-    else:
-        print(
-            "      Primary reviewer skipped: Google credential unavailable."
-        )
+    print(
+        f"      Primary reviewer exit code: {reviewer_primary_rc}; "
+        f"APPROVE={reviewer_primary_approve}; "
+        f"REQUEST_CHANGES={reviewer_primary_request_changes}"
+    )
 
     # A real negative review is authoritative. Do not shop for a more
     # favorable answer by invoking another reviewer.
     if reviewer_primary_request_changes:
         status.set_worker("reviewer", "error", "Changes requested", error="Primary reviewer requested changes")
-        reviewer_used = "google/gemini-3.6-flash"
+        reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
         reviewer_pass = False
 
     elif reviewer_primary_approve:
         status.set_worker("reviewer", "idle", "Approved")
-        reviewer_used = "google/gemini-3.6-flash"
+        reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
         reviewer_pass = True
 
     else:
@@ -611,48 +606,51 @@ VERDICT: REQUEST_CHANGES
             status.set_worker("reviewer-fallback", "idle", "Approved")
         else:
             status.set_worker("reviewer-fallback", "waiting", "Intermediate unavailable or non-decisive")
-            status.handoff("reviewer-fallback", "reviewer-fallback", "Final fallback smoke review activated")
-            status.set_assignment(
-                "reviewer-fallback",
-                "Cloudflare Workers AI",
-                "@cf/nvidia/nemotron-3-120b-a12b",
-            )
-            status.set_worker("reviewer-fallback", "active", "Independent final fallback smoke review")
-            print(
-                "      Intermediate reviewer unavailable or non-decisive; "
-                "invoking final fallback reviewer."
-            )
-            reviewer_fallback_rc, reviewer_fallback_output = invoke_agent(
-                opencode=opencode,
-                worktree=worktree,
-                agent="reviewer-fallback",
-                prompt=reviewer_prompt,
-                log_file=log_dir / "reviewer-fallback.jsonl",
-            )
-            reviewer_fallback_approve = (
-                reviewer_fallback_rc == 0
-                and contains_verdict(reviewer_fallback_output, "APPROVE")
-            )
-            reviewer_fallback_request_changes = (
-                reviewer_fallback_rc == 0
-                and contains_verdict(reviewer_fallback_output, "REQUEST_CHANGES")
-            )
-            reviewer_used = (
-                "cloudflare-workers-ai/"
-                "@cf/nvidia/nemotron-3-120b-a12b"
-            )
-            reviewer_pass = reviewer_fallback_approve
-            status.set_worker(
-                "reviewer-fallback",
-                "idle" if reviewer_fallback_approve else "error",
-                "Approved" if reviewer_fallback_approve else "Final fallback did not approve",
-                error=None if reviewer_fallback_approve else "Final fallback reviewer did not approve",
-            )
-            print(
-                f"      Final fallback reviewer exit code: {reviewer_fallback_rc}; "
-                f"APPROVE={reviewer_fallback_approve}; "
-                f"REQUEST_CHANGES={reviewer_fallback_request_changes}"
-            )
+            if google_available:
+                status.handoff("reviewer-fallback", "reviewer-fallback", "Final fallback smoke review activated")
+                status.set_assignment("reviewer-fallback", "Google", "gemini-3.6-flash")
+                status.set_worker("reviewer-fallback", "active", "Independent final fallback smoke review")
+                print(
+                    "      Intermediate reviewer unavailable or non-decisive; "
+                    "invoking final fallback reviewer."
+                )
+                reviewer_fallback_rc, reviewer_fallback_output = invoke_agent(
+                    opencode=opencode,
+                    worktree=worktree,
+                    agent="reviewer-fallback",
+                    prompt=reviewer_prompt,
+                    log_file=log_dir / "reviewer-fallback.jsonl",
+                )
+                reviewer_fallback_approve = (
+                    reviewer_fallback_rc == 0
+                    and contains_verdict(reviewer_fallback_output, "APPROVE")
+                )
+                reviewer_fallback_request_changes = (
+                    reviewer_fallback_rc == 0
+                    and contains_verdict(reviewer_fallback_output, "REQUEST_CHANGES")
+                )
+                reviewer_used = "google/gemini-3.6-flash"
+                reviewer_pass = reviewer_fallback_approve
+                status.set_worker(
+                    "reviewer-fallback",
+                    "idle" if reviewer_fallback_approve else "error",
+                    "Approved" if reviewer_fallback_approve else "Final fallback did not approve",
+                    error=None if reviewer_fallback_approve else "Final fallback reviewer did not approve",
+                )
+                print(
+                    f"      Final fallback reviewer exit code: {reviewer_fallback_rc}; "
+                    f"APPROVE={reviewer_fallback_approve}; "
+                    f"REQUEST_CHANGES={reviewer_fallback_request_changes}"
+                )
+            else:
+                reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
+                reviewer_pass = False
+                status.set_worker(
+                    "reviewer-fallback",
+                    "error",
+                    "Google fallbacks unavailable",
+                    error="Nemotron was non-decisive and Google credentials are unavailable",
+                )
 
     final_pass = (
         deterministic_pass

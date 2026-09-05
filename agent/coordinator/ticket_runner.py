@@ -890,17 +890,16 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
     primary_output = ""
     primary_approve = False
     primary_request_changes = False
-    if google_available:
-        primary_rc, primary_output = invoke_agent(
-            opencode=opencode,
-            worktree=worktree,
-            agent="reviewer",
-            prompt=reviewer_prompt,
-            log_file=log_dir / f"reviewer-primary{suffix}.jsonl",
-            timeout=PRIMARY_REVIEWER_TIMEOUT,
-        )
-        primary_approve = primary_rc == 0 and core.contains_verdict(primary_output, "APPROVE")
-        primary_request_changes = primary_rc == 0 and core.contains_verdict(primary_output, "REQUEST_CHANGES")
+    primary_rc, primary_output = invoke_agent(
+        opencode=opencode,
+        worktree=worktree,
+        agent="reviewer",
+        prompt=reviewer_prompt,
+        log_file=log_dir / f"reviewer-primary{suffix}.jsonl",
+        timeout=PRIMARY_REVIEWER_TIMEOUT,
+    )
+    primary_approve = primary_rc == 0 and core.contains_verdict(primary_output, "APPROVE")
+    primary_request_changes = primary_rc == 0 and core.contains_verdict(primary_output, "REQUEST_CHANGES")
 
     intermediate_rc = None
     intermediate_output = ""
@@ -910,15 +909,20 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
     fallback_output = ""
     fallback_approve = False
     fallback_request_changes = False
+    reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
+    reviewer_approve = False
+    decisive_output = primary_output
+    decisive_rc = primary_rc
+    decisive_changes = False
     if primary_request_changes:
-        reviewer_used = "google/gemini-3.6-flash"
+        reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
         reviewer_approve = False
         decisive_output = primary_output
         decisive_rc = primary_rc
         decisive_changes = True
         status.set_worker("reviewer", "error", "Changes requested", error="Primary reviewer requested changes")
     elif primary_approve:
-        reviewer_used = "google/gemini-3.6-flash"
+        reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
         reviewer_approve = True
         decisive_output = primary_output
         decisive_rc = primary_rc
@@ -956,34 +960,38 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
             status.set_worker("reviewer-fallback", "idle", "Approved")
         else:
             status.set_worker("reviewer-fallback", "waiting", "Intermediate unavailable or non-decisive")
-            status.handoff("reviewer-fallback", "reviewer-fallback", "Final fallback review activated")
-            status.set_assignment(
-                "reviewer-fallback",
-                "Cloudflare Workers AI",
-                "@cf/nvidia/nemotron-3-120b-a12b",
-            )
-            status.set_worker("reviewer-fallback", "active", "Independent final fallback review")
-            fallback_rc, fallback_output = invoke_agent(
-                opencode=opencode,
-                worktree=worktree,
-                agent="reviewer-fallback",
-                prompt=reviewer_prompt,
-                log_file=log_dir / f"reviewer-fallback{suffix}.jsonl",
-                timeout=FALLBACK_REVIEWER_TIMEOUT,
-            )
-            fallback_approve = fallback_rc == 0 and core.contains_verdict(fallback_output, "APPROVE")
-            fallback_request_changes = fallback_rc == 0 and core.contains_verdict(fallback_output, "REQUEST_CHANGES")
-            reviewer_used = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
-            reviewer_approve = fallback_approve
-            decisive_output = fallback_output
-            decisive_rc = fallback_rc
-            decisive_changes = fallback_request_changes
-            status.set_worker(
-                "reviewer-fallback",
-                "idle" if fallback_approve else "error",
-                "Approved" if fallback_approve else "Final fallback review rejected change",
-                error=None if fallback_approve else "Final fallback reviewer did not approve",
-            )
+            if google_available:
+                status.handoff("reviewer-fallback", "reviewer-fallback", "Final fallback review activated")
+                status.set_assignment("reviewer-fallback", "Google", "gemini-3.6-flash")
+                status.set_worker("reviewer-fallback", "active", "Independent final fallback review")
+                fallback_rc, fallback_output = invoke_agent(
+                    opencode=opencode,
+                    worktree=worktree,
+                    agent="reviewer-fallback",
+                    prompt=reviewer_prompt,
+                    log_file=log_dir / f"reviewer-fallback{suffix}.jsonl",
+                    timeout=FALLBACK_REVIEWER_TIMEOUT,
+                )
+                fallback_approve = fallback_rc == 0 and core.contains_verdict(fallback_output, "APPROVE")
+                fallback_request_changes = fallback_rc == 0 and core.contains_verdict(fallback_output, "REQUEST_CHANGES")
+                reviewer_used = "google/gemini-3.6-flash"
+                reviewer_approve = fallback_approve
+                decisive_output = fallback_output
+                decisive_rc = fallback_rc
+                decisive_changes = fallback_request_changes
+                status.set_worker(
+                    "reviewer-fallback",
+                    "idle" if fallback_approve else "error",
+                    "Approved" if fallback_approve else "Final fallback review rejected change",
+                    error=None if fallback_approve else "Final fallback reviewer did not approve",
+                )
+            else:
+                status.set_worker(
+                    "reviewer-fallback",
+                    "error",
+                    "Google fallbacks unavailable",
+                    error="Nemotron was non-decisive and Google credentials are unavailable",
+                )
 
     status.gate(
         "Independent review",
