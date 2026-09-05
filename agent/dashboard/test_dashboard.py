@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "agent" / "coordinator"))
 from runtime_status import RuntimeStatus, default_state  # noqa: E402
 from coordination_control import ControlStore  # noqa: E402
 import recovery_policy  # noqa: E402
+import model_policy  # noqa: E402
 import ticket_runner  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from autonomy import (  # noqa: E402
@@ -1054,12 +1055,70 @@ class CoordinationControlTests(unittest.TestCase):
             server.server_close()
 
 
+class ModelPolicyTests(unittest.TestCase):
+    def test_published_free_tier_launch_limits(self) -> None:
+        self.assertEqual(model_policy.MODEL_RPM["groq/openai/gpt-oss-120b"], 30)
+        self.assertEqual(
+            model_policy.MODEL_RPM[
+                "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
+            ],
+            40,
+        )
+        self.assertEqual(
+            model_policy.MODEL_RPM[
+                "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash"
+            ],
+            300,
+        )
+        self.assertIsNone(model_policy.MODEL_RPM["google/gemini-3.8-flash"])
+
+    def test_provider_failure_skips_exactly_two_later_runs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            policy = model_policy.ModelPolicy(Path(directory))
+            model = "groq/openai/gpt-oss-120b"
+            first = policy.begin_run("ONE")
+            policy.record_failure(model, first, "quota")
+            second = policy.begin_run("TWO")
+            third = policy.begin_run("THREE")
+            fourth = policy.begin_run("FOUR")
+            self.assertFalse(policy.before_attempt(model, second)[0])
+            self.assertFalse(policy.before_attempt(model, third)[0])
+            self.assertTrue(policy.before_attempt(model, fourth)[0])
+
+    def test_nemotron_pacing_uses_forty_rpm(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            now = [100.0]
+            waits: list[float] = []
+
+            def sleep(seconds: float) -> None:
+                waits.append(seconds)
+                now[0] += seconds
+
+            policy = model_policy.ModelPolicy(
+                Path(directory), clock=lambda: now[0], sleeper=sleep
+            )
+            model = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
+            run = policy.begin_run("ONE")
+            policy.before_attempt(model, run)
+            policy.before_attempt(model, run)
+            self.assertEqual(waits, [1.5])
+
+    def test_decisive_rejection_is_not_a_provider_failure(self) -> None:
+        self.assertIsNone(
+            model_policy.failure_kind(
+                0, "VERDICT: REQUEST_CHANGES", decisive=True
+            )
+        )
+
+
 class ReviewerFallbackRoutingTests(unittest.TestCase):
     def _evaluate(
         self,
         responses: list[tuple[int, str]],
         *,
         google_available: bool = True,
+        terra_response: tuple[int, str] = (1, "Terra unavailable"),
+        terra_implemented: bool = False,
     ) -> tuple[dict, list[str]]:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
@@ -1072,9 +1131,11 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
                 invoked.append(kwargs["agent"])
                 return responses.pop(0)
 
+            policy = model_policy.ModelPolicy(base / "runtime")
+            run_sequence = policy.begin_run("REVIEW-CHAIN")
             with mock.patch.object(ticket_runner, "run_validation", return_value={"pass": True}), mock.patch.object(
                 ticket_runner, "invoke_agent", side_effect=invoke
-            ):
+            ), mock.patch.object(ticket_runner, "invoke_terra", return_value=terra_response):
                 result = ticket_runner.evaluate_candidate(
                     status=status,
                     ticket={
@@ -1090,6 +1151,9 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
                     google_available=google_available,
                     implementer_rc=0,
                     attempt=0,
+                    policy=policy,
+                    run_sequence=run_sequence,
+                    terra_implemented=terra_implemented,
                 )
             return result, invoked
 
@@ -1141,6 +1205,38 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         self.assertEqual(result["reviewer_used"], "google/gemini-3.8-flash")
         self.assertEqual(invoked, ["tester", "reviewer", "reviewer-intermediate"])
         self.assertIsNone(result["reviewer_fallback_exit_code"])
+
+    def test_terra_runs_after_three_non_decisive_reviewers(self) -> None:
+        result, invoked = self._evaluate(
+            [
+                (0, "VERDICT: PASS"),
+                (1, "primary infrastructure failure"),
+                (1, "intermediate infrastructure failure"),
+                (1, "fallback infrastructure failure"),
+            ],
+            terra_response=(0, "VERDICT: APPROVE"),
+        )
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-terra")
+        self.assertEqual(result["reviewer_terra_exit_code"], 0)
+        self.assertEqual(
+            invoked,
+            ["tester", "reviewer", "reviewer-intermediate", "reviewer-fallback"],
+        )
+
+    def test_terra_cannot_review_its_own_implementation(self) -> None:
+        result, _ = self._evaluate(
+            [
+                (0, "VERDICT: PASS"),
+                (1, "primary infrastructure failure"),
+                (1, "intermediate infrastructure failure"),
+                (1, "fallback infrastructure failure"),
+            ],
+            terra_response=(0, "VERDICT: APPROVE"),
+            terra_implemented=True,
+        )
+        self.assertFalse(result["pass"])
+        self.assertIsNone(result["reviewer_terra_exit_code"])
 
     def test_missing_google_credential_still_runs_primary_nemotron(self) -> None:
         result, invoked = self._evaluate(

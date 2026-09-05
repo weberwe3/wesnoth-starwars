@@ -4,9 +4,9 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-04 during DASH-017 provider-preflight and scenario-validation repair<br>
-**Main before this snapshot:** `5318cfd35e6557e6adc7932b86cb63c4da8811eb`<br>
-**Active infrastructure ticket:** DASH-017 secure Codex fallback discovery and protected-contract retirement<br>
+**Last continuity refresh:** 2026-09-05 during DASH-019 model pacing and reviewer resilience work<br>
+**Main before this snapshot:** `463dfc83ec00c02590219bde82a816ba483637f0`<br>
+**Active infrastructure ticket:** DASH-019 free-tier model pacing, two-run provider circuits, and final Terra review fallback<br>
 **Next intended game-development ticket:** the first bounded playable scenario-skeleton increment
 
 ---
@@ -282,7 +282,8 @@ Intended system roles:
 - **tester LLM** — independent inspection after deterministic gates;
 - **reviewer LLM** — final independent model review;
 - **intermediate reviewer** — Gemini 3.8 Flash only when the primary Nemotron reviewer is unavailable/non-decisive for infrastructure reasons;
-- **final fallback reviewer** — Gemini 3.6 Flash only when Nemotron and Gemini 3.8 Flash are unavailable/non-decisive for infrastructure reasons.
+- **second fallback reviewer** — Gemini 3.6 Flash only when Nemotron and Gemini 3.8 Flash are unavailable/non-decisive for infrastructure reasons;
+- **final fallback reviewer** — Terra Medium only when all earlier reviewers are unavailable/non-decisive and Terra did not implement the candidate.
 
 Workers do not control `main`.
 
@@ -323,13 +324,17 @@ Routing used during the infrastructure baseline:
 - tester: `cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash`
 - primary reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
 - intermediate reviewer: `google/gemini-3.8-flash`
-- final fallback reviewer: `google/gemini-3.6-flash`
+- second fallback reviewer: `google/gemini-3.6-flash`
+- final fallback reviewer: `openai/gpt-5.6-terra` at medium reasoning, subject to reviewer independence
 
 Observed behavior:
 
 - Google reviewers may encounter free-tier quota/429/timeouts;
 - Gemini 3.8 Flash is the only intermediate reviewer when Nemotron has an infrastructure/unavailability/non-decisive failure;
-- Gemini 3.6 Flash is the final fallback only when Nemotron and Gemini 3.8 Flash have infrastructure/unavailability/non-decisive failures;
+- Gemini 3.6 Flash follows only when Nemotron and Gemini 3.8 Flash have infrastructure/unavailability/non-decisive failures;
+- Terra Medium is the final reviewer fallback only after all three hosted reviewers are unavailable/non-decisive and only if Terra did not implement that candidate;
+- model launches use published free-tier ceilings where universal values exist (Groq GPT-OSS 30 RPM, NVIDIA Nemotron 40 RPM, Cloudflare GLM 300 RPM), while account/project-specific quotas remain provider-managed;
+- a provider/process/timeout/non-decisive failure suppresses that model for the next two worktree runs, while a valid negative verdict does not;
 - a substantive `REQUEST_CHANGES` from any reviewer must not be bypassed by a later fallback.
 
 Provider choices may change over time; the role boundaries and fail-closed policy matter more than a specific model name.
@@ -963,11 +968,12 @@ When updating this file:
 | 2026-09-04 | DASH-016 / PR #30 | Deterministically collapse equivalent empty retries to the newest worktree and prevent an older preserved blocker from hiding safe resumable work |
 | 2026-09-04 | DASH-017 provider and scenario repair | Forward a verified Codex executable into the secure runner, report distinct provider/fallback failures, retire stale protected self-modification contracts without deleting evidence, enforce a smaller Groq read budget, and add bounded real-engine ENGINE-002 preprocessing evidence |
 | 2026-09-04 | DASH-018 Codex resolver repair | Use one hardened Codex resolver for Sol planning and Terra fallback, including the verified per-user Windows installation when the secure WSL process intentionally has a stripped PATH |
+| 2026-09-05 | DASH-019 model resilience | Pace model launches at published free-tier ceilings, persist a two-worktree-run circuit after provider failures, and add independent Terra Medium as the final reviewer fallback |
 
 ---
 
 ## 18. Current handoff statement
 
-At this snapshot, resume-state hardening is merged through PR #30. The subsequent scenario-validation attempt exposed three independent issues: GPT-OSS exceeded Groq's 8K request limit after requesting oversized source reads; the secure launcher did not expose the installed Codex executable to Terra; and the inherited ticket contract targeted protected coordinator paths that autonomous workers may never modify. DASH-017 addressed those infrastructure defects without weakening protection, but a real secure-run regression showed that launcher forwarding alone was not reliable across the nested Windows-to-WSL process boundary. DASH-018 makes Sol planning and Terra use the same hardened resolver and adds a bounded fallback lookup for the verified current user's Codex installation even when the secure process has an intentionally stripped PATH. Worker reads retain a smaller explicit budget, failures identify the provider stage accurately, and stale protected contracts remain retired from autonomous scheduling while their worktrees and evidence are preserved. The manually authorized deterministic scenario harness stages the add-on in an isolated temporary userdata tree, runs the installed Wesnoth 1.19.27 preprocessor with the campaign define, records only bounded secret-free evidence, and confirms cleanup. Scenario validation is marked complete so scheduling can advance to scenario-skeleton work. Exact-commit publication and file-deletion approval remain manual boundaries.
+At this snapshot, resume-state hardening is merged through PR #30. The subsequent scenario-validation attempt exposed three independent issues: GPT-OSS exceeded Groq's 8K request limit after requesting oversized source reads; the secure launcher did not expose the installed Codex executable to Terra; and the inherited ticket contract targeted protected coordinator paths that autonomous workers may never modify. DASH-017 addressed those infrastructure defects without weakening protection, but a real secure-run regression showed that launcher forwarding alone was not reliable across the nested Windows-to-WSL process boundary. DASH-018 makes Sol planning and Terra use the same hardened resolver and adds a bounded fallback lookup for the verified current user's Codex installation even when the secure process has an intentionally stripped PATH. DASH-019 adds free-tier-aware model launch pacing, a persistent two-worktree-run circuit for provider/process/timeout/non-decisive failures, and a final independent Terra Medium reviewer after Nemotron, Gemini 3.8 Flash, and Gemini 3.6 Flash. Terra is withheld from review when it implemented the candidate. Worker reads retain a smaller explicit budget, failures identify the provider stage accurately, and stale protected contracts remain retired from autonomous scheduling while their worktrees and evidence are preserved. The manually authorized deterministic scenario harness stages the add-on in an isolated temporary userdata tree, runs the installed Wesnoth 1.19.27 preprocessor with the campaign define, records only bounded secret-free evidence, and confirms cleanup. Scenario validation is marked complete so scheduling can advance to scenario-skeleton work. Exact-commit publication and file-deletion approval remain manual boundaries.
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.
