@@ -23,6 +23,9 @@ SAFE_CONCLUSIONS = {"SUCCESS"}
 PUBLISH_TIMEOUT_SECONDS = 1800
 PR_HEAD_CONFIRM_ATTEMPTS = 8
 PR_HEAD_CONFIRM_INTERVAL_SECONDS = 1
+CI_REGISTRATION_ATTEMPTS = 60
+CI_REGISTRATION_INTERVAL_SECONDS = 2
+REQUIRED_CHECK_NAME = "repository-gates"
 TERMINAL_QUEUE_STATES = {"published", "rejected", "stale", "dismissed", "superseded"}
 
 
@@ -574,6 +577,13 @@ class ApprovalQueue:
         head = _run(["git", "rev-parse", "HEAD"], worktree)
         if head != record["commit_sha"]:
             raise QueueError("Queued branch head changed after approval")
+        try:
+            _run(["git", "merge-base", "--is-ancestor", "main", "HEAD"], worktree)
+        except QueueError as exc:
+            raise QueueError(
+                "Approved ticket is behind current main; use Recode with AI to "
+                "reconcile main and rerun every gate"
+            ) from exc
 
         _run(["git", "push", "--set-upstream", "origin", record["branch"]], worktree, 180)
         try:
@@ -602,11 +612,15 @@ class ApprovalQueue:
             raise QueueError("GitHub returned no PR number")
         self._update_record(record["id"], pr_number=pr_number, pr_url=pr_data.get("url"))
 
-        _run(
-            ["gh", "pr", "checks", str(pr_number), "--required", "--watch", "--interval", "10"],
-            worktree,
-            PUBLISH_TIMEOUT_SECONDS,
-        )
+        self._wait_for_ci_registration(pr_number, record["commit_sha"], worktree)
+        try:
+            _run(
+                ["gh", "pr", "checks", str(pr_number), "--required", "--watch", "--interval", "10"],
+                worktree,
+                PUBLISH_TIMEOUT_SECONDS,
+            )
+        except QueueError as exc:
+            raise QueueError("Required exact-head CI did not pass") from exc
         review = json.loads(_run([
             "gh", "pr", "view", str(pr_number),
             "--json", "headRefOid,mergeable,mergeStateStatus,statusCheckRollup",
@@ -622,6 +636,11 @@ class ApprovalQueue:
             for item in checks
         ):
             raise QueueError("One or more exact-head checks did not pass")
+        if review.get("mergeStateStatus") == "BEHIND":
+            raise QueueError(
+                "Pull request is behind current main; use Recode with AI to "
+                "reconcile main and rerun every gate"
+            )
         if review.get("mergeable") != "MERGEABLE" or review.get("mergeStateStatus") != "CLEAN":
             raise QueueError("Protected merge requirements are not satisfied")
 
@@ -672,6 +691,35 @@ class ApprovalQueue:
                 threading.Event().wait(PR_HEAD_CONFIRM_INTERVAL_SECONDS)
                 latest = None
         raise QueueError("PR head did not converge to the approved commit after push")
+
+    def _wait_for_ci_registration(
+        self,
+        pr_number: int,
+        expected_sha: str,
+        worktree: Path,
+    ) -> list[dict[str, Any]]:
+        """Wait until GitHub attaches the required check to the exact PR head."""
+
+        for attempt in range(CI_REGISTRATION_ATTEMPTS):
+            try:
+                value = json.loads(_run([
+                    "gh", "pr", "view", str(pr_number),
+                    "--json", "headRefOid,statusCheckRollup",
+                ], worktree))
+            except (QueueError, json.JSONDecodeError):
+                value = None
+            if isinstance(value, dict):
+                if value.get("headRefOid") != expected_sha:
+                    raise QueueError("PR head changed before required CI registered")
+                checks = value.get("statusCheckRollup")
+                if isinstance(checks, list) and any(
+                    isinstance(item, dict) and item.get("name") == REQUIRED_CHECK_NAME
+                    for item in checks
+                ):
+                    return checks
+            if attempt + 1 < CI_REGISTRATION_ATTEMPTS:
+                threading.Event().wait(CI_REGISTRATION_INTERVAL_SECONDS)
+        raise QueueError("Required exact-head CI did not register within two minutes")
 
     def _pr_body(self, record: dict[str, Any]) -> str:
         paths = "\n".join(f"- `{path}`" for path in record["changed_paths"])

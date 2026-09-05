@@ -242,7 +242,7 @@ function renderControl(control) {
   $("handoff-button").disabled = !autonomous || !bridgeOnline || running || automated || controlBusy;
   $("automation-toggle").checked = automated;
   $("automation-toggle").disabled = !autonomous || !bridgeOnline || controlBusy;
-  $("automation-status").textContent = automated ? "Unattended planning active" : "Manual trigger";
+  $("automation-status").textContent = automated ? "Continuous priority scheduling active" : "Manual trigger";
   $("automation-toggle").closest(".automation-control").classList.toggle("active", automated);
   $("handoff-button").textContent = running
     ? (control.run.state === "planning" ? "Sol is planning…" : "Ticket gates running…")
