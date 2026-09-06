@@ -17,6 +17,8 @@ import uuid
 
 from coordination_control import ControlStore, VALID_MODES, utc_now
 from approval_queue import ApprovalQueue, QueueError
+from gameplay_contracts import validate_historical_retention, validation_digest
+from scenario_launch_selftest import validate_post_publish_game
 import recovery_policy
 import ticket_runner
 import worktree_paths
@@ -32,6 +34,7 @@ AUTONOMOUS_WORKTREE_FAILURE_LIMIT = 3
 GENERATED_BACKLOG_FILE = "generated-planned-tickets.json"
 GENERATED_BACKLOG_SIZE = 4
 POST_PUBLISH_GAME_VALIDATION_FILE = "post-publish-game-validation.json"
+HISTORICAL_GAMEPLAY_VALIDATION_FILE = "historical-gameplay-validation.json"
 ADDON_ROOT = "addons/Star_Wars_Thrawn_Trilogy"
 AUTONOMOUS_RETRYABLE_FAILURES = {
     "implementation_or_validation_failure",
@@ -930,6 +933,16 @@ class AutonomyController:
         runtime = self.root / "agent" / "runtime"
         guidance = self._planning_guidance()
         inventory = self._planning_inventory(queue_exclude_id=queue_exclude_id)
+        historical_repair = self._historical_gameplay_repair_proposal(inventory)
+        if historical_repair is not None:
+            self.queue.event(
+                "Historical gameplay validation selected before new work",
+                detail=(
+                    "Published add-on tickets are being checked in original publication order; "
+                    "new planning remains blocked until this repair passes."
+                ),
+            )
+            return historical_repair
         blocked = self._blocked_resume_proposal(inventory)
         if blocked is not None:
             blocked["_planning_inventory"] = inventory
@@ -1023,7 +1036,7 @@ Do not stop merely because the first documented priority is already queued; stop
 when no safe non-overlapping priority can proceed without an unmerged dependency.
 Describe its user-visible or mod-facing impact separately from its implementation summary.
 Python will validate your JSON, create the isolated worktree, invoke workers, run gates, and stop before commit/push/merge.
-Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null.
+Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must also update addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json with a compact contract for each changed gameplay source. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Python will reject publication when a changed gameplay source has no passing contract.
 Set ticket.resume_branch to the exact branch from resumable_local_work when continuing remnants.
 For resumable_pull_requests, also copy its exact number and head_sha into
 ticket.resume_pr_number and ticket.resume_pr_head_sha. Published history must only
@@ -1149,6 +1162,91 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             self._build_ticket(
                 "gamerepair000", proposal, "post-publish game validation", fresh_start_authorized=True
             )
+        except (ControlError, SystemExit, ValueError):
+            return None
+        return proposal
+
+    def _historical_gameplay_repair_proposal(self, inventory: dict) -> dict | None:
+        """Run the one-time legacy sweep before any new autonomous work starts."""
+
+        path = self.root / "agent" / "runtime" / HISTORICAL_GAMEPLAY_VALIDATION_FILE
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            record = {}
+        if record.get("schema_version") == 1 and record.get("state") == "passed":
+            return None
+        if record.get("state") != "pending_repair":
+            engine = validate_post_publish_game(self.root)
+            retained = validate_historical_retention(self.root)
+            passed = engine.get("pass") is True and retained.get("pass") is True
+            diagnostic_paths = sorted({
+                item for item in list(engine.get("diagnostic_paths") or [])
+                + list(retained.get("diagnostic_paths") or [])
+                if isinstance(item, str) and item.startswith(ADDON_ROOT + "/")
+            })[:20]
+            record = {
+                "schema_version": 1,
+                "state": "passed" if passed else "pending_repair",
+                "main_head": inventory.get("main_head"),
+                "checked_at": utc_now(),
+                "evidence_digest": validation_digest({"engine": engine, "retention": retained}),
+                "evidence": {
+                    "engine_pass": engine.get("pass") is True,
+                    "retention_pass": retained.get("pass") is True,
+                    "ticket_count": len(retained.get("tickets") or []),
+                    "diagnostic": (str(engine.get("diagnostic") or "") + "\n" + str(retained.get("diagnostic") or ""))[-6000:],
+                    "diagnostic_paths": diagnostic_paths,
+                },
+            }
+            temporary = path.with_suffix(".tmp")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            temporary.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+            os.chmod(temporary, 0o600)
+            os.replace(temporary, path)
+            if passed:
+                self.queue.event(
+                    "Historical gameplay validation passed",
+                    level="success",
+                    detail=(
+                        f"Validated {record['evidence']['ticket_count']} published add-on tickets "
+                        "in original publication order before accepting new autonomous work."
+                    ),
+                )
+                return None
+        if record.get("state") != "pending_repair":
+            return None
+        evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
+        paths = [
+            item for item in evidence.get("diagnostic_paths", [])
+            if isinstance(item, str) and item.startswith(ADDON_ROOT + "/") and ".." not in Path(item).parts
+        ][:20]
+        proposal = {
+            "action": "run_ticket",
+            "summary": "Repair the first failed retained gameplay contract",
+            "impact": "Restores a previously published game feature before new autonomous development continues.",
+            "ticket": {
+                "worker": "implementer",
+                "objective": (
+                    "Repair the first confirmed failure from the one-time chronological historical "
+                    "gameplay validation. Preserve current add-on architecture and correct only the "
+                    "bounded failed gameplay contract or engine diagnostic."
+                ),
+                "allowed_paths": paths or [ADDON_ROOT + "/**"],
+                "validation_profile": "wesnoth-addon-static",
+                "validation_root": ADDON_ROOT,
+                "resume_branch": None,
+                "resume_pr_number": None,
+                "resume_pr_head_sha": None,
+                "replace_pr_number": None,
+                "replace_pr_head_sha": None,
+                "replace_pr_branch": None,
+            },
+            "_planning_inventory": inventory,
+            "_historical_gameplay_repair": True,
+        }
+        try:
+            self._build_ticket("historyrepair000", proposal, "historical gameplay validation", fresh_start_authorized=True)
         except (ControlError, SystemExit, ValueError):
             return None
         return proposal
@@ -1586,8 +1684,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "task_id": f"SOL-{timestamp}-{run_id[:4].upper()}",
             "worker": source.get("worker"),
             "objective": source.get("objective"),
-            "allowed_paths": self._normalize_allowed_paths(
-                source.get("allowed_paths")
+            "allowed_paths": self._gameplay_contract_scope(
+                self._normalize_allowed_paths(source.get("allowed_paths"))
             ),
             "validation_profile": source.get("validation_profile"),
             "validation_root": source.get("validation_root"),
@@ -1633,6 +1731,21 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 pattern = pattern.rstrip("/") + "/**"
             normalized.append(pattern)
         return normalized
+
+    @staticmethod
+    def _gameplay_contract_scope(value: object) -> object:
+        """Permit the required contract artifact, but only for add-on game work."""
+
+        if not isinstance(value, list):
+            return value
+        gameplay = any(
+            isinstance(item, str)
+            and item.startswith(ADDON_ROOT + "/")
+            and (item.endswith((".cfg", ".lua", "/**")))
+            for item in value
+        )
+        contract = ADDON_ROOT + "/tests/gameplay-contracts.json"
+        return value + [contract] if gameplay and contract not in value else value
 
     @staticmethod
     def _fresh_start_requested(brief: str) -> bool:

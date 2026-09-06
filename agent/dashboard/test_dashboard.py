@@ -252,6 +252,16 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertTrue(allowed["pass"])
             self.assertFalse(sibling["pass"])
 
+    def test_gameplay_ticket_scope_includes_the_required_contract_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            scoped = controller._gameplay_contract_scope([
+                "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"
+            ])
+            self.assertIn(
+                "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json", scoped
+            )
+
     def test_existing_protected_directory_remains_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)

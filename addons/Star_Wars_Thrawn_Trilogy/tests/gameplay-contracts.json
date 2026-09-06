@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-imperial-reinforcement-turn-four",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_imperial_remnant_reinforcements",
+      "expected": {
+        "name": "turn",
+        "turn": "4",
+        "first_time_only": "yes",
+        "unit_id": "sw_im_reinforcement_stormtrooper",
+        "side": "2",
+        "type": "sw_unit_im_rem_stormtrooper",
+        "x": "12",
+        "y": "5"
+      }
+    }
+  ]
+}
