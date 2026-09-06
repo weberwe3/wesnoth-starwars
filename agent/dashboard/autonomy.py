@@ -30,6 +30,8 @@ AUTOMATION_COOLDOWN_SECONDS = 60
 AUTONOMOUS_WORKTREE_FAILURE_LIMIT = 3
 GENERATED_BACKLOG_FILE = "generated-planned-tickets.json"
 GENERATED_BACKLOG_SIZE = 4
+POST_PUBLISH_GAME_VALIDATION_FILE = "post-publish-game-validation.json"
+ADDON_ROOT = "addons/Star_Wars_Thrawn_Trilogy"
 AUTONOMOUS_RETRYABLE_FAILURES = {
     "implementation_or_validation_failure",
     "provider_or_worker_failure",
@@ -683,6 +685,8 @@ class AutonomyController:
                 impact=proposal["impact"],
                 automation_authorization_id=authorization_id,
             )
+            if proposal.get("_post_publish_game_repair"):
+                self._mark_post_publish_repair_queued(ticket["task_id"])
             if recode_record is not None:
                 self.queue.dismiss_failed(
                     recode_record["id"],
@@ -924,6 +928,13 @@ class AutonomyController:
                 detail="Python resumed the only verified unfinished ticket contract.",
             )
             return deterministic
+        game_repair = self._post_publish_game_repair_proposal(inventory)
+        if game_repair is not None:
+            self.queue.event(
+                "Post-publish game repair selected without a planner call",
+                detail="The installed campaign did not start after main was updated, so normal backlog work is held.",
+            )
+            return game_repair
         if fresh_start_authorized:
             generated = self._next_generated_priority(inventory)
             if generated is not None:
@@ -963,7 +974,7 @@ class AutonomyController:
         schema_arg = self._command_path(schema_path, windows_binary)
         output_arg = self._command_path(output_path, windows_binary)
         prompt = f"""You are the bounded planning layer for the Wesnoth Star Wars project.
-Read AGENTS.md and docs/PROJECT_CONTINUITY.md before deciding. AGENTS.md permits the
+Read AGENTS.md, docs/PROJECT_CONTINUITY.md, and docs/WORKTREE_LESSONS.md before deciding. AGENTS.md permits the
 coordinator-supplied controlled-reference digest; do not reread full controlled references
 unless a proposed ticket is ambiguous or conflicts with that digest.
 Do not modify files, execute write operations, expose secrets, or propose governance/reference changes.
@@ -1009,7 +1020,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
 """
         command = [
             executable, "exec", "-C", root_arg, "-s", "read-only",
-            "-m", "gpt-5.6-sol", "-c", f'model_reasoning_effort="{effort}"',
+            "-m", VALID_MODES[mode]["cli_model"], "-c", f'model_reasoning_effort="{effort}"',
             "--ephemeral", "--ignore-user-config", "--color", "never",
             "--output-schema", schema_arg, "-o", output_arg, "-",
         ]
@@ -1054,6 +1065,77 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             {key: value for key, value in proposal.items() if not key.startswith("_")},
         )
         return proposal
+
+    def _post_publish_game_repair_proposal(self, inventory: dict) -> dict | None:
+        """Turn a failed installed-game check into one bounded repair before backlog work."""
+
+        path = self.root / "agent" / "runtime" / POST_PUBLISH_GAME_VALIDATION_FILE
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+        merge_sha = record.get("merge_sha")
+        if (
+            record.get("schema_version") != 1
+            or record.get("state") != "pending_repair"
+            or not isinstance(merge_sha, str)
+            or not re.fullmatch(r"[0-9a-f]{40}", merge_sha)
+            or merge_sha != inventory.get("main_head")
+        ):
+            return None
+        evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
+        paths = [
+            item for item in evidence.get("diagnostic_paths", [])
+            if isinstance(item, str)
+            and item.startswith(ADDON_ROOT + "/")
+            and ".." not in Path(item).parts
+        ][:20]
+        proposal = {
+            "action": "run_ticket",
+            "summary": "Repair the failed installed Wesnoth campaign startup check",
+            "impact": "Restores a campaign that failed immediately after a protected-main merge.",
+            "ticket": {
+                "worker": "implementer",
+                "objective": (
+                    "Repair the installed Wesnoth campaign startup failure recorded after main "
+                    f"merge {merge_sha[:12]}. Preserve the current add-on architecture and fix only "
+                    "the diagnosed campaign load path."
+                ),
+                "allowed_paths": paths or [ADDON_ROOT + "/**"],
+                "validation_profile": "wesnoth-addon-static",
+                "validation_root": ADDON_ROOT,
+                "resume_branch": None,
+                "resume_pr_number": None,
+                "resume_pr_head_sha": None,
+                "replace_pr_number": None,
+                "replace_pr_head_sha": None,
+                "replace_pr_branch": None,
+            },
+            "_planning_inventory": inventory,
+            "_post_publish_game_repair": True,
+        }
+        try:
+            self._build_ticket(
+                "gamerepair000", proposal, "post-publish game validation", fresh_start_authorized=True
+            )
+        except (ControlError, SystemExit, ValueError):
+            return None
+        return proposal
+
+    def _mark_post_publish_repair_queued(self, ticket_id: str) -> None:
+        path = self.root / "agent" / "runtime" / POST_PUBLISH_GAME_VALIDATION_FILE
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return
+        if record.get("state") != "pending_repair":
+            return
+        record["state"] = "repair_queued"
+        record["repair_ticket_id"] = ticket_id
+        temporary = path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, path)
 
     @staticmethod
     def _priorities_exhausted(inventory: dict) -> bool:
@@ -1157,7 +1239,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             "open_prs": inventory.get("open_pull_requests") or [],
         }
         prompt = f"""Plan the next {GENERATED_BACKLOG_SIZE} small ordered implementation tickets for this
-Wesnoth Star Wars project. Read AGENTS.md and docs/PROJECT_CONTINUITY.md. Output only
+Wesnoth Star Wars project. Read AGENTS.md, docs/PROJECT_CONTINUITY.md, and docs/WORKTREE_LESSONS.md. Output only
 the schema JSON. Do not edit files or propose governance, dashboard, security, or
 already completed work. Tickets must be independently reviewable, narrowly scoped,
 safe to run sequentially from protected main, and use exact files or directory/**
@@ -1169,7 +1251,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
 """
         command = [
             executable, "exec", "-C", root_arg, "-s", "read-only",
-            "-m", "gpt-5.6-sol", "-c",
+            "-m", VALID_MODES[mode]["cli_model"], "-c",
             f'model_reasoning_effort="{VALID_MODES[mode]["effort"]}"',
             "--ephemeral", "--ignore-user-config", "--color", "never",
             "--output-schema", schema_arg, "-o", output_arg, "-",

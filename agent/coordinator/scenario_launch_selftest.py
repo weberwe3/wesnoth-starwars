@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-"""Deterministic ENGINE-002 preprocessing smoke with isolated staged userdata."""
+"""Deterministic installed-Wesnoth campaign smoke with isolated staged userdata."""
 
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -21,6 +22,8 @@ ADDON_ID = "Star_Wars_Thrawn_Trilogy"
 SCENARIO_ID = "01_First_Battle"
 CAMPAIGN_DEFINE = "CAMPAIGN_STAR_WARS_THRAWN_TRILOGY"
 ENGINE_TIMEOUT_SECONDS = 120
+CAMPAIGN_STARTUP_PROBE_SECONDS = 12
+MAX_DIAGNOSTIC_CHARS = 6000
 
 
 def find_wesnoth_executable() -> Path | None:
@@ -29,6 +32,8 @@ def find_wesnoth_executable() -> Path | None:
         configured,
         shutil.which("wesnoth"),
         shutil.which("wesnoth.exe"),
+        r"C:\\Program Files (x86)\\battle for wesnoth\\wesnoth.exe",
+        r"C:\\Program Files\\Battle for Wesnoth\\wesnoth.exe",
         "/mnt/c/Program Files (x86)/battle for wesnoth/wesnoth.exe",
         "/mnt/c/Program Files/Battle for Wesnoth/wesnoth.exe",
     ]
@@ -42,6 +47,8 @@ def find_wesnoth_executable() -> Path | None:
 
 
 def windows_path(path: Path) -> str:
+    if os.name == "nt":
+        return str(path)
     completed = subprocess.run(
         ["wslpath", "-w", str(path)],
         text=True,
@@ -65,12 +72,175 @@ def build_command(
 ) -> list[str]:
     convert = path_converter if executable.suffix.casefold() == ".exe" else str
     return [
-        str(executable),
+        convert(executable),
         "--userdata-dir", convert(userdata),
         "--preprocess", convert(source), convert(output),
-        f"--preprocess-defines={CAMPAIGN_DEFINE}",
-        "--no-log-to-file",
+        "--preprocess-defines", CAMPAIGN_DEFINE,
     ]
+
+
+def _bounded_diagnostic(*values: object) -> str:
+    lines: list[str] = []
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        for line in value.splitlines():
+            cleaned = line.strip()
+            if cleaned and cleaned not in lines:
+                lines.append(cleaned)
+    return "\n".join(lines)[-MAX_DIAGNOSTIC_CHARS:]
+
+
+def diagnostic_paths(diagnostic: str) -> list[str]:
+    """Return only project-owned add-on paths named by Wesnoth diagnostics."""
+
+    prefix = f"addons/{ADDON_ID}/"
+    found: list[str] = []
+    pattern = re.compile(
+        rf"~add-ons/{re.escape(ADDON_ID)}/([^:\r\n]+)(?::\d+)?",
+        re.IGNORECASE,
+    )
+    for match in pattern.finditer(diagnostic):
+        relative = match.group(1).replace("\\", "/").strip(" /")
+        candidate = prefix + relative
+        if ".." not in Path(relative).parts and candidate not in found:
+            found.append(candidate)
+    return found[:20]
+
+
+def _powershell_literal(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+def run_engine(command: list[str], *, cwd: Path, timeout: int) -> subprocess.CompletedProcess:
+    """Wait correctly for a Windows GUI-subsystem executable launched from WSL."""
+
+    if os.name == "nt" or not command[0].casefold().endswith(".exe"):
+        return subprocess.run(
+            command, cwd=cwd, text=True, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, timeout=timeout, check=False,
+        )
+    argument_line = subprocess.list2cmdline(command[1:])
+    script = (
+        "$ErrorActionPreference='Stop';"
+        "$process=Start-Process -FilePath " + _powershell_literal(command[0])
+        + " -ArgumentList " + _powershell_literal(argument_line)
+        + " -Wait -PassThru -WindowStyle Hidden;"
+        "exit $process.ExitCode"
+    )
+    encoded = base64.b64encode(script.encode("utf-16le")).decode("ascii")
+    return subprocess.run(
+        ["powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
+        cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        timeout=timeout, check=False,
+    )
+
+
+def run_campaign_startup_probe(
+    executable: Path, userdata: Path, *, cwd: Path, timeout: int = CAMPAIGN_STARTUP_PROBE_SECONDS
+) -> dict:
+    """Launch the staged campaign briefly, then close only that child process.
+
+    A campaign that reaches its initial map remains alive at the probe deadline. A
+    configuration or WML failure exits early and is reported in the staged log.
+    """
+
+    if executable.suffix.casefold() != ".exe":
+        return {"started": False, "survived_probe": False, "exit_code": None, "diagnostic": "Campaign startup probe requires the installed Windows engine."}
+    arguments = subprocess.list2cmdline([
+        "--userdata-dir", windows_path(userdata), "--campaign", ADDON_ID,
+    ])
+    script = (
+        "$ErrorActionPreference='Stop';"
+        "$process=Start-Process -FilePath " + _powershell_literal(windows_path(executable))
+        + " -ArgumentList " + _powershell_literal(arguments) + " -PassThru -WindowStyle Hidden;"
+        + f"Start-Sleep -Seconds {timeout};"
+        + "$alive=-not $process.HasExited;"
+        + "if($alive){Stop-Process -Id $process.Id -Force;$process.WaitForExit()};"
+        + "[Console]::Out.WriteLine((@{started=$true;survived_probe=$alive;exit_code=$process.ExitCode}|ConvertTo-Json -Compress))"
+    )
+    encoded = base64.b64encode(script.encode("utf-16le")).decode("ascii")
+    completed = subprocess.run(
+        ["powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
+        cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        timeout=timeout + 20, check=False,
+    )
+    payload = next(
+        (line for line in completed.stdout.splitlines() if line.lstrip().startswith("{")),
+        "",
+    )
+    try:
+        output = json.loads(payload)
+    except json.JSONDecodeError:
+        return {
+            "started": False, "survived_probe": False, "exit_code": completed.returncode,
+            "diagnostic": _bounded_diagnostic(completed.stdout),
+        }
+    return {
+        "started": output.get("started") is True,
+        "survived_probe": output.get("survived_probe") is True,
+        "exit_code": output.get("exit_code") if isinstance(output.get("exit_code"), int) else None,
+        "diagnostic": "",
+    }
+
+
+def campaign_error_lines(text: str) -> list[str]:
+    """Return bounded fatal configuration diagnostics emitted while loading the add-on."""
+
+    return [
+        line.strip() for line in text.splitlines()
+        if re.search(r"\berror (?:wml|engine|config):", line, re.IGNORECASE)
+    ][-40:]
+
+
+def validate_post_publish_game(root: Path) -> dict:
+    """Fail closed unless installed Wesnoth preprocesses and starts the staged campaign."""
+
+    evidence = validate_engine_002(root)
+    evidence["command_kind"] = "wesnoth-wml-preprocess-and-campaign-startup"
+    evidence["checks"]["campaign_startup_survived_probe"] = False
+    evidence["checks"]["campaign_temporary_artifacts_cleaned"] = False
+    if not evidence["pass"]:
+        return evidence
+    executable = find_wesnoth_executable()
+    if executable is None:
+        evidence["pass"] = False
+        evidence["failure_class"] = "engine_infrastructure"
+        return evidence
+    temporary = Path(tempfile.mkdtemp(prefix=".wesnoth-campaign-", dir=root.parent))
+    try:
+        userdata = temporary / "userdata"
+        staged = userdata / "data" / "add-ons" / ADDON_ID
+        staged.parent.mkdir(parents=True)
+        shutil.copytree(root / "addons" / ADDON_ID, staged)
+        probe = run_campaign_startup_probe(executable, userdata, cwd=root)
+        logs = sorted(
+            (userdata / "logs").glob("wesnoth-*.log"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+        log_text = "\n".join(
+            path.read_text(encoding="utf-8", errors="replace") for path in logs[:2]
+        )
+        failures = campaign_error_lines(log_text)
+        diagnostic = _bounded_diagnostic(probe.get("diagnostic"), "\n".join(failures))
+        evidence["campaign_probe"] = {
+            "started": probe["started"],
+            "survived_probe": probe["survived_probe"],
+            "exit_code": probe["exit_code"],
+        }
+        evidence["checks"]["campaign_startup_survived_probe"] = probe["survived_probe"] and not failures
+        evidence["diagnostic"] = diagnostic
+        evidence["diagnostic_paths"] = diagnostic_paths(diagnostic)
+        if not evidence["checks"]["campaign_startup_survived_probe"]:
+            evidence["failure_class"] = "addon_validation" if failures else "engine_infrastructure"
+    except (OSError, subprocess.SubprocessError):
+        evidence["failure_class"] = "engine_infrastructure"
+    finally:
+        shutil.rmtree(temporary, ignore_errors=True)
+        evidence["checks"]["campaign_temporary_artifacts_cleaned"] = not temporary.exists()
+    evidence["pass"] = all(evidence["checks"].values())
+    return evidence
 
 
 def validate_engine_002(
@@ -105,6 +275,9 @@ def validate_engine_002(
         "output_file_count": 0,
         "output_bytes": 0,
         "output_sha256": None,
+        "diagnostic": "",
+        "diagnostic_paths": [],
+        "failure_class": None,
     }
     selected = executable or find_wesnoth_executable()
     checks["engine_found"] = bool(
@@ -139,14 +312,14 @@ def validate_engine_002(
             selected, userdata, staged_main, output_dir, path_converter=path_converter
         )
         try:
-            completed = runner(
-                command,
-                cwd=root,
-                text=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                timeout=ENGINE_TIMEOUT_SECONDS,
-                check=False,
+            completed = (
+                run_engine(command, cwd=root, timeout=ENGINE_TIMEOUT_SECONDS)
+                if runner is subprocess.run
+                else runner(
+                    command, cwd=root, text=True, stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT, timeout=ENGINE_TIMEOUT_SECONDS,
+                    check=False,
+                )
             )
             evidence["exit_code"] = completed.returncode
             checks["engine_exit_zero"] = completed.returncode == 0
@@ -163,8 +336,32 @@ def validate_engine_002(
             evidence["output_bytes"] = output_bytes
             evidence["output_sha256"] = digest.hexdigest() if output_files else None
             checks["preprocessed_output_present"] = bool(output_files and output_bytes)
+            log_text = ""
+            logs = sorted(
+                (userdata / "logs").glob("wesnoth-*.log"),
+                key=lambda path: path.stat().st_mtime,
+                reverse=True,
+            )
+            if logs:
+                log_text = logs[0].read_text(encoding="utf-8", errors="replace")
+            diagnostic = _bounded_diagnostic(completed.stdout, log_text)
+            evidence["diagnostic"] = diagnostic
+            evidence["diagnostic_paths"] = diagnostic_paths(diagnostic)
+            if completed.returncode != 0:
+                evidence["failure_class"] = (
+                    "addon_validation"
+                    if evidence["diagnostic_paths"]
+                    or re.search(
+                        r"(?:parse error|unexpected characters|unterminated|wml error|"
+                        r"included from ~add-ons)",
+                        diagnostic,
+                        re.I,
+                    )
+                    else "engine_infrastructure"
+                )
         except (OSError, subprocess.SubprocessError):
             evidence["exit_code"] = 125
+            evidence["failure_class"] = "engine_infrastructure"
     finally:
         shutil.rmtree(temporary, ignore_errors=True)
         checks["temporary_artifacts_cleaned"] = not temporary.exists()
@@ -216,6 +413,19 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             )
             self.assertFalse(evidence["pass"])
             self.assertFalse(evidence["checks"]["engine_exit_zero"])
+            self.assertEqual(evidence["diagnostic"], "parse error")
+            self.assertEqual(evidence["failure_class"], "addon_validation")
+
+    def test_diagnostic_paths_are_bounded_to_the_addon(self) -> None:
+        diagnostic = (
+            "Unexpected characters at ~add-ons/Star_Wars_Thrawn_Trilogy/"
+            "scenarios/01_first_battle.cfg:64\n"
+            "at ~add-ons/Other_Addon/secret.cfg:1"
+        )
+        self.assertEqual(
+            diagnostic_paths(diagnostic),
+            ["addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"],
+        )
 
     def test_windows_command_translates_only_path_arguments(self) -> None:
         translated = []
@@ -230,11 +440,27 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         )
         self.assertEqual(
             translated,
-            [Path("/tmp/userdata"), Path("/tmp/addon/_main.cfg"), Path("/tmp/output")],
+            [
+                Path("/mnt/c/Wesnoth/wesnoth.exe"), Path("/tmp/userdata"),
+                Path("/tmp/addon/_main.cfg"), Path("/tmp/output"),
+            ],
         )
+        self.assertEqual(command[0], "WIN:wesnoth.exe")
         self.assertIn("WIN:userdata", command)
         self.assertIn("WIN:_main.cfg", command)
         self.assertIn("WIN:output", command)
+
+    def test_windows_engine_runner_uses_a_waiting_hidden_process(self) -> None:
+        command = ["C:\\Wesnoth\\wesnoth.exe", "--preprocess", "a b.cfg", "output"]
+        with mock.patch("os.name", "posix"), mock.patch("subprocess.run") as run:
+            run.return_value = subprocess.CompletedProcess(command, 0, "", "")
+            run_engine(command, cwd=Path("/tmp"), timeout=12)
+        invoked = run.call_args.args[0]
+        self.assertEqual(invoked[0], "powershell.exe")
+        encoded = invoked[-1]
+        script = base64.b64decode(encoded).decode("utf-16le")
+        self.assertIn("Start-Process", script)
+        self.assertIn("-Wait -PassThru -WindowStyle Hidden", script)
 
 
 def main() -> int:
