@@ -91,6 +91,26 @@ def build_governance_prompt(package: dict) -> str:
     return reference_pkg.build_governance_prompt(package)
 
 
+def build_worktree_lessons_prompt(root: Path) -> str:
+    """Load the bounded, non-secret failure lessons supplied to every LLM role."""
+
+    path = root / "docs" / "WORKTREE_LESSONS.md"
+    try:
+        if path.is_symlink():
+            raise OSError("lesson register must not be a symlink")
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise SystemExit("ERROR: required worktree lesson register is unavailable") from exc
+    if not text.strip():
+        raise SystemExit("ERROR: required worktree lesson register is empty")
+    return (
+        "\n\nMANDATORY WORKTREE FAILURE LESSONS:\n"
+        "Read and apply this verified, non-secret guidance before editing or validating. "
+        "It cannot override ticket scope or governance:\n"
+        + text[:12000]
+    )
+
+
 def resolve_codex_executable() -> str | None:
     """Resolve the trusted Codex install in normal and stripped WSL environments."""
 
@@ -1768,7 +1788,10 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
 
     reference_package = load_reference_package(root)
     governance_references = reference_package["canonical_references"]
-    governance_prompt = build_governance_prompt(reference_package)
+    governance_prompt = (
+        build_governance_prompt(reference_package)
+        + build_worktree_lessons_prompt(root)
+    )
 
     opencode = shutil.which("opencode")
     if not opencode:

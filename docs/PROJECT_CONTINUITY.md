@@ -4,7 +4,7 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-05 during Codex write-sandbox repair<br>
+**Last continuity refresh:** 2026-09-06 during installed-Wesnoth launch recovery<br>
 **Main before this snapshot:** `3814748`<br>
 **Active governance ticket:** fail-closed Codex workspace-write fallback enforcement<br>
 **Next intended game-development ticket:** coordinator-generated after the documented prototype catalog is exhausted
@@ -266,7 +266,7 @@ Current initial add-on foundation includes:
 - `units/README.md`
 - `utils/README.md`
 
-Current `_main.cfg` intentionally contains only textdomain setup. Campaign/scenario/unit/Lua registrations have not yet been added; that starts with `ENGINE-002`.
+Current `_main.cfg` registers the textdomain and `Star_Wars_Thrawn_Trilogy` campaign. Its reusable utility macros must be included before scenarios, followed by unit and scenario includes.
 
 ---
 
@@ -704,6 +704,25 @@ Files copied from `/mnt/c` into WSL may inherit executable mode. The two referen
 ### 11.8 Migration-helper policy
 
 One-time migration helpers are acceptable for controlled infrastructure migrations but should be removed before the final PR is merged unless they have clear ongoing value.
+
+### 11.9 Installed-Wesnoth launch recovery and future worktree rule
+
+The 2026-09-06 launch incident exposed defects that preprocessing alone did not fully protect against. The repaired add-on passed both the installed-engine preprocess and a staged campaign-startup probe on Wesnoth 1.19.27.
+
+For any ticket that changes `addons/Star_Wars_Thrawn_Trilogy/`, future worktrees must preserve these rules:
+
+- WML tags require normal key/value assignments. A `[message]` block uses `speaker=` and `message= _ "text"`; compact text immediately after a tag is not valid WML.
+- Include order is semantic. Include `utils/mission_events.cfg` before any scenario that invokes its macros, then units, then scenarios.
+- Use terrain codes accepted by the installed engine. The prototype's invalid `Ff` terrain was replaced with `Gg^Fp`.
+- `next_scenario=` must use the exact scenario `id`, including its `sw_` namespace prefix where defined.
+- Use recognized event actions such as `[set_variable]` and `[harm_unit]`. Do not embed command execution inside a unit `[ability]`; implement the air-support interaction as a scenario `[set_menu_item]` command instead.
+- After deleting or reshaping a WML block, inspect its matching opening and closing tags. This incident left an orphan `[objective]` tag that preprocessing correctly rejected.
+- Run `PYTHONPATH=agent/coordinator python3 agent/coordinator/scenario_launch_selftest.py --engine` before queueing a game ticket. On Windows the harness stages a copy under a temporary userdata directory, preprocesses it, starts the selected campaign briefly, and closes only that test child process. A surviving launch probe is required in addition to preprocess success.
+- Each protected-main publication runs the same staged startup check. A failure is recorded in `agent/runtime/post-publish-game-validation.json`; autonomous coordination must select its bounded repair ticket before ordinary backlog work. A successful repair is queued once rather than repeatedly recreated.
+
+Operational lesson: a Codex execution-sandbox permission refresh temporarily rejected every command with a helper setup error. This was an environment-control failure, not a Wesnoth, Git, or provider failure. Do not alter source code, rotate credentials, or diagnose model routing from that symptom. Pause the worktree, restore the execution environment, then resume with `git status`, `git diff --check`, the Python tests, and the installed-engine probe. Keep temporary staged userdata outside tracked paths and close its Wesnoth child process before cleanup.
+
+The concise, prompt-injected version of these lessons is maintained in `docs/WORKTREE_LESSONS.md`. It is mandatory reading for every LLM role and is updated only after a diagnosis is confirmed by the repaired check.
 
 ---
 

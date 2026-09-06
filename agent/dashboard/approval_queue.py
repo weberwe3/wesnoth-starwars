@@ -16,6 +16,7 @@ import threading
 from typing import Any, Callable
 
 import worktree_paths
+from scenario_launch_selftest import validate_post_publish_game
 
 
 BRANCH = re.compile(r"agent/[a-z0-9][a-z0-9._/-]{0,180}")
@@ -28,6 +29,7 @@ PR_HEAD_CONFIRM_INTERVAL_SECONDS = 1
 CI_REGISTRATION_ATTEMPTS = 60
 CI_REGISTRATION_INTERVAL_SECONDS = 2
 REQUIRED_CHECK_NAME = "repository-gates"
+POST_PUBLISH_GAME_VALIDATION_FILE = "post-publish-game-validation.json"
 TERMINAL_QUEUE_STATES = {
     "published", "rejected", "stale", "dismissed", "superseded", "discarded",
 }
@@ -1029,6 +1031,50 @@ class ApprovalQueue:
             level="success",
             detail=f"PR #{pr_number} merged as {merge_sha}.",
             ticket_id=record["ticket_id"],
+        )
+        self._record_post_publish_game_validation(record, merge_sha)
+
+    def _record_post_publish_game_validation(self, record: dict[str, Any], merge_sha: str) -> None:
+        """Validate current main with Wesnoth and persist a bounded repair contract on failure."""
+
+        evidence = validate_post_publish_game(self.root)
+        passed = evidence.get("pass") is True
+        payload = {
+            "schema_version": 1,
+            "state": "passed" if passed else "pending_repair",
+            "merge_sha": merge_sha,
+            "ticket_id": record.get("ticket_id"),
+            "checked_at": utc_now(),
+            "evidence": {
+                "command_kind": evidence.get("command_kind"),
+                "exit_code": evidence.get("exit_code"),
+                "failure_class": evidence.get("failure_class"),
+                "diagnostic": str(evidence.get("diagnostic") or "")[:6000],
+                "diagnostic_paths": [
+                    path for path in evidence.get("diagnostic_paths", [])
+                    if isinstance(path, str) and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+                ][:20],
+            },
+        }
+        _atomic_json(self.runtime / POST_PUBLISH_GAME_VALIDATION_FILE, payload)
+        if passed:
+            self.event(
+                "Installed Wesnoth check passed on updated main",
+                level="success",
+                detail="The isolated staged add-on parsed and reached campaign startup after protected merge.",
+                ticket_id=str(record.get("ticket_id") or ""),
+            )
+            return
+        self.event(
+            "Installed Wesnoth check failed on updated main; repair ticket queued",
+            level="error",
+            detail=(
+                "Automation will prioritize a bounded game-repair ticket before normal backlog work. "
+                + str(payload["evidence"]["diagnostic"] or "The engine returned no diagnostic text.")
+            )[:6000],
+            ticket_id=str(record.get("ticket_id") or ""),
+            failure_class="post_publish_game_validation",
+            required_action="Automation will repair the current main add-on before continuing other tickets.",
         )
 
     def _wait_for_pr_head(

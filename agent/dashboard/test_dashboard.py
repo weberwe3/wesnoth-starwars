@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent" / "coordinator"))
 
 from runtime_status import RuntimeStatus, default_state  # noqa: E402
-from coordination_control import ControlStore  # noqa: E402
+from coordination_control import ControlStore, VALID_MODES  # noqa: E402
 import recovery_policy  # noqa: E402
 import model_policy  # noqa: E402
 import ticket_runner  # noqa: E402
@@ -167,6 +167,51 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertFalse(public["automation"]["enabled"])
             with self.assertRaises(ControlError):
                 controller.set_mode("danger-full-access")
+
+    def test_terra_high_is_an_allowlisted_planner_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            controller.set_mode("terra-high")
+            public = controller.public_state()
+            self.assertEqual(public["assignment"]["model"], "GPT-5.6 Terra")
+            self.assertEqual(VALID_MODES["terra-high"]["cli_model"], "gpt-5.6-terra")
+
+    def test_worktree_lessons_are_required_and_bounded_for_llm_prompts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lessons = root / "docs" / "WORKTREE_LESSONS.md"
+            lessons.parent.mkdir()
+            lessons.write_text("# Verified lesson\nUse the engine smoke test.\n", encoding="utf-8")
+            prompt = ticket_runner.build_worktree_lessons_prompt(root)
+            self.assertIn("Verified lesson", prompt)
+            self.assertIn("cannot override ticket scope", prompt)
+            lessons.unlink()
+            with self.assertRaises(SystemExit):
+                ticket_runner.build_worktree_lessons_prompt(root)
+
+    def test_post_publish_failure_creates_one_bounded_repair_proposal(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            main_sha = "a" * 40
+            runtime.joinpath("post-publish-game-validation.json").write_text(json.dumps({
+                "schema_version": 1,
+                "state": "pending_repair",
+                "merge_sha": main_sha,
+                "evidence": {"diagnostic_paths": [
+                    "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+                ]},
+            }), encoding="utf-8")
+            controller = AutonomyController(
+                root, ControlStore(root / "control.json"), ApprovalQueue(root, root / "queue.json")
+            )
+            with mock.patch.object(controller, "_build_ticket", return_value={"task_id": "GAME"}):
+                proposal = controller._post_publish_game_repair_proposal({"main_head": main_sha})
+            self.assertEqual(proposal["ticket"]["allowed_paths"], [
+                "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+            ])
+            self.assertTrue(proposal["_post_publish_game_repair"])
 
     def test_existing_directory_scope_is_canonicalized_without_widening_files(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -660,12 +705,14 @@ class CoordinationControlTests(unittest.TestCase):
                 ]),
             ):
                 proposal = controller._refill_backlog(
-                    "abc123def456", "sol-low", "Continue autonomously", inventory
+                    "abc123def456", "terra-high", "Continue autonomously", inventory
                 )
             saved = controller._generated_backlog()
             self.assertEqual(len(saved["tickets"]), 2)
             self.assertTrue(proposal["summary"].startswith("generated-"))
             self.assertEqual(planner.call_count, 1)
+            command = planner.call_args.args[0]
+            self.assertEqual(command[command.index("-m") + 1], "gpt-5.6-terra")
 
     def test_completed_priority_retires_failed_historical_contract(self) -> None:
         self.assertTrue(AutonomyController._contract_matches_completed_priority(

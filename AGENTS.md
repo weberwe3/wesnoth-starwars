@@ -168,3 +168,9 @@ The continuity ledger is descriptive, not a replacement for the controlled refer
 After a meaningful merged milestone, architecture/security change, important reusable lesson, or roadmap change, the project-level coordinator SHOULD update `docs/PROJECT_CONTINUITY.md` in an appropriately scoped branch/PR. Ordinary bounded implementation workers MUST NOT modify the ledger unless their ticket explicitly allows it.
 
 Never record credential values, tokens, private keys, recovery information, encrypted secret blobs, or other secrets in the continuity ledger.
+
+## Worktree failure lessons
+
+`docs/WORKTREE_LESSONS.md` is the compact, mandatory failure-and-resolution register for all LLM roles. Every planner, implementation worker, tester, reviewer, and recovery worker MUST read its supplied prompt digest before editing or validating code. It records verified coding/design causes, repairs, and prevention checks so later worktrees do not rediscover the same mistakes.
+
+After a deterministic, installed-engine, or worktree test failure is diagnosed and the smallest repair passes the affected check, the coordinator MUST update the register before the repaired ticket is queued or published. Each entry must include the symptom, confirmed coding/design cause, resolution, and prevention check. Do not create a lesson from an unconfirmed diagnosis; preserve and report unknown failures. The register must never contain credentials, raw provider output, temporary logs, or other secrets.
