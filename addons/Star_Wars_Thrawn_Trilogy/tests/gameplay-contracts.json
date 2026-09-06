@@ -2,6 +2,12 @@
   "schema_version": 1,
   "contracts": [
     {
+      "id": "sw-thrawn-campaign-registration",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+      "expected_id": "Star_Wars_Thrawn_Trilogy"
+    },
+    {
       "id": "sw-first-battle-scenario-identity",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
