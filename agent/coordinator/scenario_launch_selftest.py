@@ -17,6 +17,8 @@ import tempfile
 import unittest
 from unittest import mock
 
+from gameplay_contracts import validate_declared_contracts, validate_historical_retention
+
 
 ADDON_ID = "Star_Wars_Thrawn_Trilogy"
 SCENARIO_ID = "01_First_Battle"
@@ -193,8 +195,10 @@ def campaign_error_lines(text: str) -> list[str]:
     ][-40:]
 
 
-def validate_post_publish_game(root: Path) -> dict:
-    """Fail closed unless installed Wesnoth preprocesses and starts the staged campaign."""
+def validate_post_publish_game(
+    root: Path, *, required_gameplay_paths: list[str] | None = None
+) -> dict:
+    """Fail closed unless engine startup and declared gameplay contracts pass."""
 
     evidence = validate_engine_002(root)
     evidence["command_kind"] = "wesnoth-wml-preprocess-and-campaign-startup"
@@ -239,6 +243,20 @@ def validate_post_publish_game(root: Path) -> dict:
     finally:
         shutil.rmtree(temporary, ignore_errors=True)
         evidence["checks"]["campaign_temporary_artifacts_cleaned"] = not temporary.exists()
+    evidence["pass"] = all(evidence["checks"].values())
+    if not evidence["pass"]:
+        return evidence
+    contract_evidence = validate_declared_contracts(root, required_gameplay_paths)
+    evidence["gameplay_contracts"] = contract_evidence
+    evidence["checks"]["declared_gameplay_contracts"] = contract_evidence.get("pass") is True
+    if not evidence["checks"]["declared_gameplay_contracts"]:
+        evidence["failure_class"] = "gameplay_contract"
+        evidence["diagnostic"] = _bounded_diagnostic(
+            evidence.get("diagnostic", ""), contract_evidence.get("diagnostic", "")
+        )
+        evidence["diagnostic_paths"] = sorted(set(
+            evidence.get("diagnostic_paths", []) + contract_evidence.get("diagnostic_paths", [])
+        ))[:20]
     evidence["pass"] = all(evidence["checks"].values())
     return evidence
 
@@ -461,6 +479,37 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         script = base64.b64decode(encoded).decode("utf-16le")
         self.assertIn("Start-Process", script)
         self.assertIn("-Wait -PassThru -WindowStyle Hidden", script)
+
+    def test_declared_reinforcement_contract_matches_the_current_scenario(self) -> None:
+        evidence = validate_declared_contracts(Path(__file__).resolve().parents[2])
+        self.assertTrue(evidence["pass"], evidence["diagnostic"])
+
+    def test_contract_coverage_rejects_an_uncontracted_gameplay_source(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            addon = root / "addons" / ADDON_ID
+            tests = addon / "tests"
+            tests.mkdir(parents=True)
+            scenario = addon / "scenario.cfg"
+            scenario.write_text("[scenario]\nid=sw_fixture\n[/scenario]\n", encoding="utf-8")
+            tests.joinpath("gameplay-contracts.json").write_text(json.dumps({
+                "schema_version": 1,
+                "contracts": [{
+                    "id": "sw-fixture-contract", "kind": "source-id",
+                    "path": f"addons/{ADDON_ID}/scenario.cfg", "expected_id": "sw_fixture",
+                }],
+            }), encoding="utf-8")
+            self.assertTrue(validate_declared_contracts(root, [
+                f"addons/{ADDON_ID}/scenario.cfg"
+            ])["pass"])
+            self.assertFalse(validate_declared_contracts(root, [
+                f"addons/{ADDON_ID}/other.cfg"
+            ])["pass"])
+
+    def test_historical_retention_covers_every_published_addon_ticket(self) -> None:
+        evidence = validate_historical_retention(Path(__file__).resolve().parents[2])
+        self.assertTrue(evidence["pass"], evidence["diagnostic"])
+        self.assertGreaterEqual(len(evidence["tickets"]), 1)
 
 
 def main() -> int:

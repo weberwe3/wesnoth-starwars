@@ -1037,10 +1037,16 @@ class ApprovalQueue:
     def _record_post_publish_game_validation(self, record: dict[str, Any], merge_sha: str) -> None:
         """Validate current main with Wesnoth and persist a bounded repair contract on failure."""
 
-        evidence = validate_post_publish_game(self.root)
+        changed_paths = [
+            item for item in record.get("changed_paths", [])
+            if isinstance(item, str)
+        ]
+        evidence = validate_post_publish_game(
+            self.root, required_gameplay_paths=changed_paths
+        )
         passed = evidence.get("pass") is True
         payload = {
-            "schema_version": 1,
+            "schema_version": 2,
             "state": "passed" if passed else "pending_repair",
             "merge_sha": merge_sha,
             "ticket_id": record.get("ticket_id"),
@@ -1054,6 +1060,10 @@ class ApprovalQueue:
                     path for path in evidence.get("diagnostic_paths", [])
                     if isinstance(path, str) and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
                 ][:20],
+                "gameplay_contracts": {
+                    "pass": (evidence.get("gameplay_contracts") or {}).get("pass") is True,
+                    "count": len((evidence.get("gameplay_contracts") or {}).get("contracts") or []),
+                },
             },
         }
         _atomic_json(self.runtime / POST_PUBLISH_GAME_VALIDATION_FILE, payload)
@@ -1061,7 +1071,10 @@ class ApprovalQueue:
             self.event(
                 "Installed Wesnoth check passed on updated main",
                 level="success",
-                detail="The isolated staged add-on parsed and reached campaign startup after protected merge.",
+                detail=(
+                    "The isolated staged add-on parsed, reached campaign startup, and passed "
+                    "its declared gameplay contracts after protected merge."
+                ),
                 ticket_id=str(record.get("ticket_id") or ""),
             )
             return

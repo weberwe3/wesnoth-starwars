@@ -62,6 +62,12 @@ Scenario validation is complete. The next bounded game ticket should advance the
 
 Do not reopen the infrastructure/reference design unless a concrete defect or new requirement justifies it. The project is now ready to prioritize actual game development.
 
+### Gameplay-contract validation
+
+Protected-main game publication now requires both the staged installed-Wesnoth preprocess/startup probe and declared gameplay contracts. A contract lives in `addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json` and ties each changed gameplay WML/Lua source to a compact, deterministic expected outcome. `source-id` guards a scenario or unit identity; `event-unit` additionally guards a scripted trigger, its one-shot behavior, and spawned-unit details.
+
+Before the next autonomous ticket is planned, the dashboard performs a one-time historical retention sweep in original first-parent publication order. It verifies that each published add-on ticket's retained source files and WML identifiers still exist in current `main`, alongside the installed-engine assembled-campaign check. History is never rewritten: a failure creates the first bounded repair ticket, and fresh planning remains blocked until it passes. Future tickets must update the gameplay-contract file for every changed gameplay source.
+
 ---
 
 ## 2. Source-of-truth hierarchy
