@@ -11,7 +11,7 @@
       "id": "sw-first-battle-scenario-identity",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
-      "expected_id": "01_First_Battle"
+      "expected_id": "sw_01_first_battle"
     },
     {
       "id": "sw-imperial-reinforcement-turn-four",
