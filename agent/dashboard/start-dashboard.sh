@@ -3,6 +3,14 @@ set -u
 
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 runtime_dir="$project_root/agent/runtime"
+# A direct WSL restart must retain the Windows-backed worktree contract used by
+# the secure bridge. The supported Windows launcher exports this already; this
+# fallback keeps manual restarts from silently selecting the legacy Linux root.
+if [[ -z "${WESNOTH_AGENT_WORKTREE_ROOT:-}" ]]; then
+    WESNOTH_AGENT_WORKTREE_ROOT="/mnt/c/Users/${USER}/Documents/Codex/WesnothAgentWorktrees"
+fi
+export WESNOTH_AGENT_WORKTREE_ROOT
+
 pid_file="$runtime_dir/dashboard.pid"
 commit_file="$runtime_dir/dashboard.commit"
 session_file="$runtime_dir/dashboard.session"
