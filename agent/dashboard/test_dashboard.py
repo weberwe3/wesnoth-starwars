@@ -38,6 +38,12 @@ from server import create_server, public_state  # noqa: E402
 
 
 class RuntimeStatusTests(unittest.TestCase):
+    def test_dashboard_launcher_defaults_to_the_secure_native_worktree_root(self) -> None:
+        launcher = ROOT / "agent" / "dashboard" / "start-dashboard.sh"
+        text = launcher.read_text(encoding="utf-8")
+        self.assertIn('WESNOTH_AGENT_WORKTREE_ROOT="/mnt/c/Users/${USER}/Documents/Codex/WesnothAgentWorktrees"', text)
+        self.assertIn("export WESNOTH_AGENT_WORKTREE_ROOT", text)
+
     def test_default_state_has_every_role_and_no_secret_fields(self) -> None:
         state = default_state(ROOT)
         self.assertEqual(
