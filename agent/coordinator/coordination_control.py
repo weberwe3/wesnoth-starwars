@@ -77,6 +77,7 @@ def default_control_state() -> dict[str, Any]:
         "automation": {
             "enabled": False,
             "brief": "Select the next safe, documented project priority.",
+            "guidance": "",
             "authorization_id": None,
         },
         "run": {
@@ -168,6 +169,9 @@ class ControlStore:
         brief = automation.get("brief")
         if not isinstance(brief, str) or not brief.strip() or len(brief) > 1000:
             brief = fallback["automation"]["brief"]
+        guidance = automation.get("guidance")
+        if not isinstance(guidance, str) or len(guidance) > 1000:
+            guidance = fallback["automation"]["guidance"]
         authorization_id = automation.get("authorization_id")
         if (
             not isinstance(authorization_id, str)
@@ -182,6 +186,7 @@ class ControlStore:
             "automation": {
                 "enabled": bool(automation.get("enabled")),
                 "brief": brief,
+                "guidance": guidance,
                 "authorization_id": authorization_id,
             },
             "run": {

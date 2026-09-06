@@ -5,6 +5,9 @@ let snapshot = null;
 let controlSnapshot = null;
 let controlToken = null;
 let controlBusy = false;
+let guidanceSaving = false;
+let guidanceDirty = false;
+let guidanceSaveTimer = null;
 let ticketCatalogReady = false;
 const plannedTickets = new Map();
 const fragmentAccess = new URLSearchParams(location.hash.slice(1)).get("access");
@@ -253,7 +256,12 @@ function renderControl(control) {
   if (document.activeElement !== $("coordination-brief") && !$("coordination-brief").value) {
     $("coordination-brief").value = control.automation?.brief || "";
   }
+  if (!guidanceDirty && document.activeElement !== $("coordinator-guidance")) {
+    $("coordinator-guidance").value = control.automation?.guidance || "";
+  }
   $("coordination-brief").disabled = !autonomous || running || controlBusy;
+  // Owner planning guidance is intentionally editable even while a ticket runs.
+  $("coordinator-guidance").disabled = false;
   $("planned-ticket").disabled = !ticketCatalogReady || !autonomous || running || controlBusy;
   $("handoff-button").disabled = !autonomous || !bridgeOnline || running || automated || controlBusy;
   $("automation-toggle").checked = automated;
@@ -326,6 +334,38 @@ async function controlAction(payload) {
   }
 }
 
+function scheduleGuidanceSave(delay = 600) {
+  clearTimeout(guidanceSaveTimer);
+  guidanceSaveTimer = setTimeout(persistGuidance, delay);
+}
+
+async function persistGuidance() {
+  const field = $("coordinator-guidance");
+  if (!guidanceDirty || guidanceSaving || !controlToken) return;
+  const guidance = field.value;
+  guidanceSaving = true;
+  try {
+    const response = await fetch("/api/control", {
+      method: "POST",
+      headers: apiHeaders({"Content-Type": "application/json", "X-Wesnoth-CSRF": controlToken}),
+      body: JSON.stringify({action: "set_guidance", guidance}),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Guidance was rejected");
+    controlSnapshot = result;
+    guidanceDirty = field.value !== guidance;
+    $("guidance-status").textContent = guidanceDirty
+      ? "Guidance changed again; saving the latest edit…"
+      : "Guidance saved for the next planning decision. Never paste credentials.";
+    renderControl(result);
+  } catch (_) {
+    $("guidance-status").textContent = "Guidance was not saved; it remains editable. Never paste credentials.";
+  } finally {
+    guidanceSaving = false;
+    if (guidanceDirty) scheduleGuidanceSave();
+  }
+}
+
 document.querySelectorAll('input[name="mode"]').forEach(input => {
   input.addEventListener("change", () => controlAction({action: "set_mode", mode: input.value}));
 });
@@ -333,6 +373,13 @@ document.querySelectorAll('input[name="mode"]').forEach(input => {
 $("automation-toggle").addEventListener("change", event => {
   controlAction({action: "set_automation", enabled: event.target.checked, brief: $("coordination-brief").value});
 });
+
+$("coordinator-guidance").addEventListener("input", () => {
+  guidanceDirty = true;
+  $("guidance-status").textContent = "Saving guidance for future planning…";
+  scheduleGuidanceSave();
+});
+$("coordinator-guidance").addEventListener("blur", () => persistGuidance());
 
 $("planned-ticket").addEventListener("change", event => {
   const brief = plannedTickets.get(event.target.value);

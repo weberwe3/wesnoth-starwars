@@ -65,10 +65,17 @@
         </label>
         <div class="control-actions">
           <button class="handoff-button" id="handoff-button" type="submit">Hand off one ticket</button>
-          <label class="planned-ticket-field" for="planned-ticket">
-            <span class="visually-hidden">Load a planned ticket</span>
-            <select id="planned-ticket" aria-describedby="planned-ticket-status" disabled><option value="">Loading planned tickets…</option></select>
-          </label>
+          <div class="planning-controls">
+            <label class="guidance-field" for="coordinator-guidance">
+              <span>Planning guidance <small>Saved for future priorities</small></span>
+              <textarea id="coordinator-guidance" maxlength="1000" rows="2" aria-describedby="guidance-status" placeholder="Optional high-level direction for newly planned tickets."></textarea>
+              <small class="guidance-status" id="guidance-status" aria-live="polite">Editable at all times. Never paste credentials.</small>
+            </label>
+            <label class="planned-ticket-field" for="planned-ticket">
+              <span class="visually-hidden">Load a planned ticket</span>
+              <select id="planned-ticket" aria-describedby="planned-ticket-status" disabled><option value="">Loading planned tickets…</option></select>
+            </label>
+          </div>
           <div class="control-state" role="status" aria-live="polite"><span id="control-state-dot"></span><strong id="control-state">Loading control state</strong><small id="control-summary"></small></div>
         </div>
         <p class="planned-ticket-status" id="planned-ticket-status" aria-live="polite">Choose a planned ticket to load its editable brief.</p>

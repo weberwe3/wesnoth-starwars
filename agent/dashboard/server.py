@@ -206,6 +206,12 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 if not isinstance(data.get("enabled"), bool) or not isinstance(data.get("brief"), str):
                     raise ControlError("Invalid automation request")
                 controller.set_automation(data["enabled"], data["brief"])
+            elif data.get("action") == "set_guidance" and set(data) == {
+                "action", "guidance",
+            }:
+                if not isinstance(data.get("guidance"), str):
+                    raise ControlError("Invalid coordinator guidance")
+                controller.set_guidance(data["guidance"])
             elif data.get("action") == "approve_publish" and set(data) == {
                 "action", "record_id", "commit_sha",
             }:
