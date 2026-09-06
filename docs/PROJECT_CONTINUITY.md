@@ -1010,6 +1010,8 @@ The controlled content policy now makes post-Return of the Jedi Expanded Univers
 
 Continuous automation now treats backlog maintenance as a coordinator responsibility. After existing or resumable work and the documented priority catalog are exhausted, one compact read-only Sol call proposes four ordered implementation contracts. Python rejects unsafe or overlapping entries, stores only validated contracts in ignored runtime state, starts the first immediately, and revalidates and selects later entries without another planner call. It requests a new set only after the prior set is exhausted or unusable. All existing worktree, scope, validation, tester, reviewer, deletion, publication, and three-failure gates remain unchanged.
 
+The dashboard also stores separate, editable **Planning guidance** for the coordinator. It is high-level owner preference for the next planning or backlog-generation decision, not a per-ticket brief or a bypass for existing work, scope, governance, approval, or safety boundaries. It remains editable during an active ticket and is persisted without interrupting that work.
+
 Write-capable Terra fallbacks now run only from the stable Windows-backed
 `Documents\Codex\WesnothAgentWorktrees` root. The launcher exports its WSL path
 without exposing credentials, the coordinator creates new ticket worktrees

@@ -359,6 +359,26 @@ class CoordinationControlTests(unittest.TestCase):
             with self.assertRaises(ControlError):
                 controller.set_automation(True, "Continue safely")
 
+    def test_planning_guidance_persists_without_changing_automation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            state = controller.set_guidance("Prioritize player-facing campaign missions.")
+            self.assertEqual(
+                state["automation"]["guidance"],
+                "Prioritize player-facing campaign missions.",
+            )
+            self.assertFalse(state["automation"]["enabled"])
+            self.assertEqual(
+                controller._planning_guidance(),
+                "Prioritize player-facing campaign missions.",
+            )
+
+    def test_planning_guidance_rejects_oversized_input(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            with self.assertRaisesRegex(ControlError, "at most"):
+                controller.set_guidance("x" * 1001)
+
     def test_no_safe_ticket_pauses_with_visible_reason(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
@@ -1581,6 +1601,27 @@ class CoordinationControlTests(unittest.TestCase):
                 changed = json.loads(response.read())
                 self.assertEqual(response.status, 202)
                 self.assertEqual(changed["mode"], "sol-low")
+                connection.request(
+                    "POST",
+                    "/api/control",
+                    body=json.dumps({
+                        "action": "set_guidance",
+                        "guidance": "Prioritize player-facing mission work.",
+                    }),
+                    headers={
+                        "Host": f"127.0.0.1:{server.server_port}",
+                        "Origin": f"http://127.0.0.1:{server.server_port}",
+                        "Content-Type": "application/json",
+                        "X-Wesnoth-CSRF": control["csrf_token"],
+                    },
+                )
+                response = connection.getresponse()
+                guided = json.loads(response.read())
+                self.assertEqual(response.status, 202)
+                self.assertEqual(
+                    guided["automation"]["guidance"],
+                    "Prioritize player-facing mission work.",
+                )
                 connection.request(
                     "POST",
                     "/api/control",
