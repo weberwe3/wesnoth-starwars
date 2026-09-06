@@ -25,6 +25,7 @@ SCENARIO_ID = "01_First_Battle"
 CAMPAIGN_DEFINE = "CAMPAIGN_STAR_WARS_THRAWN_TRILOGY"
 ENGINE_TIMEOUT_SECONDS = 120
 CAMPAIGN_STARTUP_PROBE_SECONDS = 12
+SCENARIO_RUNTIME_PROBE_SECONDS = 6
 MAX_DIAGNOSTIC_CHARS = 6000
 
 
@@ -139,7 +140,9 @@ def run_engine(command: list[str], *, cwd: Path, timeout: int) -> subprocess.Com
 
 
 def run_campaign_startup_probe(
-    executable: Path, userdata: Path, *, cwd: Path, timeout: int = CAMPAIGN_STARTUP_PROBE_SECONDS
+    executable: Path, userdata: Path, *, cwd: Path,
+    campaign_id: str = ADDON_ID,
+    timeout: int = CAMPAIGN_STARTUP_PROBE_SECONDS,
 ) -> dict:
     """Launch the staged campaign briefly, then close only that child process.
 
@@ -150,7 +153,7 @@ def run_campaign_startup_probe(
     if executable.suffix.casefold() != ".exe":
         return {"started": False, "survived_probe": False, "exit_code": None, "diagnostic": "Campaign startup probe requires the installed Windows engine."}
     arguments = subprocess.list2cmdline([
-        "--userdata-dir", windows_path(userdata), "--campaign", ADDON_ID,
+        "--userdata-dir", windows_path(userdata), "--campaign", campaign_id,
     ])
     script = (
         "$ErrorActionPreference='Stop';"
@@ -191,8 +194,170 @@ def campaign_error_lines(text: str) -> list[str]:
 
     return [
         line.strip() for line in text.splitlines()
-        if re.search(r"\berror (?:wml|engine|config):", line, re.IGNORECASE)
+        if re.search(
+            r"\berror\s+(?:wml|config|engine(?:/[a-z0-9_/-]+)?):|"
+            r"\bgame_error:|\bunknown unit type:",
+            line, re.IGNORECASE,
+        )
     ][-40:]
+
+
+def scenario_sources(root: Path) -> dict[str, Path]:
+    """Return declared scenario IDs and their source paths without loading WML."""
+
+    sources: dict[str, Path] = {}
+    for path in sorted((root / "addons" / ADDON_ID / "scenarios").rglob("*.cfg")):
+        text = path.read_text(encoding="utf-8")
+        for block in re.finditer(r"\[scenario\](.*?)\[/scenario\]", text, re.DOTALL):
+            match = re.search(r"(?m)^\s*id\s*=\s*([A-Za-z0-9_]+)\s*$", block.group(1))
+            if match:
+                scenario_id = match.group(1)
+                if scenario_id in sources:
+                    raise ValueError(f"Duplicate scenario id: {scenario_id}")
+                sources[scenario_id] = path
+    return sources
+
+
+def scenario_structure_evidence(root: Path, selected: set[str]) -> dict:
+    """Reject an empty or instant-ending source scenario before engine launch."""
+
+    checks: list[dict] = []
+    diagnostics: list[str] = []
+    for scenario_id, path in scenario_sources(root).items():
+        if scenario_id not in selected:
+            continue
+        text = path.read_text(encoding="utf-8")
+        block = next(iter(re.findall(r"\[scenario\](.*?)\[/scenario\]", text, re.DOTALL)), "")
+        sides = re.findall(r"\[side\](.*?)\[/side\]", block, re.DOTALL)
+        playable_sides = [
+            side for side in sides
+            if re.search(r"(?m)^\s*(?:type|id)\s*=", side)
+            and re.search(r"(?m)^\s*x\s*=", side)
+            and re.search(r"(?m)^\s*y\s*=", side)
+        ]
+        opening_events = re.findall(
+            r"\[event\](.*?)\[/event\]", block, re.DOTALL
+        )
+        immediate_end = any(
+            re.search(r"(?m)^\s*name\s*=\s*(?:prestart|start)\s*$", event)
+            and "[endlevel]" in event for event in opening_events
+        )
+        passed = len(playable_sides) >= 2 and not immediate_end
+        item = {
+            "scenario_id": scenario_id,
+            "path": path.relative_to(root).as_posix(),
+            "pass": passed,
+            "playable_side_count": len(playable_sides),
+            "immediate_endlevel": immediate_end,
+        }
+        checks.append(item)
+        if not passed:
+            diagnostics.append(
+                f"{scenario_id} has {len(playable_sides)} playable sides"
+                + (" and ends during setup" if immediate_end else "")
+            )
+    return {
+        "pass": bool(checks) and all(item["pass"] for item in checks),
+        "scenarios": checks,
+        "diagnostic": _bounded_diagnostic("\n".join(diagnostics)),
+        "diagnostic_paths": [item["path"] for item in checks if not item["pass"]][:20],
+    }
+
+
+def selected_scenarios(root: Path, required_gameplay_paths: list[str] | None) -> set[str]:
+    """Run all scenarios for a one-time sweep, otherwise only affected scenarios."""
+
+    sources = scenario_sources(root)
+    if not required_gameplay_paths:
+        return set(sources)
+    changed = set(required_gameplay_paths)
+    selected = {
+        scenario_id for scenario_id, path in sources.items()
+        if path.relative_to(root).as_posix() in changed
+    }
+    # A changed unit definition can be used by multiple scenarios; test every
+    # registered scenario rather than guess at text-level references.
+    if any(path.endswith((".cfg", ".lua")) and "/units/" in path for path in changed):
+        return set(sources)
+    return selected or {SCENARIO_ID}
+
+
+def prepare_runtime_probe_addon(staged_main: Path, scenario_relative: Path, scenario_id: str) -> str:
+    """Append one temporary campaign that launches exactly one real scenario.
+
+    This touches only isolated staged userdata. The player-facing add-on and
+    normal campaign routing are never modified by the test harness.
+    """
+
+    token = hashlib.sha256(scenario_id.encode("utf-8")).hexdigest()[:12]
+    campaign_id = f"sw_runtime_probe_{token}"
+    relative = scenario_relative.as_posix()
+    staged_main.write_text(
+        staged_main.read_text(encoding="utf-8")
+        + "\n# Isolated deterministic runtime probe; never committed to the add-on.\n"
+        + "{~add-ons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg}\n"
+        + "{~add-ons/Star_Wars_Thrawn_Trilogy/" + relative + "}\n"
+        + "[campaign]\n"
+        + f"    id={campaign_id}\n"
+        + f"    define=SW_RUNTIME_PROBE_{token}\n"
+        + f"    first_scenario={scenario_id}\n"
+        + "[/campaign]\n",
+        encoding="utf-8",
+    )
+    return campaign_id
+
+
+def runtime_scenario_probes(root: Path, executable: Path, selected: set[str]) -> dict:
+    """Launch each selected scenario through the installed engine's campaign path."""
+
+    results: list[dict] = []
+    for scenario_id, source in scenario_sources(root).items():
+        if scenario_id not in selected:
+            continue
+        temporary = Path(tempfile.mkdtemp(prefix=".wesnoth-runtime-", dir=root.parent))
+        try:
+            userdata = temporary / "userdata"
+            staged = userdata / "data" / "add-ons" / ADDON_ID
+            staged.parent.mkdir(parents=True)
+            shutil.copytree(root / "addons" / ADDON_ID, staged)
+            campaign_id = prepare_runtime_probe_addon(
+                staged / "_main.cfg",
+                source.relative_to(root / "addons" / ADDON_ID),
+                scenario_id,
+            )
+            probe = run_campaign_startup_probe(
+                executable, userdata, cwd=root, campaign_id=campaign_id,
+                timeout=SCENARIO_RUNTIME_PROBE_SECONDS,
+            )
+            logs = sorted((userdata / "logs").glob("wesnoth-*.log"))
+            log_text = "\n".join(path.read_text(encoding="utf-8", errors="replace") for path in logs[-2:])
+            failures = campaign_error_lines(log_text)
+            results.append({
+                "scenario_id": scenario_id,
+                "path": source.relative_to(root).as_posix(),
+                "pass": probe["survived_probe"] and not failures,
+                "started": probe["started"],
+                "survived_probe": probe["survived_probe"],
+                "diagnostic": _bounded_diagnostic(probe.get("diagnostic"), "\n".join(failures)),
+            })
+        except (OSError, subprocess.SubprocessError, ValueError) as exc:
+            results.append({
+                "scenario_id": scenario_id,
+                "path": source.relative_to(root).as_posix(),
+                "pass": False,
+                "started": False,
+                "survived_probe": False,
+                "diagnostic": f"Runtime probe infrastructure failed: {exc.__class__.__name__}",
+            })
+        finally:
+            shutil.rmtree(temporary, ignore_errors=True)
+    failed = [item for item in results if not item["pass"]]
+    return {
+        "pass": bool(results) and not failed,
+        "scenarios": results,
+        "diagnostic": _bounded_diagnostic(*(item["diagnostic"] for item in failed)),
+        "diagnostic_paths": [item["path"] for item in failed][:20],
+    }
 
 
 def validate_post_publish_game(
@@ -204,6 +369,8 @@ def validate_post_publish_game(
     evidence["command_kind"] = "wesnoth-wml-preprocess-and-campaign-startup"
     evidence["checks"]["campaign_startup_survived_probe"] = False
     evidence["checks"]["campaign_temporary_artifacts_cleaned"] = False
+    evidence["checks"]["scenario_structure_contracts"] = False
+    evidence["checks"]["scenario_runtime_probes"] = False
     if not evidence["pass"]:
         return evidence
     executable = find_wesnoth_executable()
@@ -243,8 +410,34 @@ def validate_post_publish_game(
     finally:
         shutil.rmtree(temporary, ignore_errors=True)
         evidence["checks"]["campaign_temporary_artifacts_cleaned"] = not temporary.exists()
-    evidence["pass"] = all(evidence["checks"].values())
+    evidence["pass"] = all(
+        value for key, value in evidence["checks"].items()
+        if key not in {"scenario_structure_contracts", "scenario_runtime_probes"}
+    )
     if not evidence["pass"]:
+        return evidence
+    selected = selected_scenarios(root, required_gameplay_paths)
+    structure = scenario_structure_evidence(root, selected)
+    evidence["scenario_structure"] = structure
+    evidence["checks"]["scenario_structure_contracts"] = structure["pass"]
+    if not structure["pass"]:
+        evidence["failure_class"] = "gameplay_contract"
+        evidence["diagnostic"] = _bounded_diagnostic(
+            evidence.get("diagnostic", ""), structure["diagnostic"]
+        )
+        evidence["diagnostic_paths"] = structure["diagnostic_paths"]
+        evidence["pass"] = False
+        return evidence
+    runtime = runtime_scenario_probes(root, executable, selected)
+    evidence["scenario_runtime"] = runtime
+    evidence["checks"]["scenario_runtime_probes"] = runtime["pass"]
+    if not runtime["pass"]:
+        evidence["failure_class"] = "addon_validation"
+        evidence["diagnostic"] = _bounded_diagnostic(
+            evidence.get("diagnostic", ""), runtime["diagnostic"]
+        )
+        evidence["diagnostic_paths"] = runtime["diagnostic_paths"]
+        evidence["pass"] = False
         return evidence
     contract_evidence = validate_declared_contracts(root, required_gameplay_paths)
     evidence["gameplay_contracts"] = contract_evidence
@@ -444,6 +637,25 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             diagnostic_paths(diagnostic),
             ["addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"],
         )
+
+    def test_engine_subsystem_and_unknown_unit_diagnostics_are_fatal(self) -> None:
+        lines = campaign_error_lines(
+            "error engine/team_construction: game_error: unknown unit type: sw_unit_fixture\n"
+        )
+        self.assertEqual(len(lines), 1)
+        self.assertIn("unknown unit type", lines[0])
+
+    def test_runtime_probe_stages_a_one_scenario_campaign(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            staged = Path(directory) / "_main.cfg"
+            staged.write_text("#textdomain fixture\n", encoding="utf-8")
+            campaign_id = prepare_runtime_probe_addon(
+                staged, Path("scenarios/fixture.cfg"), "sw_fixture"
+            )
+            text = staged.read_text(encoding="utf-8")
+            self.assertIn(f"id={campaign_id}", text)
+            self.assertIn("first_scenario=sw_fixture", text)
+            self.assertIn("scenarios/fixture.cfg", text)
 
     def test_windows_command_translates_only_path_arguments(self) -> None:
         translated = []

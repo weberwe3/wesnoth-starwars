@@ -1018,6 +1018,8 @@ Continuous automation now treats backlog maintenance as a coordinator responsibi
 
 The dashboard also stores separate, editable **Planning guidance** for the coordinator. It is high-level owner preference for the next planning or backlog-generation decision, not a per-ticket brief or a bypass for existing work, scope, governance, approval, or safety boundaries. It remains editable during an active ticket and is persisted without interrupting that work.
 
+The latest installed-engine gameplay diagnosis found that a campaign can preprocess and appear to launch while custom unit types are absent during scenario-side construction. The resulting engine diagnostics were `error engine/team_construction: game_error: unknown unit type`, which left First Battle empty and immediately completable. Unit definitions are now loaded before campaign-specific scenario guards, engine-subsystem/game-error diagnostics are fatal, and each affected scenario is launched through an isolated temporary campaign probe. The durable symptom, cause, resolution, and prevention procedure is recorded in `docs/WORKTREE_LESSONS.md`; every future diagnosed validation failure must be added there before its ticket is published.
+
 Write-capable Terra fallbacks now run only from the stable Windows-backed
 `Documents\Codex\WesnothAgentWorktrees` root. The launcher exports its WSL path
 without exposing credentials, the coordinator creates new ticket worktrees

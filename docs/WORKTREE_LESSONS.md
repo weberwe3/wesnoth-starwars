@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-06 — empty scenario after apparently successful startup
+
+- **Symptom:** First Battle opened on a small empty map and immediately ended. The installed engine log reported `error engine/team_construction: game_error: unknown unit type` for the scenario leader and squads.
+- **Cause:** The add-on registered custom `[unit_type]` definitions only inside campaign-specific preprocessor guards. The campaign could load its scenario path while the engine constructed its sides without the required custom unit registry. The former log filter also matched `error engine:` but missed the engine's actual subsystem form, `error engine/team_construction:`.
+- **Resolution:** Load project unit definitions before campaign-specific scenario guards. Treat `engine/<subsystem>` errors, `game_error`, and `unknown unit type` as fatal. Run each affected scenario through an isolated temporary campaign using the installed Windows Wesnoth executable; require it to remain alive without fatal engine diagnostics.
+- **Prevention:** For every gameplay ticket, run the staged runtime probe for each changed scenario and every scenario when a shared unit file changes. A successful preprocess or a process that merely remains open is never enough without inspecting the engine log.
+
 ### 2026-09-06 — gameplay-contract coverage
 
 - **Symptom:** A campaign could preprocess and reach its opening map while a newly added event, unit, or objective still lacked a deterministic check of its intended effect.
