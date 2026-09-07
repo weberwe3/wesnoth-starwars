@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import re
 from typing import Any
 
 
@@ -50,6 +51,11 @@ ROLE_ASSIGNMENTS = {
     },
 }
 
+_SENSITIVE_VALUE = re.compile(
+    r"(?i)(api[_-]?key|token|secret|password|credential|private[_-]?key)"
+    r"\s*[\"']?\s*[:=]\s*[\"']?[^\"'\s,;]+"
+)
+
 
 def _utc_now() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
@@ -70,6 +76,7 @@ def _configured_assignments(root: Path | None) -> dict[str, dict[str, str]]:
         "opencode": "OpenCode Zen",
         "cloudflare-workers-ai": "Cloudflare Workers AI",
         "google": "Google",
+        "openai": "OpenAI",
     }
     for role, filename in role_files.items():
         try:
@@ -111,6 +118,7 @@ def default_state(root: Path | None = None) -> dict[str, Any]:
                 **assignment,
                 "state": "idle",
                 "task": "Awaiting work",
+                "dispatch_prompt": None,
                 "started_at": None,
                 "error": None,
             }
@@ -247,6 +255,14 @@ class RuntimeStatus:
             "model": model[:160],
             "assignment_error": False,
         })
+        self._write()
+
+    def set_dispatch_prompt(self, role: str, prompt: str) -> None:
+        """Expose the actual dispatched worker prompt without secret-like values."""
+
+        self.state["workers"][role]["dispatch_prompt"] = _SENSITIVE_VALUE.sub(
+            r"\1=[redacted]", prompt
+        )
         self._write()
 
     def handoff(self, source: str, target: str, message: str) -> None:

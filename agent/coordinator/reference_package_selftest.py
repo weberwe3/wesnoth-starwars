@@ -43,7 +43,7 @@ def main() -> int:
     assert "one compact Sol call may refill a small ticket backlog" in normalized_prompt
     assert "without another planning call" in normalized_prompt
     assert "lists only pending static and generated tickets" in normalized_prompt
-    assert "one scoped Terra Low fallback" in normalized_prompt
+    assert "one scoped Luna Light fallback" in normalized_prompt
     assert "write fallbacks must report workspace-write" in normalized_prompt
     assert "read-only downgrade stops immediately" in normalized_prompt
 

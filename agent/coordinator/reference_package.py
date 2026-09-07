@@ -291,7 +291,7 @@ def build_governance_prompt(package: dict) -> str:
         "- When code is requested as output, provide complete scoped Wesnoth-ready files or snippets with useful mechanics comments.",
         "- Python owns execution, validation, retry ceilings, and publication gates.",
         "- In continuous mode, one compact Sol call may refill a small ticket backlog; Python revalidates and selects each contract without another planning call.",
-        "- The dashboard lists only pending static and generated tickets; a failed Fast-Fix call may use one scoped Terra Low fallback.",
+        "- The dashboard lists only pending static and generated tickets; every failed or non-decisive model-worker stage may use one scoped Luna Light fallback.",
         "- Codex write fallbacks must report workspace-write; a read-only downgrade stops immediately and is never treated as implementation success.",
         "- Tester and reviewer roles are read-only and independent.",
         "",

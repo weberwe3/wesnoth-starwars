@@ -1,7 +1,7 @@
 ---
 description: Independently evaluates implementation and deterministic test evidence
 mode: all
-model: cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash
+model: openai/gpt-5.6-luna
 permission:
   "*": deny
   read:

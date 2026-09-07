@@ -321,19 +321,19 @@ The deterministic coordinator, not the worker LLM, executes tests and records ac
 
 ### 6.3 Provider routing snapshot
 
-Routing used during the infrastructure baseline:
+Current worker routing:
 
-- implementer: `groq/openai/gpt-oss-120b`, with one `gpt-5.6-terra` medium fallback after primary Implementer process failure
-- fast-fix: `opencode/ling-3.0-flash-fin-free`
-- tester: `cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash`
+- implementer: Codex `openai/gpt-5.6-terra` at medium reasoning
+- fast-fix: Codex `openai/gpt-5.6-luna` at medium reasoning
+- tester: Codex `openai/gpt-5.6-luna` at medium reasoning
 - primary reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
-- reviewer fallback: Codex `openai/gpt-5.6-luna` at low reasoning through the local Codex application
+- every model-worker fallback: Codex `openai/gpt-5.6-luna` at low reasoning
 
 Observed behavior:
 
 - Google reviewers are disabled in unattended routing because Gemini 3.6 repeatedly exhausted its 20-request project free-tier daily allowance and Gemini 3.8 also produced protocol and timeout failures;
-- Luna Light follows Nemotron only for infrastructure/unavailability/non-decisive failures;
-- model launches use published free-tier ceilings where universal values exist (Groq GPT-OSS 30 RPM, NVIDIA Nemotron 40 RPM, Cloudflare GLM 300 RPM), while account/project-specific quotas remain provider-managed;
+- Luna Light follows a failed or non-decisive model-worker stage exactly once; a substantive negative verdict remains authoritative;
+- model launches use the published Nemotron 40 RPM ceiling, while Codex-account usage remains account-managed;
 - a provider/process/timeout/non-decisive failure suppresses that model for the next two worktree runs, while a valid negative verdict does not;
 - a substantive `REQUEST_CHANGES` from any reviewer must not be bypassed by a later fallback.
 
@@ -1020,7 +1020,7 @@ The dashboard also stores separate, editable **Planning guidance** for the coord
 
 The latest installed-engine gameplay diagnosis found that a campaign can preprocess and appear to launch while custom unit types are absent during scenario-side construction. The resulting engine diagnostics were `error engine/team_construction: game_error: unknown unit type`, which left First Battle empty and immediately completable. Unit definitions are now loaded before campaign-specific scenario guards, engine-subsystem/game-error diagnostics are fatal, and each affected scenario is launched through an isolated temporary campaign probe. The durable symptom, cause, resolution, and prevention procedure is recorded in `docs/WORKTREE_LESSONS.md`; every future diagnosed validation failure must be added there before its ticket is published.
 
-Write-capable Terra fallbacks now run only from the stable Windows-backed
+Write-capable Terra and Luna worker calls now run only from the stable Windows-backed
 `Documents\Codex\WesnothAgentWorktrees` root. The launcher exports its WSL path
 without exposing credentials, the coordinator creates new ticket worktrees
 there, and legacy WSL worktrees remain visible for exact-branch resumption. The
@@ -1030,4 +1030,10 @@ automatic review path successfully applies an approved patch. The wrapper now
 uses the supported flag combination, requires on-request approval evidence and
 a native drive-letter path, and leaves the resulting Git diff and all existing
 deterministic gates authoritative. Local path/sandbox configuration failures no
-longer poison Terra's provider-availability circuit.
+longer poison the Codex worker-provider availability circuit.
+
+The dashboard stores the exact most-recent prompt dispatched by the deterministic
+coordinator for each worker node. It is displayed only in that node's expandable
+**Exact coordinator dispatch** panel and has secret-like values redacted before
+telemetry is persisted or sent to a paired LAN browser. Compact node summaries
+remain status text rather than being mislabeled as the coordinator's instruction.
