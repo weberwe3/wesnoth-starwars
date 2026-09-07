@@ -9,7 +9,9 @@ from typing import Any
 
 
 MAX_RECOVERY_ATTEMPTS = 2
-TERRA_FALLBACK_FAILURE = 86
+WORKER_FALLBACK_FAILURE = 86
+# Retained for result compatibility with previously persisted ticket records.
+TERRA_FALLBACK_FAILURE = WORKER_FALLBACK_FAILURE
 CODEX_WRITE_SANDBOX_UNAVAILABLE = 89
 _SENSITIVE = re.compile(
     r"(?i)(api[_-]?key|token|secret|password|credential|private[_-]?key)"
@@ -41,10 +43,16 @@ def can_attempt(attempts_used: int, failure: dict[str, Any], enabled: bool) -> b
     )
 
 
-def should_use_terra_fallback(worker: str, return_code: int, used: bool) -> bool:
-    """Allow one bounded Terra fallback for a failed implementation worker call."""
+def should_use_luna_light_fallback(worker: str, return_code: int, used: bool) -> bool:
+    """Allow one bounded Luna Light fallback for a failed model-worker call."""
 
-    return worker in {"implementer", "fast-fix"} and return_code != 0 and not used
+    return worker in {"implementer", "fast-fix", "tester", "reviewer"} and return_code != 0 and not used
+
+
+def should_use_terra_fallback(worker: str, return_code: int, used: bool) -> bool:
+    """Compatibility alias for old callers and persisted-test imports."""
+
+    return should_use_luna_light_fallback(worker, return_code, used)
 
 
 def model_finding(output: str, fallback: str) -> str:
@@ -74,56 +82,77 @@ def _failure(
     }
 
 
-def classify_implementer_fallback(
+def classify_worker_fallback(
     primary_output: str,
     primary_rc: int,
-    terra_output: str,
-    terra_rc: int,
-    fallback_label: str = "Terra Medium",
+    fallback_output: str,
+    fallback_rc: int,
+    *,
+    primary_label: str,
+    fallback_label: str = "Luna Light",
 ) -> dict[str, Any]:
-    """Describe two provider failures without exposing either provider's raw output."""
+    """Describe a bounded worker primary/fallback failure without raw logs."""
 
     primary_text = primary_output.casefold()
-    terra_text = terra_output.casefold()
+    fallback_text = fallback_output.casefold()
     if any(marker in primary_text for marker in (
         "contextoverflowerror", "request too large", "tokens per minute",
     )):
-        primary = "GPT-OSS exceeded the Groq request/context token limit."
-    elif any(marker in primary_text for marker in ("rate_limit", "rate limit", "quota")):
-        primary = "GPT-OSS was rate-limited by Groq."
+        primary = f"{primary_label} exceeded its request/context token limit."
+    elif any(marker in primary_text for marker in ("rate_limit", "rate limit", "quota", "usage limit")):
+        primary = f"{primary_label} reached its provider usage limit."
     elif primary_rc == 124:
-        primary = "GPT-OSS timed out."
+        primary = f"{primary_label} timed out."
     else:
-        primary = f"GPT-OSS exited with code {primary_rc}."
+        primary = f"{primary_label} exited with code {primary_rc}."
 
-    if terra_rc == 127:
-        terra = "The secure runner could not locate the Codex executable, so Terra did not run."
+    if fallback_rc == 127:
+        fallback = f"The secure runner could not locate Codex, so {fallback_label} did not run."
         action = "Restart the updated dashboard launcher, then resume the preserved ticket."
         failure_class = "implementer_fallback_unavailable"
-    elif terra_rc == CODEX_WRITE_SANDBOX_UNAVAILABLE:
-        terra = f"The {fallback_label} fallback was restricted to a read-only sandbox."
+    elif fallback_rc == CODEX_WRITE_SANDBOX_UNAVAILABLE:
+        fallback = f"The {fallback_label} fallback was restricted to a read-only sandbox."
         action = (
             "Restart the updated dashboard launcher. If workspace-write remains unavailable, "
             "inspect the Codex host policy before resuming the preserved ticket."
         )
         failure_class = "implementer_fallback_unavailable"
-    elif terra_rc == 124:
-        terra = f"The {fallback_label} fallback timed out."
+    elif fallback_rc == 124:
+        fallback = f"The {fallback_label} fallback timed out."
         action = "Check Codex availability and resume the preserved ticket when capacity returns."
         failure_class = "implementer_fallback_failure"
-    elif any(marker in terra_text for marker in ("usage limit", "rate limit", "quota")):
-        terra = f"The {fallback_label} fallback reached its Codex usage limit."
+    elif any(marker in fallback_text for marker in ("usage limit", "rate limit", "quota")):
+        fallback = f"The {fallback_label} fallback reached its Codex usage limit."
         action = "Resume the preserved ticket after Codex capacity resets."
         failure_class = "implementer_fallback_failure"
     else:
-        terra = f"The {fallback_label} fallback exited with code {terra_rc}."
+        fallback = f"The {fallback_label} fallback exited with code {fallback_rc}."
         action = "Inspect the bounded provider diagnostics before resuming the preserved ticket."
         failure_class = "implementer_fallback_failure"
     return _failure(
         failure_class,
-        f"{primary} {terra}",
+        f"{primary} {fallback}",
         action,
         eligible=False,
+    )
+
+
+def classify_implementer_fallback(
+    primary_output: str,
+    primary_rc: int,
+    fallback_output: str,
+    fallback_rc: int,
+    fallback_label: str = "Luna Light",
+) -> dict[str, Any]:
+    """Compatibility wrapper for existing implementer failure records."""
+
+    return classify_worker_fallback(
+        primary_output,
+        primary_rc,
+        fallback_output,
+        fallback_rc,
+        primary_label="Implementer",
+        fallback_label=fallback_label,
     )
 
 
@@ -161,13 +190,13 @@ def classify_validation(
         )
 
     changed = scope.get("changed_paths") or []
-    if implementer_rc == TERRA_FALLBACK_FAILURE:
+    if implementer_rc == WORKER_FALLBACK_FAILURE:
         if implementation_failure:
             return implementation_failure
         return _failure(
             "implementer_fallback_failure",
-            "Both the primary Implementer and its single Terra Medium fallback failed.",
-            "Check Codex and Groq availability before starting another ticket.",
+            "Both the Terra Medium Implementer and its single Luna Light fallback failed.",
+            "Check Codex availability before starting another ticket.",
             eligible=False,
         )
     if implementer_rc != 0 and not changed:
@@ -244,8 +273,8 @@ def classify_tester_fallback(
 
     return _failure(
         "tester_provider_failure",
-        reason("GLM-4.7 Flash tester", primary_rc, primary_output)
-        + " " + reason("Luna Medium tester fallback", luna_rc, luna_output),
+        reason("Luna Medium tester", primary_rc, primary_output)
+        + " " + reason("Luna Light tester fallback", luna_rc, luna_output),
         "Allow the autonomous worktree retry policy to re-evaluate provider availability.",
         eligible=False,
     )

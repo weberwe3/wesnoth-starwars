@@ -144,8 +144,9 @@ function makeNode(data, key) {
     node.className = `node ${safe(worker.state, "idle")}`;
     node.dataset.role = key;
     const detailId = `node-${key}`;
-    const direction = worker.error || worker.task || "No coordinator direction is currently assigned.";
-    node.innerHTML = `<div class="node-icon" aria-hidden="true">${roles[key]}</div><div class="node-copy"><div class="node-title"><strong>${esc(worker.label, key)}</strong><span class="state-tag">${esc(displayState(worker.state))}</span></div><p class="node-model" title="${esc(worker.model)}">${esc(worker.model)}</p><p class="node-task">${esc(direction, "Awaiting work")}</p><details class="node-instructions persistent-details" data-detail-id="${detailId}" ${expandedDetails.has(detailId) ? "open" : ""}><summary>Coordinator direction</summary><p>${esc(direction)}</p></details></div><div class="node-provider">${esc(worker.provider)}<br><span class="tabular">${worker.started_at ? duration(worker.started_at) : ""}</span></div>`;
+    const summary = worker.error || worker.task || "No coordinator direction is currently assigned.";
+    const direction = worker.dispatch_prompt || summary;
+    node.innerHTML = `<div class="node-icon" aria-hidden="true">${roles[key]}</div><div class="node-copy"><div class="node-title"><strong>${esc(worker.label, key)}</strong><span class="state-tag">${esc(displayState(worker.state))}</span></div><p class="node-model" title="${esc(worker.model)}">${esc(worker.model)}</p><p class="node-task">${esc(summary, "Awaiting work")}</p><details class="node-instructions persistent-details" data-detail-id="${detailId}" ${expandedDetails.has(detailId) ? "open" : ""}><summary>Exact coordinator dispatch</summary><pre>${esc(direction)}</pre></details></div><div class="node-provider">${esc(worker.provider)}<br><span class="tabular">${worker.started_at ? duration(worker.started_at) : ""}</span></div>`;
     return node;
 }
 

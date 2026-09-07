@@ -97,6 +97,18 @@ class RuntimeStatusTests(unittest.TestCase):
             self.assertEqual(state["workers"]["implementer"]["provider"], "OpenAI")
             self.assertEqual(state["workers"]["implementer"]["model"], "GPT-5.6 Terra · Medium")
 
+    def test_runtime_publishes_the_exact_secret_safe_worker_dispatch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "agent" / "runtime" / "state.json"
+            status = RuntimeStatus(path)
+            prompt = "OBJECTIVE:\nRepair the scenario\nAPI_KEY=do-not-display"
+            status.set_dispatch_prompt("implementer", prompt)
+            state = public_state(json.loads(path.read_text(encoding="utf-8")))
+            dispatch = state["workers"]["implementer"]["dispatch_prompt"]
+            self.assertIn("OBJECTIVE:\nRepair the scenario", dispatch)
+            self.assertIn("API_KEY=[redacted]", dispatch)
+            self.assertNotIn("do-not-display", dispatch)
+
     def test_public_state_drops_unknown_and_marks_stale_running_job(self) -> None:
         state = default_state(ROOT)
         state["secret"] = "must-not-escape"
@@ -1227,12 +1239,13 @@ class CoordinationControlTests(unittest.TestCase):
             )
             self.assertIsNone(AutonomyController._cached_plan(runtime, "b" * 64))
 
-    def test_terra_fallback_is_single_for_both_implementation_workers(self) -> None:
-        self.assertTrue(recovery_policy.should_use_terra_fallback("implementer", 1, False))
-        self.assertTrue(recovery_policy.should_use_terra_fallback("fast-fix", 1, False))
-        self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 1, True))
-        self.assertFalse(recovery_policy.should_use_terra_fallback("implementer", 0, False))
-        self.assertFalse(recovery_policy.should_use_terra_fallback("tester", 1, False))
+    def test_luna_light_fallback_is_single_for_every_model_worker(self) -> None:
+        for worker in ("implementer", "fast-fix", "tester", "reviewer"):
+            self.assertTrue(recovery_policy.should_use_luna_light_fallback(worker, 1, False))
+            self.assertFalse(recovery_policy.should_use_luna_light_fallback(worker, 1, True))
+        self.assertFalse(recovery_policy.should_use_luna_light_fallback("coordinator", 1, False))
+        self.assertFalse(recovery_policy.should_use_luna_light_fallback("validation", 1, False))
+        self.assertFalse(recovery_policy.should_use_luna_light_fallback("implementer", 0, False))
 
     def test_terra_fallback_accepts_low_reasoning_for_fast_fix(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1798,6 +1811,15 @@ class ModelPolicyTests(unittest.TestCase):
         self.assertNotIn("google/gemini-3.6-flash", model_policy.MODEL_RPM)
         self.assertIsNone(model_policy.MODEL_RPM["openai/gpt-5.6-luna"])
 
+    def test_active_worker_model_routes_match_the_cost_policy(self) -> None:
+        self.assertEqual(model_policy.AGENT_MODELS["implementer"], "openai/gpt-5.6-terra")
+        self.assertEqual(model_policy.AGENT_MODELS["fast-fix"], "openai/gpt-5.6-luna-medium")
+        self.assertEqual(model_policy.AGENT_MODELS["tester"], "openai/gpt-5.6-luna-medium")
+        self.assertEqual(
+            model_policy.AGENT_MODELS["reviewer"],
+            "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
+        )
+
     def test_cloudflare_daily_neuron_exhaustion_is_quota_failure(self) -> None:
         output = (
             'Too Many Requests: {"statusCode":429,"message":'
@@ -1896,9 +1918,9 @@ class ModelPolicyTests(unittest.TestCase):
 class ReviewerFallbackRoutingTests(unittest.TestCase):
     def _evaluate(
         self,
-        responses: list[tuple[int, str]],
+        reviewer_responses: list[tuple[int, str]],
         *,
-        luna_response: tuple[int, str] = (1, "Luna unavailable"),
+        luna_responses: list[tuple[int, str]] | None = None,
         resume_checkpoint: dict | None = None,
     ) -> tuple[dict, list[str]]:
         with tempfile.TemporaryDirectory() as directory:
@@ -1910,14 +1932,19 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
 
             def invoke(**kwargs):
                 invoked.append(kwargs["agent"])
-                return responses.pop(0)
+                return reviewer_responses.pop(0)
+
+            luna_responses = list(luna_responses or [(0, "VERDICT: PASS")])
+
+            def invoke_luna(**_kwargs):
+                return luna_responses.pop(0)
 
             policy = model_policy.ModelPolicy(base / "runtime")
             run_sequence = policy.begin_run("REVIEW-CHAIN")
             with mock.patch.object(ticket_runner, "run_validation", return_value={"pass": True}), mock.patch.object(
                 ticket_runner, "invoke_agent", side_effect=invoke
             ), mock.patch.object(
-                ticket_runner, "invoke_luna", return_value=luna_response
+                ticket_runner, "invoke_luna", side_effect=invoke_luna
             ):
                 result = ticket_runner.evaluate_candidate(
                     status=status,
@@ -1940,94 +1967,75 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             return result, invoked
 
     def test_nemotron_is_primary_reviewer(self) -> None:
-        result, invoked = self._evaluate([
-            (0, "VERDICT: PASS"),
-            (0, "VERDICT: APPROVE"),
-        ])
+        result, invoked = self._evaluate([(0, "VERDICT: APPROVE")])
         self.assertTrue(result["pass"])
         self.assertEqual(
             result["reviewer_used"],
             "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
         )
-        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertEqual(invoked, ["reviewer"])
         self.assertIsNone(result["reviewer_intermediate_exit_code"])
 
-    def test_luna_medium_tests_when_primary_tester_circuit_is_open(self) -> None:
+    def test_luna_light_tests_when_luna_medium_is_unavailable(self) -> None:
         result, invoked = self._evaluate(
-            [
-                (ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open"),
-                (0, "VERDICT: APPROVE"),
-            ],
-            luna_response=(0, "VERDICT: PASS"),
+            [(0, "VERDICT: APPROVE")],
+            luna_responses=[(1, "Luna Medium unavailable"), (0, "VERDICT: PASS")],
         )
         self.assertTrue(result["pass"])
-        self.assertEqual(result["tester_primary_exit_code"], ticket_runner.MODEL_CIRCUIT_OPEN)
+        self.assertEqual(result["tester_primary_exit_code"], 1)
         self.assertEqual(result["tester_luna_exit_code"], 0)
         self.assertTrue(result["tester_luna_pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
-        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna-light")
+        self.assertEqual(invoked, ["reviewer"])
 
     def test_explicit_primary_tester_failure_does_not_seek_second_opinion(self) -> None:
         result, invoked = self._evaluate(
-            [(0, "VERDICT: FAIL — candidate defect")],
-            luna_response=(0, "VERDICT: PASS"),
+            [], luna_responses=[(0, "VERDICT: FAIL — candidate defect")],
         )
         self.assertFalse(result["pass"])
         self.assertEqual(result["failure"]["class"], "tester_change_request")
         self.assertIsNone(result["tester_luna_exit_code"])
-        self.assertEqual(invoked, ["tester"])
+        self.assertEqual(invoked, [])
 
     def test_luna_can_test_a_terra_implementation(self) -> None:
         result, invoked = self._evaluate(
-            [
-                (ticket_runner.MODEL_CIRCUIT_OPEN, "provider circuit open"),
-                (0, "VERDICT: APPROVE"),
-            ],
-            luna_response=(0, "VERDICT: PASS"),
+            [(0, "VERDICT: APPROVE")],
+            luna_responses=[(0, "VERDICT: PASS")],
         )
         self.assertTrue(result["pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
-        self.assertEqual(result["tester_luna_exit_code"], 0)
-        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna-medium")
+        self.assertIsNone(result["tester_luna_exit_code"])
+        self.assertEqual(invoked, ["reviewer"])
 
     def test_luna_light_reviews_after_non_decisive_nemotron(self) -> None:
         result, invoked = self._evaluate(
-            [
-                (0, "VERDICT: PASS"),
-                (1, "primary reviewer unavailable"),
-            ],
-            luna_response=(0, "VERDICT: APPROVE"),
+            [(1, "primary reviewer unavailable")],
+            luna_responses=[(0, "VERDICT: PASS"), (0, "VERDICT: APPROVE")],
         )
         self.assertTrue(result["pass"])
         self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
         self.assertEqual(result["reviewer_luna_exit_code"], 0)
-        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertEqual(invoked, ["reviewer"])
         self.assertEqual(result["reviewer_fallback_exit_code"], 0)
 
     def test_luna_light_request_changes_is_authoritative(self) -> None:
         result, invoked = self._evaluate(
-            [
-                (0, "VERDICT: PASS"),
-                (1, "primary infrastructure failure"),
-            ],
-            luna_response=(0, "VERDICT: REQUEST_CHANGES"),
+            [(1, "primary infrastructure failure")],
+            luna_responses=[(0, "VERDICT: PASS"), (0, "VERDICT: REQUEST_CHANGES")],
         )
         self.assertFalse(result["pass"])
         self.assertEqual(result["failure"]["class"], "reviewer_change_request")
         self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
-        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertEqual(invoked, ["reviewer"])
 
     def test_luna_light_can_review_when_terra_implemented(self) -> None:
         result, invoked = self._evaluate(
-            [
-                (0, "VERDICT: PASS"),
-                (1, "primary infrastructure failure"),
-            ],
-            luna_response=(0, "VERDICT: APPROVE"),
+            [(1, "primary infrastructure failure")],
+            luna_responses=[(0, "VERDICT: PASS"), (0, "VERDICT: APPROVE")],
         )
         self.assertTrue(result["pass"])
         self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
-        self.assertEqual(invoked, ["tester", "reviewer"])
+        self.assertEqual(invoked, ["reviewer"])
 
     def test_reviewer_checkpoint_skips_validation_and_tester(self) -> None:
         checkpoint = {

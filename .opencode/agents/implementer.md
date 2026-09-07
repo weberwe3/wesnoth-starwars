@@ -1,7 +1,7 @@
 ---
 description: Implements substantive bounded coding tickets without shell access
 mode: all
-model: groq/openai/gpt-oss-120b
+model: openai/gpt-5.6-terra
 permission:
   "*": deny
   read:

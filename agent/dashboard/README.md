@@ -72,16 +72,21 @@ dashboard polling, includes pending static and coordinator-generated tickets,
 and omits completed tickets. This local structured-state refresh consumes no
 model tokens.
 
-GPT-OSS 120B remains the primary Implementer. If that process fails, the
-runner makes one sandboxed GPT-5.6 Terra attempt at medium reasoning and shows
-the live assignment in the Implementer card and activity log. Failure of both
-providers stops the ticket without starting an unbounded retry cycle.
+The Implementer uses GPT-5.6 Terra at medium reasoning through the signed-in
+Codex application. Fast-Fix and Tester use GPT-5.6 Luna at medium reasoning;
+the Reviewer uses Cloudflare Workers AI Nemotron 3 120B. If any of those model
+workers is unavailable or non-decisive, the runner makes exactly one stage-local
+GPT-5.6 Luna Light fallback. A substantive `FAIL` or `REQUEST_CHANGES` remains
+authoritative and is never overridden by a fallback.
 
-Ling remains the primary Fast-Fix model. If it fails, the runner makes one
-sandboxed GPT-5.6 Terra attempt at low reasoning in the same worktree. Terra
-inherits the exact objective and allowed paths and remains subject to every
-deterministic gate; it cannot test, commit, publish, merge, delete, or expand
-the ticket.
+Write-capable Terra and Luna calls use the same audited Codex auto-review path
+in the exact isolated worktree. The fallback inherits the original objective,
+allowed paths, and stage evidence and remains subject to every deterministic
+gate; it cannot test, commit, publish, merge, delete, or expand the ticket.
+
+Each architecture node exposes an **Exact coordinator dispatch** panel. It is
+the full prompt actually sent to that worker for its most recent invocation;
+only secret-like values are redacted before dashboard telemetry is written.
 
 The secure runner requests Codex's auto-reviewed workspace-write mode and
 checks the effective sandbox reported by the subprocess. A read-only downgrade
