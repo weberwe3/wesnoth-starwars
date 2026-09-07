@@ -92,6 +92,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** Resolve OpenCode through `PATH` when available, then through the verified executable at the current user's `.opencode/bin/opencode` path. Refuse non-executable or symlink candidates.
 - **Prevention:** Secure runner dependencies must be resolved explicitly in Python, not implicitly through interactive/login shell startup files.
 
+### 2026-09-07 — Windows Codex auth was not selected from WSL
+
+- **Symptom:** Terra and Luna both returned a Codex `401 Unauthorized` before model execution; the fallback circuit then suppressed both routes.
+- **Cause:** The secure bridge launched the Windows Codex executable from WSL without an explicit `CODEX_HOME`, so the CLI could not select the existing Windows profile authentication store while user-config loading was disabled.
+- **Resolution:** Forward the existing `%USERPROFILE%\\.codex` directory through `CODEX_HOME/p` from the launcher and bridge, and derive the same profile path defensively in Python for planning, recovery, Terra, and Luna subprocesses. No credential file is copied or logged.
+- **Prevention:** The bridge fails clearly when the existing auth store is absent; regression tests require the selector to survive credential stripping and WSL path translation without exposing provider values.
+
 ### 2026-09-06 — empty scenario after apparently successful startup
 
 - **Symptom:** First Battle opened on a small empty map and immediately ended. The installed engine log reported `error engine/team_construction: game_error: unknown unit type` for the scenario leader and squads.

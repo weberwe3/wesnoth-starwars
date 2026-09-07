@@ -176,6 +176,46 @@ def resolve_codex_executable() -> str | None:
     return None
 
 
+def codex_environment(executable: str | None = None) -> dict[str, str]:
+    """Build a secret-stripped environment with the existing Codex auth store.
+
+    The secure launcher keeps the authenticated Codex store on Windows. A
+    Windows Codex executable started from WSL cannot reliably infer that store
+    from the Linux ``HOME`` value, especially when ``--ignore-user-config`` is
+    used. Pointing ``CODEX_HOME`` at the existing profile directory fixes the
+    lookup without copying, decrypting, or logging any credential material.
+    ``/p`` keeps the value as a Windows path when WSL starts the Windows binary.
+    """
+
+    environment = core.make_test_env()
+    executable = executable or resolve_codex_executable()
+    if not executable:
+        return environment
+
+    if not environment.get("CODEX_HOME") and executable.lower().endswith(".exe"):
+        match = re.match(
+            r"^/mnt/(?P<drive>[a-zA-Z])/Users/(?P<user>[A-Za-z0-9._ -]+)/"
+            r"AppData/Local/OpenAI/Codex/bin/[^/]+/codex\.exe$",
+            Path(executable).as_posix(),
+        )
+        if match:
+            candidate = (
+                f"/mnt/{match.group('drive').lower()}/Users/"
+                f"{match.group('user')}/.codex"
+            )
+            if (Path(candidate) / "auth.json").is_file():
+                environment["CODEX_HOME"] = candidate
+
+    if environment.get("CODEX_HOME"):
+        entries = [
+            item for item in environment.get("WSLENV", "").split(":")
+            if item and item.split("/", 1)[0] != "CODEX_HOME"
+        ]
+        entries.append("CODEX_HOME/p")
+        environment["WSLENV"] = ":".join(entries)
+    return environment
+
+
 def invoke_agent(
     *,
     opencode: str,
@@ -295,7 +335,7 @@ def invoke_terra(
     else:
         command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
     environment = {
-        key: value for key, value in core.make_test_env().items()
+        key: value for key, value in codex_environment(executable).items()
         if not re.search(
             r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
             key, re.IGNORECASE,
@@ -366,7 +406,7 @@ def invoke_luna(
     else:
         command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
     environment = {
-        key: value for key, value in core.make_test_env().items()
+        key: value for key, value in codex_environment(executable).items()
         if not re.search(
             r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
             key, re.IGNORECASE,
@@ -1342,7 +1382,7 @@ DETERMINISTIC LOCAL CONTEXT:
         "-",
     ]
     environment = {
-        key: value for key, value in os.environ.items()
+        key: value for key, value in codex_environment(executable).items()
         if not re.search(
             r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
             key,

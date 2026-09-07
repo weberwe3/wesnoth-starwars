@@ -7,6 +7,7 @@ set "CONTROL_BRIDGE=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwar
 set "LAN_PROXY=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwars\agent\dashboard\lan-view-proxy.ps1"
 set "LAN_FIREWALL=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwars\agent\dashboard\configure-lan-firewall.ps1"
 set "SESSION_WATCHER=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwars\agent\dashboard\launcher-session-watcher.ps1"
+set "CODEX_HOME=%USERPROFILE%\.codex"
 set "WESNOTH_AGENT_WORKTREE_WINDOWS=%USERPROFILE%\Documents\Codex\WesnothAgentWorktrees"
 set "WESNOTH_AGENT_WORKTREE_ROOT=/mnt/c/Users/%USERNAME%/Documents/Codex/WesnothAgentWorktrees"
 
@@ -20,6 +21,10 @@ if not exist "%SECURE_LAUNCHER%" (
   echo Secure launcher not found: %SECURE_LAUNCHER%
   exit /b 1
 )
+if not exist "%CODEX_HOME%\auth.json" (
+  echo Codex authentication store not found for the signed-in Windows profile.
+  exit /b 1
+)
 
 for /f "usebackq delims=" %%I in (`powershell.exe -NoLogo -NoProfile -Command "$addresses=[Net.Dns]::GetHostAddresses([Net.Dns]::GetHostName()) ^| Where-Object { $s=$_.IPAddressToString; $_.AddressFamily -eq [Net.Sockets.AddressFamily]::InterNetwork -and ($s.StartsWith('10.') -or $s.StartsWith('192.168.') -or ($s.StartsWith('172.') -and [int]$s.Split('.')[1] -ge 16 -and [int]$s.Split('.')[1] -le 31)) }; ($addresses ^| Select-Object -First 1).IPAddressToString"`) do set "LAN_IP=%%I"
 if not defined LAN_IP (
@@ -30,9 +35,9 @@ for /f "usebackq delims=" %%I in (`powershell.exe -NoLogo -NoProfile -Command "[
 set "WESNOTH_DASHBOARD_LAN_URL=http://%LAN_IP%:8765"
 set "WESNOTH_DASHBOARD_SESSION_ID=%DASHBOARD_SESSION%"
 if defined WSLENV (
-  set "WSLENV=%WSLENV%:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
+  set "WSLENV=%WSLENV%:CODEX_HOME/p:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
 ) else (
-  set "WSLENV=WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
+  set "WSLENV=CODEX_HOME/p:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
 )
 
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^

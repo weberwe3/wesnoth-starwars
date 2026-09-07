@@ -1142,7 +1142,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             "--output-schema", schema_arg, "-o", output_arg, "-",
         ]
         environment = {
-            key: value for key, value in os.environ.items()
+            key: value for key, value in ticket_runner.codex_environment(executable).items()
             if not SENSITIVE_ENV.search(key)
         }
         try:
@@ -1571,7 +1571,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "--output-schema", schema_arg, "-o", output_arg, "-",
         ]
         environment = {
-            key: value for key, value in os.environ.items()
+            key: value for key, value in ticket_runner.codex_environment(executable).items()
             if not SENSITIVE_ENV.search(key)
         }
         try:

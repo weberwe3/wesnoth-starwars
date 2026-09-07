@@ -72,6 +72,18 @@ checkout, refreshes only the campaign add-on in the isolated Windows test
 userdata, and then launches the campaign from that refreshed copy. Manual play
 testing therefore uses the same source revision that was published and tested.
 
+### Secure Codex authentication routing
+
+The Windows Codex CLI authentication store remains owned by the signed-in
+Windows profile at `%USERPROFILE%\\.codex`; it is not copied into WSL, runtime
+files, logs, or the repository. The supported launcher and native control
+bridge forward only the existing directory selector as `CODEX_HOME/p`. Python
+also derives that selector defensively for every Codex planning, recovery,
+Terra, and Luna subprocess after stripping provider API credentials. This is
+required because `--ignore-user-config` still uses `CODEX_HOME` for auth, while
+a WSL `HOME` does not identify the Windows profile. The bridge fails closed if
+the existing auth store is absent and never prints credential contents.
+
 ### Gameplay-contract validation
 
 Protected-main game publication now requires both the staged installed-Wesnoth preprocess/startup probe and declared gameplay contracts. A contract lives in `addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json` and ties each changed gameplay WML/Lua source to a compact, deterministic expected outcome. `source-id` guards a scenario or unit identity; `event-unit` additionally guards a scripted trigger, its one-shot behavior, and spawned-unit details.

@@ -15,6 +15,10 @@ if ($Distro -notmatch '^[A-Za-z0-9._-]+$' -or
 }
 
 $secureLauncher = Join-Path $env:LOCALAPPDATA "WesnothAgentManager\Start-WesnothAgentShell.ps1"
+$codexHomeWindows = Join-Path $env:USERPROFILE ".codex"
+if (-not (Test-Path -LiteralPath (Join-Path $codexHomeWindows "auth.json") -PathType Leaf)) {
+    throw "Codex authentication store not found for the signed-in Windows profile."
+}
 $mutex = [Threading.Mutex]::new($false, "Local\WesnothAgentControlBridge")
 $runtime = Join-Path (Split-Path -Parent $PSScriptRoot) "runtime"
 $shutdownMarker = Join-Path $runtime "dashboard.shutdown.$SessionId"
@@ -101,6 +105,11 @@ try {
                 $info.EnvironmentVariables["WESNOTH_CODEX_EXE"] = $codexLinux
                 $forwardWslEnv += "WESNOTH_CODEX_EXE"
             }
+            # Codex auth is owned by the Windows profile. Forward only its
+            # directory selector; credentials remain in the existing store and
+            # are never copied into WSL or written to runtime files.
+            $info.EnvironmentVariables["CODEX_HOME"] = $codexHomeWindows
+            $forwardWslEnv += "CODEX_HOME/p"
             $managedRoot = $env:WESNOTH_AGENT_WORKTREE_ROOT
             if ($managedRoot -notmatch '^/mnt/[a-z]/Users/[A-Za-z0-9._ -]+/Documents/Codex/WesnothAgentWorktrees$') {
                 throw "Invalid Codex-compatible worktree root."
