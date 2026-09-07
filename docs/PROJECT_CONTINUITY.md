@@ -1037,3 +1037,46 @@ coordinator for each worker node. It is displayed only in that node's expandable
 **Exact coordinator dispatch** panel and has secret-like values redacted before
 telemetry is persisted or sent to a paired LAN browser. Compact node summaries
 remain status text rather than being mislabeled as the coordinator's instruction.
+
+### 2026-09-07 — publication/game-validation lifecycle repair prepared
+
+Prepared against main `271296a2a104ebf653a493c6e11dbf5b19b54e79`. This section
+describes the repair in this change; production deployment is not asserted.
+The working copy was prepared separately on Windows while Ubuntu startup
+returned `Wsl/Service/E_ACCESSDENIED`. The existing Ubuntu checkout and its
+runtime evidence were preserved.
+
+The access restriction was subsequently lifted without reinstalling Ubuntu.
+The repair was applied to an isolated Git worktree on the same verified main
+head. All 135 dashboard regressions, all 10 scenario-validation tests (including
+the real published-history retention check), compilation, whitespace checks,
+and the controlled-reference self-test passed before publication. Native
+installed-game checks also passed the 21 scenario startup probes and five
+declared gameplay contracts. Deployment still requires exact-head GitHub CI,
+protected PR merge, clean local-main synchronization, and launcher health checks;
+this source ledger does not substitute for those runtime results.
+
+The queue now distinguishes a protected merge from its subsequent installed-game
+result. `published` remains compatible with historical records and is transient
+while new checks run. `published_and_tested` is the green final state only after
+the ticket's installed-engine startup and declared gameplay-contract checks pass.
+`published_test_failed` is orange and retains the merge identity, bounded test
+evidence, timestamp, and error. Cumulative batch members inherit the same final
+test result. These checks establish the outcomes supported by the existing
+engine probes and declared contracts; they do not imply an exhaustive manual
+playthrough or validation of undeclared gameplay behavior.
+
+Historical repair evidence is refreshed when main changes and after publication.
+Pending historical work requires the assembled-game probe plus retention checks
+in publication order. Post-publish repair readers accept the writer's schema 2
+as well as legacy schema 1. Current diagnosed game failures take precedence over
+ordinary planning; unavailable engine or local-main infrastructure remains a
+visible stop requiring recovery of that infrastructure.
+
+An explicitly identified historical repair with no candidate changes yields to
+Python before further model retries. Only a clean managed worktree at the exact
+verified main head can be recorded as already resolved after both current checks
+pass. This does not rewrite its original failed-run verdict, manufacture a PASS,
+publish a no-op commit, or delete remnants. Changed branch heads or dirty files
+invalidate its exclusion from future resume selection. The reusable failure
+analysis and regression expectations are in `docs/WORKTREE_LESSONS.md`.

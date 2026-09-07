@@ -2564,5 +2564,221 @@ class ApprovalQueueTests(unittest.TestCase):
             self.assertEqual(state["activity"][-1]["recovery_limit"], 3)
 
 
+class PublicationGameValidationTests(unittest.TestCase):
+    """Publication is irreversible; engine evidence must describe it honestly."""
+
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name) / "project"
+        self.root.mkdir()
+        self.git("init", "-b", "main")
+        self.git("config", "user.email", "test@example.invalid")
+        self.git("config", "user.name", "Validation Test")
+        (self.root / ".gitignore").write_text("/agent/runtime/\n/agent/logs/\n", encoding="utf-8")
+        self.git("add", ".gitignore")
+        self.git("commit", "-m", "fixture")
+        self.head = self.git("rev-parse", "HEAD")
+        self.queue = ApprovalQueue(self.root)
+        self.controller = AutonomyController(
+            self.root, ControlStore(self.root / "agent/runtime/control.json"), self.queue
+        )
+        self.record = {
+            "id": "a" * 16, "ticket_id": "HISTORY-TEST", "state": "published",
+            "merge_sha": self.head, "changed_paths": [], "dependency_index": 1,
+        }
+        self.queue._update(lambda state: state["records"].append(dict(self.record)))
+        self.engine = {"pass": True, "exit_code": 0, "diagnostic": "", "gameplay_contracts": {"pass": True, "contracts": [{}]}}
+        self.retained = {"pass": True, "tickets": [{"pass": True}], "diagnostic": ""}
+        self.history = self.root / "agent/runtime/historical-gameplay-validation.json"
+
+    def git(self, *args: str) -> str:
+        return subprocess.check_output(["git", *args], cwd=self.root, text=True, stderr=subprocess.DEVNULL).strip()
+
+    def test_success_sets_tested_and_refreshes_stale_history(self) -> None:
+        self.history.write_text(json.dumps({"state": "pending_repair", "main_head": "b" * 40}), encoding="utf-8")
+        with (
+            mock.patch("approval_queue.validate_post_publish_game", return_value=self.engine),
+            mock.patch("approval_queue.validate_historical_retention", return_value=self.retained),
+        ):
+            self.queue._record_post_publish_game_validation(self.record, self.head)
+        record = self.queue.public_state()["records"][0]
+        self.assertEqual(record["state"], "published_and_tested")
+        self.assertEqual(record["post_publish_validation"], "PASS")
+        self.assertTrue(record["post_publish_checked_at"])
+        self.assertEqual(record["post_publish_evidence"]["exit_code"], 0)
+        history = json.loads(self.history.read_text(encoding="utf-8"))
+        self.assertEqual((history["state"], history["main_head"]), ("passed", self.head))
+
+    def test_failed_engine_preserves_merge_and_repair_accepts_current_schema(self) -> None:
+        engine = {**self.engine, "pass": False, "diagnostic": "Unknown unit type", "failure_class": "addon_validation"}
+        with (
+            mock.patch("approval_queue.validate_post_publish_game", return_value=engine),
+            mock.patch("approval_queue.validate_historical_retention", return_value=self.retained),
+        ):
+            self.queue._record_post_publish_game_validation(self.record, self.head)
+        record = self.queue.record(self.record["id"])
+        self.assertEqual(record["state"], "published_test_failed")
+        self.assertEqual(record["merge_sha"], self.head)
+        self.assertEqual(record["error"], "Unknown unit type")
+        proposal = self.controller._post_publish_game_repair_proposal({"main_head": self.head})
+        self.assertTrue(proposal["_post_publish_game_repair"])
+        self.assertIn("Unknown unit type", proposal["ticket"]["objective"])
+
+    def test_validation_exception_does_not_erase_publication(self) -> None:
+        with mock.patch("approval_queue.validate_post_publish_game", side_effect=OSError("unavailable")):
+            self.queue._record_post_publish_game_validation(self.record, self.head)
+        record = self.queue.record(self.record["id"])
+        self.assertEqual(record["state"], "published_test_failed")
+        self.assertEqual(record["post_publish_evidence"]["failure_class"], "engine_infrastructure")
+        self.queue._record_failure(self.record["id"], "Synchronization failed", "Local update failed")
+        self.assertEqual(self.queue.record(self.record["id"])["state"], "published_test_failed")
+
+    def test_changed_main_does_not_receive_a_tested_label(self) -> None:
+        with mock.patch("approval_queue.validate_post_publish_game") as probe:
+            self.queue._record_post_publish_game_validation(self.record, "b" * 40)
+        probe.assert_not_called()
+        self.assertEqual(self.queue.record(self.record["id"])["state"], "published_test_failed")
+
+    def test_restart_preserves_merge_but_does_not_infer_test_success(self) -> None:
+        self.queue._update_record(self.record["id"], post_publish_validation="RUNNING")
+        restarted = ApprovalQueue(self.root)
+        record = restarted.record(self.record["id"])
+        self.assertEqual(record["state"], "published_test_failed")
+        self.assertEqual(record["merge_sha"], self.head)
+        self.assertIn("restarted", record["error"])
+
+    def test_engine_unavailability_does_not_generate_a_code_repair(self) -> None:
+        with mock.patch("approval_queue.validate_post_publish_game", side_effect=OSError("offline")):
+            self.queue._record_post_publish_game_validation(self.record, self.head)
+        with self.assertRaisesRegex(ControlError, "engine health"):
+            self.controller._post_publish_game_repair_proposal({"main_head": self.head})
+
+    def test_batch_members_keep_the_final_game_result_even_after_merge_exception(self) -> None:
+        for final_state, interrupted in (("published_and_tested", False), ("published_test_failed", False), ("published", True)):
+            with self.subTest(final_state=final_state):
+                records = [
+                    {"id": "1" * 16, "ticket_id": "ONE", "state": "ready", "dependency_index": 1, "commit_sha": "a" * 40, "branch": "agent/one", "changed_paths": []},
+                    {"id": "2" * 16, "ticket_id": "TWO", "state": "ready", "dependency_index": 2, "commit_sha": "b" * 40, "branch": "agent/two", "changed_paths": [], "depends_on_id": "1" * 16, "depends_on_commit": "a" * 40},
+                ]
+                self.queue._update(lambda state: state.update(records=records))
+                batch_id = self.queue.public_state()["batches"][0]["id"]
+                def publish(record):
+                    self.queue._update_record(record["id"], state=final_state, merge_sha=self.head,
+                        post_publish_validation="PASS" if final_state == "published_and_tested" else "FAIL",
+                        post_publish_checked_at="2026-09-07T00:00:00+00:00", error=None if final_state == "published_and_tested" else "Test failed")
+                    if interrupted:
+                        raise QueueError("Local synchronization failed after the confirmed merge")
+                with (
+                    mock.patch.object(self.queue, "_worktree", return_value=self.root),
+                    mock.patch.object(self.queue, "_is_ancestor", return_value=True),
+                    mock.patch.object(self.queue, "_publish", side_effect=publish),
+                ):
+                    result = self.queue.approve_and_publish_batch(batch_id)
+                expected = "published_test_failed" if interrupted else final_state
+                self.assertEqual([item["state"] for item in result], [expected, expected])
+                self.assertTrue(all(item["merge_sha"] == self.head for item in result))
+                self.assertEqual(result[0]["post_publish_validation"], result[1]["post_publish_validation"])
+
+    def test_pending_history_is_rechecked_on_a_new_main_head(self) -> None:
+        self.history.write_text(json.dumps({"schema_version": 1, "state": "pending_repair", "main_head": "b" * 40, "evidence": {"diagnostic": "Old failure"}}), encoding="utf-8")
+        with (
+            mock.patch("autonomy.validate_post_publish_game", return_value=self.engine) as probe,
+            mock.patch("autonomy.validate_historical_retention", return_value=self.retained),
+        ):
+            self.assertIsNone(self.controller._historical_gameplay_repair_proposal({"main_head": self.head}))
+            self.assertIsNone(self.controller._historical_gameplay_repair_proposal({"main_head": self.head}))
+        probe.assert_called_once()
+        record = json.loads(self.history.read_text(encoding="utf-8"))
+        self.assertEqual(record["main_head"], self.head)
+        self.assertNotIn("Old failure", record["evidence"]["diagnostic"])
+
+    def test_batch_merge_and_validation_are_atomic_across_restart(self) -> None:
+        members = [
+            {"id": "1" * 16, "commit_sha": "a" * 40, "state": "publishing"},
+            {"id": "2" * 16, "commit_sha": "b" * 40, "state": "publishing"},
+        ]
+        self.queue._update(lambda state: state.update(records=members))
+        record = {**members[-1], "batch_members": [dict(member) for member in members]}
+        self.queue._update_publication_records(record, state="published", merge_sha=self.head,
+                                               post_publish_validation="RUNNING", pr_number=123)
+        restarted = ApprovalQueue(self.root)
+        for member in members:
+            saved = restarted.record(member["id"])
+            self.assertEqual(saved["state"], "published_test_failed")
+            self.assertEqual(saved["merge_sha"], self.head)
+            self.assertEqual(saved["pr_number"], 123)
+        restarted._update_publication_records(record, state="published_and_tested", post_publish_validation="PASS")
+        restarted_again = ApprovalQueue(self.root)
+        self.assertTrue(all(item["state"] == "published_and_tested" for item in restarted_again.read()["records"]))
+
+    def test_batch_update_rejects_changed_identity_without_partial_writes(self) -> None:
+        original = self.queue.read()
+        record = {**self.record, "batch_members": [dict(self.record), {"id": "b" * 16, "commit_sha": "c" * 40}]}
+        with self.assertRaisesRegex(QueueError, "identity changed"):
+            self.queue._update_publication_records(record, state="published_and_tested")
+        self.assertEqual(self.queue.read(), original)
+
+    def test_refreshed_failure_contains_current_diagnostic(self) -> None:
+        self.history.write_text(json.dumps({"state": "pending_repair", "main_head": "b" * 40}), encoding="utf-8")
+        with (
+            mock.patch("autonomy.validate_post_publish_game", return_value={**self.engine, "pass": False, "diagnostic": "Current engine failure"}),
+            mock.patch("autonomy.validate_historical_retention", return_value=self.retained),
+        ):
+            proposal = self.controller._historical_gameplay_repair_proposal({"main_head": self.head})
+        self.assertIn("Current engine failure", proposal["ticket"]["objective"])
+        ticket = self.controller._build_ticket("historytest1", proposal, fresh_start_authorized=True)
+        self.assertIs(ticket["historical_repair"], True)
+
+    def empty_repair(self) -> tuple[dict, dict, dict, Path]:
+        worktree = self.root.parent / "project-worktrees" / "history"
+        self.git("worktree", "add", "-b", "agent/history", str(worktree), "main")
+        ticket = {"task_id": "HISTORY-TEST", "historical_repair": True}
+        failure = {"class": "implementation_or_validation_failure", "detail": "no repository change was produced"}
+        result = {"task_id": ticket["task_id"], "branch": "agent/history", "worktree": str(worktree), "implementation_exit_code": 0, "final_verdict": "FAIL"}
+        return ticket, {"return_code": 1, "failure": failure}, result, worktree
+
+    def test_empty_repair_resolves_only_after_both_current_checks_pass(self) -> None:
+        ticket, secure, result, _ = self.empty_repair()
+        with (
+            mock.patch.object(self.controller, "_latest_ticket_result", return_value=result),
+            mock.patch("autonomy.validate_post_publish_game", return_value=self.engine),
+            mock.patch("autonomy.validate_historical_retention", return_value=self.retained),
+        ):
+            self.assertTrue(self.controller._resolve_empty_historical_repair(ticket, secure))
+        self.assertTrue(self.controller._resolved_historical_worktree("agent/history", self.head))
+        self.assertFalse(self.controller._resolved_historical_worktree("agent/history", "b" * 40))
+        self.assertEqual(result["final_verdict"], "FAIL")
+        self.assertEqual(len(self.queue.read()["records"]), 1)
+
+    def test_empty_repair_is_not_resolved_while_engine_still_fails(self) -> None:
+        ticket, secure, result, _ = self.empty_repair()
+        with (
+            mock.patch.object(self.controller, "_latest_ticket_result", return_value=result),
+            mock.patch("autonomy.validate_post_publish_game", return_value={**self.engine, "pass": False}),
+            mock.patch("autonomy.validate_historical_retention", return_value=self.retained),
+        ):
+            self.assertFalse(self.controller._resolve_empty_historical_repair(ticket, secure))
+        self.assertFalse(self.controller._resolved_historical_worktree("agent/history", self.head))
+
+    def test_dirty_worktree_cannot_be_retired_as_resolved(self) -> None:
+        ticket, secure, result, worktree = self.empty_repair()
+        (worktree / "unfinished.txt").write_text("preserve me", encoding="utf-8")
+        with (
+            mock.patch.object(self.controller, "_latest_ticket_result", return_value=result),
+            mock.patch("autonomy.validate_post_publish_game") as probe,
+        ):
+            self.assertFalse(self.controller._resolve_empty_historical_repair(ticket, secure))
+        probe.assert_not_called()
+        self.assertTrue((worktree / "unfinished.txt").exists())
+
+    def test_unrelated_empty_ticket_does_not_skip_failed_gates(self) -> None:
+        ticket, secure, _, _ = self.empty_repair()
+        ticket.pop("historical_repair")
+        with mock.patch.object(self.controller, "_latest_ticket_result") as evidence:
+            self.assertFalse(self.controller._resolve_empty_historical_repair(ticket, secure))
+        evidence.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()

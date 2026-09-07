@@ -16,6 +16,9 @@ import threading
 from typing import Any, Callable
 
 import worktree_paths
+from gameplay_contracts import validate_historical_retention
+from game_validation_state import HISTORICAL_GAMEPLAY_VALIDATION_FILE, historical_record
+from recovery_policy import safe_text
 from scenario_launch_selftest import validate_post_publish_game
 
 
@@ -30,8 +33,9 @@ CI_REGISTRATION_ATTEMPTS = 60
 CI_REGISTRATION_INTERVAL_SECONDS = 2
 REQUIRED_CHECK_NAME = "repository-gates"
 POST_PUBLISH_GAME_VALIDATION_FILE = "post-publish-game-validation.json"
-TERMINAL_QUEUE_STATES = {
-    "published", "rejected", "stale", "dismissed", "superseded", "discarded",
+PUBLISHED_STATES = {"published", "published_and_tested", "published_test_failed"}
+TERMINAL_QUEUE_STATES = PUBLISHED_STATES | {
+    "rejected", "stale", "dismissed", "superseded", "discarded",
 }
 MAX_QUEUE_RECORDS = 10
 
@@ -110,10 +114,21 @@ class ApprovalQueue:
 
     def _recover_interrupted_publication(self) -> None:
         state = self.read()
-        interrupted = [item for item in state["records"] if item.get("state") == "publishing"]
+        interrupted = [item for item in state["records"] if item.get("state") == "publishing" or (
+            item.get("state") == "published" and item.get("post_publish_validation") == "RUNNING"
+        )]
         if not interrupted:
             return
         for record in interrupted:
+            if record.get("state") == "published":
+                record.update({
+                    "state": "published_test_failed", "post_publish_validation": "FAIL",
+                    "post_publish_checked_at": utc_now(),
+                    "post_publish_evidence": {"failure_class": "engine_infrastructure"},
+                    "error": "Publication succeeded; the dashboard restarted before game validation completed.",
+                    "updated_at": utc_now(),
+                })
+                continue
             record.update({
                 "state": "failed",
                 "error": "Dashboard restarted during publication; remote state requires review",
@@ -221,6 +236,7 @@ class ApprovalQueue:
             "state", "created_at", "updated_at", "validation", "reviewer",
             "pr_number", "pr_url", "merge_sha", "error", "deletion_request",
             "depends_on_id", "depends_on_commit", "automation_authorized", "recode_of",
+            "post_publish_validation", "post_publish_checked_at", "post_publish_evidence",
         }
         records = [
             {key: item.get(key) for key in allowed}
@@ -715,6 +731,7 @@ class ApprovalQueue:
             }),
             "batch_members": [
                 {
+                    "id": member.get("id"),
                     "ticket_id": member.get("ticket_id"),
                     "commit_sha": member.get("commit_sha"),
                     "purpose": member.get("purpose"),
@@ -732,11 +749,14 @@ class ApprovalQueue:
                         if item.get("id") == member.get("id")
                     )
                     current.update({"state": "ready", "updated_at": utc_now()})
-            self._update(restore)
+            merged = self.record(str(final.get("id"))).get("state") in PUBLISHED_STATES
+            if not merged:
+                self._update(restore)
             self._record_failure(
                 str(final.get("id")), "Batch publication stopped safely", str(exc)
             )
-            return [self.record(str(item.get("id"))) for item in members]
+            if not merged:
+                return [self.record(str(item.get("id"))) for item in members]
 
         published_final = self.record(str(final.get("id")))
         def complete(value: dict[str, Any]) -> None:
@@ -746,11 +766,14 @@ class ApprovalQueue:
                     if item.get("id") == member.get("id")
                 )
                 current.update({
-                    "state": "published",
+                    "state": published_final.get("state"),
                     "pr_number": published_final.get("pr_number"),
                     "pr_url": published_final.get("pr_url"),
                     "merge_sha": published_final.get("merge_sha"),
-                    "error": None,
+                    "error": published_final.get("error"),
+                    "post_publish_validation": published_final.get("post_publish_validation"),
+                    "post_publish_checked_at": published_final.get("post_publish_checked_at"),
+                    "post_publish_evidence": published_final.get("post_publish_evidence"),
                     "updated_at": utc_now(),
                 })
         self._update(complete)
@@ -864,7 +887,7 @@ class ApprovalQueue:
         if any(
             item.get("id") in dependent_ids - {record_id}
             and item.get("state") not in {
-                "discarded", "dismissed", "superseded", "published", "rejected",
+                "discarded", "dismissed", "superseded", *PUBLISHED_STATES, "rejected",
             }
             for item in state["records"]
         ):
@@ -1053,10 +1076,13 @@ class ApprovalQueue:
         merge_sha = (merged.get("mergeCommit") or {}).get("oid")
         if merged.get("state") != "MERGED" or not isinstance(merge_sha, str):
             raise QueueError("GitHub did not confirm the protected merge")
-        _run(["git", "pull", "--ff-only", "origin", "main"], self.root, 180)
-        self._update_record(
-            record["id"], state="published", merge_sha=merge_sha, error=None
+        self._update_publication_records(
+            record, state="published", merge_sha=merge_sha, error=None,
+            pr_number=merged.get("number") or self.record(record["id"]).get("pr_number"),
+            pr_url=self.record(record["id"]).get("pr_url"),
+            post_publish_validation="RUNNING", post_publish_checked_at=None,
         )
+        _run(["git", "pull", "--ff-only", "origin", "main"], self.root, 180)
         recode_note = " Recoded ticket successfully published." if record.get("recode_of") else ""
         self.event(
             f"{record['ticket_id']} merged into protected main",
@@ -1073,9 +1099,44 @@ class ApprovalQueue:
             item for item in record.get("changed_paths", [])
             if isinstance(item, str)
         ]
-        evidence = validate_post_publish_game(
-            self.root, required_gameplay_paths=changed_paths
-        )
+        try:
+            if _run(["git", "rev-parse", "HEAD"], self.root) != merge_sha:
+                raise QueueError("Local main changed before the installed-game check")
+            if _run(["git", "status", "--porcelain=v1", "--untracked-files=no"], self.root):
+                raise QueueError("Local main contains uncommitted changes before the game check")
+            evidence = validate_post_publish_game(
+                self.root, required_gameplay_paths=changed_paths
+            )
+            history_path = self.runtime / HISTORICAL_GAMEPLAY_VALIDATION_FILE
+            try:
+                history = json.loads(history_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                history = {}
+            # Pending historical repairs require the whole assembled game,
+            # whereas the publication check also enforces this ticket's contracts.
+            history_engine = (
+                validate_post_publish_game(self.root)
+                if history.get("state") != "passed" and changed_paths else evidence
+            )
+            retained = validate_historical_retention(self.root)
+            if _run(["git", "rev-parse", "HEAD"], self.root) != merge_sha:
+                raise QueueError("Local main changed during the installed-game check")
+            if _run(["git", "status", "--porcelain=v1", "--untracked-files=no"], self.root):
+                raise QueueError("Local main changed during the game check")
+            refreshed = historical_record(merge_sha, history_engine, retained, utc_now())
+            refreshed["resolved_worktrees"] = history.get("resolved_worktrees", [])
+            _atomic_json(history_path, refreshed)
+        except (QueueError, OSError, subprocess.SubprocessError, ValueError) as exc:
+            # A merge cannot be undone by relabeling it as a publication failure.
+            # Preserve it and require new engine evidence after infrastructure recovery.
+            evidence = {
+                "pass": False, "failure_class": "engine_infrastructure",
+                "diagnostic": (
+                    "Publication succeeded, but installed-game validation could not complete for the merged revision. "
+                    + (safe_text(exc, "Validation unavailable", 500) if isinstance(exc, QueueError)
+                       else "Restore the installed engine and retry validation.")
+                ),
+            }
         passed = evidence.get("pass") is True
         payload = {
             "schema_version": 2,
@@ -1087,7 +1148,7 @@ class ApprovalQueue:
                 "command_kind": evidence.get("command_kind"),
                 "exit_code": evidence.get("exit_code"),
                 "failure_class": evidence.get("failure_class"),
-                "diagnostic": str(evidence.get("diagnostic") or "")[:6000],
+                "diagnostic": safe_text(evidence.get("diagnostic"), "The engine returned no diagnostic text.", 6000),
                 "diagnostic_paths": [
                     path for path in evidence.get("diagnostic_paths", [])
                     if isinstance(path, str) and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
@@ -1099,6 +1160,13 @@ class ApprovalQueue:
             },
         }
         _atomic_json(self.runtime / POST_PUBLISH_GAME_VALIDATION_FILE, payload)
+        self._update_publication_records(
+            record, state="published_and_tested" if passed else "published_test_failed",
+            post_publish_validation="PASS" if passed else "FAIL",
+            post_publish_checked_at=payload["checked_at"],
+            post_publish_evidence=payload["evidence"],
+            error=None if passed else payload["evidence"]["diagnostic"],
+        )
         if passed:
             self.event(
                 "Installed Wesnoth check passed on updated main",
@@ -1110,17 +1178,36 @@ class ApprovalQueue:
                 ticket_id=str(record.get("ticket_id") or ""),
             )
             return
+        infrastructure = evidence.get("failure_class") in {"engine_infrastructure", "publication_infrastructure"}
         self.event(
-            "Installed Wesnoth check failed on updated main; repair ticket queued",
+            "Installed Wesnoth validation unavailable; infrastructure recovery required" if infrastructure
+            else "Installed Wesnoth check failed on updated main; repair required",
             level="error",
             detail=(
-                "Automation will prioritize a bounded game-repair ticket before normal backlog work. "
+                ("Restore engine/local-main availability before resuming validation. " if infrastructure
+                 else "Automation will prioritize a bounded game-repair ticket before normal backlog work. ")
                 + str(payload["evidence"]["diagnostic"] or "The engine returned no diagnostic text.")
             )[:6000],
             ticket_id=str(record.get("ticket_id") or ""),
             failure_class="post_publish_game_validation",
-            required_action="Automation will repair the current main add-on before continuing other tickets.",
+            required_action=("Restore the engine/local-main infrastructure, then retry validation." if infrastructure
+                             else "Automation will repair the current main add-on before continuing other tickets."),
         )
+
+    def _update_publication_records(self, record: dict[str, Any], **values: Any) -> None:
+        """Persist a verified cumulative batch transition atomically, including at merge."""
+        members = record.get("batch_members") or [record]
+        def update(state: dict[str, Any]) -> None:
+            targets = []
+            for member in members:
+                current = next((item for item in state["records"] if item.get("id") == member.get("id")), None)
+                if current is None or current.get("commit_sha") != member.get("commit_sha"):
+                    raise QueueError("Publication member identity changed")
+                targets.append(current)
+            for current in targets:
+                current.update(values)
+                current["updated_at"] = utc_now()
+        self._update(update)
 
     def _wait_for_pr_head(
         self,
@@ -1224,8 +1311,18 @@ class ApprovalQueue:
             record = next(item for item in state["records"] if item.get("id") == record_id)
             def fail(value: dict[str, Any]) -> None:
                 current = next(item for item in value["records"] if item.get("id") == record_id)
-                current.update({"state": "failed", "error": detail[:500], "updated_at": utc_now()})
-                self._stale_after(value, current)
+                merged = current.get("state") in PUBLISHED_STATES and bool(current.get("merge_sha"))
+                current.update({
+                    "state": "published_test_failed" if merged else "failed",
+                    "error": detail[:500], "updated_at": utc_now(),
+                })
+                if merged:
+                    current.update({
+                        "post_publish_validation": "FAIL", "post_publish_checked_at": utc_now(),
+                        "post_publish_evidence": {"failure_class": "publication_infrastructure", "diagnostic": detail[:500]},
+                    })
+                else:
+                    self._stale_after(value, current)
             self._update(fail)
             self.event(
                 message,
@@ -1245,7 +1342,7 @@ class ApprovalQueue:
             if (
                 isinstance(later.get("dependency_index"), int)
                 and later["dependency_index"] > position
-                and later.get("state") not in {"published", "rejected", "failed"}
+                and later.get("state") not in {*PUBLISHED_STATES, "rejected", "failed"}
             ):
                 later.update({
                     "state": "stale",

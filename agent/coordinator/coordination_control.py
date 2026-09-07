@@ -161,6 +161,7 @@ class ControlStore:
         valid_states = {
             "idle", "planning", "executing", "queued", "awaiting_deletion_approval",
             "publishing", "published", "paused", "passed", "failed", "interrupted",
+            "published_and_tested", "published_test_failed", "already_resolved",
         }
         state = run.get("state") if run.get("state") in valid_states else "idle"
         automation = value.get("automation")

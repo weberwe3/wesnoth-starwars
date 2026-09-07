@@ -16,8 +16,9 @@ import time
 import uuid
 
 from coordination_control import ControlStore, VALID_MODES, utc_now
-from approval_queue import ApprovalQueue, QueueError
-from gameplay_contracts import validate_historical_retention, validation_digest
+from approval_queue import ApprovalQueue, QueueError, PUBLISHED_STATES, _atomic_json, _run as queue_run
+from game_validation_state import historical_record
+from gameplay_contracts import validate_historical_retention
 from scenario_launch_selftest import validate_post_publish_game
 import recovery_policy
 import ticket_runner
@@ -425,7 +426,7 @@ class AutonomyController:
                 item for item in self.queue.public_state()["records"]
                 if item.get("id") != record_id
                 and item.get("branch") == branch
-                and item.get("state") not in {"published", "rejected", "stale"}
+                and item.get("state") not in {*PUBLISHED_STATES, "rejected", "stale"}
             ]
             if conflicts:
                 raise ControlError(
@@ -620,6 +621,13 @@ class AutonomyController:
                 recovery_effort=VALID_MODES[mode]["effort"] if continuous else None,
             )
             if secure_result["return_code"] != 0:
+                if self._resolve_empty_historical_repair(ticket, secure_result):
+                    self._clear_failure_streak()
+                    self._finish(
+                        run_id, True, "Historical repair already resolved on current main",
+                        ticket_id=ticket["task_id"], run_state="already_resolved",
+                    )
+                    return
                 failure = secure_result.get("failure") or {}
                 detail = str(failure.get("detail") or "The deterministic runner rejected the ticket.")
                 required_action = str(
@@ -765,14 +773,28 @@ class AutonomyController:
                 )
                 if target["kind"] == "batch":
                     published = self.queue.approve_and_publish_batch(target["id"])
-                    publication_failed = any(
-                        item.get("state") == "failed" for item in published
+                    publication_failed = not published or any(
+                        item.get("state") not in PUBLISHED_STATES for item in published
+                    )
+                    game_failed = any(item.get("state") == "published_test_failed" for item in published)
+                    game_tested = bool(published) and all(item.get("state") == "published_and_tested" for item in published)
+                    validation_blocked = any(
+                        item.get("state") == "published_test_failed" and
+                        (item.get("post_publish_evidence") or {}).get("failure_class") not in {"addon_validation", "gameplay_contract"}
+                        for item in published
                     )
                 else:
                     published_record = self.queue.approve_and_publish(
                         target["id"], target["commit_sha"]
                     )
-                    publication_failed = published_record.get("state") != "published"
+                    publication_failed = published_record.get("state") not in PUBLISHED_STATES
+                    game_failed = published_record.get("state") == "published_test_failed"
+                    game_tested = published_record.get("state") == "published_and_tested"
+                    validation_blocked = game_failed and (published_record.get("post_publish_evidence") or {}).get("failure_class") not in {"addon_validation", "gameplay_contract"}
+                if validation_blocked:
+                    self._finish(run_id, False, "Ticket published, but game validation could not complete", ticket_id=ticket["task_id"], error="Restore local main and installed-engine health before continuing.")
+                    self._disable_automation("Automation paused because post-publish validation is unavailable")
+                    return
                 if publication_failed:
                     self._finish(
                         run_id, False, "Automatic publication stopped safely",
@@ -782,8 +804,12 @@ class AutonomyController:
                     self._disable_automation("Automation paused after publication failure")
                     return
                 self._finish(
-                    run_id, True, "Ticket published through protected main",
-                    ticket_id=ticket["task_id"], run_state="published",
+                    run_id, True,
+                    "Ticket published; game repair takes priority" if game_failed else (
+                        "Ticket published and tested through protected main" if game_tested else "Ticket published through protected main"
+                    ),
+                    ticket_id=ticket["task_id"],
+                    run_state="published_test_failed" if game_failed else ("published_and_tested" if game_tested else "published"),
                 )
                 return
             self._finish(
@@ -944,6 +970,13 @@ class AutonomyController:
                 ),
             )
             return historical_repair
+        game_repair = self._post_publish_game_repair_proposal(inventory)
+        if game_repair is not None:
+            self.queue.event(
+                "Post-publish game repair selected without a planner call",
+                detail="The installed game failed validation after main was updated; other work is held.",
+            )
+            return game_repair
         blocked = self._blocked_resume_proposal(inventory)
         if blocked is not None:
             blocked["_planning_inventory"] = inventory
@@ -968,13 +1001,6 @@ class AutonomyController:
                 detail="Python resumed the only verified unfinished ticket contract.",
             )
             return deterministic
-        game_repair = self._post_publish_game_repair_proposal(inventory)
-        if game_repair is not None:
-            self.queue.event(
-                "Post-publish game repair selected without a planner call",
-                detail="The installed campaign did not start after main was updated, so normal backlog work is held.",
-            )
-            return game_repair
         if fresh_start_authorized:
             generated = self._next_generated_priority(inventory)
             if generated is not None:
@@ -1121,7 +1147,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             return None
         merge_sha = record.get("merge_sha")
         if (
-            record.get("schema_version") != 1
+            record.get("schema_version") not in {1, 2}
             or record.get("state") != "pending_repair"
             or not isinstance(merge_sha, str)
             or not re.fullmatch(r"[0-9a-f]{40}", merge_sha)
@@ -1129,6 +1155,8 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         ):
             return None
         evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
+        if evidence.get("failure_class") in {"engine_infrastructure", "publication_infrastructure"}:
+            raise ControlError("Post-publish game validation could not run; restore local main and engine health before planning repairs")
         paths = [
             item for item in evidence.get("diagnostic_paths", [])
             if isinstance(item, str)
@@ -1144,7 +1172,8 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "objective": (
                     "Repair the installed Wesnoth campaign startup failure recorded after main "
                     f"merge {merge_sha[:12]}. Preserve the current add-on architecture and fix only "
-                    "the diagnosed campaign load path."
+                    "the diagnosed campaign load path. "
+                    + recovery_policy.safe_text(evidence.get("diagnostic"), "Consult the recorded validation evidence.", 900)
                 ),
                 "allowed_paths": paths or [ADDON_ROOT + "/**"],
                 "validation_profile": "wesnoth-addon-static",
@@ -1167,7 +1196,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             return None
         return proposal
 
-    def _historical_gameplay_repair_proposal(self, inventory: dict) -> dict | None:
+    def _historical_gameplay_repair_proposal(self, inventory: dict, *, force: bool = False) -> dict | None:
         """Run the one-time legacy sweep before any new autonomous work starts."""
 
         path = self.root / "agent" / "runtime" / HISTORICAL_GAMEPLAY_VALIDATION_FILE
@@ -1175,36 +1204,18 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             record = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             record = {}
-        if record.get("schema_version") == 1 and record.get("state") == "passed":
+        if not force and record.get("schema_version") == 1 and record.get("state") == "passed" and record.get("main_head") == inventory.get("main_head"):
             return None
-        if record.get("state") != "pending_repair":
+        if force or record.get("state") != "pending_repair" or record.get("main_head") != inventory.get("main_head"):
+            self._verify_validation_head(inventory.get("main_head"))
             engine = validate_post_publish_game(self.root)
             retained = validate_historical_retention(self.root)
             passed = engine.get("pass") is True and retained.get("pass") is True
-            diagnostic_paths = sorted({
-                item for item in list(engine.get("diagnostic_paths") or [])
-                + list(retained.get("diagnostic_paths") or [])
-                if isinstance(item, str) and item.startswith(ADDON_ROOT + "/")
-            })[:20]
-            record = {
-                "schema_version": 1,
-                "state": "passed" if passed else "pending_repair",
-                "main_head": inventory.get("main_head"),
-                "checked_at": utc_now(),
-                "evidence_digest": validation_digest({"engine": engine, "retention": retained}),
-                "evidence": {
-                    "engine_pass": engine.get("pass") is True,
-                    "retention_pass": retained.get("pass") is True,
-                    "ticket_count": len(retained.get("tickets") or []),
-                    "diagnostic": (str(engine.get("diagnostic") or "") + "\n" + str(retained.get("diagnostic") or ""))[-6000:],
-                    "diagnostic_paths": diagnostic_paths,
-                },
-            }
-            temporary = path.with_suffix(".tmp")
-            path.parent.mkdir(parents=True, exist_ok=True)
-            temporary.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
-            os.chmod(temporary, 0o600)
-            os.replace(temporary, path)
+            self._verify_validation_head(inventory.get("main_head"))
+            resolved = record.get("resolved_worktrees", [])
+            record = historical_record(inventory.get("main_head"), engine, retained, utc_now())
+            record["resolved_worktrees"] = resolved
+            _atomic_json(path, record)
             if passed:
                 self.queue.event(
                     "Historical gameplay validation passed",
@@ -1218,6 +1229,8 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         if record.get("state") != "pending_repair":
             return None
         evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
+        if evidence.get("engine_failure_class") == "engine_infrastructure":
+            raise ControlError("Historical game validation could not run; restore the installed engine before planning repairs")
         paths = [
             item for item in evidence.get("diagnostic_paths", [])
             if isinstance(item, str) and item.startswith(ADDON_ROOT + "/") and ".." not in Path(item).parts
@@ -1232,7 +1245,8 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                     "Repair the first confirmed failure from the one-time chronological historical "
                     "gameplay validation. Preserve every established published path and WML id, "
                     "including campaign first_scenario targets; do not rename them for naming-style "
-                    "reasons. Correct only the bounded failed gameplay contract or engine diagnostic."
+                    "reasons. Correct only the bounded failed gameplay contract or engine diagnostic. "
+                    + recovery_policy.safe_text(evidence.get("diagnostic"), "Consult the recorded validation evidence.", 900)
                 ),
                 "allowed_paths": paths or [ADDON_ROOT + "/**"],
                 "validation_profile": "wesnoth-addon-static",
@@ -1252,6 +1266,77 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         except (ControlError, SystemExit, ValueError):
             return None
         return proposal
+
+    def _verify_validation_head(self, main_head: str) -> None:
+        if (
+            queue_run(["git", "rev-parse", "main"], self.root) != main_head
+            or queue_run(["git", "rev-parse", "HEAD"], self.root) != main_head
+            or queue_run(["git", "status", "--porcelain=v1", "--untracked-files=no"], self.root)
+        ):
+            raise ControlError("Main changed during historical validation; recheck before planning")
+
+    def _resolve_empty_historical_repair(self, ticket: dict, secure_result: dict) -> bool:
+        """Resolve only a proven empty repair; a failed worker is never a PASS."""
+
+        failure = secure_result.get("failure") or {}
+        if (
+            ticket.get("historical_repair") is not True
+            or failure.get("class") != "implementation_or_validation_failure"
+            or failure.get("detail") != "no repository change was produced"
+        ):
+            return False
+        result = self._latest_ticket_result(ticket["task_id"])
+        if result.get("final_verdict") != "FAIL" or result.get("implementation_exit_code") != 0:
+            return False
+        branch = result.get("branch")
+        if not isinstance(branch, str) or not re.fullmatch(r"agent/[a-z0-9][a-z0-9._/-]{0,180}", branch):
+            return False
+        inventory = queue_run(["git", "worktree", "list", "--porcelain"], self.root)
+        worktrees = self._managed_worktrees(inventory, worktree_paths.managed_worktree_roots(self.root))
+        worktree = worktrees.get(branch)
+        if worktree is None or Path(str(result.get("worktree") or "")).resolve() != worktree.resolve():
+            return False
+        main_head = queue_run(["git", "rev-parse", "main"], self.root)
+        if (
+            queue_run(["git", "rev-parse", "HEAD"], self.root) != main_head
+            or queue_run(["git", "rev-parse", "HEAD"], worktree) != main_head
+            or queue_run(["git", "status", "--porcelain=v1", "--untracked-files=all"], self.root)
+            or queue_run(["git", "status", "--porcelain=v1", "--untracked-files=all"], worktree)
+        ):
+            return False
+        self._historical_gameplay_repair_proposal({"main_head": main_head}, force=True)
+        path = self.root / "agent" / "runtime" / HISTORICAL_GAMEPLAY_VALIDATION_FILE
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if record.get("state") != "passed" or record.get("main_head") != main_head:
+            return False
+        # Recheck both identities after the engine probes; never retire new edits.
+        if (
+            queue_run(["git", "rev-parse", "HEAD"], worktree) != main_head
+            or queue_run(["git", "status", "--porcelain=v1", "--untracked-files=all"], worktree)
+        ):
+            return False
+        record["resolved_worktrees"] = [
+            item for item in record.get("resolved_worktrees", [])
+            if isinstance(item, dict) and item.get("branch") != branch
+        ][-99:] + [{"branch": branch, "head": main_head, "ticket_id": ticket["task_id"]}]
+        _atomic_json(path, record)
+        self.queue.event(
+            "Historical repair already resolved; no further worker retry needed",
+            level="success", ticket_id=ticket["task_id"],
+            detail="Current main passed installed-game and historical-retention checks. The exact empty worktree is preserved; no candidate was published or marked PASS.",
+        )
+        return True
+
+    def _resolved_historical_worktree(self, branch: str, head: str) -> bool:
+        path = self.root / "agent" / "runtime" / HISTORICAL_GAMEPLAY_VALIDATION_FILE
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return False
+        return any(
+            isinstance(item, dict) and item.get("branch") == branch and item.get("head") == head
+            for item in record.get("resolved_worktrees", [])
+        )
 
     def _mark_post_publish_repair_queued(self, ticket_id: str) -> None:
         path = self.root / "agent" / "runtime" / POST_PUBLISH_GAME_VALIDATION_FILE
@@ -1698,6 +1783,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "replace_pr_head_sha": replace_pr_head_sha if proposal.get("action") == "replace_pr" else None,
             "replace_pr_branch": replace_pr_branch,
         }
+        if proposal.get("_historical_gameplay_repair") or source.get("historical_repair") is True:
+            ticket["historical_repair"] = True
         runtime = self.root / "agent" / "runtime"
         runtime.mkdir(parents=True, exist_ok=True)
         os.chmod(runtime, 0o700)
@@ -1941,7 +2028,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             }
             for item in self.queue.public_state()["records"]
             if item.get("id") != exclude_id
-            and item.get("state") not in {"published", "rejected", "stale"}
+            and item.get("state") not in {*PUBLISHED_STATES, "rejected", "stale"}
         ]
 
     def _planning_inventory(self, *, queue_exclude_id: str | None = None) -> dict:
@@ -2047,6 +2134,12 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "git", "-C", str(worktree), "status", "--porcelain=v1",
                 "--untracked-files=all",
             ]).splitlines()
+            if not dirty and self._resolved_historical_worktree(name, head):
+                retired_branches.append({
+                    "name": name, "previous_task_id": evidence["task_id"],
+                    "reason": "Exact empty historical repair was verified resolved; preserved for audit.",
+                })
+                continue
             try:
                 _, changed_paths = ticket_runner.read_resume_changes(worktree)
             except SystemExit as exc:
@@ -2072,6 +2165,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                     "allowed_paths": evidence["allowed_paths"],
                     "validation_profile": evidence["validation_profile"],
                     "validation_root": evidence.get("validation_root"),
+                    "historical_repair": evidence.get("historical_repair") is True,
             }
             if len(changed_paths) > 200:
                 record["reason"] = (
@@ -2110,7 +2204,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "merge_sha": item.get("merge_sha"),
             }
             for item in self.queue.public_state()["records"][-12:]
-            if item.get("state") == "published"
+            if item.get("state") in PUBLISHED_STATES
         ]
         owned_branches = {
             item.get("branch") for item in queued_context if item.get("branch")
@@ -2221,7 +2315,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
 
         published_history = [
             item for item in self.queue.public_state()["records"]
-            if item.get("state") == "published"
+            if item.get("state") in PUBLISHED_STATES
         ]
         if recently_published is None:
             recently_published = published_history
@@ -2368,6 +2462,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 ),
                 "validation_profile": ticket["validation_profile"],
                 "validation_root": ticket.get("validation_root"),
+                "historical_repair": ticket.get("historical_repair") is True,
             }
         return evidence
 

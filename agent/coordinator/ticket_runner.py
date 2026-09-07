@@ -512,6 +512,7 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
         "replace_pr_number",
         "replace_pr_head_sha",
         "replace_pr_branch",
+        "historical_repair",
     }
 
     unknown = sorted(set(ticket) - allowed_keys)
@@ -519,6 +520,9 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
         raise SystemExit(
             "ERROR: unsupported ticket fields: " + ", ".join(unknown)
         )
+
+    if "historical_repair" in ticket and type(ticket["historical_repair"]) is not bool:
+        raise SystemExit("ERROR: historical_repair must be a boolean.")
 
     task_id = ticket.get("task_id")
     if not isinstance(task_id, str) or not re.fullmatch(
@@ -2185,6 +2189,10 @@ Return your normal structured implementation report.
             failure,
             recovery_effort is not None,
         )
+        # Let the dashboard recheck current main before spending model calls on
+        # an empty historical repair. This is still FAIL, never a synthetic PASS.
+        if ticket.get("historical_repair") and failure.get("detail") == "no repository change was produced":
+            can_recover = False
         if not can_recover:
             failure = {**failure, "attempt": attempt, "limit": recovery_policy.MAX_RECOVERY_ATTEMPTS}
             result = {
