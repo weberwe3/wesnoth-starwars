@@ -27,7 +27,6 @@ from coordination_control import ControlStore, control_state_path  # noqa: E402
 from runtime_status import default_state, runtime_status_path  # noqa: E402
 from autonomy import AutonomyController, ControlError  # noqa: E402
 from approval_queue import QueueError  # noqa: E402
-from art_pipeline import public_art_queue  # noqa: E402
 
 
 def public_state(state: object) -> dict:
@@ -149,7 +148,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             self._json(self.server.controller.pending_planned_tickets())  # type: ignore[attr-defined]
             return
         if path == "/api/art-queue":
-            self._json(public_art_queue(ROOT))
+            self._json(self.server.controller.art_queue())  # type: ignore[attr-defined]
             return
         if path == "/":
             self.path = "/index.html"

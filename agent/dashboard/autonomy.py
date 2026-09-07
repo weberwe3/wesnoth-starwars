@@ -24,7 +24,8 @@ from game_validation_state import (
 )
 from gameplay_contracts import validate_historical_retention
 from scenario_launch_selftest import validate_post_publish_game
-from art_pipeline import confirm_art_import
+from art_pipeline import public_art_queue
+from art_import_production import ArtImportProduction, ArtProductionError, public_status
 import recovery_policy
 import ticket_runner
 import worktree_paths
@@ -206,6 +207,8 @@ class AutonomyController:
         self._lock = threading.Lock()
         self._thread: threading.Thread | None = None
         self._publisher: threading.Thread | None = None
+        self._art_importer: threading.Thread | None = None
+        self.art_imports = ArtImportProduction(self.root, self.queue.event)
         self._last_completion_monotonic = 0.0
         self._monitor = threading.Thread(
             target=self._monitor_loop,
@@ -257,6 +260,11 @@ class AutonomyController:
             if item.get("status") == "pending"
         ]
         return {"tickets": tickets}
+
+    def art_queue(self) -> dict:
+        """Expose only public art-contract and production progress to the dashboard."""
+
+        return public_art_queue(self.root, public_status(self.root))
 
     def set_mode(self, mode: str) -> dict:
         if mode not in VALID_MODES:
@@ -372,22 +380,52 @@ class AutonomyController:
             )
 
     def confirm_art_import(self, job_id: str) -> dict:
-        """Verify a user-provided art set before its state may become complete."""
+        """Start owner-approved, end-to-end production for verified original art."""
 
         if not re.fullmatch(r"art-[a-z0-9-]{1,100}", job_id):
             raise ControlError("Invalid art-job identifier")
         with self._lock:
             if self._pipeline_active():
                 raise ControlError("Wait for the active governed operation to finish")
-            result = confirm_art_import(self.root, job_id)
+            existing = public_status(self.root).get(job_id, {})
+            if existing.get("state") == "failed" and existing.get("merged") is True:
+                self._art_importer = threading.Thread(
+                    target=self._retry_published_art_validation,
+                    args=(job_id,), name=f"art-verify-{job_id}", daemon=True,
+                )
+                self._art_importer.start()
+                return {"pass": True, "state": "testing", "message": "Re-running installed Wesnoth validation."}
+            result = self.art_imports.begin(job_id)
             if result["pass"]:
+                self._art_importer = threading.Thread(
+                    target=self._run_art_import,
+                    args=(job_id,), name=f"art-import-{job_id}", daemon=True,
+                )
+                self._art_importer.start()
                 self.queue.event(
-                    "Original unit art import confirmed",
-                    level="success",
-                    detail=result["message"],
+                    "Original unit art production approved",
+                    detail="Validating the full state set before creating its governed commit.",
                     ticket_id=job_id,
                 )
             return result
+
+    def _run_art_import(self, job_id: str) -> None:
+        try:
+            self.art_imports.run(job_id)
+        except (ArtProductionError, QueueError, OSError, ValueError) as exc:
+            self.queue.event(
+                "Original unit art production stopped safely", level="error",
+                detail=str(exc)[:1200], ticket_id=job_id,
+            )
+
+    def _retry_published_art_validation(self, job_id: str) -> None:
+        try:
+            self.art_imports.retry_published_validation(job_id)
+        except (ArtProductionError, QueueError, OSError, ValueError) as exc:
+            self.queue.event(
+                "Published art validation retry stopped safely", level="error",
+                detail=str(exc)[:1200], ticket_id=job_id,
+            )
 
     def approve_publish(self, record_id: str, commit_sha: str) -> dict:
         with self._lock:
@@ -2693,7 +2731,11 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
         return bool(self._thread and self._thread.is_alive())
 
     def _pipeline_active(self) -> bool:
-        return self._worker_active() or bool(self._publisher and self._publisher.is_alive())
+        return (
+            self._worker_active()
+            or bool(self._publisher and self._publisher.is_alive())
+            or bool(self._art_importer and self._art_importer.is_alive())
+        )
 
     def _cooldown_complete(self) -> bool:
         return (

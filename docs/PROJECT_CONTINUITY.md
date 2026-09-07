@@ -111,12 +111,17 @@ Codex's built-in image generator is an interactive product capability, not a
 callable WSL/Python service. The worker therefore never attempts an API call,
 never reads an API key, and never starts an unbounded project-wide art batch.
 An interactive Codex task uses the owner's normal Codex allowance to generate
-the exact transparent PNGs, after which a governed ticket imports and wires
-them. A job may remain pending without blocking unrelated code work; however,
-the moment it is marked `complete`, deterministic validation requires every
-one of its 13 valid PNGs and every corresponding WML reference. Prompts require
-original, non-commercial art and prohibit copying official game art, book-cover
-art, actors, logos, or public reference-image composition.
+the exact transparent PNGs. **Confirm & productionalize art** then starts a
+separate governed import: it validates the full state set, creates a scoped
+branch and commit, requires exact-head CI, merges through the protected PR
+path, updates local `main`, and runs the installed Wesnoth validation. The art
+card pulses amber during that work, becomes retryable red on failure, and
+flashes green three times before leaving the actionable queue only after the
+published game check passes. A job may remain pending without blocking
+unrelated code work; deterministic validation requires every one of its 13
+valid PNGs and every corresponding WML reference before any commit is created.
+Prompts require original, non-commercial art and prohibit copying official game
+art, book-cover art, actors, logos, or public reference-image composition.
 
 Before the next autonomous ticket is planned, the dashboard performs a one-time historical retention sweep in original first-parent publication order. It verifies that each published add-on ticket's retained source files and WML identifiers still exist in current `main`, alongside the installed-engine assembled-campaign check. History is never rewritten: a failure creates the first bounded repair ticket, and fresh planning remains blocked until it passes. Future tickets must update the gameplay-contract file for every changed gameplay source.
 

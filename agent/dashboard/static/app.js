@@ -11,6 +11,8 @@ let guidanceSaveTimer = null;
 let ticketCatalogReady = false;
 let artQueueSnapshot = null;
 const artImportOutcomes = new Map();
+const ART_SUCCESS_FLASH_MS = 1800;
+let artCompletionTimer = null;
 const expandedDetails = new Set();
 const nodeScrollPositions = new Map();
 const plannedTickets = new Map();
@@ -39,10 +41,21 @@ function displayState(value) { return safe(value, "idle").replaceAll("_", " ").r
 
 function renderArtQueue(queue) {
   artQueueSnapshot = queue;
-  // Completed art is retained in the manifest and activity log, but leaves the
-  // working queue so the panel remains an actionable rolling list.
-  const jobs = (Array.isArray(queue?.jobs) ? queue.jobs : [])
-    .filter(job => job?.state !== "complete");
+  const now = Date.now();
+  const jobs = (Array.isArray(queue?.jobs) ? queue.jobs : []).filter(job => {
+    if (job?.production_state !== "published") return true;
+    const completedAt = new Date(job.production_completed_at || 0).valueOf();
+    return Number.isFinite(completedAt) && now - completedAt < ART_SUCCESS_FLASH_MS;
+  });
+  if (artCompletionTimer) window.clearTimeout(artCompletionTimer);
+  const nextCompletion = (Array.isArray(queue?.jobs) ? queue.jobs : [])
+    .filter(job => job?.production_state === "published")
+    .map(job => new Date(job.production_completed_at || 0).valueOf() + ART_SUCCESS_FLASH_MS - now)
+    .filter(delay => Number.isFinite(delay) && delay > 0)
+    .sort((left, right) => left - right)[0];
+  if (nextCompletion) artCompletionTimer = window.setTimeout(
+    () => renderArtQueue(artQueueSnapshot || {}), nextCompletion + 30
+  );
   const pending = Number.isInteger(queue?.pending) ? queue.pending : 0;
   const complete = Number.isInteger(queue?.complete) ? queue.complete : 0;
   $("art-queue-summary").textContent = `${pending} awaiting art · ${complete} complete`;
@@ -50,18 +63,25 @@ function renderArtQueue(queue) {
   $("art-queue").innerHTML = jobs.map(job => {
     const prompt = safe(job.prompt_path, "");
     const canCopy = typeof job.brief === "string" && job.brief.length > 0;
-    const confirmed = job.state === "complete";
+    const productionState = safe(job.production_state, "").toLowerCase();
+    const working = ["validating", "committing", "publishing", "testing"].includes(productionState);
+    const failed = productionState === "failed";
+    const published = productionState === "published";
     const outcome = artImportOutcomes.get(job.id);
-    const status = outcome || (confirmed
-      ? "Complete: validated assets are wired into the unit."
+    const status = outcome || safe(job.production_error, "") || safe(job.production_message, "") || (job.state === "complete"
+      ? "Art contract is complete and ready for governed production."
       : job.import_ready
         ? "Ready to confirm: every required asset and WML reference has passed the import check."
         : job.requires_llm
           ? "WML wiring needs a bounded repair ticket before this art set can be activated."
           : "Generate and place every required asset, then confirm the import here.");
-    return `<article class="art-job ${esc(job.state, "pending").toLowerCase()}">
-      <div><strong>${esc(job.unit_name || job.unit_id)}</strong><small>${esc(displayState(job.state))} · ${esc(job.asset_count)} required PNGs</small></div>
-      <div class="art-job-actions"><code>${esc(prompt)}</code><p class="art-import-status ${job.import_ready || confirmed ? "ready" : job.requires_llm || outcome ? "attention" : ""}">${esc(status)}</p><div class="art-buttons"><button type="button" class="copy-art-brief" data-art-id="${esc(job.id, "")}" ${canCopy ? "" : "disabled"}>Copy $imagegen brief</button><button type="button" class="confirm-art-import" data-art-id="${esc(job.id, "")}" ${!confirmed && !controlBusy && controlToken ? "" : "disabled"}>${confirmed ? "Import confirmed" : "Confirm art import"}</button></div></div>
+    const buttonLabel = working ? "Production in progress" : failed
+      ? (job.production_message?.includes("Published art") ? "Retry validation" : "Retry production")
+      : job.state === "complete" ? "Productionalize art" : "Confirm & productionalize art";
+    const buttonDisabled = working || published || !controlToken || controlBusy;
+    return `<article class="art-job ${esc(job.state, "pending").toLowerCase()} ${esc(productionState || "waiting")}">
+      <div><strong>${esc(job.unit_name || job.unit_id)}</strong><small>${esc(displayState(productionState || job.state))} · ${esc(job.asset_count)} required PNGs</small></div>
+      <div class="art-job-actions"><code>${esc(prompt)}</code><p class="art-import-status ${published ? "ready" : failed || job.requires_llm || outcome ? "attention" : ""}">${esc(status)}</p><div class="art-buttons"><button type="button" class="copy-art-brief" data-art-id="${esc(job.id, "")}" ${canCopy ? "" : "disabled"}>Copy $imagegen brief</button><button type="button" class="confirm-art-import" data-art-id="${esc(job.id, "")}" ${buttonDisabled ? "disabled" : ""}>${esc(buttonLabel)}</button></div></div>
     </article>`;
   }).join("") || '<p class="empty">No unit art contracts are queued.</p>';
 }

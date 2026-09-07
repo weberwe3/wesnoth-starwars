@@ -186,6 +186,9 @@ h2 { margin-bottom: 0; font-size: clamp(1.05rem, 1.6vw, 1.35rem); letter-spacing
 .art-job { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(12rem, .8fr); gap: .75rem; align-items: center; padding: .75rem .85rem; border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: 10px; background: rgba(7,11,18,.34); }
 .art-job.complete { border-left-color: var(--green); }
 .art-job.failed { border-left-color: var(--red); }
+.art-job.validating, .art-job.committing, .art-job.publishing, .art-job.testing { border-color: rgba(244,190,99,.78); border-left-color: var(--amber); box-shadow: 0 0 0 0 rgba(244,190,99,.12); animation: art-processing-pulse 1.35s ease-in-out infinite; }
+.art-job.failed { border-color: rgba(255,107,117,.7); background: rgba(255,107,117,.055); box-shadow: inset 3px 0 var(--red); }
+.art-job.published { border-color: rgba(82,230,154,.88); border-left-color: var(--green); background: rgba(82,230,154,.075); animation: art-production-success .6s ease-in-out 3 both; }
 .art-job strong, .art-job small, .art-job code { min-width: 0; overflow-wrap: anywhere; }
 .art-job strong { display: block; color: var(--text); font-size: .83rem; }
 .art-job small, .art-job code { color: var(--muted); font-size: .71rem; }
@@ -242,6 +245,8 @@ h2 { margin-bottom: 0; font-size: clamp(1.05rem, 1.6vw, 1.35rem); letter-spacing
 .error-dialog h3 { margin: 1rem 0 .25rem; color: var(--text); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
 .noscript { margin: 1rem; padding: 1rem; background: #30161a; color: #fff; }
 @keyframes active-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(82,230,154,.12), inset 0 0 16px rgba(82,230,154,.05); } 50% { box-shadow: 0 0 0 8px rgba(82,230,154,0), 0 0 22px rgba(82,230,154,.28); } }
+@keyframes art-processing-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(244,190,99,.12), inset 0 0 14px rgba(244,190,99,.04); } 50% { box-shadow: 0 0 0 7px rgba(244,190,99,0), 0 0 24px rgba(244,190,99,.34); } }
+@keyframes art-production-success { 0%,100% { box-shadow: inset 3px 0 var(--green), 0 0 8px rgba(82,230,154,.12); } 50% { box-shadow: inset 3px 0 var(--green), 0 0 32px rgba(82,230,154,.78); } }
 @keyframes packet { from { transform: translateY(0); } to { transform: translateY(8rem); } }
 @media (max-width: 1050px) { .coordination-panel { grid-template-columns: 1fr; align-items: start; } }
 @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } .workflow-panel { grid-row: auto; } .activity-panel, .art-panel { grid-column: auto; } .mission { grid-template-columns: 1fr; align-items: start; } }
