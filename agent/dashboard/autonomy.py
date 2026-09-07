@@ -36,6 +36,7 @@ MAX_GUIDANCE_LENGTH = 1000
 PLANNER_CACHE_SECONDS = 900
 AUTOMATION_COOLDOWN_SECONDS = 60
 AUTONOMOUS_WORKTREE_FAILURE_LIMIT = 3
+MAX_MANAGED_AGENT_BRANCHES = 1000
 GENERATED_BACKLOG_FILE = "generated-planned-tickets.json"
 GENERATED_BACKLOG_SIZE = 4
 POST_PUBLISH_GAME_VALIDATION_FILE = "post-publish-game-validation.json"
@@ -183,6 +184,17 @@ def validate_strict_output_schema(schema: object) -> None:
     elif isinstance(schema, list):
         for value in schema:
             validate_strict_output_schema(value)
+
+
+def bounded_agent_branch_lines(branch_output: str) -> list[str]:
+    """Return every managed ref unless the explicit safety ceiling is exceeded."""
+
+    lines = branch_output.splitlines()
+    if len(lines) > MAX_MANAGED_AGENT_BRANCHES:
+        raise ControlError(
+            "Managed agent branch inventory exceeds the supported safety bound"
+        )
+    return lines
 
 
 class AutonomyController:
@@ -570,6 +582,8 @@ class AutonomyController:
         recode_record: dict | None = None,
     ) -> None:
         try:
+            if recode_record is None and continuous:
+                recode_record = self._automatic_recode_record()
             if recode_record is not None:
                 proposal = self._exact_recode_proposal(recode_record)
                 self.queue.event(
@@ -860,6 +874,22 @@ class AutonomyController:
             )
             if continuous:
                 self._disable_automation("Autonomous coordination stopped safely")
+
+    def _automatic_recode_record(self) -> dict | None:
+        """Select the oldest safe failed publication for toggle-driven recovery."""
+
+        for item in self.queue.public_state()["records"]:
+            if item.get("state") != "failed" or item.get("deleted_paths"):
+                continue
+            record_id = item.get("id")
+            commit_sha = item.get("commit_sha")
+            if (
+                isinstance(record_id, str)
+                and isinstance(commit_sha, str)
+                and re.fullmatch(r"[0-9a-f]{40}", commit_sha)
+            ):
+                return self.queue.failed_record(record_id, commit_sha)
+        return None
 
     def _exact_recode_proposal(self, failed: dict) -> dict:
         """Bind recode to the already authorized queue record without model selection."""
@@ -2151,7 +2181,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "git", "for-each-ref", "--format=%(refname:short)|%(objectname)",
             "refs/heads/agent/",
         ])
-        for line in branch_output.splitlines()[:100]:
+        for line in bounded_agent_branch_lines(branch_output):
             name, separator, head = line.partition("|")
             if not separator or not re.fullmatch(r"agent/[a-zA-Z0-9._/-]+", name):
                 raise ControlError("Local branch inventory was malformed")
