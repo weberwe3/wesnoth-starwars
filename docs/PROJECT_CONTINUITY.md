@@ -1121,3 +1121,9 @@ When either current declared contracts or historical retention fails, the
 bounded, secret-free diagnostic is now included in the recovery handoff. This
 lets the scoped repair worker correct an identified ID, coordinate, or retained
 behavior instead of spending its two attempts on a generic failure message.
+
+Workspace-write worker prompts now explicitly permit bounded read-only file
+inspection and in-scope patch application. They continue to forbid tests,
+package-manager or network operations, commits, merges, pushes, and other Git
+writes. Recovery therefore has enough information access to act on a precise
+diagnostic without broadening execution or publication authority.

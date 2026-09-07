@@ -32,6 +32,11 @@ RECOVERY_PLANNER_TIMEOUT = 300
 TERRA_IMPLEMENTER_TIMEOUT = 600
 LUNA_REVIEWER_TIMEOUT = 300
 MODEL_CIRCUIT_OPEN = 88
+WRITE_WORKER_COMMAND_POLICY = (
+    "You may use bounded read-only file inspection commands and apply patches within "
+    "the allowed paths. Do not run tests, package managers, network commands, or Git "
+    "write commands."
+)
 
 VALID_WORKERS = {"implementer", "fast-fix"}
 VALID_PROFILES = {"static-text", "wesnoth-addon-static"}
@@ -2017,7 +2022,7 @@ Use targeted search before reading large files. Read no more than 80 lines per
 tool call and no more than 240 source lines total before the first edit. Never
 request a read limit above 80. If that is insufficient, return a blocked report.
 
-Do not execute commands or tests.
+{WRITE_WORKER_COMMAND_POLICY}
 Do not commit, merge, or push.
 
 Implement the smallest change that completely satisfies the objective.
@@ -2097,11 +2102,7 @@ Return your normal structured implementation report.
             status.handoff("coordinator", ticket["worker"], "Primary worker to Luna Light fallback")
             status.set_assignment(ticket["worker"], "OpenAI", "GPT-5.6 Luna · Light")
             status.set_worker(ticket["worker"], "active", "Running single Luna Light fallback")
-            luna_prompt = implementation_prompt.replace(
-                "Do not execute commands or tests.",
-                "You may use read-only inspection commands and apply patches. Do not run tests, "
-                "package managers, network commands, or Git write commands.",
-            )
+            luna_prompt = implementation_prompt
             status.set_dispatch_prompt(ticket["worker"], luna_prompt)
             luna_rc, luna_output = invoke_managed_luna(
                 policy=model_policy,
@@ -2305,7 +2306,8 @@ Return your normal structured implementation report.
 
 This is recovery attempt {attempt} of {recovery_policy.MAX_RECOVERY_ATTEMPTS}.
 Preserve the original objective and modify only the original allowed paths.
-Do not execute commands or tests. Do not commit, merge, or push.
+{WRITE_WORKER_COMMAND_POLICY}
+Do not commit, merge, or push.
 
 ORIGINAL OBJECTIVE:
 {ticket['objective']}
@@ -2340,11 +2342,7 @@ Inspect the existing candidate and make the smallest correction.
             status.handoff("fast-fix", "fast-fix", "Fast-Fix to Luna Light fallback")
             status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Luna · Light")
             status.set_worker("fast-fix", "active", "Running single Luna Light fallback")
-            luna_repair_prompt = repair_prompt.replace(
-                "Do not execute commands or tests.",
-                "You may use read-only inspection commands and apply patches. Do not run tests, "
-                "package managers, network commands, or Git write commands.",
-            )
+            luna_repair_prompt = repair_prompt
             status.set_dispatch_prompt("fast-fix", luna_repair_prompt)
             luna_recovery_rc, luna_recovery_output = invoke_managed_luna(
                 policy=model_policy,
