@@ -14,6 +14,12 @@
       "expected_id": "01_First_Battle"
     },
     {
+      "id": "sw-first-battle-eastern-observation-event",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_first_battle_eastern_observation"
+    },
+    {
       "id": "sw-first-battle-infantry-roster",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
