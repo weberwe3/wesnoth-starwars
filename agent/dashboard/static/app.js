@@ -9,6 +9,7 @@ let guidanceSaving = false;
 let guidanceDirty = false;
 let guidanceSaveTimer = null;
 let ticketCatalogReady = false;
+const expandedDetails = new Set();
 const plannedTickets = new Map();
 const fragmentAccess = new URLSearchParams(location.hash.slice(1)).get("access");
 const fragmentToken = fragmentAccess && /^[A-Za-z0-9_-]{32,128}$/.test(fragmentAccess) ? fragmentAccess : "";
@@ -90,7 +91,8 @@ function renderQueue(control) {
       <div class="queue-action"><span class="state-tag">${esc(displayState(item.state))}</span>
         ${needsRecovery ? `<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="delete-stale-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" data-ticket-id="${esc(item.ticket_id)}" data-branch="${esc(item.branch)}" ${recoverable && !controlBusy ? "" : "disabled"}>Delete code &amp; entry</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
       </div></div>
-      <details><summary>Ticket impact and publication evidence</summary><div class="queue-details">
+      <details class="persistent-details" data-detail-id="queue-${esc(item.id)}" ${expandedDetails.has(`queue-${item.id}`) ? "open" : ""}><summary>Ticket impact and publication evidence</summary><div class="queue-details">
+        <div><strong>Original ticket description</strong><p>${esc(item.original_objective || item.impact)}</p></div>
         ${deletion}<dl><dt>Exact commit</dt><dd>${esc(commit)}</dd><dt>Branch</dt><dd>${esc(item.branch)}</dd><dt>Local gates</dt><dd>${esc(item.validation)}</dd><dt>Reviewer</dt><dd>${esc(item.reviewer)}</dd><dt>Publication</dt><dd>${item.pr_number ? `PR #${esc(item.pr_number)} · ${esc(displayState(item.state))}` : esc(displayState(item.state))}</dd></dl>
         <div><strong>Changed paths</strong><ul>${paths}</ul></div>${item.error ? `<p class="queue-error">${esc(item.error)}</p>` : ""}
       </div></details></article>`;
@@ -141,7 +143,9 @@ function makeNode(data, key) {
     const node = document.createElement("article");
     node.className = `node ${safe(worker.state, "idle")}`;
     node.dataset.role = key;
-    node.innerHTML = `<div class="node-icon" aria-hidden="true">${roles[key]}</div><div class="node-copy"><div class="node-title"><strong>${esc(worker.label, key)}</strong><span class="state-tag">${esc(displayState(worker.state))}</span></div><p class="node-model" title="${esc(worker.model)}">${esc(worker.model)}</p><p class="node-task">${esc(worker.error || worker.task, "Awaiting work")}</p></div><div class="node-provider">${esc(worker.provider)}<br><span class="tabular">${worker.started_at ? duration(worker.started_at) : ""}</span></div>`;
+    const detailId = `node-${key}`;
+    const direction = worker.error || worker.task || "No coordinator direction is currently assigned.";
+    node.innerHTML = `<div class="node-icon" aria-hidden="true">${roles[key]}</div><div class="node-copy"><div class="node-title"><strong>${esc(worker.label, key)}</strong><span class="state-tag">${esc(displayState(worker.state))}</span></div><p class="node-model" title="${esc(worker.model)}">${esc(worker.model)}</p><p class="node-task">${esc(direction, "Awaiting work")}</p><details class="node-instructions persistent-details" data-detail-id="${detailId}" ${expandedDetails.has(detailId) ? "open" : ""}><summary>Coordinator direction</summary><p>${esc(direction)}</p></details></div><div class="node-provider">${esc(worker.provider)}<br><span class="tabular">${worker.started_at ? duration(worker.started_at) : ""}</span></div>`;
     return node;
 }
 
@@ -408,6 +412,14 @@ $("approval-queue").addEventListener("click", event => {
   }
   controlAction({action, record_id: button.dataset.recordId, commit_sha: button.dataset.commitSha});
 });
+
+document.addEventListener("toggle", event => {
+  const detail = event.target;
+  if (!(detail instanceof HTMLDetailsElement) || !detail.classList.contains("persistent-details")) return;
+  const id = detail.dataset.detailId;
+  if (!id) return;
+  if (detail.open) expandedDetails.add(id); else expandedDetails.delete(id);
+}, true);
 
 $("activity-log").addEventListener("click", event => {
   const button = event.target.closest(".error-activity");
