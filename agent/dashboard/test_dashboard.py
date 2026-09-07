@@ -1241,6 +1241,24 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertFalse(recovery_policy.can_attempt(0, eligible, False))
         self.assertFalse(recovery_policy.can_attempt(0, {"eligible": False}, True))
 
+    def test_validation_recovery_includes_declared_contract_diagnostic(self) -> None:
+        failure = recovery_policy.classify_validation({
+            "scope": {"changed_paths": ["addons/example/scenario.cfg"], "violations": []},
+            "static": {"checks": []},
+            "profile_result": {
+                "pass": False,
+                "declared_contracts": {
+                    "pass": False,
+                    "diagnostic": "unit x is not 16; unit y is not 6",
+                },
+                "historical_retention": {"pass": True, "diagnostic": "PASS"},
+            },
+        }, 0)
+
+        self.assertTrue(failure["eligible"])
+        self.assertIn("declared_contracts", failure["detail"])
+        self.assertIn("unit x is not 16; unit y is not 6", failure["detail"])
+
     def test_recovery_planner_failure_keeps_bounded_retry(self) -> None:
         failure = {
             "class": "implementation_or_validation_failure",
