@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "policy": "codex_quota_interactive_only",
+  "summary": "Use an interactive Codex $imagegen task; no API key is permitted.",
+  "jobs": [
+    {
+      "id": "art-sw-unit-nr-hero-commander",
+      "unit_id": "sw_unit_nr_hero_commander",
+      "unit_name": "Republic Commander",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-hero-commander.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-hero-commander/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-hero-commander/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-hero-commander/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-hero-commander/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-hero-commander/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-hero-commander/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-hero-commander/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-hero-commander/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-hero-commander/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-hero-commander/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-hero-commander/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-hero-commander/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-hero-commander.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    }
+  ]
+}

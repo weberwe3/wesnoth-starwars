@@ -17,7 +17,20 @@ import tempfile
 import unittest
 from unittest import mock
 
-from gameplay_contracts import validate_declared_contracts, validate_historical_retention, validate_map_data
+from asset_scaffold import materialize_missing_project_images
+from art_pipeline import (
+    public_art_queue,
+    synchronize_art_queue,
+    unit_ids_for_source_paths,
+    validate_art_queue,
+)
+from gameplay_contracts import (
+    validate_campaign_loader,
+    validate_campaign_dependencies,
+    validate_declared_contracts,
+    validate_historical_retention,
+    validate_map_data,
+)
 
 
 ADDON_ID = "Star_Wars_Thrawn_Trilogy"
@@ -711,6 +724,152 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         })
         self.assertTrue(good["pass"], good["diagnostic"])
 
+    def test_campaign_loader_requires_active_units_container_before_scenarios(self) -> None:
+        sources = {
+            "addons/Star_Wars_Thrawn_Trilogy/_main.cfg": (
+                "[campaign]\ndefine=CAMPAIGN_FIXTURE\n[/campaign]\n"
+                "#ifdef CAMPAIGN_FIXTURE\n"
+                "[binary_path]\npath=data/add-ons/Star_Wars_Thrawn_Trilogy\n[/binary_path]\n"
+                "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios}\n"
+                "#endif\n"
+            ),
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
+                "[scenario]\ntype=sw_unit_fixture\n[/scenario]\n"
+            ),
+            "addons/Star_Wars_Thrawn_Trilogy/units/fixture.cfg": (
+                "[unit_type]\nid=sw_unit_fixture\n[/unit_type]\n"
+            ),
+        }
+        bad = validate_campaign_loader(Path("."), sources)
+        self.assertFalse(bad["pass"])
+        self.assertIn("inside [+units]", bad["diagnostic"])
+
+        sources["addons/Star_Wars_Thrawn_Trilogy/_main.cfg"] = (
+            "[campaign]\ndefine=CAMPAIGN_FIXTURE\n[/campaign]\n"
+            "#ifdef CAMPAIGN_FIXTURE\n"
+            "[binary_path]\npath=data/add-ons/Star_Wars_Thrawn_Trilogy\n[/binary_path]\n"
+            "[+units]\n{~add-ons/Star_Wars_Thrawn_Trilogy/units}\n[/units]\n"
+            "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios}\n"
+            "#endif\n"
+        )
+        self.assertTrue(validate_campaign_loader(Path("."), sources)["pass"])
+
+    def test_campaign_dependencies_reject_broken_routes_and_duplicate_ids(self) -> None:
+        sources = {
+            "addons/Star_Wars_Thrawn_Trilogy/_main.cfg": (
+                "[campaign]\ndefine=CAMPAIGN_FIXTURE\nfirst_scenario=sw_start\n[/campaign]\n"
+                "#ifdef CAMPAIGN_FIXTURE\n"
+                "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios}\n#endif\n"
+            ),
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/start.cfg": (
+                "[scenario]\nid=sw_start\nnext_scenario=sw_missing\n[/scenario]\n"
+            ),
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/duplicate.cfg": (
+                "[scenario]\nid=sw_start\n[/scenario]\n"
+            ),
+        }
+        evidence = validate_campaign_dependencies(Path("."), sources)
+        self.assertFalse(evidence["pass"])
+        self.assertIn("defined more than once", evidence["diagnostic"])
+        self.assertIn("missing next_scenario", evidence["diagnostic"])
+
+    def test_campaign_dependencies_reject_missing_project_assets_and_symbols(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sources = {
+                "addons/Star_Wars_Thrawn_Trilogy/units/fixture.cfg": (
+                    "icon=~add-ons/Star_Wars_Thrawn_Trilogy/images/fixture.png\n"
+                    "{SW_MISSING}\n"
+                ),
+                "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
+                    "lua_function=sw_missing_action\n"
+                ),
+            }
+            evidence = validate_campaign_dependencies(root, sources)
+        self.assertFalse(evidence["pass"])
+        self.assertIn("Project resource is missing", evidence["diagnostic"])
+        self.assertIn("Project macro SW_MISSING", evidence["diagnostic"])
+        self.assertIn("Project Lua action sw_missing_action", evidence["diagnostic"])
+
+    def test_campaign_dependencies_ignore_documentary_resource_and_macro_comments(self) -> None:
+        sources = {
+            "addons/Star_Wars_Thrawn_Trilogy/units/fixture.cfg": (
+                "# icon=~add-ons/Star_Wars_Thrawn_Trilogy/images/not-a-resource.png\n"
+                "# {SW_DOCUMENTATION_ONLY}\n"
+            ),
+        }
+        self.assertTrue(validate_campaign_dependencies(Path("."), sources)["pass"])
+
+    def test_campaign_dependencies_require_custom_terrain_before_scenarios(self) -> None:
+        sources = {
+            "addons/Star_Wars_Thrawn_Trilogy/_main.cfg": (
+                "[campaign]\ndefine=CAMPAIGN_FIXTURE\nfirst_scenario=sw_fixture\n[/campaign]\n"
+                "#ifdef CAMPAIGN_FIXTURE\n"
+                "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios}\n#endif\n"
+            ),
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
+                "[scenario]\nid=sw_fixture\n[/scenario]\n"
+            ),
+            "addons/Star_Wars_Thrawn_Trilogy/terrain/fixture.cfg": (
+                "[terrain_type]\nstring=sw_too_long\n[/terrain_type]\n"
+            ),
+        }
+        evidence = validate_campaign_dependencies(Path("."), sources)
+        self.assertFalse(evidence["pass"])
+        self.assertIn("valid short string", evidence["diagnostic"])
+        self.assertIn("does not load custom terrain", evidence["diagnostic"])
+
+    def test_missing_project_png_is_materialized_as_original_placeholder(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            unit = root / "addons" / ADDON_ID / "units" / "fixture.cfg"
+            unit.parent.mkdir(parents=True)
+            unit.write_text(
+                "icon=~add-ons/Star_Wars_Thrawn_Trilogy/images/fixture.png\n",
+                encoding="utf-8",
+            )
+            result = materialize_missing_project_images(root)
+            asset = root / "addons" / ADDON_ID / "images" / "fixture.png"
+            self.assertTrue(result["pass"], result)
+            self.assertEqual(result["generated"], [
+                "addons/Star_Wars_Thrawn_Trilogy/images/fixture.png"
+            ])
+            self.assertTrue(asset.is_file())
+            self.assertEqual(asset.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
+
+    def test_unit_art_queue_has_every_required_state_and_blocks_incomplete_completion(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            unit = root / "addons" / ADDON_ID / "units" / "hero.cfg"
+            unit.parent.mkdir(parents=True)
+            unit.write_text(
+                "[unit_type]\nid=sw_unit_fixture\nname=_\"Fixture Commander\"\n"
+                "description=_\"An original command unit. password=ignore-me\"\n[/unit_type]\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                unit_ids_for_source_paths(root, [
+                    "addons/Star_Wars_Thrawn_Trilogy/units/hero.cfg"
+                ]),
+                {"sw_unit_fixture"},
+            )
+            sync = synchronize_art_queue(root, {"sw_unit_fixture"})
+            self.assertTrue(sync["pass"])
+            self.assertEqual(len(sync["jobs"]), 1)
+            self.assertEqual(len(sync["jobs"][0]["assets"]), 13)
+            self.assertTrue(validate_art_queue(root)["pass"])
+            handoff = public_art_queue(root)["jobs"][0]["brief"]
+            self.assertIn("$imagegen", handoff)
+            self.assertNotIn("password=ignore-me", handoff)
+            self.assertIn("[redacted]", handoff)
+            manifest = root / "addons" / ADDON_ID / "assets" / "art-queue.json"
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["jobs"][0]["state"] = "complete"
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            failure = validate_art_queue(root)
+            self.assertFalse(failure["pass"])
+            self.assertIn("missing valid PNG", failure["diagnostic"])
+
     def test_runtime_probe_stages_a_one_scenario_campaign(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             staged = Path(directory) / "_main.cfg"
@@ -768,6 +927,15 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             addon = root / "addons" / ADDON_ID
             tests = addon / "tests"
             tests.mkdir(parents=True)
+            addon.joinpath("_main.cfg").write_text(
+                "[campaign]\ndefine=CAMPAIGN_FIXTURE\n[/campaign]\n"
+                "#ifdef CAMPAIGN_FIXTURE\n"
+                "[binary_path]\npath=data/add-ons/Star_Wars_Thrawn_Trilogy\n[/binary_path]\n"
+                "[+units]\n{~add-ons/Star_Wars_Thrawn_Trilogy/units}\n[/units]\n"
+                "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios}\n"
+                "#endif\n",
+                encoding="utf-8",
+            )
             scenario = addon / "scenario.cfg"
             scenario.write_text("[scenario]\nid=sw_fixture\n[/scenario]\n", encoding="utf-8")
             tests.joinpath("gameplay-contracts.json").write_text(json.dumps({

@@ -27,6 +27,7 @@ from coordination_control import ControlStore, control_state_path  # noqa: E402
 from runtime_status import default_state, runtime_status_path  # noqa: E402
 from autonomy import AutonomyController, ControlError  # noqa: E402
 from approval_queue import QueueError  # noqa: E402
+from art_pipeline import public_art_queue  # noqa: E402
 
 
 def public_state(state: object) -> dict:
@@ -124,7 +125,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         path = urlsplit(self.path).path
         remote_view = self.headers.get("X-Wesnoth-LAN-View") == "1"
         if remote_view and path in {
-            "/api/status", "/api/control", "/api/planned-tickets",
+            "/api/status", "/api/control", "/api/planned-tickets", "/api/art-queue",
         } and not self._valid_lan_token():
             self._json({"error": "This device needs the secure LAN access link"}, HTTPStatus.FORBIDDEN)
             return
@@ -146,6 +147,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/planned-tickets":
             self._json(self.server.controller.pending_planned_tickets())  # type: ignore[attr-defined]
+            return
+        if path == "/api/art-queue":
+            self._json(public_art_queue(ROOT))
             return
         if path == "/":
             self.path = "/index.html"

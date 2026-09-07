@@ -19,6 +19,12 @@ from model_policy import AGENT_MODELS, ModelPolicy, failure_kind
 import reference_package as reference_pkg
 import recovery_policy
 from runtime_status import RuntimeStatus, runtime_status_path
+from asset_scaffold import materialize_missing_project_images
+from art_pipeline import (
+    synchronize_art_queue,
+    unit_ids_for_source_paths,
+    validate_art_queue,
+)
 from gameplay_contracts import validate_declared_contracts, validate_historical_retention
 from scenario_launch_selftest import find_wesnoth_executable
 import worktree_paths
@@ -1250,11 +1256,28 @@ def run_validation(
     ticket: dict,
     implementer_rc: int,
 ) -> dict:
+    # WML resource references are project API: materialize only original,
+    # deterministic PNG placeholders for newly introduced missing image paths.
+    # Every other missing resource stays fail-closed for an explicit worker fix.
+    asset_result = materialize_missing_project_images(worktree)
     status_entries, changed_paths = read_git_changes(worktree)
+
+    # A new or changed unit always receives the complete art-state contract and
+    # interactive-Codex brief. These deterministic generated files are limited
+    # to exact add-on asset paths, then receive normal scope review with the
+    # implementation candidate.
+    art_sync = None
+    changed_unit_ids = unit_ids_for_source_paths(worktree, changed_paths)
+    if changed_unit_ids:
+        art_sync = synchronize_art_queue(worktree, changed_unit_ids)
+        status_entries, changed_paths = read_git_changes(worktree)
+    art_queue = validate_art_queue(worktree)
+    art_sync_pass = art_sync is None or art_sync["pass"]
+    extra_art_paths = art_sync.get("generated_paths", []) if art_sync else []
 
     scope = validate_scope(
         changed_paths,
-        ticket["allowed_paths"],
+        [*ticket["allowed_paths"], *extra_art_paths],
     )
 
     static = validate_static_files(
@@ -1278,7 +1301,11 @@ def run_validation(
             **addon_result,
             "declared_contracts": declared,
             "historical_retention": retained,
-            "pass": addon_result["pass"] and declared["pass"] and retained["pass"],
+            "art_queue": art_queue,
+            "pass": (
+                addon_result["pass"] and declared["pass"] and retained["pass"]
+                and art_queue["pass"] and art_sync_pass
+            ),
         }
 
     profile_pass = (
@@ -1290,10 +1317,15 @@ def run_validation(
         "git_status": status_entries,
         "scope": scope,
         "static": static,
+        "asset_generation": asset_result,
+        "art_queue": art_queue,
+        "art_queue_sync": art_sync,
         "profile": ticket["validation_profile"],
         "profile_result": profile_result,
         "pass": (
             implementer_rc == 0
+            and asset_result["pass"]
+            and art_sync_pass
             and scope["pass"]
             and static["pass"]
             and profile_pass
