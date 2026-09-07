@@ -19,6 +19,7 @@ from model_policy import AGENT_MODELS, ModelPolicy, failure_kind
 import reference_package as reference_pkg
 import recovery_policy
 from runtime_status import RuntimeStatus, runtime_status_path
+from gameplay_contracts import validate_historical_retention
 from scenario_launch_selftest import find_wesnoth_executable
 import worktree_paths
 
@@ -1215,10 +1216,19 @@ def run_validation(
     profile_result = None
 
     if ticket["validation_profile"] == "wesnoth-addon-static":
-        profile_result = validate_wesnoth_addon(
+        addon_result = validate_wesnoth_addon(
             worktree,
             ticket["validation_root"],
         )
+        # CI protects the immutable outcomes of earlier published gameplay
+        # tickets. Run that same check locally before a candidate can consume
+        # reviewer, queue, or publication resources.
+        retained = validate_historical_retention(worktree)
+        profile_result = {
+            **addon_result,
+            "historical_retention": retained,
+            "pass": addon_result["pass"] and retained["pass"],
+        }
 
     profile_pass = (
         True if profile_result is None else profile_result["pass"]
