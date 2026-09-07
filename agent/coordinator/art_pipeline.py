@@ -370,25 +370,44 @@ def validate_art_queue(root: Path) -> dict[str, Any]:
     }
 
 
-def art_import_preflight(root: Path, job_id: str) -> dict[str, Any]:
-    """Verify a user-imported art set without changing its queue state."""
+def art_import_contract(root: Path, job_id: str) -> dict[str, Any]:
+    """Return one current art contract after rejecting stale or ambiguous jobs."""
 
     manifest_path = root / ADDON_ROOT / ART_MANIFEST
     manifest = _load_manifest(manifest_path)
     jobs = manifest.get("jobs") if isinstance(manifest, dict) else None
     if manifest.get("schema_version") != ART_SCHEMA_VERSION or not isinstance(jobs, list):
-        return {"pass": False, "message": "Art queue manifest is missing or invalid", "requires_llm": False}
+        return {"pass": False, "message": "Art queue manifest is missing or invalid"}
     matches = [job for job in jobs if isinstance(job, dict) and job.get("id") == job_id]
     if len(matches) != 1:
-        return {"pass": False, "message": "Art job is not uniquely present in the queue", "requires_llm": False}
+        return {"pass": False, "message": "Art job is not uniquely present in the queue"}
     job = matches[0]
     unit_id = job.get("unit_id")
     sources = _config_files(root)
     units = {unit["id"]: unit for unit in _unit_definitions(sources)}
     if not isinstance(unit_id, str) or unit_id not in units or job.get("assets") != _unit_assets(unit_id):
-        return {"pass": False, "message": "Art job contract does not match a current custom unit", "requires_llm": False}
-    source_path = units[unit_id]["source_path"]
-    failures = _completion_failures(root, source_path, sources[source_path], _unit_assets(unit_id))
+        return {"pass": False, "message": "Art job contract does not match a current custom unit"}
+    return {
+        "pass": True,
+        "job": job,
+        "unit_id": unit_id,
+        "unit_name": units[unit_id]["name"],
+        "source_path": units[unit_id]["source_path"],
+        "source": sources[units[unit_id]["source_path"]],
+        "assets": _unit_assets(unit_id),
+    }
+
+
+def art_import_preflight(root: Path, job_id: str) -> dict[str, Any]:
+    """Verify a user-imported art set without changing its queue state."""
+
+    contract = art_import_contract(root, job_id)
+    if not contract["pass"]:
+        return {**contract, "requires_llm": False}
+    job = contract["job"]
+    unit_id = contract["unit_id"]
+    source_path = contract["source_path"]
+    failures = _completion_failures(root, source_path, contract["source"], contract["assets"])
     if failures:
         detail = " ".join(item["detail"] for item in failures[:3])
         needs_wiring = any("not fully wired" in item["detail"] for item in failures)
@@ -426,7 +445,9 @@ def confirm_art_import(root: Path, job_id: str) -> dict[str, Any]:
     }
 
 
-def public_art_queue(root: Path) -> dict[str, Any]:
+def public_art_queue(
+    root: Path, production_status: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Return bounded, credential-free Codex art handoffs for the dashboard."""
 
     evidence = validate_art_queue(root)
@@ -443,6 +464,12 @@ def public_art_queue(root: Path) -> dict[str, Any]:
         public_job["import_ready"] = bool(preflight["pass"]) and public_job.get("state") != "complete"
         public_job["import_message"] = preflight["message"]
         public_job["requires_llm"] = preflight["requires_llm"]
+        production = (production_status or {}).get(str(public_job.get("id") or ""), {})
+        if isinstance(production, dict):
+            public_job["production_state"] = production.get("state")
+            public_job["production_message"] = production.get("message")
+            public_job["production_error"] = production.get("error")
+            public_job["production_completed_at"] = production.get("completed_at")
         jobs.append(public_job)
     return {
         "pass": evidence["pass"],

@@ -35,7 +35,45 @@ from autonomy import (  # noqa: E402
 )
 import approval_queue  # noqa: E402
 from approval_queue import ApprovalQueue, QueueError  # noqa: E402
+from art_import_production import ArtImportProduction, public_status, update_status  # noqa: E402
+from art_pipeline import public_art_queue  # noqa: E402
 from server import create_server, public_state  # noqa: E402
+
+
+class ArtImportProductionTests(unittest.TestCase):
+    def test_invalid_art_contract_becomes_a_safe_retryable_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            events: list[dict] = []
+            production = ArtImportProduction(root, lambda *args, **kwargs: events.append(kwargs))
+            result = production.begin("art-sw-unit-fixture")
+            self.assertFalse(result["pass"])
+            self.assertEqual(result["state"], "failed")
+            self.assertIn("manifest", result["error"].lower())
+            self.assertEqual(public_status(root)["art-sw-unit-fixture"]["state"], "failed")
+
+    def test_public_art_status_allowlists_browser_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            update_status(
+                root, "art-sw-unit-fixture", state="published", message="Ready",
+                internal_provider_output="must not be exposed",
+            )
+            value = public_status(root)["art-sw-unit-fixture"]
+            self.assertEqual(value["state"], "published")
+            self.assertNotIn("internal_provider_output", value)
+
+    def test_art_queue_exposes_production_progress_without_internal_fields(self) -> None:
+        payload = public_art_queue(ROOT, {
+            "art-sw-unit-nr-hero-commander": {
+                "state": "publishing", "message": "Waiting for exact-head CI.",
+                "internal_command": "must not reach the browser",
+            }
+        })
+        job = next(item for item in payload["jobs"] if item["id"] == "art-sw-unit-nr-hero-commander")
+        self.assertEqual(job["production_state"], "publishing")
+        self.assertEqual(job["production_message"], "Waiting for exact-head CI.")
+        self.assertNotIn("internal_command", job)
 
 
 class RuntimeStatusTests(unittest.TestCase):
@@ -679,9 +717,12 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertIn('fetch("/api/planned-tickets"', source)
         self.assertIn('fetch("/api/art-queue"', source)
         self.assertIn("Copy $imagegen brief", source)
-        self.assertIn("Confirm art import", source)
+        self.assertIn("Confirm & productionalize art", source)
+        self.assertIn("Production in progress", source)
+        self.assertIn("Retry production", source)
+        self.assertIn("ART_SUCCESS_FLASH_MS", source)
         self.assertIn('action: "confirm_art_import"', source)
-        self.assertIn('.filter(job => job?.state !== "complete")', source)
+        self.assertIn('job?.production_state !== "published"', source)
         self.assertIn("navigator.clipboard.writeText(job.brief)", source)
         self.assertNotIn('fetch("/planned-tickets.json"', source)
 
@@ -1866,9 +1907,8 @@ class CoordinationControlTests(unittest.TestCase):
             server = create_server(0, base / "state.json", base / "control.json")
             server.controller.confirm_art_import = mock.Mock(return_value={
                 "pass": True,
-                "state": "complete",
-                "requires_llm": False,
-                "message": "Art import confirmed.",
+                "state": "validating",
+                "message": "Art production started.",
             })
             thread = threading.Thread(target=server.serve_forever, daemon=True)
             thread.start()
@@ -1893,7 +1933,7 @@ class CoordinationControlTests(unittest.TestCase):
                 response = connection.getresponse()
                 payload = json.loads(response.read())
                 self.assertEqual(response.status, 202)
-                self.assertEqual(payload["art_import"]["state"], "complete")
+                self.assertEqual(payload["art_import"]["state"], "validating")
                 server.controller.confirm_art_import.assert_called_once_with(
                     "art-sw-unit-fixture"
                 )
