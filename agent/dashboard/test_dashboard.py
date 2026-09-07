@@ -1271,6 +1271,37 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertEqual(evidence["changed_paths"], ["fixture.txt"])
         self.assertTrue(evidence["static_checks"][0]["pass"])
 
+    def test_local_addon_validation_rejects_declared_contract_mismatch(self) -> None:
+        ticket = {
+            "allowed_paths": ["addons/example/scenario.cfg"],
+            "validation_profile": "wesnoth-addon-static",
+            "validation_root": "addons/example",
+        }
+        passing = {"pass": True, "diagnostic": "PASS"}
+        mismatch = {"pass": False, "diagnostic": "unit x is not 16"}
+        with (
+            mock.patch.object(
+                ticket_runner, "read_git_changes",
+                return_value=([], ["addons/example/scenario.cfg"]),
+            ),
+            mock.patch.object(ticket_runner, "validate_scope", return_value=passing),
+            mock.patch.object(ticket_runner, "validate_static_files", return_value=passing),
+            mock.patch.object(ticket_runner, "validate_wesnoth_addon", return_value=passing),
+            mock.patch.object(
+                ticket_runner, "validate_declared_contracts", return_value=mismatch
+            ) as declared,
+            mock.patch.object(
+                ticket_runner, "validate_historical_retention", return_value=passing
+            ),
+        ):
+            result = ticket_runner.run_validation(
+                worktree=Path("."), ticket=ticket, implementer_rc=0
+            )
+
+        declared.assert_called_once_with(Path("."))
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["profile_result"]["declared_contracts"], mismatch)
+
     def test_single_verified_remnant_avoids_sol_planning(self) -> None:
         proposal = AutonomyController._single_resume_proposal({
             "resumable_local_work": [{
