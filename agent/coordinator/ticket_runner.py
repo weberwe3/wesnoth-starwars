@@ -19,7 +19,7 @@ from model_policy import AGENT_MODELS, ModelPolicy, failure_kind
 import reference_package as reference_pkg
 import recovery_policy
 from runtime_status import RuntimeStatus, runtime_status_path
-from gameplay_contracts import validate_historical_retention
+from gameplay_contracts import validate_declared_contracts, validate_historical_retention
 from scenario_launch_selftest import find_wesnoth_executable
 import worktree_paths
 
@@ -1227,11 +1227,13 @@ def run_validation(
         # CI protects the immutable outcomes of earlier published gameplay
         # tickets. Run that same check locally before a candidate can consume
         # reviewer, queue, or publication resources.
+        declared = validate_declared_contracts(worktree)
         retained = validate_historical_retention(worktree)
         profile_result = {
             **addon_result,
+            "declared_contracts": declared,
             "historical_retention": retained,
-            "pass": addon_result["pass"] and retained["pass"],
+            "pass": addon_result["pass"] and declared["pass"] and retained["pass"],
         }
 
     profile_pass = (
