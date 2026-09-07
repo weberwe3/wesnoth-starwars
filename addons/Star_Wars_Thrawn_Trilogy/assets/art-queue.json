@@ -8,7 +8,7 @@
       "unit_id": "sw_unit_nr_hero_commander",
       "unit_name": "Republic Commander",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-hero-commander.md",
       "assets": [
