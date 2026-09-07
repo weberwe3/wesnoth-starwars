@@ -211,6 +211,14 @@ def classify_validation(
     profile_failures = [
         str(name) for name, passed in (profile.get("checks") or {}).items() if not passed
     ]
+    nested_profile_failures = []
+    for name in ("declared_contracts", "historical_retention"):
+        evidence = profile.get(name)
+        if isinstance(evidence, dict) and evidence.get("pass") is False:
+            diagnostic = safe_text(
+                evidence.get("diagnostic"), f"{name} validation failed", 1000
+            )
+            nested_profile_failures.append(f"{name}: {diagnostic}")
     details = []
     if implementer_rc != 0:
         details.append(f"implementation exit code {implementer_rc}")
@@ -218,6 +226,7 @@ def classify_validation(
         details.append("failed checks: " + ", ".join(failed_checks))
     if profile_failures:
         details.append("failed profile checks: " + ", ".join(profile_failures))
+    details.extend(nested_profile_failures)
     if not changed:
         details.append("no repository change was produced")
     return _failure(

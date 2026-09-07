@@ -1116,3 +1116,8 @@ contract check that exact-head CI uses. A candidate with stale event/unit values
 including coordinates moved by a map revision, stops before tester, reviewer,
 push, or PR resources are consumed. Historical-retention validation remains a
 separate gate for previously published behavior.
+
+When either current declared contracts or historical retention fails, the
+bounded, secret-free diagnostic is now included in the recovery handoff. This
+lets the scoped repair worker correct an identified ID, coordinate, or retained
+behavior instead of spending its two attempts on a generic failure message.

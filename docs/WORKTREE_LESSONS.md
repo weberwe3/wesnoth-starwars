@@ -22,6 +22,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** Run the complete declared-contract set inside local add-on validation and include its bounded evidence in the profile result before tester or reviewer dispatch.
 - **Prevention:** A regression forces local validation to fail when syntax and historical retention pass but a declared gameplay contract does not; coordinate-changing tickets must update every affected event-unit expectation in their allowed contract file.
 
+### 2026-09-07 — recovery worker received only a generic contract failure
+
+- **Symptom:** The new local declared-contract gate correctly stopped a stale coordinate, but both bounded AI repair attempts made no correction and the worktree retry counter advanced.
+- **Cause:** Failure classification inspected only the add-on validator's top-level check map. It omitted the nested declared-contract diagnostic, so the recovery worker was told only that deterministic validation failed.
+- **Resolution:** Include bounded diagnostics from failed declared-contract and historical-retention evidence in the coordinator's corrective handoff.
+- **Prevention:** Regression coverage requires the exact safe contract diagnostic to reach recovery classification; verbose process output and secrets remain excluded.
+
 ### 2026-09-07 — recode branch disappeared after repository branch count exceeded 100
 
 - **Symptom:** Recode with AI claimed an exact failed-ticket pull request was no longer open, and re-enabling automation paused with a yellow no-safe-ticket warning even though the PR, commit, branch, and managed worktree still existed.
