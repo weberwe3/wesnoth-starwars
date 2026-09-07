@@ -10,6 +10,7 @@ let guidanceDirty = false;
 let guidanceSaveTimer = null;
 let ticketCatalogReady = false;
 const expandedDetails = new Set();
+const nodeScrollPositions = new Map();
 const plannedTickets = new Map();
 const fragmentAccess = new URLSearchParams(location.hash.slice(1)).get("access");
 const fragmentToken = fragmentAccess && /^[A-Za-z0-9_-]{32,128}$/.test(fragmentAccess) ? fragmentAccess : "";
@@ -59,7 +60,9 @@ function loadPlannedTickets(catalog) {
 }
 
 function renderQueue(control) {
-  const records = control.approval_queue || [];
+  // The server retains live records and rolls terminal history to ten. The
+  // client cap keeps a stale browser response equally compact.
+  const records = (control.approval_queue || []).slice(-10);
   const batches = control.approval_batches || [];
   const firstReady = records.find(item => item.state === "ready")?.id;
   const ticketActive = ["planning", "executing", "publishing"].includes(control.run?.state);
@@ -88,8 +91,8 @@ function renderQueue(control) {
       ? `<p class="queue-warning">Deletes ${item.deleted_paths.length} file(s); Codex approval is required before commit.</p>` : "";
     return `<article class="queue-card state-${esc(item.state)}">
       <div class="queue-summary"><div><span class="queue-ticket">${esc(item.ticket_id)}</span><h3>${esc(item.purpose)}</h3><p>${esc(item.impact)}</p></div>
-      <div class="queue-action"><span class="state-tag">${esc(displayState(item.state))}</span>
-        ${needsRecovery ? `<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="delete-stale-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" data-ticket-id="${esc(item.ticket_id)}" data-branch="${esc(item.branch)}" ${recoverable && !controlBusy ? "" : "disabled"}>Delete code &amp; entry</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
+      <div class="queue-action"><span class="state-tag queue-state ${item.state === "published" ? "is-published" : ""}">${esc(displayState(item.state))}</span>
+        ${item.state === "published" ? `<span class="publication-proof">Published to protected main${item.pr_number ? ` · PR #${esc(item.pr_number)}` : ""}</span>` : needsRecovery ? `<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="delete-stale-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" data-ticket-id="${esc(item.ticket_id)}" data-branch="${esc(item.branch)}" ${recoverable && !controlBusy ? "" : "disabled"}>Delete code &amp; entry</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
       </div></div>
       <details class="persistent-details" data-detail-id="queue-${esc(item.id)}" ${expandedDetails.has(`queue-${item.id}`) ? "open" : ""}><summary>Ticket impact and publication evidence</summary><div class="queue-details">
         <div><strong>Original ticket description</strong><p>${esc(item.original_objective || item.impact)}</p></div>
@@ -182,6 +185,14 @@ function branchConnector(data, phase) {
 
 function renderFlow(data) {
   const flow = $("flow");
+  for (const panel of flow.querySelectorAll(".node-instructions pre")) {
+    const role = panel.closest("[data-role]")?.dataset.role;
+    if (role) {
+      nodeScrollPositions.set(role, {
+        top: panel.scrollTop, left: panel.scrollLeft, content: panel.textContent,
+      });
+    }
+  }
   flow.replaceChildren();
   flow.append(makeNode(data, "coordinator"));
   flow.append(branchConnector(data, "split"));
@@ -195,6 +206,18 @@ function renderFlow(data) {
     flow.append(connector(data, [source], [target]));
   }
   flow.append(makeNode(data, "reviewer-fallback"));
+  requestAnimationFrame(() => {
+    for (const panel of flow.querySelectorAll(".node-instructions pre")) {
+      const role = panel.closest("[data-role]")?.dataset.role;
+      const saved = role ? nodeScrollPositions.get(role) : null;
+      // Refreshes preserve the reader's place only while the coordinator
+      // direction remains the same; new instructions intentionally start at top.
+      if (saved && saved.content === panel.textContent) {
+        panel.scrollTop = saved.top;
+        panel.scrollLeft = saved.left;
+      }
+    }
+  });
 }
 
 function render(data) {
