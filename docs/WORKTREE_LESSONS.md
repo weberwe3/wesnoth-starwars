@@ -63,3 +63,10 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** A direct WSL dashboard restart omitted `WESNOTH_AGENT_WORKTREE_ROOT`, so it used the legacy Linux root while the Windows-launched secure bridge retained the native Windows-backed root.
 - **Resolution:** `agent/dashboard/start-dashboard.sh` now defaults to the supported Windows-backed root when no launcher value was inherited. The inherited launcher value remains authoritative and the existing exact-branch migration still preserves legacy work safely.
 - **Prevention:** Before autonomous dispatch, dashboard and bridge must use `/mnt/c/Users/<Windows user>/Documents/Codex/WesnothAgentWorktrees`; never weaken the managed-root guard or accept an arbitrary worktree path.
+
+### 2026-09-07 — historical scenario identity renamed during an AI recode
+
+- **Symptom:** A recoded historical gameplay ticket passed its original local add-on checks but exact-head CI rejected it because published commit c61c0dc41821 no longer retained 01_First_Battle.
+- **Cause:** The repair renamed an established scenario id and its campaign first_scenario target to apply the newer sw_ naming convention. That treated a published compatibility contract as a new identifier and did not run historical-retention validation locally.
+- **Resolution:** Preserve established published WML identifiers and campaign targets; the sw_ convention applies to newly introduced project-owned identifiers. wesnoth-addon-static local validation now runs the same historical-retention check required by CI before a candidate reaches review or publication.
+- **Prevention:** Do not rename a gameplay id, first_scenario, or other published compatibility symbol for style alone. Require local historical-retention PASS for every add-on candidate.

@@ -1037,7 +1037,7 @@ Do not stop merely because the first documented priority is already queued; stop
 when no safe non-overlapping priority can proceed without an unmerged dependency.
 Describe its user-visible or mod-facing impact separately from its implementation summary.
 Python will validate your JSON, create the isolated worktree, invoke workers, run gates, and stop before commit/push/merge.
-Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must also update addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json with a compact contract for each changed gameplay source. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Python will reject publication when a changed gameplay source has no passing contract.
+Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must also update addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json with a compact contract for each changed gameplay source. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Existing published gameplay IDs, including campaign first_scenario targets, are compatibility contracts: never rename or remove them solely to apply a naming convention. Python runs historical-retention validation locally and rejects a candidate that breaks one.
 Set ticket.resume_branch to the exact branch from resumable_local_work when continuing remnants.
 For resumable_pull_requests, also copy its exact number and head_sha into
 ticket.resume_pr_number and ticket.resume_pr_head_sha. Published history must only
@@ -1230,8 +1230,9 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "worker": "implementer",
                 "objective": (
                     "Repair the first confirmed failure from the one-time chronological historical "
-                    "gameplay validation. Preserve current add-on architecture and correct only the "
-                    "bounded failed gameplay contract or engine diagnostic."
+                    "gameplay validation. Preserve every established published path and WML id, "
+                    "including campaign first_scenario targets; do not rename them for naming-style "
+                    "reasons. Correct only the bounded failed gameplay contract or engine diagnostic."
                 ),
                 "allowed_paths": paths or [ADDON_ROOT + "/**"],
                 "validation_profile": "wesnoth-addon-static",
