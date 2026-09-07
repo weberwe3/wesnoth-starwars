@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-07 — recode branch disappeared after repository branch count exceeded 100
+
+- **Symptom:** Recode with AI claimed an exact failed-ticket pull request was no longer open, and re-enabling automation paused with a yellow no-safe-ticket warning even though the PR, commit, branch, and managed worktree still existed.
+- **Cause:** The planning inventory silently indexed only the first 100 local `agent/*` refs. Once the repository exceeded that count, newer PR branches had no local-head entry and were excluded from both resumable and replaceable candidates. Normal automation also did not deterministically adopt an eligible failed publication record for recode.
+- **Resolution:** Index the complete local agent-ref set up to an explicit 1,000-branch safety bound, fail clearly above that bound, and make continuous automation select the oldest non-deleting failed publication for exact-record recode before new planning.
+- **Prevention:** Regression coverage forbids the former 100-ref slice and verifies that toggle-driven recovery selects the earliest eligible failed record while preserving manual approval for deletion-bearing failures.
+
 ### 2026-09-07 — blocked planner launched a guaranteed-conflicting backlog call
 
 - **Symptom:** The dashboard remained in generic Planning for several minutes after Sol had already identified an open PR and failed queue record owning the requested Mission 1 files.

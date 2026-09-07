@@ -1096,3 +1096,17 @@ pass. This does not rewrite its original failed-run verdict, manufacture a PASS,
 publish a no-op commit, or delete remnants. Changed branch heads or dirty files
 invalidate its exclusion from future resume selection. The reusable failure
 analysis and regression expectations are in `docs/WORKTREE_LESSONS.md`.
+
+### 2026-09-07 — failed-ticket recode continuity
+
+Failed, non-deleting approval-queue entries are now deterministic recovery work
+when continuous automation is re-enabled. The coordinator selects the oldest
+eligible exact record before requesting any new ticket plan, preserves its
+original objective and scope, and retains the existing three-failure worktree
+ceiling. Deletion-bearing failures still require their explicit manual boundary.
+
+Managed `agent/*` ref discovery no longer silently discards every branch after
+the first 100. It inventories all refs up to an explicit 1,000-ref safety ceiling
+and stops with a truthful capacity diagnostic above that bound. This keeps an
+open failed-ticket PR, its exact commit, and its managed worktree resumable as
+the repository accumulates autonomous ticket history.
