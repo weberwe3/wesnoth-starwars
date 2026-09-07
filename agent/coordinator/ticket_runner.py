@@ -111,6 +111,23 @@ def build_worktree_lessons_prompt(root: Path) -> str:
     )
 
 
+def resolve_opencode() -> str | None:
+    """Find the installed worker binary without relying on login-shell PATH.
+
+    Secure bridge requests intentionally use a non-login shell so that only the
+    generated bootstrap is executed. That shell must not depend on ~/.profile
+    to discover the locally installed, executable OpenCode binary.
+    """
+
+    discovered = shutil.which("opencode")
+    if discovered:
+        return discovered
+    candidate = Path.home() / ".opencode" / "bin" / "opencode"
+    if candidate.is_file() and not candidate.is_symlink() and os.access(candidate, os.X_OK):
+        return str(candidate)
+    return None
+
+
 def resolve_codex_executable() -> str | None:
     """Resolve the trusted Codex install in normal and stripped WSL environments."""
 
@@ -1793,7 +1810,7 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
         + build_worktree_lessons_prompt(root)
     )
 
-    opencode = shutil.which("opencode")
+    opencode = resolve_opencode()
     if not opencode:
         print("ERROR: opencode not found in PATH.")
         status.fail_system("Ticket runner stopped: OpenCode unavailable")

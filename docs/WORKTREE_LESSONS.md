@@ -22,6 +22,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** When—and only when—the inherited bootstrap matches the strict per-run managed-runtime path, the launcher invokes that script directly. All normal manual launches retain their interactive login shell.
 - **Prevention:** The bridge must distinguish “heartbeat online” from “bootstrap executed”; retain the result-file gate and report bootstrap failures as secure-bridge infrastructure, never as a model or ticket failure.
 
+### 2026-09-07 — bridge bootstrap could not find OpenCode
+
+- **Symptom:** After the bootstrap execution repair, a ticket stopped immediately with `OpenCode unavailable` before a worktree or ticket log was created.
+- **Cause:** The secure bootstrap correctly runs in a non-login shell, but the prior OpenCode discovery relied on `/home/willj/.profile` adding its binary directory to `PATH`.
+- **Resolution:** Resolve OpenCode through `PATH` when available, then through the verified executable at the current user's `.opencode/bin/opencode` path. Refuse non-executable or symlink candidates.
+- **Prevention:** Secure runner dependencies must be resolved explicitly in Python, not implicitly through interactive/login shell startup files.
+
 ### 2026-09-06 — empty scenario after apparently successful startup
 
 - **Symptom:** First Battle opened on a small empty map and immediately ended. The installed engine log reported `error engine/team_construction: game_error: unknown unit type` for the scenario leader and squads.
