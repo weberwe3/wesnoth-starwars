@@ -192,7 +192,7 @@ class ApprovalQueue:
     def public_state(self) -> dict[str, Any]:
         state = self.read()
         allowed = {
-            "id", "ticket_id", "purpose", "impact", "dependency_index",
+            "id", "ticket_id", "purpose", "impact", "original_objective", "dependency_index",
             "changed_paths", "deleted_paths", "branch", "base_sha", "commit_sha",
             "state", "created_at", "updated_at", "validation", "reviewer",
             "pr_number", "pr_url", "merge_sha", "error", "deletion_request",
@@ -364,6 +364,9 @@ class ApprovalQueue:
             "ticket_id": ticket["task_id"],
             "purpose": (summary or ticket["objective"])[:500],
             "impact": (impact or ticket["objective"])[:1200],
+            # Preserve the exact owner/coordinator contract for a later repair.
+            # Summaries are helpful for scanning, but must never replace it.
+            "original_objective": ticket["objective"][:2000],
             "dependency_index": len(queue_state["records"]) + 1,
             "changed_paths": changed_paths,
             "deleted_paths": deleted_paths,
