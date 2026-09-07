@@ -10,6 +10,7 @@ let guidanceDirty = false;
 let guidanceSaveTimer = null;
 let ticketCatalogReady = false;
 let artQueueSnapshot = null;
+const artImportOutcomes = new Map();
 const expandedDetails = new Set();
 const nodeScrollPositions = new Map();
 const plannedTickets = new Map();
@@ -38,7 +39,10 @@ function displayState(value) { return safe(value, "idle").replaceAll("_", " ").r
 
 function renderArtQueue(queue) {
   artQueueSnapshot = queue;
-  const jobs = Array.isArray(queue?.jobs) ? queue.jobs : [];
+  // Completed art is retained in the manifest and activity log, but leaves the
+  // working queue so the panel remains an actionable rolling list.
+  const jobs = (Array.isArray(queue?.jobs) ? queue.jobs : [])
+    .filter(job => job?.state !== "complete");
   const pending = Number.isInteger(queue?.pending) ? queue.pending : 0;
   const complete = Number.isInteger(queue?.complete) ? queue.complete : 0;
   $("art-queue-summary").textContent = `${pending} awaiting art · ${complete} complete`;
@@ -46,9 +50,18 @@ function renderArtQueue(queue) {
   $("art-queue").innerHTML = jobs.map(job => {
     const prompt = safe(job.prompt_path, "");
     const canCopy = typeof job.brief === "string" && job.brief.length > 0;
+    const confirmed = job.state === "complete";
+    const outcome = artImportOutcomes.get(job.id);
+    const status = outcome || (confirmed
+      ? "Complete: validated assets are wired into the unit."
+      : job.import_ready
+        ? "Ready to confirm: every required asset and WML reference has passed the import check."
+        : job.requires_llm
+          ? "WML wiring needs a bounded repair ticket before this art set can be activated."
+          : "Generate and place every required asset, then confirm the import here.");
     return `<article class="art-job ${esc(job.state, "pending").toLowerCase()}">
       <div><strong>${esc(job.unit_name || job.unit_id)}</strong><small>${esc(displayState(job.state))} · ${esc(job.asset_count)} required PNGs</small></div>
-      <div class="art-job-actions"><code>${esc(prompt)}</code><button type="button" class="copy-art-brief" data-art-id="${esc(job.id, "")}" ${canCopy ? "" : "disabled"}>Copy $imagegen brief</button></div>
+      <div class="art-job-actions"><code>${esc(prompt)}</code><p class="art-import-status ${job.import_ready || confirmed ? "ready" : job.requires_llm || outcome ? "attention" : ""}">${esc(status)}</p><div class="art-buttons"><button type="button" class="copy-art-brief" data-art-id="${esc(job.id, "")}" ${canCopy ? "" : "disabled"}>Copy $imagegen brief</button><button type="button" class="confirm-art-import" data-art-id="${esc(job.id, "")}" ${!confirmed && !controlBusy && controlToken ? "" : "disabled"}>${confirmed ? "Import confirmed" : "Confirm art import"}</button></div></div>
     </article>`;
   }).join("") || '<p class="empty">No unit art contracts are queued.</p>';
 }
@@ -469,10 +482,35 @@ $("approval-queue").addEventListener("click", event => {
 });
 
 $("art-queue").addEventListener("click", async event => {
-  const button = event.target.closest(".copy-art-brief");
+  const button = event.target.closest(".copy-art-brief, .confirm-art-import");
   if (!button) return;
   const job = (artQueueSnapshot?.jobs || []).find(item => item?.id === button.dataset.artId);
-  if (!job?.brief) return;
+  if (!job) return;
+  if (button.classList.contains("confirm-art-import")) {
+    if (!controlToken || controlBusy) return;
+    controlBusy = true;
+    artImportOutcomes.delete(job.id);
+    renderArtQueue(artQueueSnapshot || {});
+    try {
+      const response = await fetch("/api/control", {
+        method: "POST",
+        headers: apiHeaders({"Content-Type": "application/json", "X-Wesnoth-CSRF": controlToken}),
+        body: JSON.stringify({action: "confirm_art_import", job_id: job.id}),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Art import was not confirmed");
+      artImportOutcomes.set(job.id, result.art_import?.message || "Art import confirmed.");
+      await refresh();
+    } catch (error) {
+      artImportOutcomes.set(job.id, error.message || "Art import was not confirmed.");
+      renderArtQueue(artQueueSnapshot || {});
+    } finally {
+      controlBusy = false;
+      if (artQueueSnapshot) renderArtQueue(artQueueSnapshot);
+    }
+    return;
+  }
+  if (!job.brief) return;
   try {
     await navigator.clipboard.writeText(job.brief);
     button.textContent = "Brief copied";

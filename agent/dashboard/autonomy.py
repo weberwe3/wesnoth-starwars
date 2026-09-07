@@ -24,6 +24,7 @@ from game_validation_state import (
 )
 from gameplay_contracts import validate_historical_retention
 from scenario_launch_selftest import validate_post_publish_game
+from art_pipeline import confirm_art_import
 import recovery_policy
 import ticket_runner
 import worktree_paths
@@ -369,6 +370,24 @@ class AutonomyController:
             return self.store.update(
                 lambda state: state["automation"].update({"guidance": guidance})
             )
+
+    def confirm_art_import(self, job_id: str) -> dict:
+        """Verify a user-provided art set before its state may become complete."""
+
+        if not re.fullmatch(r"art-[a-z0-9-]{1,100}", job_id):
+            raise ControlError("Invalid art-job identifier")
+        with self._lock:
+            if self._pipeline_active():
+                raise ControlError("Wait for the active governed operation to finish")
+            result = confirm_art_import(self.root, job_id)
+            if result["pass"]:
+                self.queue.event(
+                    "Original unit art import confirmed",
+                    level="success",
+                    detail=result["message"],
+                    ticket_id=job_id,
+                )
+            return result
 
     def approve_publish(self, record_id: str, commit_sha: str) -> dict:
         with self._lock:
