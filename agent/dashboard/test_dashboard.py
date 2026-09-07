@@ -2693,6 +2693,58 @@ class PublicationGameValidationTests(unittest.TestCase):
         self.assertEqual(record["main_head"], self.head)
         self.assertNotIn("Old failure", record["evidence"]["diagnostic"])
 
+    def test_passed_history_is_carried_forward_for_dashboard_only_change(self) -> None:
+        previous = self.head
+        source = self.root / "agent" / "dashboard" / "example.py"
+        source.parent.mkdir(parents=True)
+        source.write_text("value = 1\n", encoding="utf-8")
+        self.git("add", str(source.relative_to(self.root)))
+        self.git("commit", "-m", "dashboard only")
+        current = self.git("rev-parse", "HEAD")
+        self.history.write_text(json.dumps({
+            "schema_version": 1, "state": "passed", "main_head": previous,
+            "checked_at": "2026-09-07T00:00:00+00:00", "evidence": {"engine_pass": True},
+        }), encoding="utf-8")
+        with (
+            mock.patch("autonomy.validate_post_publish_game") as engine,
+            mock.patch("autonomy.validate_historical_retention") as retention,
+        ):
+            self.assertIsNone(self.controller._historical_gameplay_repair_proposal({"main_head": current}))
+        engine.assert_not_called()
+        retention.assert_not_called()
+        record = json.loads(self.history.read_text(encoding="utf-8"))
+        self.assertEqual(record["main_head"], current)
+        self.assertEqual(record["validated_main_head"], previous)
+        self.assertEqual(record["equivalent_revision_history"][-1]["non_game_changed_paths"], [
+            "agent/dashboard/example.py"
+        ])
+
+    def test_game_or_validator_change_forces_real_historical_checks(self) -> None:
+        for changed_path in (
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/new.cfg",
+            "agent/coordinator/scenario_launch_selftest.py",
+            "agent/coordinator/gameplay_contracts.py",
+        ):
+            with self.subTest(changed_path=changed_path):
+                previous = self.git("rev-parse", "HEAD")
+                source = self.root / changed_path
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_text(f"# {changed_path}\n", encoding="utf-8")
+                self.git("add", changed_path)
+                self.git("commit", "-m", f"change {source.name}")
+                current = self.git("rev-parse", "HEAD")
+                self.history.write_text(json.dumps({
+                    "schema_version": 1, "state": "passed", "main_head": previous,
+                    "evidence": {"engine_pass": True},
+                }), encoding="utf-8")
+                with (
+                    mock.patch("autonomy.validate_post_publish_game", return_value=self.engine) as engine,
+                    mock.patch("autonomy.validate_historical_retention", return_value=self.retained) as retention,
+                ):
+                    self.assertIsNone(self.controller._historical_gameplay_repair_proposal({"main_head": current}))
+                engine.assert_called_once()
+                retention.assert_called_once()
+
     def test_batch_merge_and_validation_are_atomic_across_restart(self) -> None:
         members = [
             {"id": "1" * 16, "commit_sha": "a" * 40, "state": "publishing"},
