@@ -1592,6 +1592,21 @@ class CoordinationControlTests(unittest.TestCase):
             ):
                 self.assertEqual(ticket_runner.resolve_codex_executable(), str(executable))
 
+    def test_codex_environment_preserves_existing_auth_store_selector(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                "CODEX_HOME": "/mnt/c/Users/fixture/.codex",
+                "WSLENV": "WESNOTH_AGENT_WORKTREE_ROOT/u",
+                "GROQ_API_KEY": "must-be-stripped",
+            },
+            clear=True,
+        ):
+            environment = ticket_runner.codex_environment("/opt/codex")
+        self.assertEqual(environment["CODEX_HOME"], "/mnt/c/Users/fixture/.codex")
+        self.assertIn("CODEX_HOME/p", environment["WSLENV"])
+        self.assertNotIn("GROQ_API_KEY", environment)
+
     def test_installed_codex_path_survives_stripped_secure_environment(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory) / "home" / "fixture-user"
@@ -1694,6 +1709,8 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertIn('forwardWslEnv += "WESNOTH_CODEX_EXE"', text)
         self.assertIn('EnvironmentVariables["WESNOTH_AGENT_WORKTREE_ROOT"]', text)
         self.assertIn('forwardWslEnv += "WESNOTH_AGENT_WORKTREE_ROOT"', text)
+        self.assertIn('EnvironmentVariables["CODEX_HOME"]', text)
+        self.assertIn('forwardWslEnv += "CODEX_HOME/p"', text)
 
     def test_batch_launcher_exports_codex_compatible_worktree_root(self) -> None:
         text = (ROOT / "Start-WesnothAgentEnvironment.cmd").read_text(encoding="utf-8")
@@ -1703,6 +1720,8 @@ class CoordinationControlTests(unittest.TestCase):
             text,
         )
         self.assertIn("WESNOTH_AGENT_WORKTREE_ROOT/u", text)
+        self.assertIn('set "CODEX_HOME=%USERPROFILE%\\.codex"', text)
+        self.assertIn("CODEX_HOME/p", text)
 
     def test_failed_terra_fallback_is_not_recoverable(self) -> None:
         failure = recovery_policy.classify_validation(
