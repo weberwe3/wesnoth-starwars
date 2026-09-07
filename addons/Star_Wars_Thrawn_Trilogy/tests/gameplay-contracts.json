@@ -32,6 +32,18 @@
       "expected_id": "sw_first_battle_eastern_observation"
     },
     {
+      "id": "sw-first-battle-archive-records-acquisition-event",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_first_battle_eastern_observation"
+    },
+    {
+      "id": "sw-first-battle-archive-records-delivery-event",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_first_battle_archive_records_delivery"
+    },
+    {
       "id": "sw-first-battle-infantry-roster",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
