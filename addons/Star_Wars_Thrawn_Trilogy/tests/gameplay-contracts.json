@@ -20,6 +20,12 @@
       "expected_id": "sw_unit_im_rem_stormtrooper"
     },
     {
+      "id": "sw-first-battle-hero-roster",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
+      "expected_id": "sw_unit_nr_hero_commander"
+    },
+    {
       "id": "sw-imperial-reinforcement-turn-four",
       "kind": "event-unit",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
