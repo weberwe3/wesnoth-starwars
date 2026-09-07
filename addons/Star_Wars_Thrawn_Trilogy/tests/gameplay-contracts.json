@@ -40,6 +40,22 @@
         "x": "12",
         "y": "5"
       }
+    },
+    {
+      "id": "sw-signal-jammer-deployment-turn-two",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_signal_jammer_deployment",
+      "expected": {
+        "name": "turn",
+        "turn": "2",
+        "first_time_only": "yes",
+        "unit_id": "sw_first_battle_signal_jammer_team",
+        "side": "2",
+        "type": "sw_unit_im_signal_jammer_team",
+        "x": "12",
+        "y": "6"
+      }
     }
   ]
 }
