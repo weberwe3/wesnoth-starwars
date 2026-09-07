@@ -1,8 +1,9 @@
 @echo off
 setlocal EnableExtensions
 
-rem Launch the campaign from a clean, exact copy of the protected main add-on.
-rem This prevents the Windows test userdata from retaining a stale map/config.
+rem Launch the campaign from an exact copy of the current local main add-on.
+rem This prevents the Windows test userdata from retaining a stale map/config
+rem while still allowing an owner to playtest locally generated original art.
 set "DISTRO=Ubuntu-24.04"
 set "PROJECT_LINUX=/home/willj/projects/wesnoth-starwars"
 set "ADDON_ID=Star_Wars_Thrawn_Trilogy"
@@ -23,19 +24,19 @@ if /i not "%MAIN_BRANCH%"=="main" (
   echo Refusing to launch: the source checkout is not on protected main.
   exit /b 3
 )
-for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% status --porcelain') do set "DIRTY=%%I"
-if defined DIRTY (
-  echo Refusing to launch: the source checkout has uncommitted changes.
-  exit /b 4
-)
+rem Only add-on changes are relevant to this isolated playtest snapshot. The
+rem launcher remains main-only, but may stage locally generated art and its
+rem manifest/WML wiring before those owner changes are published.
+set "LOCAL_ADDON_CHANGES="
+for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% status --porcelain --untracked-files=all -- addons/%ADDON_ID%') do set "LOCAL_ADDON_CHANGES=1"
 for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% rev-parse HEAD') do set "MAIN_SHA=%%I"
 if not defined MAIN_SHA (
-  echo Could not identify the protected main revision.
+  echo Could not identify the current main revision.
   exit /b 5
 )
 for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- wslpath -w %PROJECT_LINUX%/addons/%ADDON_ID%') do set "ADDON_SOURCE=%%I"
 if not exist "%ADDON_SOURCE%\_main.cfg" (
-  echo The protected main add-on source is unavailable.
+  echo The current main add-on source is unavailable.
   exit /b 6
 )
 
@@ -49,7 +50,7 @@ rem /MIR is deliberately limited to this one add-on directory. It removes stale
 rem map/config files, but never touches saves, preferences, logs, or other add-ons.
 robocopy "%ADDON_SOURCE%" "%ADDON_TARGET%" /MIR /COPY:DAT /DCOPY:T /R:2 /W:1 /XJ /NFL /NDL /NJH /NJS >nul
 if errorlevel 8 (
-  echo Could not refresh the test add-on from protected main.
+  echo Could not refresh the test add-on from local main.
   exit /b 8
 )
 if not exist "%ADDON_TARGET%\_main.cfg" (
@@ -57,7 +58,11 @@ if not exist "%ADDON_TARGET%\_main.cfg" (
   exit /b 9
 )
 
-echo Launching Star Wars: Thrawn Trilogy from main %MAIN_SHA%.
+if defined LOCAL_ADDON_CHANGES (
+  echo Launching Star Wars: Thrawn Trilogy from local main %MAIN_SHA% with uncommitted add-on changes.
+) else (
+  echo Launching Star Wars: Thrawn Trilogy from published main %MAIN_SHA%.
+)
 if /i "%WESNOTH_PLAY_VALIDATE_ONLY%"=="1" (
   echo Validation-only mode: the add-on was refreshed and the launch was not started.
   exit /b 0
