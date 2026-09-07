@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-07 — GUI map error was hidden by process-survival validation
+
+- **Symptom:** The published ticket was marked tested, but the Windows play launcher showed `The game map could not be loaded` and identified `center` as a terrain token.
+- **Cause:** The runtime probe treated a still-running Wesnoth GUI process as success and inspected only the primary log stream. A modal map error can leave that process alive, while the launcher’s persistent userdata can retain an older add-on copy.
+- **Resolution:** Validate every quoted `map_data` cell before engine launch, treat the map-parser wording as fatal, inspect both Wesnoth log streams, and make the play launcher refresh the add-on from a clean protected-main checkout before starting the campaign.
+- **Prevention:** A map token longer than four characters or outside the short terrain/overlay form fails deterministic validation; the launcher refuses a dirty/non-main source and limits stale-file removal to the campaign add-on directory.
+
 ### 2026-09-07 — local add-on gate omitted current declared gameplay contracts
 
 - **Symptom:** A recoded map ticket passed local deterministic validation, tester, and reviewer, then exact-head CI rejected moved reinforcement coordinates that no longer matched their declared event-unit contract.
