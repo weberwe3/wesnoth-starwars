@@ -7,6 +7,39 @@ from recovery_policy import safe_text
 
 
 HISTORICAL_GAMEPLAY_VALIDATION_FILE = "historical-gameplay-validation.json"
+GAMEPLAY_VALIDATOR_PATHS = {
+    "agent/coordinator/gameplay_contracts.py",
+    "agent/coordinator/scenario_launch_selftest.py",
+}
+
+
+def gameplay_revalidation_required(changed_paths: list[str]) -> bool:
+    """Return true only when a revision can change installed-game evidence."""
+
+    return any(
+        path == "addons/Star_Wars_Thrawn_Trilogy"
+        or path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+        or path in GAMEPLAY_VALIDATOR_PATHS
+        for path in changed_paths
+    )
+
+
+def carried_forward_record(record: dict, main_head: str, changed_paths: list[str], at: str) -> dict:
+    """Bind still-valid evidence to a descendant with no game-relevant changes."""
+
+    previous_head = record["main_head"]
+    updated = dict(record)
+    updated["main_head"] = main_head
+    updated["validated_main_head"] = record.get("validated_main_head", previous_head)
+    history = list(record.get("equivalent_revision_history") or [])[-19:]
+    history.append({
+        "from_main_head": previous_head,
+        "to_main_head": main_head,
+        "carried_forward_at": at,
+        "non_game_changed_paths": changed_paths[:50],
+    })
+    updated["equivalent_revision_history"] = history
+    return updated
 
 
 def historical_record(main_head: str, engine: dict, retained: dict, checked_at: str) -> dict:

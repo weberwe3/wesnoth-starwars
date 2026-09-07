@@ -17,7 +17,11 @@ import uuid
 
 from coordination_control import ControlStore, VALID_MODES, utc_now
 from approval_queue import ApprovalQueue, QueueError, PUBLISHED_STATES, _atomic_json, _run as queue_run
-from game_validation_state import historical_record
+from game_validation_state import (
+    carried_forward_record,
+    gameplay_revalidation_required,
+    historical_record,
+)
 from gameplay_contracts import validate_historical_retention
 from scenario_launch_selftest import validate_post_publish_game
 import recovery_policy
@@ -1206,6 +1210,8 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             record = {}
         if not force and record.get("schema_version") == 1 and record.get("state") == "passed" and record.get("main_head") == inventory.get("main_head"):
             return None
+        if not force and self._carry_forward_historical_validation(record, inventory.get("main_head"), path):
+            return None
         if force or record.get("state") != "pending_repair" or record.get("main_head") != inventory.get("main_head"):
             self._verify_validation_head(inventory.get("main_head"))
             engine = validate_post_publish_game(self.root)
@@ -1266,6 +1272,49 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         except (ControlError, SystemExit, ValueError):
             return None
         return proposal
+
+    def _carry_forward_historical_validation(
+        self, record: dict, main_head: str, path: Path
+    ) -> bool:
+        """Avoid launching the game after a proven non-game descendant change."""
+
+        previous_head = record.get("main_head")
+        if (
+            record.get("schema_version") != 1
+            or record.get("state") != "passed"
+            or not isinstance(previous_head, str)
+            or not re.fullmatch(r"[0-9a-f]{40}", previous_head)
+            or not isinstance(main_head, str)
+            or not re.fullmatch(r"[0-9a-f]{40}", main_head)
+            or previous_head == main_head
+        ):
+            return False
+        try:
+            self._verify_validation_head(main_head)
+            queue_run(["git", "merge-base", "--is-ancestor", previous_head, main_head], self.root)
+            changed = [
+                item for item in queue_run(
+                    ["git", "diff", "--name-only", "-z", f"{previous_head}..{main_head}"],
+                    self.root, strip=False,
+                ).split("\0")
+                if item and not Path(item).is_absolute() and ".." not in Path(item).parts
+            ]
+        except (QueueError, OSError, subprocess.SubprocessError):
+            return False
+        if gameplay_revalidation_required(changed):
+            return False
+        self._verify_validation_head(main_head)
+        updated = carried_forward_record(record, main_head, changed, utc_now())
+        _atomic_json(path, updated)
+        self.queue.event(
+            "Historical gameplay validation retained after non-game changes",
+            level="success",
+            detail=(
+                "The previously validated add-on and gameplay-validator inputs are unchanged; "
+                f"Wesnoth was not relaunched for {len(changed)} unrelated changed path(s)."
+            ),
+        )
+        return True
 
     def _verify_validation_head(self, main_head: str) -> None:
         if (

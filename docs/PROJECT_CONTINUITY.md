@@ -1056,6 +1056,14 @@ declared gameplay contracts. Deployment still requires exact-head GitHub CI,
 protected PR merge, clean local-main synchronization, and launcher health checks;
 this source ledger does not substitute for those runtime results.
 
+Historical gameplay evidence is now revision-aware. A passing record may move
+forward without starting Wesnoth only when Git proves the new main is its
+descendant and the complete intervening path set changes neither the add-on nor
+the authoritative scenario/gameplay-contract validators. The bounded record
+retains its actual validated revision and an equivalence trail. Divergent or
+missing history, prior failures, add-on changes, and validator changes still
+require the complete engine and chronological-retention checks.
+
 The queue now distinguishes a protected merge from its subsequent installed-game
 result. `published` remains compatible with historical records and is transient
 while new checks run. `published_and_tested` is the green final state only after

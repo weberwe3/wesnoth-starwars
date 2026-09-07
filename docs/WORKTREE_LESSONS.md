@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-07 — non-game deployment caused a full Wesnoth launch sweep
+
+- **Symptom:** Enabling automation after a dashboard-only merge visibly started and stopped Wesnoth once for the campaign and once for every registered scenario.
+- **Cause:** Historical gameplay evidence was keyed only to the complete `main` commit, so every descendant commit invalidated it even when neither add-on content nor its gameplay validators changed.
+- **Resolution:** Carry a passing record forward only across a verified descendant range whose changed paths exclude the add-on and both authoritative gameplay-validation modules; record the bounded equivalence trail.
+- **Prevention:** Regression tests require dashboard-only changes to invoke no engine or retention check, while any add-on, scenario-probe, or gameplay-contract validator change must run both real historical gates.
+
 ### 2026-09-07 — batch publication interrupted during game testing
 
 - **Symptom:** Restarting during a merged batch's engine check could label its earlier members as unpublished failures.
