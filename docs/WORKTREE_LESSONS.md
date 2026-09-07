@@ -29,6 +29,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** Include bounded diagnostics from failed declared-contract and historical-retention evidence in the coordinator's corrective handoff.
 - **Prevention:** Regression coverage requires the exact safe contract diagnostic to reach recovery classification; verbose process output and secrets remain excluded.
 
+### 2026-09-07 — recovery prompt prohibited the inspection it required
+
+- **Symptom:** Luna received the exact stale-coordinate diagnostic but returned blocked twice without editing because the prompt required inspection while prohibiting commands.
+- **Cause:** The workspace-write recovery prompt inherited a blanket “do not execute commands” sentence even though candidate contents are intentionally not embedded and Codex must use bounded read-only commands to inspect them.
+- **Resolution:** Explicitly allow bounded read-only file inspection and in-scope patching for all write workers while continuing to prohibit tests, package managers, network operations, and Git writes.
+- **Prevention:** The shared write-worker command policy is regression-checked and used by both primary implementation and recovery/fallback prompts so their permissions cannot drift.
+
 ### 2026-09-07 — recode branch disappeared after repository branch count exceeded 100
 
 - **Symptom:** Recode with AI claimed an exact failed-ticket pull request was no longer open, and re-enabling automation paused with a yellow no-safe-ticket warning even though the PR, commit, branch, and managed worktree still existed.

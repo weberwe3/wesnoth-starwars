@@ -39,6 +39,13 @@ from server import create_server, public_state  # noqa: E402
 
 
 class RuntimeStatusTests(unittest.TestCase):
+    def test_write_worker_policy_allows_bounded_inspection_but_not_tests(self) -> None:
+        policy = ticket_runner.WRITE_WORKER_COMMAND_POLICY
+        self.assertIn("read-only file inspection commands", policy)
+        self.assertIn("apply patches", policy)
+        self.assertIn("Do not run tests", policy)
+        self.assertIn("Git write commands", policy)
+
     def test_dashboard_launcher_defaults_to_the_secure_native_worktree_root(self) -> None:
         launcher = ROOT / "agent" / "dashboard" / "start-dashboard.sh"
         text = launcher.read_text(encoding="utf-8")
