@@ -18,6 +18,8 @@ ROOT = Path(__file__).resolve().parents[2]
 RUNTIME = ROOT / "agent" / "runtime"
 REQUEST = RUNTIME / "secure-run-request.json"
 ACCEPTED = RUNTIME / "secure-run-request.accepted.json"
+CONTROL = RUNTIME / "coordination-control.json"
+ACTIVE_RUN_STATES = {"planning", "executing", "publishing"}
 RUN_ID = re.compile(r"[a-f0-9]{12}")
 RECOVERY_EFFORTS = {"low", "medium", "high"}
 
@@ -46,6 +48,39 @@ def valid_run_id(value: object) -> str:
     return value
 
 
+def read_request(path: Path) -> dict[str, object] | None:
+    """Return a schema-valid mailbox request, without trusting stale files."""
+    try:
+        request = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(request, dict) or set(request) != {"run_id", "recovery_effort"}:
+        return None
+    try:
+        valid_run_id(request.get("run_id"))
+    except SystemExit:
+        return None
+    effort = request.get("recovery_effort")
+    if effort is not None and effort not in RECOVERY_EFFORTS:
+        return None
+    return request
+
+
+def active_run_id() -> str | None:
+    """Read the one dashboard run allowed to own the native bridge."""
+    try:
+        control = json.loads(CONTROL.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    run = control.get("run") if isinstance(control, dict) else None
+    if not isinstance(run, dict) or run.get("state") not in ACTIVE_RUN_STATES:
+        return None
+    try:
+        return valid_run_id(run.get("run_id"))
+    except SystemExit:
+        return None
+
+
 def main() -> int:
     if len(sys.argv) < 2:
         raise SystemExit("usage: bridge_mailbox.py COMMAND")
@@ -63,24 +98,33 @@ def main() -> int:
         return 0
     if command == "claim" and len(sys.argv) == 2:
         RUNTIME.mkdir(parents=True, exist_ok=True)
+        active_run = active_run_id()
+        accepted = read_request(ACCEPTED) if ACCEPTED.exists() else None
+        # A mailbox is single-consumer. Never allow a request left by an older
+        # dashboard process to be claimed for a different control run.
+        if ACCEPTED.exists() and (accepted is None or accepted.get("run_id") != active_run):
+            ACCEPTED.unlink(missing_ok=True)
+            accepted = None
         if not ACCEPTED.exists() and REQUEST.exists():
+            request = read_request(REQUEST)
+            if request is None or request.get("run_id") != active_run:
+                REQUEST.unlink(missing_ok=True)
+                return 0
             os.replace(REQUEST, ACCEPTED)
-        if not ACCEPTED.exists():
+            accepted = request
+        if not ACCEPTED.exists() or accepted is None:
             return 0
-        try:
-            request = json.loads(ACCEPTED.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            raise SystemExit("ERROR: invalid bridge request") from exc
-        if not isinstance(request, dict) or set(request) != {"run_id", "recovery_effort"}:
-            raise SystemExit("ERROR: invalid bridge request")
-        effort = request.get("recovery_effort")
-        if effort is not None and effort not in RECOVERY_EFFORTS:
-            raise SystemExit("ERROR: invalid recovery effort")
-        print(valid_run_id(request["run_id"]))
+        print(valid_run_id(accepted["run_id"]))
         return 0
     if command == "result" and len(sys.argv) == 3:
         run_id = valid_run_id(sys.argv[2])
-        if (RUNTIME / f"sol-result-{run_id}.json").is_file():
+        accepted = read_request(ACCEPTED)
+        if (
+            accepted is not None
+            and accepted.get("run_id") == run_id
+            and active_run_id() == run_id
+            and (RUNTIME / f"sol-result-{run_id}.json").is_file()
+        ):
             print("ready")
         return 0
     if command == "prepare" and len(sys.argv) == 3:
@@ -89,11 +133,8 @@ def main() -> int:
         result = RUNTIME / f"sol-result-{run_id}.json"
         bridge = ROOT / "agent" / "dashboard" / "secure_ticket_bridge.py"
         bootstrap = RUNTIME / f"secure-bootstrap-{run_id}.sh"
-        try:
-            request = json.loads(ACCEPTED.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            raise SystemExit("ERROR: invalid accepted bridge request") from exc
-        if request.get("run_id") != run_id:
+        request = read_request(ACCEPTED)
+        if request is None or request.get("run_id") != run_id or active_run_id() != run_id:
             raise SystemExit("ERROR: accepted bridge request does not match")
         effort = request.get("recovery_effort")
         if effort is not None and effort not in RECOVERY_EFFORTS:
@@ -110,21 +151,27 @@ def main() -> int:
         return 0
     if command == "failure" and len(sys.argv) == 3:
         run_id = valid_run_id(sys.argv[2])
-        write_json(RUNTIME / f"sol-result-{run_id}.json", {
-            "return_code": 125,
-            "failure": {
-                "class": "secure_bridge_failure",
-                "detail": "The secure ticket process did not return a valid result.",
-                "required_action": "Restart the secure Windows launcher and try again.",
-                "eligible": False,
-                "attempt": 0,
-                "limit": 2,
-            },
-        })
+        result = RUNTIME / f"sol-result-{run_id}.json"
+        # A delayed timeout callback must not overwrite an already-complete
+        # result written by the secure bridge.
+        if not result.exists():
+            write_json(result, {
+                "return_code": 125,
+                "failure": {
+                    "class": "secure_bridge_failure",
+                    "detail": "The secure ticket process did not return a valid result.",
+                    "required_action": "Restart the secure Windows launcher and try again.",
+                    "eligible": False,
+                    "attempt": 0,
+                    "limit": 2,
+                },
+            })
         return 0
     if command == "cleanup" and len(sys.argv) == 3:
         run_id = valid_run_id(sys.argv[2])
-        ACCEPTED.unlink(missing_ok=True)
+        accepted = read_request(ACCEPTED)
+        if accepted is not None and accepted.get("run_id") == run_id:
+            ACCEPTED.unlink(missing_ok=True)
         (RUNTIME / f"secure-bootstrap-{run_id}.sh").unlink(missing_ok=True)
         (RUNTIME / f"secure-run-cancel.{run_id}").unlink(missing_ok=True)
         return 0

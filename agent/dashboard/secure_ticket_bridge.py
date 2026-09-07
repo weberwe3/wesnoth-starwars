@@ -34,6 +34,13 @@ def main() -> int:
         raise SystemExit("usage: secure_ticket_bridge.py TICKET RESULT [RECOVERY_EFFORT]")
     ticket = _runtime_file(sys.argv[1], r"sol-ticket-[a-f0-9]{12}\.json")
     result = _runtime_file(sys.argv[2], r"sol-result-[a-f0-9]{12}\.json")
+    try:
+        ticket_value = json.loads(ticket.read_text(encoding="utf-8"))
+        ticket_id = ticket_value.get("task_id") if isinstance(ticket_value, dict) else None
+    except (OSError, json.JSONDecodeError):
+        ticket_id = None
+    if not isinstance(ticket_id, str) or not re.fullmatch(r"SOL-[A-Za-z0-9-]{4,120}", ticket_id):
+        raise SystemExit("ERROR: ticket has no valid identity")
     runner = ROOT / "agent" / "coordinator" / "ticket_runner.py"
     command = [sys.executable, str(runner), str(ticket)]
     if len(sys.argv) == 4:
@@ -56,7 +63,11 @@ def main() -> int:
         state = json.loads((ROOT / "agent/runtime/dashboard-state.json").read_text(encoding="utf-8"))
         errors = [
             item for item in state.get("events", [])
-            if isinstance(item, dict) and item.get("level") == "error"
+            if (
+                isinstance(item, dict)
+                and item.get("level") == "error"
+                and state.get("job", {}).get("task_id") == ticket_id
+            )
         ]
         if errors:
             event = errors[-1]
@@ -70,7 +81,9 @@ def main() -> int:
             }
     except (OSError, json.JSONDecodeError, TypeError):
         failure = None
-    payload_value = {"return_code": return_code}
+    # The controller rejects a result unless this matches its exact ticket.
+    # This makes stale runtime telemetry unable to masquerade as a new run.
+    payload_value = {"return_code": return_code, "ticket_id": ticket_id}
     if return_code != 0:
         payload_value["failure"] = failure or {
             "class": "secure_bridge_failure" if bridge_error else "ticket_failure",
