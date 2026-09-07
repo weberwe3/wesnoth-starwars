@@ -506,6 +506,18 @@ class AutonomyController:
         automation = self.store.read().get("automation") or {}
         return self._validated_guidance(automation.get("guidance", ""))
 
+    def _set_planning_phase(self, run_id: str, summary: str) -> None:
+        """Publish truthful progress only for the still-active planning request."""
+
+        def update(state: dict) -> None:
+            if (
+                state["run"].get("run_id") == run_id
+                and state["run"].get("state") == "planning"
+            ):
+                state["run"]["summary"] = summary
+
+        self.store.update(update)
+
     def _start_locked(self, brief: str, *, continuous: bool) -> dict:
         brief = self._validated_brief(brief)
         current = self.store.read()
@@ -1103,17 +1115,20 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             key: value for key, value in os.environ.items()
             if not SENSITIVE_ENV.search(key)
         }
-        completed = subprocess.run(
-            command,
-            cwd=self.root,
-            env=environment,
-            input=prompt,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=PLANNER_TIMEOUT_SECONDS,
-            check=False,
-        )
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=self.root,
+                env=environment,
+                input=prompt,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=PLANNER_TIMEOUT_SECONDS,
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise ControlError("Sol ticket selection reached its five-minute limit") from exc
         if completed.returncode != 0:
             raise ControlError(self._planner_failure_detail(completed))
         try:
@@ -1132,8 +1147,6 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 run_id, proposal, brief,
                 fresh_start_authorized=fresh_start_authorized,
             )
-        if proposal["action"] == "stop" and fresh_start_authorized:
-            return self._refill_backlog(run_id, mode, brief, inventory)
         self._cache_plan(
             runtime,
             fingerprint,
@@ -1474,6 +1487,10 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
     ) -> dict:
         """Generate several bounded contracts once, then select them without more planning calls."""
 
+        self._set_planning_phase(
+            run_id,
+            "Sol is generating a four-ticket backlog; this bounded call may take up to five minutes",
+        )
         runtime = self.root / "agent" / "runtime"
         guidance = self._planning_guidance()
         runtime.mkdir(parents=True, exist_ok=True)
@@ -1527,11 +1544,14 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             key: value for key, value in os.environ.items()
             if not SENSITIVE_ENV.search(key)
         }
-        completed = subprocess.run(
-            command, cwd=self.root, env=environment, input=prompt, text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            timeout=PLANNER_TIMEOUT_SECONDS, check=False,
-        )
+        try:
+            completed = subprocess.run(
+                command, cwd=self.root, env=environment, input=prompt, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                timeout=PLANNER_TIMEOUT_SECONDS, check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise ControlError("Sol backlog generation reached its five-minute limit") from exc
         if completed.returncode != 0:
             raise ControlError(self._planner_failure_detail(completed))
         try:

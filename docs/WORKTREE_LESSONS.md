@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-07 — blocked planner launched a guaranteed-conflicting backlog call
+
+- **Symptom:** The dashboard remained in generic Planning for several minutes after Sol had already identified an open PR and failed queue record owning the requested Mission 1 files.
+- **Cause:** In continuous mode, every `stop` response unconditionally launched a second backlog-generation call. Its proposals overlapped the same authoritative ownership and Python rejected all of them.
+- **Resolution:** Honor the first bounded planner's stop. Generate a backlog only through the existing deterministic exhausted-priority path, and display that distinct bounded phase when it is genuinely needed.
+- **Prevention:** Regression coverage requires a stop with pending/owned work to make no refill call; legitimate backlog generation must publish an explicit up-to-five-minute phase instead of appearing motionless.
+
 ### 2026-09-07 — non-game deployment caused a full Wesnoth launch sweep
 
 - **Symptom:** Enabling automation after a dashboard-only merge visibly started and stopped Wesnoth once for the campaign and once for every registered scenario.

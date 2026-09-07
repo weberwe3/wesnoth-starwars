@@ -1064,6 +1064,14 @@ retains its actual validated revision and an equivalence trail. Divergent or
 missing history, prior failures, add-on changes, and validator changes still
 require the complete engine and chronological-retention checks.
 
+Continuous planning now distinguishes selection from backlog generation. A
+planner `stop` caused by pending or owned work is terminal for that scheduler
+turn and no longer triggers a second, inevitably overlapping backlog call.
+Backlog generation remains available only when Python's authoritative priority
+inventory is actually exhausted, and the dashboard labels that bounded phase
+with its five-minute ceiling. This prevents a valid ownership stop from looking
+like an indefinite planning hang or consuming a second Sol request.
+
 The queue now distinguishes a protected merge from its subsequent installed-game
 result. `published` remains compatible with historical records and is transient
 while new checks run. `published_and_tested` is the green final state only after
