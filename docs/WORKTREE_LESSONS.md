@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-07 — local add-on gate omitted current declared gameplay contracts
+
+- **Symptom:** A recoded map ticket passed local deterministic validation, tester, and reviewer, then exact-head CI rejected moved reinforcement coordinates that no longer matched their declared event-unit contract.
+- **Cause:** The local `wesnoth-addon-static` profile checked syntax and historical published retention but did not run `validate_declared_contracts`; CI did, so a current candidate could consume model and publication resources before the mismatch was detected.
+- **Resolution:** Run the complete declared-contract set inside local add-on validation and include its bounded evidence in the profile result before tester or reviewer dispatch.
+- **Prevention:** A regression forces local validation to fail when syntax and historical retention pass but a declared gameplay contract does not; coordinate-changing tickets must update every affected event-unit expectation in their allowed contract file.
+
 ### 2026-09-07 — recode branch disappeared after repository branch count exceeded 100
 
 - **Symptom:** Recode with AI claimed an exact failed-ticket pull request was no longer open, and re-enabling automation paused with a yellow no-safe-ticket warning even though the PR, commit, branch, and managed worktree still existed.

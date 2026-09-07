@@ -1110,3 +1110,9 @@ the first 100. It inventories all refs up to an explicit 1,000-ref safety ceilin
 and stops with a truthful capacity diagnostic above that bound. This keeps an
 open failed-ticket PR, its exact commit, and its managed worktree resumable as
 the repository accumulates autonomous ticket history.
+
+Local `wesnoth-addon-static` validation now executes the same declared gameplay-
+contract check that exact-head CI uses. A candidate with stale event/unit values,
+including coordinates moved by a map revision, stops before tester, reviewer,
+push, or PR resources are consumed. Historical-retention validation remains a
+separate gate for previously published behavior.
