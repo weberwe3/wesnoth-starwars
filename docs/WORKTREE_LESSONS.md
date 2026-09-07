@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-07 — secure bridge accepted a ticket but never ran it
+
+- **Symptom:** Autonomous dispatch ended as `secure_bridge_failure` with “did not return a valid result” despite a fresh bridge heartbeat.
+- **Cause:** The Windows credential launcher starts a login shell for normal interactive use. Login Bash does not load `BASH_ENV`, so the bridge’s generated, allowlisted bootstrap never ran and could not produce its structured result.
+- **Resolution:** When—and only when—the inherited bootstrap matches the strict per-run managed-runtime path, the launcher invokes that script directly. All normal manual launches retain their interactive login shell.
+- **Prevention:** The bridge must distinguish “heartbeat online” from “bootstrap executed”; retain the result-file gate and report bootstrap failures as secure-bridge infrastructure, never as a model or ticket failure.
+
 ### 2026-09-06 — empty scenario after apparently successful startup
 
 - **Symptom:** First Battle opened on a small empty map and immediately ended. The installed engine log reported `error engine/team_construction: game_error: unknown unit type` for the scenario leader and squads.
