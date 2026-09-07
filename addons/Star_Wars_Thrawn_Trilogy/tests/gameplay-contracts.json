@@ -44,6 +44,12 @@
       "expected_id": "sw_first_battle_archive_records_delivery"
     },
     {
+      "id": "sw-first-battle-recon-squad-loss-event",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_first_battle_recon_squad_lost"
+    },
+    {
       "id": "sw-first-battle-infantry-roster",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
