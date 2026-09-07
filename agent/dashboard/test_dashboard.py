@@ -30,6 +30,7 @@ from autonomy import (  # noqa: E402
     BACKLOG_SCHEMA,
     ControlError,
     TICKET_SCHEMA,
+    bounded_agent_branch_lines,
     validate_strict_output_schema,
 )
 import approval_queue  # noqa: E402
@@ -2475,6 +2476,49 @@ class ApprovalQueueTests(unittest.TestCase):
                 controller._queued_context(exclude_id="2" * 16),
                 [],
             )
+
+    def test_automation_selects_oldest_non_deleting_failed_ticket_for_recode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            queue = ApprovalQueue(base, base / "queue.json")
+            controller = AutonomyController(
+                base, ControlStore(base / "control.json"), queue
+            )
+            first_commit = "a" * 40
+            queue._update(lambda state: state["records"].extend([
+                {
+                    "id": "1" * 16, "ticket_id": "DELETE-FAILED",
+                    "commit_sha": "b" * 40, "state": "failed",
+                    "deleted_paths": ["obsolete.txt"],
+                },
+                {
+                    "id": "2" * 16, "ticket_id": "RECODE-FIRST",
+                    "commit_sha": first_commit, "state": "failed",
+                    "deleted_paths": [],
+                },
+                {
+                    "id": "3" * 16, "ticket_id": "RECODE-LATER",
+                    "commit_sha": "c" * 40, "state": "failed",
+                    "deleted_paths": [],
+                },
+            ]))
+
+            selected = controller._automatic_recode_record()
+
+            self.assertIsNotNone(selected)
+            self.assertEqual(selected["ticket_id"], "RECODE-FIRST")
+            self.assertEqual(selected["commit_sha"], first_commit)
+
+    def test_branch_inventory_does_not_drop_entries_after_first_hundred(self) -> None:
+        lines = [f"agent/ticket-{index}|{'a' * 40}" for index in range(101)]
+
+        self.assertEqual(bounded_agent_branch_lines("\n".join(lines)), lines)
+
+    def test_branch_inventory_fails_clearly_above_explicit_safety_bound(self) -> None:
+        lines = [f"agent/ticket-{index}|{'a' * 40}" for index in range(1001)]
+
+        with self.assertRaisesRegex(ControlError, "exceeds the supported safety bound"):
+            bounded_agent_branch_lines("\n".join(lines))
 
     def test_exact_recode_uses_selected_branch_and_recorded_contract_without_sol(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
