@@ -14,6 +14,12 @@
       "expected_id": "01_First_Battle"
     },
     {
+      "id": "sw-first-battle-obroa-skai-map-setup",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_first_battle_obroa_skai_map_setup"
+    },
+    {
       "id": "sw-first-battle-time-over-event",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
@@ -79,8 +85,8 @@
         "unit_id": "sw_im_reinforcement_stormtrooper",
         "side": "2",
         "type": "sw_unit_im_rem_stormtrooper",
-        "x": "12",
-        "y": "5"
+        "x": "16",
+        "y": "6"
       }
     },
     {
@@ -95,8 +101,8 @@
         "unit_id": "sw_first_battle_signal_jammer_team",
         "side": "2",
         "type": "sw_unit_im_signal_jammer_team",
-        "x": "12",
-        "y": "6"
+        "x": "16",
+        "y": "7"
       }
     },
     {
