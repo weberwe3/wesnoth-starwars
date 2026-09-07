@@ -56,6 +56,12 @@
       "expected_id": "sw_first_battle_rifle_cover_position"
     },
     {
+      "id": "sw-first-battle-air-support-sortie",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_air_support_sortie"
+    },
+    {
       "id": "sw-first-battle-hero-roster",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
