@@ -15,6 +15,20 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-07 — batch publication interrupted during game testing
+
+- **Symptom:** Restarting during a merged batch's engine check could label its earlier members as unpublished failures.
+- **Cause:** Only the final cumulative ticket received merge evidence before testing; other members waited for the test to finish.
+- **Resolution:** Atomically persist the confirmed merge and subsequent test outcome to every exact-ID/exact-commit batch member.
+- **Prevention:** Restart regression tests must preserve every member's merge identity without inferring test success; reject changed member identities without partial updates.
+
+### 2026-09-07 — stale historical repairs and premature publication success
+
+- **Symptom:** Historical repair tickets repeatedly failed with no repository changes even after newer main revisions passed game checks. The approval queue showed only Published, without distinguishing a completed engine test from a failed or interrupted test.
+- **Cause:** The planner reused a pending historical failure without comparing its recorded main head to current main. Publication never refreshed that historical record. Separately, the post-publish writer emitted schema 2 while the repair reader accepted only schema 1, so newer repair evidence could be ignored. Queue publication success was recorded before the engine result.
+- **Resolution:** Bind historical evidence to the checked main revision and refresh both installed-game and retention evidence after publication. Accept the supported post-publish schema versions. Record Published and Tested only after the relevant installed-game checks pass; retain the merge with an orange Published / Test failed state on failure or interruption, including for every member of a cumulative batch. Infrastructure failures stop for host recovery rather than inventing a game-code defect.
+- **Prevention:** Exercise successful, failed, interrupted, and changed-head publication tests. A historical repair that produces no change must recheck the current game and history before retrying. Retire only an exact clean managed branch at the verified main head when both checks pass; preserve its worktree and failed-run evidence, record an already-resolved outcome separately, and invalidate that retirement if its branch head or working files change. Ordinary empty candidates still fail, and no missing test becomes an inferred PASS.
+
 ### 2026-09-07 — secure bridge accepted a ticket but never ran it
 
 - **Symptom:** Autonomous dispatch ended as `secure_bridge_failure` with “did not return a valid result” despite a fresh bridge heartbeat.
