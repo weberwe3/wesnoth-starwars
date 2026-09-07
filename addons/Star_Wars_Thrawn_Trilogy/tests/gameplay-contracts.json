@@ -38,6 +38,18 @@
       "expected_id": "sw_unit_nr_rifle_squad"
     },
     {
+      "id": "sw-rifle-squad-ranged-combat-poc",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_nr_rifle_squad"
+    },
+    {
+      "id": "sw-first-battle-rifle-range-guidance",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "01_First_Battle"
+    },
+    {
       "id": "sw-first-battle-hero-roster",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
