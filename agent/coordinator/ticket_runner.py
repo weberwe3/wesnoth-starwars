@@ -255,7 +255,7 @@ def invoke_terra(
     *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
     reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
-    """Run one sandboxed Terra fallback through the Codex application."""
+    """Run one sandboxed Terra worker through the Codex application."""
 
     executable = resolve_codex_executable()
     if not executable:
@@ -326,7 +326,7 @@ def invoke_luna(
     *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
     reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
-    """Run one sandboxed Luna fallback through the Codex application."""
+    """Run one sandboxed Luna worker through the Codex application."""
 
     executable = resolve_codex_executable()
     if not executable:
@@ -334,13 +334,31 @@ def invoke_luna(
         log_file.write_text(output + "\n", encoding="utf-8")
         return 127, output
     windows_binary = executable.lower().endswith(".exe")
+    codex_worktree = _codex_path(worktree, windows_binary)
+    if (
+        sandbox == "workspace-write"
+        and windows_binary
+        and not re.fullmatch(r"[A-Za-z]:\\[^\r\n]+", codex_worktree)
+    ):
+        output = (
+            "Codex write worker requires a native Windows worktree; "
+            "UNC and WSL-only paths are refused before model launch."
+        )
+        log_file.write_text(output + "\n", encoding="utf-8")
+        return recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE, output
     command = [
-        executable, "exec", "-C", _codex_path(worktree, windows_binary),
-        "-s", sandbox, "-m", "gpt-5.6-luna",
+        executable, "exec", "-C", codex_worktree,
+        "-m", "gpt-5.6-luna",
         "-c", f'model_reasoning_effort="{reasoning_effort}"',
         "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
         "--color", "never", "-",
     ]
+    if sandbox == "workspace-write":
+        # Keep write-capable Luna runs on the same audited auto-review path as
+        # Terra. Explicit --sandbox conflicts with current Codex auto-review.
+        command.insert(command.index("--ephemeral"), "--approve-for-me")
+    else:
+        command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
     environment = {
         key: value for key, value in core.make_test_env().items()
         if not re.search(
@@ -356,6 +374,18 @@ def invoke_luna(
         )
         output = completed.stdout or ""
         log_file.write_text(output, encoding="utf-8")
+        reported = re.search(r"(?mi)^sandbox:\s*([^\s]+)", output)
+        approval = re.search(r"(?mi)^approval:\s*([^\s]+)", output)
+        if (
+            sandbox == "workspace-write"
+            and (
+                reported is None
+                or reported.group(1).casefold() not in {"read-only", "workspace-write"}
+                or approval is None
+                or approval.group(1).casefold() != "on-request"
+            )
+        ):
+            return recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE, output
         return completed.returncode, output
     except subprocess.TimeoutExpired as exc:
         output = str(exc.stdout or "") + "\n[COORDINATOR] LUNA FALLBACK TIMEOUT\n"
@@ -426,7 +456,7 @@ def invoke_managed_luna(
     decisive_verdicts: tuple[str, ...] = (),
     reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
-    model = "openai/gpt-5.6-luna"
+    model = f"openai/gpt-5.6-luna-{reasoning_effort}"
     available, wait = policy.before_attempt(model, run_sequence)
     if not available:
         output = (
@@ -1514,6 +1544,7 @@ def evaluate_candidate(
         }
 
     status.handoff("validation", "tester", "Validated change sent to tester")
+    status.set_assignment("tester", "OpenAI", "GPT-5.6 Luna · Medium")
     status.set_worker("tester", "active", "Independent verification")
     validation_evidence = compact_validation_evidence(validation)
     deterministic_context = collect_recovery_context(worktree, ticket)
@@ -1541,7 +1572,7 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
     tester_primary_output = ""
     tester_primary_pass = bool(prior.get("tester_primary_pass")) if resume_stage == "reviewer" else False
     tester_primary_fail = bool(prior.get("tester_primary_fail")) if resume_stage == "reviewer" else False
-    tester_used = prior.get("tester_used", AGENT_MODELS["tester"]) if resume_stage == "reviewer" else AGENT_MODELS["tester"]
+    tester_used = prior.get("tester_used", "openai/gpt-5.6-luna-medium") if resume_stage == "reviewer" else "openai/gpt-5.6-luna-medium"
     tester_rc = prior.get("tester_exit_code") if resume_stage == "reviewer" else None
     tester_output = ""
     tester_pass = bool(prior.get("tester_pass")) if resume_stage == "reviewer" else False
@@ -1550,17 +1581,18 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
     tester_luna_pass = bool(prior.get("tester_luna_pass")) if resume_stage == "reviewer" else False
     tester_luna_fail = bool(prior.get("tester_luna_fail")) if resume_stage == "reviewer" else False
     if resume_stage != "reviewer":
-        tester_primary_rc, tester_primary_output = invoke_managed_agent(
+        status.set_dispatch_prompt("tester", tester_prompt)
+        tester_primary_rc, tester_primary_output = invoke_managed_luna(
             policy=policy,
             run_sequence=run_sequence,
             status=status,
-            opencode=opencode,
             worktree=worktree,
-            agent="tester",
             prompt=tester_prompt,
-            log_file=log_dir / f"tester{suffix}.jsonl",
-            timeout=TESTER_TIMEOUT,
+            log_file=log_dir / f"tester-luna-medium{suffix}.txt",
+            sandbox="read-only",
+            timeout=LUNA_TESTER_TIMEOUT,
             decisive_verdicts=("PASS", "FAIL"),
+            reasoning_effort="medium",
         )
         tester_primary_pass = (
             tester_primary_rc == 0
@@ -1574,24 +1606,26 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
         tester_output = tester_primary_output
         tester_pass = tester_primary_pass
     if resume_stage != "reviewer" and not tester_pass and not tester_primary_fail:
-        status.handoff("tester", "tester", "Luna Medium tester fallback activated")
-        status.set_assignment("tester", "OpenAI", "GPT-5.6 Luna · Medium")
-        status.set_worker("tester", "active", "Independent Luna fallback testing")
+        status.handoff("tester", "tester", "Luna Light tester fallback activated")
+        status.set_assignment("tester", "OpenAI", "GPT-5.6 Luna · Light")
+        status.set_worker("tester", "active", "Independent Luna Light fallback testing")
         luna_tester_prompt = tester_prompt.replace(
             "Do not execute commands, edit files, or use the web.",
             "You may use read-only inspection commands. Do not edit files, run tests, "
             "invoke another agent, or use the web.",
         )
+        status.set_dispatch_prompt("tester", luna_tester_prompt)
         tester_luna_rc, tester_luna_output = invoke_managed_luna(
             policy=policy,
             run_sequence=run_sequence,
             status=status,
             worktree=worktree,
             prompt=luna_tester_prompt,
-            log_file=log_dir / f"tester-luna{suffix}.txt",
+            log_file=log_dir / f"tester-luna-light{suffix}.txt",
             sandbox="read-only",
             timeout=LUNA_TESTER_TIMEOUT,
             decisive_verdicts=("PASS", "FAIL"),
+            reasoning_effort="low",
         )
         tester_luna_pass = (
             tester_luna_rc == 0
@@ -1601,7 +1635,7 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
             tester_luna_rc == 0
             and core.contains_verdict(tester_luna_output, "FAIL")
         )
-        tester_used = "openai/gpt-5.6-luna"
+        tester_used = "openai/gpt-5.6-luna-light"
         tester_rc = tester_luna_rc
         tester_output = tester_luna_output
         tester_pass = tester_luna_pass
@@ -1672,6 +1706,7 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
     primary_output = ""
     primary_approve = False
     primary_request_changes = False
+    status.set_dispatch_prompt("reviewer", reviewer_prompt)
     primary_rc, primary_output = invoke_managed_agent(
         policy=policy,
         run_sequence=run_sequence,
@@ -1720,6 +1755,7 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
             "You may use read-only inspection commands. Do not edit files, invoke another "
             "agent, run tests, or use the web.",
         )
+        status.set_dispatch_prompt("reviewer-fallback", luna_reviewer_prompt)
         luna_reviewer_rc, luna_reviewer_output = invoke_managed_luna(
             policy=policy,
             run_sequence=run_sequence,
@@ -1980,9 +2016,9 @@ Return your normal structured implementation report.
         prior = stage_checkpoint["result"]
         impl_rc = int(prior.get("implementation_exit_code", 0))
         primary_impl_rc = int(prior.get("primary_implementation_exit_code", impl_rc))
-        terra_fallback = prior.get("terra_implementer_fallback") or {
-            "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
-            "reasoning_effort": "medium", "available_at_start": None,
+        worker_fallback = prior.get("worker_fallback") or prior.get("terra_implementer_fallback") or {
+            "used": False, "provider": "OpenAI", "model": "gpt-5.6-luna",
+            "reasoning_effort": "low", "available_at_start": None,
             "exit_code": None,
         }
         implementation_failure = None
@@ -1993,68 +2029,86 @@ Return your normal structured implementation report.
             detail="Implementation and successful earlier gates were not rerun.",
         )
     else:
-        terra_available_at_start = resolve_codex_executable() is not None
-        if terra_available_at_start is False:
+        codex_available_at_start = resolve_codex_executable() is not None
+        if codex_available_at_start is False:
             status.event(
-                "Terra fallback preflight unavailable",
+                "Codex worker preflight unavailable",
                 level="warning",
                 detail="The secure runner could not resolve its launcher-provided Codex executable.",
                 source="coordinator",
             )
 
-        impl_rc, impl_output = invoke_managed_agent(
-            policy=model_policy,
-            run_sequence=run_sequence,
-            status=status,
-            opencode=opencode,
-            worktree=worktree,
-            agent=ticket["worker"],
-            prompt=implementation_prompt,
-            log_file=log_dir / "implementer.jsonl",
-            timeout=IMPLEMENTER_TIMEOUT,
-        )
-
-        primary_impl_rc = impl_rc
-        implementation_failure = None
-        terra_fallback = {
-            "used": False, "provider": "OpenAI", "model": "gpt-5.6-terra",
-            "reasoning_effort": "medium" if ticket["worker"] == "implementer" else "low",
-            "available_at_start": terra_available_at_start,
-            "exit_code": None,
-        }
-        if recovery_policy.should_use_terra_fallback(ticket["worker"], impl_rc, False):
-            terra_effort = terra_fallback["reasoning_effort"]
-            terra_label = f"Terra {terra_effort.title()}"
-            terra_fallback["used"] = True
-            status.handoff("coordinator", ticket["worker"], f"Primary worker to {terra_label} fallback")
-            status.set_assignment(ticket["worker"], "OpenAI", f"GPT-5.6 Terra · {terra_effort.title()}")
-            status.set_worker(ticket["worker"], "active", f"Running single {terra_label} fallback")
-            terra_prompt = implementation_prompt.replace(
-                "Do not execute commands or tests.",
-                "You may use read-only inspection commands and apply patches. Do not run tests, "
-                "package managers, network commands, or Git write commands.",
-            )
-            terra_rc, terra_output = invoke_managed_terra(
+        status.set_dispatch_prompt(ticket["worker"], implementation_prompt)
+        if ticket["worker"] == "implementer":
+            status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
+            impl_rc, impl_output = invoke_managed_terra(
                 policy=model_policy,
                 run_sequence=run_sequence,
                 status=status,
                 worktree=worktree,
-                prompt=terra_prompt,
-                log_file=log_dir / "implementer-terra-fallback.txt",
+                prompt=implementation_prompt,
+                log_file=log_dir / "implementer-terra-medium.txt",
                 sandbox="workspace-write",
                 timeout=TERRA_IMPLEMENTER_TIMEOUT,
-                reasoning_effort=terra_effort,
+                reasoning_effort="medium",
             )
-            terra_fallback["exit_code"] = terra_rc
-            if terra_rc != 0:
-                implementation_failure = recovery_policy.classify_implementer_fallback(
-                    impl_output, primary_impl_rc, terra_output, terra_rc, terra_label
+            primary_label = "Terra Medium Implementer"
+        else:
+            status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Luna · Medium")
+            impl_rc, impl_output = invoke_managed_luna(
+                policy=model_policy,
+                run_sequence=run_sequence,
+                status=status,
+                worktree=worktree,
+                prompt=implementation_prompt,
+                log_file=log_dir / "fast-fix-luna-medium.txt",
+                sandbox="workspace-write",
+                timeout=IMPLEMENTER_TIMEOUT,
+                reasoning_effort="medium",
+            )
+            primary_label = "Luna Medium Fast-Fix"
+
+        primary_impl_rc = impl_rc
+        implementation_failure = None
+        worker_fallback = {
+            "used": False, "provider": "OpenAI", "model": "gpt-5.6-luna",
+            "reasoning_effort": "low",
+            "available_at_start": codex_available_at_start,
+            "exit_code": None,
+        }
+        if recovery_policy.should_use_luna_light_fallback(ticket["worker"], impl_rc, False):
+            worker_fallback["used"] = True
+            status.handoff("coordinator", ticket["worker"], "Primary worker to Luna Light fallback")
+            status.set_assignment(ticket["worker"], "OpenAI", "GPT-5.6 Luna · Light")
+            status.set_worker(ticket["worker"], "active", "Running single Luna Light fallback")
+            luna_prompt = implementation_prompt.replace(
+                "Do not execute commands or tests.",
+                "You may use read-only inspection commands and apply patches. Do not run tests, "
+                "package managers, network commands, or Git write commands.",
+            )
+            status.set_dispatch_prompt(ticket["worker"], luna_prompt)
+            luna_rc, luna_output = invoke_managed_luna(
+                policy=model_policy,
+                run_sequence=run_sequence,
+                status=status,
+                worktree=worktree,
+                prompt=luna_prompt,
+                log_file=log_dir / "implementer-luna-light-fallback.txt",
+                sandbox="workspace-write",
+                timeout=IMPLEMENTER_TIMEOUT,
+                reasoning_effort="low",
+            )
+            worker_fallback["exit_code"] = luna_rc
+            if luna_rc != 0:
+                implementation_failure = recovery_policy.classify_worker_fallback(
+                    impl_output, primary_impl_rc, luna_output, luna_rc,
+                    primary_label=primary_label,
                 )
-            impl_rc = 0 if terra_rc == 0 else recovery_policy.TERRA_FALLBACK_FAILURE
+            impl_rc = 0 if luna_rc == 0 else recovery_policy.WORKER_FALLBACK_FAILURE
             status.set_worker(
-                ticket["worker"], "idle" if terra_rc == 0 else "error",
-                "Terra fallback returned" if terra_rc == 0 else "Terra fallback failed",
-                error=None if terra_rc == 0 else f"Terra exited with code {terra_rc}",
+                ticket["worker"], "idle" if luna_rc == 0 else "error",
+                "Luna Light fallback returned" if luna_rc == 0 else "Luna Light fallback failed",
+                error=None if luna_rc == 0 else f"Luna Light exited with code {luna_rc}",
             )
 
     print(f"[2/5] Implementation exit code: {impl_rc}")
@@ -2099,7 +2153,7 @@ Return your normal structured implementation report.
                 "worker": ticket["worker"],
                 "implementation_exit_code": impl_rc,
                 "primary_implementation_exit_code": primary_impl_rc,
-                "terra_implementer_fallback": terra_fallback,
+                "worker_fallback": worker_fallback,
                 **{key: value for key, value in evaluation.items() if key not in {"pass", "exit_code"}},
                 "recovery_attempts": recovery_attempts,
                 "candidate_digest": candidate_digest(worktree),
@@ -2133,7 +2187,7 @@ Return your normal structured implementation report.
                 "worker": ticket["worker"],
                 "implementation_exit_code": impl_rc,
                 "primary_implementation_exit_code": primary_impl_rc,
-                "terra_implementer_fallback": terra_fallback,
+                "worker_fallback": worker_fallback,
                 **{key: value for key, value in evaluation.items() if key not in {"pass", "exit_code"}},
                 "failure": failure,
                 "recovery_attempts": recovery_attempts,
@@ -2195,7 +2249,7 @@ Return your normal structured implementation report.
                 "reference_package": reference_package, "worker": ticket["worker"],
                 "implementation_exit_code": impl_rc,
                 "primary_implementation_exit_code": primary_impl_rc,
-                "terra_implementer_fallback": terra_fallback,
+                "worker_fallback": worker_fallback,
                 **evaluation,
                 "recovery_attempts": recovery_attempts, "final_verdict": "FAIL",
                 "candidate_digest": candidate_digest(worktree),
@@ -2223,6 +2277,7 @@ Return your normal structured implementation report.
             recovery_limit=recovery_policy.MAX_RECOVERY_ATTEMPTS,
         )
         status.handoff("coordinator", "fast-fix", f"Scoped recovery attempt {attempt} assigned")
+        status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Luna · Medium")
         status.set_worker("fast-fix", "active", plan["corrective_action"])
         repair_prompt = f"""TASK ID: {task_id}
 
@@ -2245,49 +2300,49 @@ COORDINATOR CORRECTIVE ACTION:
 {plan['corrective_action']}
 
 Inspect the existing candidate and make the smallest correction.
-""".strip()
+        """.strip()
         implementation_failure = None
-        impl_rc, fast_fix_output = invoke_managed_agent(
+        status.set_dispatch_prompt("fast-fix", repair_prompt)
+        impl_rc, fast_fix_output = invoke_managed_luna(
             policy=model_policy,
             run_sequence=run_sequence,
             status=status,
-            opencode=opencode,
             worktree=worktree,
-            agent="fast-fix",
             prompt=repair_prompt,
-            log_file=log_dir / f"recovery-{attempt}-fast-fix.jsonl",
+            log_file=log_dir / f"recovery-{attempt}-fast-fix-luna-medium.txt",
+            sandbox="workspace-write",
             timeout=IMPLEMENTER_TIMEOUT,
+            reasoning_effort="medium",
         )
         fast_fix_primary_rc = impl_rc
-        terra_recovery_rc = None
-        if recovery_policy.should_use_terra_fallback("fast-fix", impl_rc, False):
-            status.handoff("fast-fix", "fast-fix", "Fast-Fix to Terra Light fallback")
-            status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Terra · Low")
-            status.set_worker("fast-fix", "active", "Running single Terra Light fallback")
-            terra_repair_prompt = repair_prompt.replace(
+        luna_recovery_rc = None
+        if recovery_policy.should_use_luna_light_fallback("fast-fix", impl_rc, False):
+            status.handoff("fast-fix", "fast-fix", "Fast-Fix to Luna Light fallback")
+            status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Luna · Light")
+            status.set_worker("fast-fix", "active", "Running single Luna Light fallback")
+            luna_repair_prompt = repair_prompt.replace(
                 "Do not execute commands or tests.",
                 "You may use read-only inspection commands and apply patches. Do not run tests, "
                 "package managers, network commands, or Git write commands.",
             )
-            terra_recovery_rc, terra_recovery_output = invoke_managed_terra(
+            status.set_dispatch_prompt("fast-fix", luna_repair_prompt)
+            luna_recovery_rc, luna_recovery_output = invoke_managed_luna(
                 policy=model_policy,
                 run_sequence=run_sequence,
                 status=status,
                 worktree=worktree,
-                prompt=terra_repair_prompt,
-                log_file=log_dir / f"recovery-{attempt}-terra-light.txt",
+                prompt=luna_repair_prompt,
+                log_file=log_dir / f"recovery-{attempt}-fast-fix-luna-light.txt",
                 sandbox="workspace-write",
-                timeout=TERRA_IMPLEMENTER_TIMEOUT,
+                timeout=IMPLEMENTER_TIMEOUT,
                 reasoning_effort="low",
             )
-            impl_rc = terra_recovery_rc
-            if terra_recovery_rc != 0:
-                implementation_failure = recovery_policy.classify_implementer_fallback(
-                    fast_fix_output,
-                    fast_fix_primary_rc,
-                    terra_recovery_output,
-                    terra_recovery_rc,
-                    "Terra Light",
+            impl_rc = luna_recovery_rc
+            if luna_recovery_rc != 0:
+                implementation_failure = recovery_policy.classify_worker_fallback(
+                    fast_fix_output, fast_fix_primary_rc,
+                    luna_recovery_output, luna_recovery_rc,
+                    primary_label="Luna Medium Fast-Fix",
                 )
         status.set_worker(
             "fast-fix",
@@ -2302,7 +2357,7 @@ Inspect the existing candidate and make the smallest correction.
             "corrective_action": plan["corrective_action"],
             "fast_fix_exit_code": impl_rc,
             "fast_fix_primary_exit_code": fast_fix_primary_rc,
-            "terra_light_fallback_exit_code": terra_recovery_rc,
+            "luna_light_fallback_exit_code": luna_recovery_rc,
         })
 
 

@@ -194,29 +194,27 @@ A normal WSL shell is not assumed to contain provider credentials. Provider-depe
 
 ## 5. Current Model Routing
 
-Baseline routing:
+Current routing:
 
 | Role | Provider / model | Purpose |
 |---|---|---|
-| Implementer | Groq - `groq/openai/gpt-oss-120b`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Main bounded implementation work |
-| Fast fix | OpenCode Zen - `opencode/ling-3.0-flash-fin-free`; one fallback: OpenAI `gpt-5.6-terra` at low reasoning | Small mechanical corrections |
-| Tester | Cloudflare Workers AI - `@cf/zai-org/glm-4.7-flash`; one fallback: OpenAI `gpt-5.6-terra` at medium reasoning | Independent read-only test evaluation |
+| Implementer | OpenAI Codex - `gpt-5.6-terra` at medium reasoning; one fallback: `gpt-5.6-luna` at low reasoning | Main bounded implementation work |
+| Fast fix | OpenAI Codex - `gpt-5.6-luna` at medium reasoning; one fallback: `gpt-5.6-luna` at low reasoning | Small mechanical corrections |
+| Tester | OpenAI Codex - `gpt-5.6-luna` at medium reasoning; one fallback: `gpt-5.6-luna` at low reasoning | Independent read-only test evaluation |
 | Primary reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Preferred independent review |
-| Intermediate reviewer | Google - `google/gemini-3.8-flash` | First reviewer fallback for infrastructure/non-decisive primary failure |
-| Second fallback reviewer | Google - `google/gemini-3.6-flash` | Reviewer fallback when Nemotron and Gemini 3.8 Flash are unavailable or non-decisive |
-| Final fallback reviewer | OpenAI Codex - `gpt-5.6-terra` at medium reasoning | Final independent reviewer only when every earlier reviewer is unavailable or non-decisive and Terra did not implement the candidate |
+| Reviewer fallback | OpenAI Codex - `gpt-5.6-luna` at low reasoning | Only when Nemotron is unavailable or non-decisive |
 
 Routing is policy, not permanence. Models may change if availability, capability, retirement, quota, or quality changes. The role separation and fallback rules are more important than any specific model.
 
 Known provider observations:
 
-- Groq GPT-OSS 120B has successfully implemented tickets but may occasionally emit malformed tool-call output. This is a provider/tool-generation failure class, not necessarily a code failure.
-- When the primary GPT-OSS Implementer process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at medium reasoning in the same isolated worktree. When the primary Fast-Fix process fails, the coordinator may invoke exactly one GPT-5.6 Terra fallback at low reasoning in that worktree. Each fallback uses the Codex CLI's auto-reviewed write path from a native Windows-backed worktree, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. It may not test, commit, merge, push, delete, or broaden scope.
-- Codex 0.153.4 reports `sandbox: read-only` for its base command sandbox even when `--approve-for-me` is active and approved patches are applied through automatic review. Python therefore requires a native drive-letter worktree, invokes `--approve-for-me` without the incompatible explicit `--sandbox workspace-write` option, requires `approval: on-request` transcript evidence, and then relies on the process result plus deterministic Git diff, scope, protected-path, validation, tester, and reviewer gates. A UNC or WSL-only worktree, missing approval evidence, or unsupported sandbox report is a local infrastructure hard stop. It must not be recorded as a provider failure or open Terra's two-run provider circuit.
-- A failed Terra fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If Terra produces a candidate but a later deterministic/test/review gate fails, the normal bounded recovery policy applies.
-- When GLM-4.7 Flash is unavailable or returns no decisive tester verdict, the coordinator may invoke Terra Medium once as the independent read-only tester fallback. A substantive GLM `FAIL` remains authoritative and must not be bypassed. Terra must be withheld from testing when Terra implemented the candidate, and Terra must be withheld from final review when it already tested the candidate.
+- Terra Medium is the primary implementation model. Luna Medium is used for bounded Fast-Fix and independent Tester work; deterministic validation remains model-free.
+- When an Implementer, Fast-Fix, Tester, or Reviewer invocation is unavailable or non-decisive, the coordinator may invoke exactly one GPT-5.6 Luna Light fallback for that same stage. A substantive `FAIL` or `REQUEST_CHANGES` is authoritative and must not be bypassed. Write-capable Terra and Luna calls use the Codex CLI's auto-reviewed write path from a native Windows-backed worktree, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. They may not test, commit, merge, push, delete, or broaden scope.
+- Codex 0.153.4 reports `sandbox: read-only` for its base command sandbox even when `--approve-for-me` is active and approved patches are applied through automatic review. Python therefore requires a native drive-letter worktree, invokes `--approve-for-me` without the incompatible explicit `--sandbox workspace-write` option, requires `approval: on-request` transcript evidence, and then relies on the process result plus deterministic Git diff, scope, protected-path, validation, tester, and reviewer gates. A UNC or WSL-only worktree, missing approval evidence, or unsupported sandbox report is a local infrastructure hard stop. It must not be recorded as a provider failure or open a Codex worker two-run provider circuit.
+- A failed Luna Light fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If a worker produces a candidate but a later deterministic, test, or review gate fails, the normal bounded recovery policy applies.
+- The Tester uses Luna Medium in a read-only sandbox and may use Luna Light once when unavailable or non-decisive. A substantive tester `FAIL` remains authoritative and must not be bypassed. The Reviewer uses independent Nemotron first and may use Luna Light once only for an unavailable or non-decisive primary review.
 - Implementer and Fast-Fix agents must inspect large source files through targeted search and reads of no more than 120 lines per call rather than requesting an entire large file. Tester/reviewer reads are bounded to 160 lines. This keeps provider context/token limits from turning ordinary scoped work into avoidable infrastructure failures.
-- A Gemini reviewer may hit free-tier `429 RESOURCE_EXHAUSTED` limits and time out. The reviewer order is Nemotron, Gemini 3.8 Flash, Gemini 3.6 Flash, then Terra Medium when reviewer independence permits it.
+- Nemotron 3 120B is the independent primary reviewer. Luna Light is its only configured fallback; unavailable legacy Google routes are not used in unattended review.
 - A primary or intermediate reviewer returning substantive `REQUEST_CHANGES` must not be bypassed by asking a later fallback reviewer for a more favorable answer.
 - Retired or unavailable provider model IDs must be treated as infrastructure failures and corrected deliberately, not silently rerouted in a way that weakens review policy.
 
@@ -225,6 +223,13 @@ coordinator's validated planning inventory. It contains pending static and
 generated tickets only, refreshes while the dashboard is open, and removes a
 ticket after publication evidence marks it complete. This display performs no
 model call and does not replace Python's ticket validation at execution time.
+
+For each model-backed worker, the dashboard records and displays the exact
+coordinator dispatch text actually supplied to that worker. This is a
+redacted runtime record, not a reconstructed summary: credential-like values
+are removed before it enters shared dashboard state. The record makes the
+role's current instruction auditable without exposing environment values or
+implying that a worker received only the original ticket prose.
 
 ## 6. OpenCode Agent Security Model
 
@@ -254,7 +259,7 @@ Security rules:
 - tester/reviewer roles are read-only;
 - deterministic test execution belongs to Python, not the LLM worker.
 
-The Terra Implementer fallback is a narrowly authorized exception to the OpenCode worker tool profile. Codex runs through automatic review in a native Windows-backed managed worktree, with no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Its base shell may remain read-only while approved patch operations write through the application review path. Deterministic Git diff, scope, and protected-path gates remain authoritative immediately after it returns; patch approval never grants publication or governance authority.
+Write-capable Terra and Luna worker calls are narrowly authorized exceptions to the OpenCode worker tool profile. Codex runs through automatic review in a native Windows-backed managed worktree, with no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Its base shell may remain read-only while approved patch operations write through the application review path. Deterministic Git diff, scope, and protected-path gates remain authoritative immediately after it returns; patch approval never grants publication or governance authority.
 
 Tool denial is an application-level security boundary. It is not claimed to be equivalent to a separately virtualized OS sandbox.
 
@@ -551,8 +556,8 @@ coordinator must minimize usage without weakening gates by:
   and planned-priority inventory have an identical fingerprint;
 - using compact reference digests, planning inventory, allowed-path lists, and
   validation summaries in model prompts;
-- preferring the free Fast-Fix role for mechanical one- or two-file work while
-  retaining GPT-OSS for substantive implementation;
+- using Luna Medium for mechanical Fast-Fix work and Terra Medium for
+  substantive implementation;
 - waiting at least 60 seconds between completed autonomous tickets to avoid
   predictable rolling per-minute quota failures and unnecessary fallbacks; and
 - invoking reviewer fallbacks only for infrastructure/non-decisive outcomes,
@@ -568,15 +573,14 @@ skipped, and a new set is requested only when no generated entry remains safe.
 If the refill model cannot produce any safe bounded implementation contract,
 automation pauses with the specific reason instead of looping or burning tokens.
 
-The ticket runner also applies persistent per-model launch pacing at published
-free-tier ceilings: 30 RPM for Groq GPT-OSS 120B, 40 RPM for NVIDIA Nemotron,
-and 300 RPM for Cloudflare Workers AI GLM. Services that publish only an
-account- or project-specific active quota remain provider-managed rather than
-receiving an invented repository value. A timeout, quota error, process error,
-or non-decisive response opens that model's circuit for the next two worktree
-runs. A valid negative content verdict is not a provider failure and does not
-open the circuit. State is persisted in the ignored runtime directory so a
-new runner process cannot immediately repeat a known failing provider call.
+The ticket runner applies persistent per-model launch pacing at the published
+40 RPM Nemotron ceiling. Codex account usage remains account-managed. A timeout,
+quota error, process error, or non-decisive response opens that exact policy
+route's circuit for the next two worktree runs; Luna Medium and Luna Light are
+tracked separately so the one configured fallback remains available. A valid
+negative content verdict is not a provider failure and does not open a circuit.
+State is persisted in the ignored runtime directory so a new runner process
+cannot immediately repeat a known failing provider call.
 
 Cache entries contain no credentials or raw prompts, expire automatically, and
 are invalidated by any authoritative inventory change. Resource saving must

@@ -65,7 +65,7 @@ def public_state(state: object) -> dict:
             if isinstance(worker, dict):
                 public["workers"][role] = {key: worker.get(key) for key in (
                     "label", "provider", "model", "assignment_error", "state",
-                    "task", "started_at", "error",
+                    "task", "dispatch_prompt", "started_at", "error",
                 )}
             else:
                 public["workers"][role] = fallback["workers"][role]

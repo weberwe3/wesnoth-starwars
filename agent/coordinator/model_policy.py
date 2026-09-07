@@ -23,29 +23,38 @@ CLOUDFLARE_DAILY_QUOTA_MARKERS = (
 # None means the service publishes only account/project-specific limits, so
 # its own quota remains authoritative rather than inventing a local ceiling.
 MODEL_RPM: dict[str, int | None] = {
+    # Retained while old runtime records age out; these are no longer selected
+    # by the active worker routes.
     "groq/openai/gpt-oss-120b": 30,
     "opencode/ling-3.0-flash-fin-free": None,
     "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash": 300,
     "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b": 40,
     "openai/gpt-5.6-sol": None,
     "openai/gpt-5.6-terra": None,
-    "openai/gpt-5.6-luna": None,
+    "openai/gpt-5.6-luna": None,  # legacy persisted route key
+    # The Codex CLI exposes Luna through one model name, but policy tracks the
+    # reasoning tier separately. A Medium failure must not silently suppress
+    # the explicitly configured Light fallback for the same bounded stage.
+    "openai/gpt-5.6-luna-medium": None,
+    "openai/gpt-5.6-luna-low": None,
 }
 
 MODEL_LIMIT_SOURCE = {
-    "groq/openai/gpt-oss-120b": "published free tier",
-    "opencode/ling-3.0-flash-fin-free": "provider/account assigned",
-    "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash": "published free tier",
+    "groq/openai/gpt-oss-120b": "published free tier (legacy route)",
+    "opencode/ling-3.0-flash-fin-free": "provider/account assigned (legacy route)",
+    "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash": "published free tier (legacy route)",
     "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b": "published free tier",
     "openai/gpt-5.6-sol": "Codex account managed",
     "openai/gpt-5.6-terra": "Codex account managed",
-    "openai/gpt-5.6-luna": "Codex account managed",
+    "openai/gpt-5.6-luna": "Codex account managed (legacy route)",
+    "openai/gpt-5.6-luna-medium": "Codex account managed",
+    "openai/gpt-5.6-luna-low": "Codex account managed",
 }
 
 AGENT_MODELS = {
-    "implementer": "groq/openai/gpt-oss-120b",
-    "fast-fix": "opencode/ling-3.0-flash-fin-free",
-    "tester": "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash",
+    "implementer": "openai/gpt-5.6-terra",
+    "fast-fix": "openai/gpt-5.6-luna-medium",
+    "tester": "openai/gpt-5.6-luna-medium",
     "reviewer": "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
 }
 

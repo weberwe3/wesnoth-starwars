@@ -125,7 +125,7 @@ h2 { margin-bottom: 0; font-size: clamp(1.05rem, 1.6vw, 1.35rem); letter-spacing
 .node-task { margin: .35rem 0 0; color: var(--muted); font-size: .78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .node-instructions { margin-top: .55rem; color: var(--muted); font-size: .72rem; }
 .node-instructions summary { cursor: pointer; color: var(--cyan); font-weight: 700; }
-.node-instructions p { margin: .45rem 0 0; line-height: 1.45; white-space: normal; }
+.node-instructions pre { margin: .45rem 0 0; max-block-size: 20rem; overflow: auto; color: var(--muted); font: inherit; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
 .queue-details p { margin: .35rem 0 0; color: var(--muted); line-height: 1.45; }
 .node-provider { color: var(--muted); font-size: .72rem; text-align: right; }
 .connector { width: 2px; height: 2.1rem; position: relative; background: var(--line); overflow: hidden; }
