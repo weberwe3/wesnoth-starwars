@@ -69,10 +69,14 @@ external-map prose/comment lines, including a hash-prefixed line containing
 `center`; Wesnoth treats external map files as terrain data rather than WML
 comments. It also treats Wesnoth modal map/parser diagnostics as fatal even
 when the GUI process remains alive. The tracked
-`agent/runtime/Play-WesnothStarWars.cmd` launcher requires a clean `main`
-checkout, refreshes only the campaign add-on in the isolated Windows test
-userdata, and then launches the campaign from that refreshed copy. Manual play
-testing therefore uses the same source revision that was published and tested.
+`agent/runtime/Play-WesnothStarWars.cmd` launcher requires the protected
+`main` branch, refreshes only the campaign add-on in the isolated Windows test
+userdata, and then launches the campaign from that refreshed copy. It also
+intentionally stages uncommitted changes within that add-on so an owner can
+playtest locally generated original art and its WML wiring before publication;
+the launch window identifies that local snapshot. It never stages another
+branch or publishes local work. With no local add-on changes, manual play
+testing uses the same source revision that was published and tested.
 
 ### Secure Codex authentication routing
 
