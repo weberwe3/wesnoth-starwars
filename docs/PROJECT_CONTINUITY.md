@@ -4,8 +4,8 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-06 during installed-Wesnoth launch recovery<br>
-**Main before this snapshot:** `3814748`<br>
+**Last continuity refresh:** 2026-09-07 during installed-Wesnoth map-launch recovery<br>
+**Main before this snapshot:** `2fd57f8`<br>
 **Active governance ticket:** fail-closed Codex workspace-write fallback enforcement<br>
 **Next intended game-development ticket:** coordinator-generated after the documented prototype catalog is exhausted
 
@@ -61,6 +61,16 @@ The project has:
 Scenario validation is complete. The next bounded game ticket should advance the playable scenario skeleton while retaining static and installed-engine checks appropriate to its scope.
 
 Do not reopen the infrastructure/reference design unless a concrete defect or new requirement justifies it. The project is now ready to prioritize actual game development.
+
+### Installed play-launch consistency
+
+The protected publication gate rejects malformed quoted `map_data` cells,
+including prose values such as `center`, and treats Wesnoth modal map/parser
+diagnostics as fatal even when the GUI process remains alive. The tracked
+`agent/runtime/Play-WesnothStarWars.cmd` launcher requires a clean `main`
+checkout, refreshes only the campaign add-on in the isolated Windows test
+userdata, and then launches the campaign from that refreshed copy. Manual play
+testing therefore uses the same source revision that was published and tested.
 
 ### Gameplay-contract validation
 

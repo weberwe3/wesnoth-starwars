@@ -6,6 +6,9 @@ agent-smoke-test.txt
 # Local agent operational data
 agent/logs/
 agent/runtime/
+!agent/runtime/
+agent/runtime/*
+!agent/runtime/Play-WesnothStarWars.cmd
 
 # Python
 __pycache__/

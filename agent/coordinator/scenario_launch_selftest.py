@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from gameplay_contracts import validate_declared_contracts, validate_historical_retention
+from gameplay_contracts import validate_declared_contracts, validate_historical_retention, validate_map_data
 
 
 ADDON_ID = "Star_Wars_Thrawn_Trilogy"
@@ -190,16 +190,51 @@ def run_campaign_startup_probe(
 
 
 def campaign_error_lines(text: str) -> list[str]:
-    """Return bounded fatal configuration diagnostics emitted while loading the add-on."""
+    """Return bounded fatal diagnostics emitted while loading the add-on.
+
+    Wesnoth can keep its GUI process alive while showing a modal map/parser
+    error.  Process survival is therefore not evidence of a successful launch;
+    these messages must fail the probe as well.
+    """
 
     return [
         line.strip() for line in text.splitlines()
         if re.search(
             r"\berror\s+(?:wml|config|engine(?:/[a-z0-9_/-]+)?):|"
-            r"\bgame_error:|\bunknown unit type:",
+            r"\bgame_error:|\bunknown unit type:|"
+            r"the game map could not be loaded|"
+            r"terrain with a string with more than 4 characters|"
+            r"unexpected characters after variable name|"
+            r"could not be loaded:\s*",
             line, re.IGNORECASE,
         )
     ][-40:]
+
+
+def campaign_log_text(userdata: Path) -> str:
+    """Read both Wesnoth diagnostic streams, including GUI-launch output."""
+
+    paths = sorted(
+        (userdata / "logs").glob("wesnoth-*.log"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    paths += sorted(
+        (userdata / "logs").glob("wesnoth-*.out.log"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    chunks: list[str] = []
+    seen: set[Path] = set()
+    for path in paths[:6]:
+        if path in seen:
+            continue
+        seen.add(path)
+        try:
+            chunks.append(path.read_text(encoding="utf-8", errors="replace"))
+        except OSError:
+            continue
+    return "\n".join(chunks)
 
 
 def scenario_sources(root: Path) -> dict[str, Path]:
@@ -329,8 +364,7 @@ def runtime_scenario_probes(root: Path, executable: Path, selected: set[str]) ->
                 executable, userdata, cwd=root, campaign_id=campaign_id,
                 timeout=SCENARIO_RUNTIME_PROBE_SECONDS,
             )
-            logs = sorted((userdata / "logs").glob("wesnoth-*.log"))
-            log_text = "\n".join(path.read_text(encoding="utf-8", errors="replace") for path in logs[-2:])
+            log_text = campaign_log_text(userdata)
             failures = campaign_error_lines(log_text)
             results.append({
                 "scenario_id": scenario_id,
@@ -385,14 +419,7 @@ def validate_post_publish_game(
         staged.parent.mkdir(parents=True)
         shutil.copytree(root / "addons" / ADDON_ID, staged)
         probe = run_campaign_startup_probe(executable, userdata, cwd=root)
-        logs = sorted(
-            (userdata / "logs").glob("wesnoth-*.log"),
-            key=lambda path: path.stat().st_mtime,
-            reverse=True,
-        )
-        log_text = "\n".join(
-            path.read_text(encoding="utf-8", errors="replace") for path in logs[:2]
-        )
+        log_text = campaign_log_text(userdata)
         failures = campaign_error_lines(log_text)
         diagnostic = _bounded_diagnostic(probe.get("diagnostic"), "\n".join(failures))
         evidence["campaign_probe"] = {
@@ -644,6 +671,30 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         )
         self.assertEqual(len(lines), 1)
         self.assertIn("unknown unit type", lines[0])
+
+    def test_modal_map_diagnostics_are_fatal_even_when_the_process_survives(self) -> None:
+        lines = campaign_error_lines(
+            "The game map could not be loaded: A terrain with a string with more than 4 characters has been found, the affected terrain is: center\n"
+        )
+        self.assertEqual(len(lines), 1)
+        self.assertIn("center", lines[0])
+
+    def test_map_data_rejects_prose_terrain_tokens(self) -> None:
+        bad = validate_map_data(Path("."), {
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
+                '[scenario]\nmap_data="Gg,center,Gg^Fp"\n[/scenario]\n'
+            ),
+        })
+        self.assertFalse(bad["pass"])
+        self.assertIn("center", bad["diagnostic"])
+
+    def test_map_data_accepts_short_terrain_and_overlay_codes(self) -> None:
+        good = validate_map_data(Path("."), {
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
+                '[scenario]\nmap_data="Gg,Kh,Gg^Fp"\n[/scenario]\n'
+            ),
+        })
+        self.assertTrue(good["pass"], good["diagnostic"])
 
     def test_runtime_probe_stages_a_one_scenario_campaign(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -16,6 +16,7 @@ ADDON_ROOT = "addons/Star_Wars_Thrawn_Trilogy"
 CONTRACT_FILE = "tests/gameplay-contracts.json"
 MAX_DIAGNOSTIC_CHARS = 6000
 MAX_HISTORICAL_TICKETS = 200
+_TERRAIN_TOKEN = re.compile(r"^[A-Za-z0-9]{1,4}(?:\^[A-Za-z0-9]{1,4})?$")
 
 
 def _bounded(values: list[str]) -> str:
@@ -34,6 +35,71 @@ def _config_files(root: Path) -> dict[str, str]:
         if path.is_file() and not path.is_symlink():
             result[path.relative_to(root).as_posix()] = _read_text(path)
     return result
+
+
+def validate_map_data(root: Path, sources: dict[str, str]) -> dict[str, Any]:
+    """Reject malformed map cells before the installed engine sees them.
+
+    Wesnoth terrain cells are short terrain/overlay identifiers (for example
+    ``Gg`` or ``Gg^Fp``).  A prose label such as ``center`` is not a terrain
+    identifier; the engine reports it only after the player tries to launch a
+    scenario, so keep this check in the deterministic gate as well.
+    """
+    failures: list[dict[str, Any]] = []
+    for source_path, text in sources.items():
+        for match in re.finditer(r"(?s)\bmap_data\s*=\s*\"(.*?)\"", text):
+            path = source_path
+            value = match.group(1)
+            include = re.fullmatch(r"\{~add-ons/([^}]+)\}", value.strip())
+            if include:
+                relative = Path(include.group(1))
+                if ".." in relative.parts:
+                    failures.append({
+                        "path": path,
+                        "row": 1,
+                        "column": 1,
+                        "token": value[:80],
+                        "detail": f"{path}: map_data include escapes the add-on root",
+                    })
+                    continue
+                included_path = root / "addons" / relative
+                try:
+                    value = _read_text(included_path)
+                    path = included_path.relative_to(root).as_posix()
+                except (OSError, ValueError):
+                    failures.append({
+                        "path": path,
+                        "row": 1,
+                        "column": 1,
+                        "token": value[:80],
+                        "detail": f"{path}: referenced map_data file is missing or unreadable",
+                    })
+                    continue
+            for row_number, row in enumerate(value.splitlines(), start=1):
+                if row.lstrip().startswith("#"):
+                    continue
+                for column, cell in enumerate(row.split(","), start=1):
+                    token = cell.strip()
+                    if not token or token == "*":
+                        continue
+                    if not _TERRAIN_TOKEN.fullmatch(token):
+                        failures.append({
+                            "path": path,
+                            "row": row_number,
+                            "column": column,
+                            "token": token[:80],
+                            "detail": (
+                                f"{path}: map_data row {row_number}, column {column} "
+                                f"has invalid terrain token {token!r}; expected a "
+                                "short terrain code such as Gg or Gg^Fp"
+                            ),
+                        })
+    return {
+        "pass": not failures,
+        "failures": failures[:40],
+        "diagnostic": _bounded([item["detail"] for item in failures]),
+        "diagnostic_paths": sorted({item["path"] for item in failures})[:20],
+    }
 
 
 def _event_block(text: str, event_id: str) -> str | None:
@@ -86,7 +152,7 @@ def _contract_result(contract: dict[str, Any], sources: dict[str, str]) -> dict[
 
 def validate_declared_contracts(root: Path, required_paths: list[str] | None = None) -> dict[str, Any]:
     """Validate explicit gameplay behavior contracts against current WML."""
-    evidence: dict[str, Any] = {"schema_version": 1, "kind": "declared-gameplay-contracts", "pass": False, "checks": {"contract_file_present": False, "contract_schema_valid": False}, "contracts": [], "diagnostic": "", "diagnostic_paths": []}
+    evidence: dict[str, Any] = {"schema_version": 1, "kind": "declared-gameplay-contracts", "pass": False, "checks": {"contract_file_present": False, "contract_schema_valid": False, "map_data_syntax": False}, "contracts": [], "diagnostic": "", "diagnostic_paths": []}
     try:
         payload = json.loads(_read_text(root / ADDON_ROOT / CONTRACT_FILE))
     except (OSError, json.JSONDecodeError) as exc:
@@ -103,6 +169,9 @@ def validate_declared_contracts(root: Path, required_paths: list[str] | None = N
     except OSError as exc:
         evidence["diagnostic"] = f"Could not read add-on WML: {exc.__class__.__name__}"
         return evidence
+    map_evidence = validate_map_data(root, sources)
+    evidence["map_data"] = map_evidence
+    evidence["checks"]["map_data_syntax"] = map_evidence["pass"]
     results = [_contract_result(item, sources) for item in contracts]
     failed = [item for item in results if not item["pass"]]
     evidence["contracts"] = results
@@ -114,10 +183,13 @@ def validate_declared_contracts(root: Path, required_paths: list[str] | None = N
     uncovered = sorted(required - covered)
     if uncovered:
         failed.append({"detail": "Missing declared gameplay contract for " + ", ".join(uncovered), "paths": uncovered})
-    evidence["diagnostic"] = _bounded([str(item["detail"]) for item in failed])
+    evidence["diagnostic"] = _bounded(
+        [map_evidence["diagnostic"]] + [str(item["detail"]) for item in failed]
+    )
     evidence["diagnostic_paths"] = sorted({path for item in failed for path in item.get("paths", []) if isinstance(path, str) and path.startswith(ADDON_ROOT + "/")})[:20]
+    evidence["diagnostic_paths"] = sorted(set(evidence["diagnostic_paths"]) | set(map_evidence["diagnostic_paths"]))[:20]
     evidence["required_paths"] = sorted(required)
-    evidence["pass"] = not failed
+    evidence["pass"] = not failed and map_evidence["pass"]
     return evidence
 
 
