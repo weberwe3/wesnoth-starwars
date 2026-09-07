@@ -762,6 +762,97 @@ class CoordinationControlTests(unittest.TestCase):
             command = planner.call_args.args[0]
             self.assertEqual(command[command.index("-m") + 1], "gpt-5.6-terra")
 
+    def test_planner_stop_does_not_launch_a_guaranteed_conflicting_refill(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(runtime / "coordination-control.json"),
+                ApprovalQueue(root, runtime / "approval-queue.json"),
+            )
+            inventory = {
+                "main_head": "a" * 40,
+                "planned_priorities": [{"id": "mission-1", "status": "pending"}],
+                "approval_queue": [{
+                    "id": "b" * 16, "state": "failed",
+                    "changed_paths": ["addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"],
+                }],
+                "open_pull_requests": [{
+                    "number": 108,
+                    "changed_paths": ["addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"],
+                }],
+                "recently_published": [], "resumable_local_work": [],
+                "resumable_pull_requests": [], "replaceable_pull_requests": [],
+                "blocked_local_work": [],
+            }
+            response = {
+                "action": "stop", "summary": "Existing work owns Mission 1",
+                "impact": "Resolve PR #108 first", "ticket": None,
+            }
+
+            def run_planner(command, **_kwargs):
+                output = Path(command[command.index("-o") + 1])
+                output.write_text(json.dumps(response), encoding="utf-8")
+                return subprocess.CompletedProcess(command, 0, "", "")
+
+            with (
+                mock.patch.object(controller, "_planning_inventory", return_value=inventory),
+                mock.patch.object(controller, "_historical_gameplay_repair_proposal", return_value=None),
+                mock.patch.object(controller, "_post_publish_game_repair_proposal", return_value=None),
+                mock.patch.object(ticket_runner, "resolve_codex_executable", return_value="/usr/bin/codex"),
+                mock.patch("autonomy.subprocess.run", side_effect=run_planner),
+                mock.patch.object(controller, "_refill_backlog") as refill,
+            ):
+                proposal = controller._plan(
+                    "abc123def456", "sol-medium", "Continue", fresh_start_authorized=True
+                )
+            self.assertEqual(proposal["action"], "stop")
+            refill.assert_not_called()
+
+    def test_backlog_generation_exposes_its_bounded_planning_phase(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            store = ControlStore(runtime / "coordination-control.json")
+            controller = AutonomyController(
+                root, store, ApprovalQueue(root, runtime / "approval-queue.json")
+            )
+            store.update(lambda state: state.update(run={
+                "state": "planning", "run_id": "abc123def456", "summary": "Selecting",
+                "requested_at": None, "started_at": None, "completed_at": None,
+                "ticket_id": None, "error": None,
+            }))
+            controller._set_planning_phase(
+                "abc123def456", "Sol is generating a four-ticket backlog; bounded to five minutes"
+            )
+            self.assertIn("five minutes", store.read()["run"]["summary"])
+
+    def test_backlog_timeout_is_reported_as_a_bounded_planning_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(runtime / "coordination-control.json"),
+                ApprovalQueue(root, runtime / "approval-queue.json"),
+            )
+            inventory = {
+                "main_head": "a" * 40, "planned_priorities": [],
+                "recently_published": [], "approval_queue": [], "open_pull_requests": [],
+            }
+            with (
+                mock.patch.object(ticket_runner, "resolve_codex_executable", return_value="/usr/bin/codex"),
+                mock.patch("autonomy.subprocess.run", side_effect=subprocess.TimeoutExpired("codex", 300)),
+            ):
+                with self.assertRaisesRegex(ControlError, "five-minute limit"):
+                    controller._refill_backlog(
+                        "abc123def456", "sol-medium", "Continue", inventory
+                    )
+
     def test_completed_priority_retires_failed_historical_contract(self) -> None:
         self.assertTrue(AutonomyController._contract_matches_completed_priority(
             {"task_id": "ENGINE-002", "objective": "Register campaign"},
