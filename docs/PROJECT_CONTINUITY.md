@@ -90,6 +90,30 @@ the existing auth store is absent and never prints credential contents.
 
 Protected-main game publication now requires both the staged installed-Wesnoth preprocess/startup probe and declared gameplay contracts. A contract lives in `addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json` and ties each changed gameplay WML/Lua source to a compact, deterministic expected outcome. `source-id` guards a scenario or unit identity; `event-unit` additionally guards a scripted trigger, its one-shot behavior, and spawned-unit details.
 
+Before either model review or publication, the campaign-loader gate now also verifies that every campaign uses its matching `#ifdef` block, has an add-on `[binary_path]`, registers the add-on `units/` directory inside `[+units]` before scenario includes, and defines every `sw_unit_*` type instantiated by current scenarios. This catches the engine behavior where a terrain map opens but all unit instances are omitted as unknown types.
+
+The same pre-publication evidence now validates campaign entry and transition IDs, duplicate scenario IDs, project-owned image/audio/Lua paths, custom `SW_`/`STAR_WARS_` macro definitions, project Lua-action implementations, and custom-terrain load order. Missing project PNG references are materialized as small original procedural placeholders during candidate validation; the generated files remain ordinary scoped candidate changes and are reviewed, tested, and committed with the ticket. Missing audio, non-PNG art, unsafe paths, or any unsupported resource remain fail-closed for an explicit worker repair rather than being silently substituted with external or proprietary content.
+
+### Original unit-art production
+
+Each newly added or changed custom unit now receives one bounded original-art
+contract in `addons/Star_Wars_Thrawn_Trilogy/assets/art-queue.json`. Its
+matching prompt under `assets/prompts/` specifies the complete 13-file state
+set: standing, two idle frames, two movement frames, two melee frames, two
+ranged frames, defend, two death frames, and a portrait. The dashboard exposes
+only a credential-free **Copy $imagegen brief** handoff for a pending job.
+
+Codex's built-in image generator is an interactive product capability, not a
+callable WSL/Python service. The worker therefore never attempts an API call,
+never reads an API key, and never starts an unbounded project-wide art batch.
+An interactive Codex task uses the owner's normal Codex allowance to generate
+the exact transparent PNGs, after which a governed ticket imports and wires
+them. A job may remain pending without blocking unrelated code work; however,
+the moment it is marked `complete`, deterministic validation requires every
+one of its 13 valid PNGs and every corresponding WML reference. Prompts require
+original, non-commercial art and prohibit copying official game art, book-cover
+art, actors, logos, or public reference-image composition.
+
 Before the next autonomous ticket is planned, the dashboard performs a one-time historical retention sweep in original first-parent publication order. It verifies that each published add-on ticket's retained source files and WML identifiers still exist in current `main`, alongside the installed-engine assembled-campaign check. History is never rewritten: a failure creates the first bounded repair ticket, and fresh planning remains blocked until it passes. Future tickets must update the gameplay-contract file for every changed gameplay source.
 
 ---

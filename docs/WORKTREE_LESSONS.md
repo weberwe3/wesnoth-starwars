@@ -22,6 +22,20 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** Validate every quoted `map_data` cell before engine launch, treat the map-parser wording as fatal, inspect both Wesnoth log streams, and make the play launcher refresh the add-on from a clean protected-main checkout before starting the campaign.
 - **Prevention:** A map token longer than four characters or outside the short terrain/overlay form fails deterministic validation; the launcher refuses a dirty/non-main source and limits stale-file removal to the campaign add-on directory.
 
+### 2026-09-07 — declared project visual resources were absent from the add-on
+
+- **Symptom:** Unit WML referenced add-on `images/units/...` and `images/portraits/...` paths that did not exist in the repository. The engine could continue past a missing visual in some configurations, producing a misleadingly successful loader check or invisible/default presentation.
+- **Cause:** Prototype WML retained project-owned placeholder paths without committing original matching assets. The previous deterministic checks validated map and unit registration but not the resource graph.
+- **Resolution:** Preserve project-owned paths and generate small original procedural PNG placeholders inside those exact paths. The generator never downloads or copies external art; it runs only for missing `.png` references beneath `images/` and records the created files as normal candidate changes.
+- **Prevention:** Campaign dependency validation now blocks missing or unsafe project resources, broken scenario routes, duplicate scenario IDs, missing project macros/Lua actions, and custom terrain loaded after scenarios. Audio, non-PNG visuals, and unsafe paths are not fabricated; they stop for an explicit, scoped original-content repair.
+
+### 2026-09-07 — unit art must be a complete state contract, not a lone sprite
+
+- **Symptom:** A unit could receive a single placeholder image or a standing sprite, yet have no coherent move, attack, defense, death, or portrait art ready for a real tactical implementation.
+- **Cause:** A headless worktree was incorrectly treated as if it could directly invoke Codex's interactive image-generation capability, or as if producing every existing unit's art at once were safe for an owner's quota.
+- **Resolution:** Changed units create one bounded, interactive-Codex-only art job with 13 exact state assets and a dashboard-copyable `$imagegen` brief. Pending art is explicit; a completed job must contain every valid PNG and wire all paths into the unit WML.
+- **Prevention:** Do not call an image API, read a credential, fabricate visual content beyond the narrow procedural fallback, or generate a project-wide art batch. Generate original art one unit at a time; preserve character consistency across its states and do not copy official, cover, film, actor, logo, or public-reference compositions.
+
 ### 2026-09-07 — local add-on gate omitted current declared gameplay contracts
 
 - **Symptom:** A recoded map ticket passed local deterministic validation, tester, and reviewer, then exact-head CI rejected moved reinforcement coordinates that no longer matched their declared event-unit contract.
@@ -105,6 +119,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** A `#`-prefixed descriptive header was added to the external `.map` file. The validator skipped such lines as if the file were WML, while Wesnoth parsed the words in that file as terrain tokens.
 - **Resolution:** Remove the prose header and reject every comment line in external `map_data` sources before publication.
 - **Prevention:** Keep external map files terrain rows only. The map-data regression fixture places a hash-prefixed `center` line in an included map and requires deterministic validation to fail.
+
+### 2026-09-07 — custom units were included without Wesnoth registration
+
+- **Symptom:** Mission 1's map opened after a ticket was marked Published and Tested, but every commander and squad was absent. The normal campaign log reported `unknown unit type` for all scenario unit instances.
+- **Cause:** `_main.cfg` included raw unit files outside the selected campaign loader. Wesnoth requires custom units to be included in `[+units]` within the active campaign's matching `#ifdef`; raw top-level includes do not register those types for scenario construction.
+- **Resolution:** Put the add-on unit directory in `[+units]` before the scenario include, within each campaign loader, and declare the add-on binary path there.
+- **Prevention:** The campaign-loader gate validates every campaign define, binary path, `[+units]` loader order, scenario include, and referenced `sw_unit_*` definition before worker review or publication. The normal player launcher log remains authoritative for loader diagnostics.
 
 ### 2026-09-06 — empty scenario after apparently successful startup
 

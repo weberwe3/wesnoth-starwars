@@ -170,6 +170,29 @@ class RuntimeStatusTests(unittest.TestCase):
                 server.server_close()
                 thread.join(timeout=2)
 
+    def test_server_exposes_the_secret_free_codex_art_queue(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            server = create_server(0, Path(directory) / "state.json")
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+                connection.request(
+                    "GET", "/api/art-queue",
+                    headers={"Host": f"127.0.0.1:{server.server_port}"},
+                )
+                response = connection.getresponse()
+                payload = json.loads(response.read())
+                self.assertEqual(response.status, 200)
+                self.assertEqual(payload["policy"], "Codex quota interactive art generation; no API key")
+                self.assertNotIn("API_KEY", json.dumps(payload))
+                self.assertNotIn("password=", json.dumps(payload).casefold())
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
 
 class CoordinationControlTests(unittest.TestCase):
     @staticmethod
@@ -654,6 +677,9 @@ class CoordinationControlTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn('fetch("/api/planned-tickets"', source)
+        self.assertIn('fetch("/api/art-queue"', source)
+        self.assertIn("Copy $imagegen brief", source)
+        self.assertIn("navigator.clipboard.writeText(job.brief)", source)
         self.assertNotIn('fetch("/planned-tickets.json"', source)
 
     def test_generated_ticket_selection_uses_no_planner_call(self) -> None:

@@ -9,6 +9,7 @@ let guidanceSaving = false;
 let guidanceDirty = false;
 let guidanceSaveTimer = null;
 let ticketCatalogReady = false;
+let artQueueSnapshot = null;
 const expandedDetails = new Set();
 const nodeScrollPositions = new Map();
 const plannedTickets = new Map();
@@ -34,6 +35,23 @@ function esc(value, fallback = "—") {
   return safe(value, fallback).replace(/[&<>'"]/g, character => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"})[character]);
 }
 function displayState(value) { return safe(value, "idle").replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase()); }
+
+function renderArtQueue(queue) {
+  artQueueSnapshot = queue;
+  const jobs = Array.isArray(queue?.jobs) ? queue.jobs : [];
+  const pending = Number.isInteger(queue?.pending) ? queue.pending : 0;
+  const complete = Number.isInteger(queue?.complete) ? queue.complete : 0;
+  $("art-queue-summary").textContent = `${pending} awaiting art · ${complete} complete`;
+  $("art-queue-policy").textContent = safe(queue?.policy, "Interactive Codex generation only; no API key.");
+  $("art-queue").innerHTML = jobs.map(job => {
+    const prompt = safe(job.prompt_path, "");
+    const canCopy = typeof job.brief === "string" && job.brief.length > 0;
+    return `<article class="art-job ${esc(job.state, "pending").toLowerCase()}">
+      <div><strong>${esc(job.unit_name || job.unit_id)}</strong><small>${esc(displayState(job.state))} · ${esc(job.asset_count)} required PNGs</small></div>
+      <div class="art-job-actions"><code>${esc(prompt)}</code><button type="button" class="copy-art-brief" data-art-id="${esc(job.id, "")}" ${canCopy ? "" : "disabled"}>Copy $imagegen brief</button></div>
+    </article>`;
+  }).join("") || '<p class="empty">No unit art contracts are queued.</p>';
+}
 function clock(value) { if (!value) return "—"; const d = new Date(value); return Number.isNaN(d.valueOf()) ? "—" : d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"}); }
 function duration(start, end = Date.now()) {
   if (!start) return "00:00:00";
@@ -263,13 +281,15 @@ function updateElapsed() {
 
 async function refresh() {
   try {
-    const [statusResponse, controlResponse, ticketsResponse] = await Promise.all([
+    const [statusResponse, controlResponse, ticketsResponse, artQueueResponse] = await Promise.all([
       fetch("/api/status", {cache: "no-store", headers: apiHeaders()}),
       fetch("/api/control", {cache: "no-store", headers: apiHeaders()}),
       fetch("/api/planned-tickets", {cache: "no-store", headers: apiHeaders()}),
+      fetch("/api/art-queue", {cache: "no-store", headers: apiHeaders()}),
     ]);
-    if (!statusResponse.ok || !controlResponse.ok || !ticketsResponse.ok) throw new Error("Status unavailable");
+    if (!statusResponse.ok || !controlResponse.ok || !ticketsResponse.ok || !artQueueResponse.ok) throw new Error("Status unavailable");
     loadPlannedTickets(await ticketsResponse.json());
+    renderArtQueue(await artQueueResponse.json());
     const control = await controlResponse.json();
     controlToken = control.csrf_token || null;
     delete control.csrf_token;
@@ -446,6 +466,20 @@ $("approval-queue").addEventListener("click", event => {
     action = "delete_stale_ticket";
   }
   controlAction({action, record_id: button.dataset.recordId, commit_sha: button.dataset.commitSha});
+});
+
+$("art-queue").addEventListener("click", async event => {
+  const button = event.target.closest(".copy-art-brief");
+  if (!button) return;
+  const job = (artQueueSnapshot?.jobs || []).find(item => item?.id === button.dataset.artId);
+  if (!job?.brief) return;
+  try {
+    await navigator.clipboard.writeText(job.brief);
+    button.textContent = "Brief copied";
+    window.setTimeout(() => { button.textContent = "Copy $imagegen brief"; }, 1800);
+  } catch (_) {
+    button.textContent = "Copy unavailable";
+  }
 });
 
 document.addEventListener("toggle", event => {

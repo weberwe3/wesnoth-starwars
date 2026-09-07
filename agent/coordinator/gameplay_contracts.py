@@ -115,6 +115,287 @@ def validate_map_data(root: Path, sources: dict[str, str]) -> dict[str, Any]:
     }
 
 
+def _ifdef_blocks(text: str) -> dict[str, str]:
+    """Return exact preprocessor blocks without attempting to evaluate WML."""
+
+    return {
+        match.group(1): match.group(2)
+        for match in re.finditer(
+            r"(?ms)^\s*#ifdef\s+([A-Za-z0-9_]+)\s*$(.*?)^\s*#endif\s*$",
+            text,
+        )
+    }
+
+
+def _unit_type_ids(sources: dict[str, str]) -> set[str]:
+    """Find project-owned unit definitions in included unit configuration."""
+
+    identifiers: set[str] = set()
+    for path, text in sources.items():
+        if not path.startswith(ADDON_ROOT + "/units/"):
+            continue
+        for block in re.finditer(r"(?s)\[unit_type\](.*?)\[/unit_type\]", text):
+            match = re.search(r"(?m)^\s*id\s*=\s*(sw_unit_[A-Za-z0-9_]+)\s*$", block.group(1))
+            if match:
+                identifiers.add(match.group(1))
+    return identifiers
+
+
+def _referenced_unit_type_ids(sources: dict[str, str]) -> set[str]:
+    """Collect project unit types instantiated by current scenario sources."""
+
+    identifiers: set[str] = set()
+    for path, text in sources.items():
+        if path.startswith(ADDON_ROOT + "/scenarios/"):
+            identifiers.update(re.findall(
+                r"(?m)^\s*type\s*=\s*(sw_unit_[A-Za-z0-9_]+)\s*$", text
+            ))
+    return identifiers
+
+
+def _campaign_scenarios(sources: dict[str, str]) -> tuple[dict[str, str], list[str]]:
+    """Return unique scenario IDs and duplicate-ID diagnostics.
+
+    Wesnoth resolves ``first_scenario`` and ``next_scenario`` by the scenario
+    ID, not by a filename. Keeping this extraction deliberately small avoids
+    pretending to fully parse WML while still detecting routes the engine
+    could never load.
+    """
+
+    scenario_paths: dict[str, str] = {}
+    duplicates: list[str] = []
+    for path, text in sources.items():
+        if not path.startswith(ADDON_ROOT + "/scenarios/"):
+            continue
+        for block in re.finditer(r"(?s)\[scenario\](.*?)\[/scenario\]", text):
+            match = re.search(r"(?m)^\s*id\s*=\s*([A-Za-z0-9_]+)\s*$", block.group(1))
+            if not match:
+                continue
+            scenario_id = match.group(1)
+            if scenario_id in scenario_paths and scenario_paths[scenario_id] != path:
+                duplicates.append(scenario_id)
+            else:
+                scenario_paths[scenario_id] = path
+    return scenario_paths, sorted(set(duplicates))
+
+
+def _include_precedes(block: str, relative: str, later: int) -> bool:
+    """Whether a WML include covers ``relative`` before a later loader step."""
+
+    before = block[:later]
+    candidate = Path(relative)
+    # Wesnoth permits either a direct file include or a directory include. A
+    # campaign commonly includes ``scenarios}``, which covers all descendant
+    # scenario files, so check the path and each parent directory.
+    while candidate != Path("."):
+        escaped = re.escape(
+            "{~add-ons/Star_Wars_Thrawn_Trilogy/" + candidate.as_posix()
+        )
+        if re.search(escaped + r"(?:[}/])", before):
+            return True
+        candidate = candidate.parent
+    return False
+
+
+def _wml_code(text: str) -> str:
+    """Drop whole-line WML/preprocessor comments before symbol scanning."""
+
+    return "\n".join(
+        "" if line.lstrip().startswith("#") else line
+        for line in text.splitlines()
+    )
+
+
+def _project_resource_references(sources: dict[str, str]) -> list[tuple[str, str]]:
+    """Collect project-owned binary and Lua resources named by WML."""
+
+    references: list[tuple[str, str]] = []
+    expression = re.compile(
+        r"~add-ons/Star_Wars_Thrawn_Trilogy/([A-Za-z0-9_./-]+\.(?:png|jpe?g|webp|ogg|wav|mp3|lua))",
+        re.IGNORECASE,
+    )
+    for source_path, text in sources.items():
+        for match in expression.finditer(_wml_code(text)):
+            relative = match.group(1)
+            if ".." not in Path(relative).parts:
+                references.append((source_path, relative))
+    return sorted(set(references))
+
+
+def _project_lua_actions(root: Path) -> set[str]:
+    """Return add-on WML action names implemented by project Lua modules."""
+
+    actions: set[str] = set()
+    lua_root = root / ADDON_ROOT / "lua"
+    if not lua_root.is_dir():
+        return actions
+    for path in sorted(lua_root.rglob("*.lua")):
+        if path.is_symlink() or not path.is_file():
+            continue
+        try:
+            text = _read_text(path)
+        except OSError:
+            continue
+        actions.update(re.findall(r"wesnoth\.wml_actions\.((?:sw|star_wars)_[A-Za-z0-9_]+)\s*=", text))
+        actions.update(re.findall(r"wesnoth\.wml_actions\[['\"]((?:sw|star_wars)_[A-Za-z0-9_]+)['\"]\]\s*=", text))
+    return actions
+
+
+def validate_campaign_dependencies(root: Path, sources: dict[str, str]) -> dict[str, Any]:
+    """Validate routes, project resources, macros, Lua, and custom terrain wiring.
+
+    These checks intentionally cover only add-on-owned identifiers and files.
+    Core Wesnoth resources and macros remain the engine's responsibility, which
+    prevents this deterministic gate from rejecting a valid installed version
+    merely because its core data differ from another supported release.
+    """
+
+    main_path = ADDON_ROOT + "/_main.cfg"
+    main = sources.get(main_path, "")
+    failures: list[dict[str, Any]] = []
+    blocks = _ifdef_blocks(main)
+    campaigns = re.findall(r"(?ms)\[campaign\](.*?)\[/campaign\]", main)
+    definitions: dict[str, str] = {}
+    for campaign in campaigns:
+        define = re.search(r"(?m)^\s*define\s*=\s*([A-Za-z0-9_]+)\s*$", campaign)
+        first = re.search(r"(?m)^\s*first_scenario\s*=\s*([A-Za-z0-9_]+)\s*$", campaign)
+        if define and first:
+            definitions[define.group(1)] = first.group(1)
+
+    scenarios, duplicate_ids = _campaign_scenarios(sources)
+    for scenario_id in duplicate_ids:
+        failures.append({"path": main_path, "detail": f"Scenario id {scenario_id} is defined more than once"})
+    for define, first_scenario in sorted(definitions.items()):
+        path = scenarios.get(first_scenario)
+        if not path:
+            failures.append({"path": main_path, "detail": f"Campaign {define} starts missing scenario {first_scenario}"})
+            continue
+        block = blocks.get(define, "")
+        scenario_marker = block.find("{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios")
+        relative = path.removeprefix(ADDON_ROOT + "/")
+        if scenario_marker < 0 or not _include_precedes(block, relative, len(block)):
+            failures.append({"path": main_path, "detail": f"Campaign {define} does not load its first scenario {first_scenario}"})
+
+    for path, text in sources.items():
+        if not path.startswith(ADDON_ROOT + "/scenarios/"):
+            continue
+        for target in re.findall(r"(?m)^\s*next_scenario\s*=\s*([A-Za-z0-9_]+)\s*$", text):
+            if target not in scenarios:
+                failures.append({"path": path, "detail": f"Scenario route points to missing next_scenario {target}"})
+
+    for source_path, relative in _project_resource_references(sources):
+        target = root / ADDON_ROOT / relative
+        if target.is_symlink() or not target.is_file():
+            failures.append({"path": source_path, "detail": f"Project resource is missing or unsafe: {relative}"})
+
+    macro_definitions = {
+        match.group(1)
+        for text in sources.values()
+        for match in re.finditer(r"(?m)^\s*#define\s+((?:SW|STAR_WARS)_[A-Za-z0-9_]+)\b", text)
+    }
+    for path, text in sources.items():
+        code = _wml_code(text)
+        for macro in re.findall(r"\{((?:SW|STAR_WARS)_[A-Za-z0-9_]+)(?:\s|\})", code):
+            if macro not in macro_definitions:
+                failures.append({"path": path, "detail": f"Project macro {macro} is used but never defined"})
+
+    lua_actions = _project_lua_actions(root)
+    for path, text in sources.items():
+        for action in re.findall(r"(?m)^\s*lua_function\s*=\s*((?:sw|star_wars)_[A-Za-z0-9_]+)\s*$", _wml_code(text)):
+            if action not in lua_actions:
+                failures.append({"path": path, "detail": f"Project Lua action {action} is used but not implemented"})
+
+    terrain_sources = [path for path, text in sources.items() if "[terrain_type]" in text]
+    for path in terrain_sources:
+        text = sources[path]
+        strings = re.findall(r"(?m)^\s*string\s*=\s*([^\s#]+)\s*$", text)
+        if not strings or any(not _TERRAIN_TOKEN.fullmatch(value) for value in strings):
+            failures.append({"path": path, "detail": "Custom terrain definitions need valid short string= terrain codes"})
+        relative = path.removeprefix(ADDON_ROOT + "/")
+        for define, block in sorted(blocks.items()):
+            scenario_marker = block.find("{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios")
+            if scenario_marker >= 0 and not _include_precedes(block, relative, scenario_marker):
+                failures.append({"path": main_path, "detail": f"Campaign {define} does not load custom terrain {relative} before scenarios"})
+
+    return {
+        "pass": not failures,
+        "failures": failures[:40],
+        "diagnostic": _bounded([item["detail"] for item in failures]),
+        "diagnostic_paths": sorted({item["path"] for item in failures})[:20],
+        "scenario_ids": sorted(scenarios),
+        "lua_actions": sorted(lua_actions),
+        "project_resource_count": len(_project_resource_references(sources)),
+        "custom_terrain_sources": terrain_sources,
+    }
+
+
+def validate_campaign_loader(root: Path, sources: dict[str, str]) -> dict[str, Any]:
+    """Verify the campaign loader registers every project unit before play."""
+
+    main_path = ADDON_ROOT + "/_main.cfg"
+    main = sources.get(main_path, "")
+    failures: list[dict[str, Any]] = []
+    if not main:
+        failures.append({"path": main_path, "detail": "Campaign loader is missing _main.cfg"})
+    else:
+        blocks = _ifdef_blocks(main)
+        campaigns = re.findall(r"(?ms)\[campaign\](.*?)\[/campaign\]", main)
+        defines = {
+            match.group(1)
+            for campaign in campaigns
+            if (match := re.search(r"(?m)^\s*define\s*=\s*([A-Za-z0-9_]+)\s*$", campaign))
+        }
+        expected_binary_path = "path=data/add-ons/Star_Wars_Thrawn_Trilogy"
+        expected_units_include = "{~add-ons/Star_Wars_Thrawn_Trilogy/units}"
+        expected_scenarios_include = "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios"
+        for define in sorted(defines):
+            block = blocks.get(define, "")
+            if not block:
+                failures.append({
+                    "path": main_path,
+                    "detail": f"Campaign define {define} has no matching #ifdef loader block",
+                })
+                continue
+            if expected_binary_path not in block:
+                failures.append({
+                    "path": main_path,
+                    "detail": f"Campaign {define} is missing its add-on binary_path",
+                })
+            units = re.search(r"(?s)\[\+units\](.*?)\[/units\]", block)
+            if units is None or expected_units_include not in units.group(1):
+                failures.append({
+                    "path": main_path,
+                    "detail": f"Campaign {define} must load the add-on units directory inside [+units]",
+                })
+            if expected_scenarios_include not in block:
+                failures.append({
+                    "path": main_path,
+                    "detail": f"Campaign {define} is missing its scenario loader include",
+                })
+            elif units is not None and units.start() > block.find(expected_scenarios_include):
+                failures.append({
+                    "path": main_path,
+                    "detail": f"Campaign {define} loads scenarios before custom units",
+                })
+
+    defined = _unit_type_ids(sources)
+    referenced = _referenced_unit_type_ids(sources)
+    missing = sorted(referenced - defined)
+    if missing:
+        failures.append({
+            "path": main_path,
+            "detail": "Scenario references unregistered project unit types: " + ", ".join(missing),
+        })
+    return {
+        "pass": not failures,
+        "failures": failures[:40],
+        "diagnostic": _bounded([item["detail"] for item in failures]),
+        "diagnostic_paths": sorted({item["path"] for item in failures})[:20],
+        "defined_unit_types": sorted(defined),
+        "referenced_unit_types": sorted(referenced),
+    }
+
+
 def _event_block(text: str, event_id: str) -> str | None:
     for match in re.finditer(r"\[event\](.*?)\[/event\]", text, re.DOTALL):
         block = match.group(1)
@@ -165,7 +446,7 @@ def _contract_result(contract: dict[str, Any], sources: dict[str, str]) -> dict[
 
 def validate_declared_contracts(root: Path, required_paths: list[str] | None = None) -> dict[str, Any]:
     """Validate explicit gameplay behavior contracts against current WML."""
-    evidence: dict[str, Any] = {"schema_version": 1, "kind": "declared-gameplay-contracts", "pass": False, "checks": {"contract_file_present": False, "contract_schema_valid": False, "map_data_syntax": False}, "contracts": [], "diagnostic": "", "diagnostic_paths": []}
+    evidence: dict[str, Any] = {"schema_version": 1, "kind": "declared-gameplay-contracts", "pass": False, "checks": {"contract_file_present": False, "contract_schema_valid": False, "map_data_syntax": False, "campaign_loader": False, "campaign_dependencies": False}, "contracts": [], "diagnostic": "", "diagnostic_paths": []}
     try:
         payload = json.loads(_read_text(root / ADDON_ROOT / CONTRACT_FILE))
     except (OSError, json.JSONDecodeError) as exc:
@@ -185,6 +466,12 @@ def validate_declared_contracts(root: Path, required_paths: list[str] | None = N
     map_evidence = validate_map_data(root, sources)
     evidence["map_data"] = map_evidence
     evidence["checks"]["map_data_syntax"] = map_evidence["pass"]
+    loader_evidence = validate_campaign_loader(root, sources)
+    evidence["campaign_loader"] = loader_evidence
+    evidence["checks"]["campaign_loader"] = loader_evidence["pass"]
+    dependency_evidence = validate_campaign_dependencies(root, sources)
+    evidence["campaign_dependencies"] = dependency_evidence
+    evidence["checks"]["campaign_dependencies"] = dependency_evidence["pass"]
     results = [_contract_result(item, sources) for item in contracts]
     failed = [item for item in results if not item["pass"]]
     evidence["contracts"] = results
@@ -197,12 +484,21 @@ def validate_declared_contracts(root: Path, required_paths: list[str] | None = N
     if uncovered:
         failed.append({"detail": "Missing declared gameplay contract for " + ", ".join(uncovered), "paths": uncovered})
     evidence["diagnostic"] = _bounded(
-        [map_evidence["diagnostic"]] + [str(item["detail"]) for item in failed]
+        [map_evidence["diagnostic"], loader_evidence["diagnostic"], dependency_evidence["diagnostic"]]
+        + [str(item["detail"]) for item in failed]
     )
     evidence["diagnostic_paths"] = sorted({path for item in failed for path in item.get("paths", []) if isinstance(path, str) and path.startswith(ADDON_ROOT + "/")})[:20]
-    evidence["diagnostic_paths"] = sorted(set(evidence["diagnostic_paths"]) | set(map_evidence["diagnostic_paths"]))[:20]
+    evidence["diagnostic_paths"] = sorted(
+        set(evidence["diagnostic_paths"])
+        | set(map_evidence["diagnostic_paths"])
+        | set(loader_evidence["diagnostic_paths"])
+        | set(dependency_evidence["diagnostic_paths"])
+    )[:20]
     evidence["required_paths"] = sorted(required)
-    evidence["pass"] = not failed and map_evidence["pass"]
+    evidence["pass"] = (
+        not failed and map_evidence["pass"] and loader_evidence["pass"]
+        and dependency_evidence["pass"]
+    )
     return evidence
 
 
