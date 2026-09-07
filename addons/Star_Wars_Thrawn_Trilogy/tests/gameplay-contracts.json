@@ -116,6 +116,22 @@
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg",
       "expected_id": "sw_space_interception_jammer_readiness"
+    },
+    {
+      "id": "sw-space-interception-torpedo-bomber-deployment-turn-four",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg",
+      "event_id": "sw_space_interception_torpedo_bomber_deployment",
+      "expected": {
+        "name": "turn",
+        "turn": "4",
+        "first_time_only": "yes",
+        "unit_id": "sw_torpedo_bomber_squadron",
+        "side": "2",
+        "type": "sw_unit_im_torpedo_bomber_squadron",
+        "x": "1",
+        "y": "6"
+      }
     }
   ]
 }
