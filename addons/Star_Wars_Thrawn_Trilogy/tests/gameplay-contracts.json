@@ -14,6 +14,12 @@
       "expected_id": "01_First_Battle"
     },
     {
+      "id": "sw-first-battle-mission-briefing-event",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_first_battle_mission_briefing"
+    },
+    {
       "id": "sw-first-battle-obroa-skai-map-setup",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
