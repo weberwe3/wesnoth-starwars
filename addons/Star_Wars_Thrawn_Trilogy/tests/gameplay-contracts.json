@@ -68,6 +68,18 @@
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "expected_id": "sw_first_battle_signal_jammer_destroyed"
+    },
+    {
+      "id": "sw-first-battle-jammer-carryover",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_first_battle_jammer_debrief"
+    },
+    {
+      "id": "sw-space-interception-jammer-readiness",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg",
+      "expected_id": "sw_space_interception_jammer_readiness"
     }
   ]
 }
