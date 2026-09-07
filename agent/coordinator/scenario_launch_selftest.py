@@ -688,6 +688,21 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         self.assertFalse(bad["pass"])
         self.assertIn("center", bad["diagnostic"])
 
+    def test_map_data_rejects_hash_prefixed_prose_in_external_map(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            map_path = root / "addons/Star_Wars_Thrawn_Trilogy/maps/fixture.map"
+            map_path.parent.mkdir(parents=True)
+            map_path.write_text("# center firing lane\nGg,Gg^Fp\n", encoding="utf-8")
+            bad = validate_map_data(root, {
+                "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
+                    '[scenario]\nmap_data="{~add-ons/Star_Wars_Thrawn_Trilogy/'
+                    'maps/fixture.map}"\n[/scenario]\n'
+                ),
+            })
+        self.assertFalse(bad["pass"])
+        self.assertIn("contains a comment", bad["diagnostic"])
+
     def test_map_data_accepts_short_terrain_and_overlay_codes(self) -> None:
         good = validate_map_data(Path("."), {
             "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
