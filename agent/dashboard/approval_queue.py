@@ -33,6 +33,7 @@ POST_PUBLISH_GAME_VALIDATION_FILE = "post-publish-game-validation.json"
 TERMINAL_QUEUE_STATES = {
     "published", "rejected", "stale", "dismissed", "superseded", "discarded",
 }
+MAX_QUEUE_RECORDS = 10
 
 
 class QueueError(RuntimeError):
@@ -152,7 +153,30 @@ class ApprovalQueue:
             state = self.read()
             change(state)
             state["updated_at"] = utc_now()
-            state["records"] = state["records"][-100:]
+            # Keep every live approval/recovery record. Terminal history rolls
+            # off first so the dashboard remains a focused ten-ticket queue.
+            active = [
+                item for item in state["records"]
+                if isinstance(item, dict) and item.get("state") not in TERMINAL_QUEUE_STATES
+            ]
+            terminal = [
+                item for item in state["records"]
+                if isinstance(item, dict) and item.get("state") in TERMINAL_QUEUE_STATES
+            ]
+            terminal_budget = max(0, MAX_QUEUE_RECORDS - len(active))
+            retained_terminal_ids = {
+                id(item) for item in terminal[-terminal_budget:]
+            } if terminal_budget else set()
+            state["records"] = [
+                item for item in state["records"]
+                if (
+                    isinstance(item, dict)
+                    and (
+                        item.get("state") not in TERMINAL_QUEUE_STATES
+                        or id(item) in retained_terminal_ids
+                    )
+                )
+            ]
             state["activity"] = state["activity"][-300:]
             _atomic_json(self.path, state)
             return state
@@ -196,7 +220,7 @@ class ApprovalQueue:
             "changed_paths", "deleted_paths", "branch", "base_sha", "commit_sha",
             "state", "created_at", "updated_at", "validation", "reviewer",
             "pr_number", "pr_url", "merge_sha", "error", "deletion_request",
-            "depends_on_id", "depends_on_commit", "automation_authorized",
+            "depends_on_id", "depends_on_commit", "automation_authorized", "recode_of",
         }
         records = [
             {key: item.get(key) for key in allowed}
@@ -302,12 +326,15 @@ class ApprovalQueue:
         summary: str,
         impact: str,
         automation_authorization_id: str | None = None,
+        recode_of: str | None = None,
     ) -> dict[str, Any]:
         if (
             automation_authorization_id is not None
             and not re.fullmatch(r"[0-9a-f]{32}", automation_authorization_id)
         ):
             raise QueueError("Invalid automation publication authorization")
+        if recode_of is not None and not REQUEST_ID.fullmatch(recode_of):
+            raise QueueError("Invalid recode queue identity")
         if result.get("final_verdict") != "PASS":
             raise QueueError("Only a locally passing ticket can enter the queue")
         branch = result.get("branch")
@@ -388,6 +415,7 @@ class ApprovalQueue:
             "depends_on_commit": depends_on_commit,
             "automation_authorized": bool(automation_authorization_id),
             "automation_authorization_id": automation_authorization_id,
+            "recode_of": recode_of,
         }
         if deleted_paths:
             request = self._deletion_request(record, worktree)
@@ -1029,10 +1057,11 @@ class ApprovalQueue:
         self._update_record(
             record["id"], state="published", merge_sha=merge_sha, error=None
         )
+        recode_note = " Recoded ticket successfully published." if record.get("recode_of") else ""
         self.event(
             f"{record['ticket_id']} merged into protected main",
             level="success",
-            detail=f"PR #{pr_number} merged as {merge_sha}.",
+            detail=f"PR #{pr_number} merged as {merge_sha}.{recode_note}",
             ticket_id=record["ticket_id"],
         )
         self._record_post_publish_game_validation(record, merge_sha)

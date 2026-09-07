@@ -712,6 +712,7 @@ class AutonomyController:
                 summary=proposal["summary"],
                 impact=proposal["impact"],
                 automation_authorization_id=authorization_id,
+                recode_of=recode_record["id"] if recode_record is not None else None,
             )
             if proposal.get("_post_publish_game_repair"):
                 self._mark_post_publish_repair_queued(ticket["task_id"])
@@ -1868,6 +1869,13 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
         if not re.fullmatch(r"agent/runtime/sol-ticket-[a-f0-9]{12}\.json", relative_ticket):
             raise ControlError("Generated ticket path failed validation")
         run_id = ticket_path.stem.removeprefix("sol-ticket-")
+        try:
+            ticket_value = json.loads(ticket_path.read_text(encoding="utf-8"))
+            expected_ticket_id = ticket_value.get("task_id") if isinstance(ticket_value, dict) else None
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ControlError("Generated ticket could not be read") from exc
+        if not isinstance(expected_ticket_id, str) or not expected_ticket_id.startswith("SOL-"):
+            raise ControlError("Generated ticket has no valid identity")
         result_path = self.root / "agent" / "runtime" / f"sol-result-{run_id}.json"
         request_path = self.root / "agent" / "runtime" / "secure-run-request.json"
         temporary = request_path.with_suffix(f".{run_id}.tmp")
@@ -1888,6 +1896,10 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             result = json.loads(result_path.read_text(encoding="utf-8"))
         except (FileNotFoundError, json.JSONDecodeError) as exc:
             raise ControlError("Secure ticket runner returned no result") from exc
+        if result.get("ticket_id") != expected_ticket_id:
+            raise ControlError(
+                "Secure ticket runner returned a result for a different ticket"
+            )
         return_code = result.get("return_code")
         if not isinstance(return_code, int) or not 0 <= return_code <= 255:
             raise ControlError("Secure ticket runner returned an invalid result")
