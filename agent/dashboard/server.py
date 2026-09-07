@@ -199,6 +199,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             return
         controller = self.server.controller  # type: ignore[attr-defined]
         shutdown_requested = False
+        art_import: dict | None = None
         try:
             if data.get("action") == "set_mode" and set(data) == {"action", "mode"}:
                 controller.set_mode(data.get("mode"))
@@ -216,6 +217,14 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 if not isinstance(data.get("guidance"), str):
                     raise ControlError("Invalid coordinator guidance")
                 controller.set_guidance(data["guidance"])
+            elif data.get("action") == "confirm_art_import" and set(data) == {
+                "action", "job_id",
+            }:
+                if not isinstance(data.get("job_id"), str):
+                    raise ControlError("Invalid art import request")
+                art_import = controller.confirm_art_import(data["job_id"])
+                if not art_import["pass"]:
+                    raise ControlError(art_import["message"])
             elif data.get("action") == "approve_publish" and set(data) == {
                 "action", "record_id", "commit_sha",
             }:
@@ -253,6 +262,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             return
         response = controller.public_state()
         response["access"] = self._access_state(remote_view)
+        if art_import is not None:
+            response["art_import"] = art_import
         if shutdown_requested:
             response["shutdown"] = "accepted"
             self.server.exit_requested = True  # type: ignore[attr-defined]

@@ -12,13 +12,17 @@ import os
 from pathlib import Path
 import re
 import shutil
+import struct
 import subprocess
 import tempfile
 import unittest
 from unittest import mock
+import zlib
 
 from asset_scaffold import materialize_missing_project_images
 from art_pipeline import (
+    art_import_preflight,
+    confirm_art_import,
     public_art_queue,
     synchronize_art_queue,
     unit_ids_for_source_paths,
@@ -35,6 +39,23 @@ from gameplay_contracts import (
 
 ADDON_ID = "Star_Wars_Thrawn_Trilogy"
 SCENARIO_ID = "01_First_Battle"
+
+
+def _test_png(width: int, height: int) -> bytes:
+    """Build a small valid transparent RGBA PNG without external libraries."""
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return (
+            struct.pack(">I", len(data)) + kind + data
+            + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+        )
+
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    row = b"\x00" + (b"\x00\x00\x00\x00" * width)
+    return (
+        b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr)
+        + chunk(b"IDAT", zlib.compress(row * height)) + chunk(b"IEND", b"")
+    )
 CAMPAIGN_DEFINE = "CAMPAIGN_STAR_WARS_THRAWN_TRILOGY"
 ENGINE_TIMEOUT_SECONDS = 120
 CAMPAIGN_STARTUP_PROBE_SECONDS = 12
@@ -869,6 +890,45 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             failure = validate_art_queue(root)
             self.assertFalse(failure["pass"])
             self.assertIn("missing valid PNG", failure["diagnostic"])
+
+    def test_confirm_art_import_requires_complete_pngs_and_wml_wiring(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            unit = root / "addons" / ADDON_ID / "units" / "hero.cfg"
+            unit.parent.mkdir(parents=True)
+            unit.write_text(
+                "[unit_type]\nid=sw_unit_fixture\nname=_\"Fixture Commander\"\n"
+                "description=_\"An original command unit.\"\n[/unit_type]\n",
+                encoding="utf-8",
+            )
+            sync = synchronize_art_queue(root, {"sw_unit_fixture"})
+            job = sync["jobs"][0]
+            references = [
+                f"image=~add-ons/{ADDON_ID}/{asset['path']}"
+                for asset in job["assets"]
+            ]
+            unit.write_text(
+                "[unit_type]\nid=sw_unit_fixture\nname=_\"Fixture Commander\"\n"
+                "description=_\"An original command unit.\"\n"
+                + "\n".join(references) + "\n[/unit_type]\n",
+                encoding="utf-8",
+            )
+            first_attempt = art_import_preflight(root, job["id"])
+            self.assertFalse(first_attempt["pass"])
+            self.assertFalse(first_attempt["requires_llm"])
+
+            for asset in job["assets"]:
+                target = root / "addons" / ADDON_ID / asset["path"]
+                target.parent.mkdir(parents=True, exist_ok=True)
+                width, height = (256, 256) if asset["state"] == "portrait" else (72, 72)
+                target.write_bytes(_test_png(width, height))
+            ready = art_import_preflight(root, job["id"])
+            self.assertTrue(ready["pass"], ready)
+            result = confirm_art_import(root, job["id"])
+            self.assertTrue(result["pass"], result)
+            self.assertEqual(result["state"], "complete")
+            self.assertFalse(result["requires_llm"])
+            self.assertTrue(validate_art_queue(root)["pass"])
 
     def test_runtime_probe_stages_a_one_scenario_campaign(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

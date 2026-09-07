@@ -679,6 +679,9 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertIn('fetch("/api/planned-tickets"', source)
         self.assertIn('fetch("/api/art-queue"', source)
         self.assertIn("Copy $imagegen brief", source)
+        self.assertIn("Confirm art import", source)
+        self.assertIn('action: "confirm_art_import"', source)
+        self.assertIn('.filter(job => job?.state !== "complete")', source)
         self.assertIn("navigator.clipboard.writeText(job.brief)", source)
         self.assertNotIn('fetch("/planned-tickets.json"', source)
 
@@ -1851,6 +1854,49 @@ class CoordinationControlTests(unittest.TestCase):
                 response = connection.getresponse()
                 self.assertEqual(response.status, 403)
                 response.read()
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
+    def test_control_api_confirms_only_a_controller_verified_art_import(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            server = create_server(0, base / "state.json", base / "control.json")
+            server.controller.confirm_art_import = mock.Mock(return_value={
+                "pass": True,
+                "state": "complete",
+                "requires_llm": False,
+                "message": "Art import confirmed.",
+            })
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+                host = f"127.0.0.1:{server.server_port}"
+                connection.request("GET", "/api/control", headers={"Host": host})
+                control = json.loads(connection.getresponse().read())
+                connection.request(
+                    "POST", "/api/control",
+                    body=json.dumps({
+                        "action": "confirm_art_import",
+                        "job_id": "art-sw-unit-fixture",
+                    }),
+                    headers={
+                        "Host": host,
+                        "Origin": f"http://127.0.0.1:{server.server_port}",
+                        "Content-Type": "application/json",
+                        "X-Wesnoth-CSRF": control["csrf_token"],
+                    },
+                )
+                response = connection.getresponse()
+                payload = json.loads(response.read())
+                self.assertEqual(response.status, 202)
+                self.assertEqual(payload["art_import"]["state"], "complete")
+                server.controller.confirm_art_import.assert_called_once_with(
+                    "art-sw-unit-fixture"
+                )
                 connection.close()
             finally:
                 server.shutdown()

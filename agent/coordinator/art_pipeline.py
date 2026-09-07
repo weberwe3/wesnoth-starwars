@@ -15,8 +15,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
+import struct
 import tempfile
 from typing import Any
+import zlib
 
 from gameplay_contracts import ADDON_ROOT, _config_files
 
@@ -29,6 +31,9 @@ MAX_PUBLIC_BRIEF_CHARS = 6_000
 VALID_ART_STATES = {
     "pending_codex_imagegen", "generating", "ready_for_import", "complete", "failed",
 }
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+UNIT_SPRITE_DIMENSIONS = (72, 72)
+PORTRAIT_DIMENSIONS = (256, 256)
 
 
 def _safe_slug(value: str) -> str:
@@ -133,6 +138,95 @@ def _atomic_write(path: Path, payload: str) -> None:
         temporary.write(payload)
         temporary_path = Path(temporary.name)
     temporary_path.replace(path)
+
+
+def _expected_dimensions(asset: dict[str, str]) -> tuple[int, int]:
+    """Return the import dimensions defined by the art-production contract."""
+
+    return PORTRAIT_DIMENSIONS if asset["state"] == "portrait" else UNIT_SPRITE_DIMENSIONS
+
+
+def _png_diagnostic(path: Path, expected_dimensions: tuple[int, int]) -> str | None:
+    """Verify a complete, alpha-capable PNG without loading untrusted image code."""
+
+    if path.is_symlink() or not path.is_file():
+        return "is missing"
+    try:
+        payload = path.read_bytes()
+    except OSError:
+        return "could not be read"
+    if not payload.startswith(PNG_SIGNATURE):
+        return "is not a PNG"
+
+    offset = len(PNG_SIGNATURE)
+    ihdr: bytes | None = None
+    has_idat = False
+    saw_iend = False
+    while offset < len(payload):
+        if offset + 12 > len(payload):
+            return "has a truncated PNG chunk"
+        length = struct.unpack(">I", payload[offset:offset + 4])[0]
+        chunk_type = payload[offset + 4:offset + 8]
+        end = offset + 12 + length
+        if end > len(payload):
+            return "has a truncated PNG chunk"
+        chunk_data = payload[offset + 8:offset + 8 + length]
+        expected_crc = struct.unpack(">I", payload[offset + 8 + length:end])[0]
+        actual_crc = zlib.crc32(chunk_type + chunk_data) & 0xFFFFFFFF
+        if actual_crc != expected_crc:
+            return "has an invalid PNG checksum"
+        if chunk_type == b"IHDR":
+            if ihdr is not None or length != 13 or offset != len(PNG_SIGNATURE):
+                return "has an invalid PNG header"
+            ihdr = chunk_data
+        elif chunk_type == b"IDAT":
+            has_idat = True
+        elif chunk_type == b"IEND":
+            if length != 0 or end != len(payload):
+                return "has an invalid PNG trailer"
+            saw_iend = True
+            break
+        offset = end
+
+    if ihdr is None or not has_idat or not saw_iend:
+        return "is an incomplete PNG"
+    width, height, bit_depth, color_type, compression, filter_method, _interlace = struct.unpack(
+        ">IIBBBBB", ihdr
+    )
+    if (width, height) != expected_dimensions:
+        return (
+            f"has dimensions {width}×{height}; expected "
+            f"{expected_dimensions[0]}×{expected_dimensions[1]}"
+        )
+    if bit_depth != 8 or color_type not in {4, 6} or compression != 0 or filter_method != 0:
+        return "is not an 8-bit alpha-capable PNG"
+    return None
+
+
+def _completion_failures(
+    root: Path,
+    source_path: str,
+    source: str,
+    expected: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    """Return bounded deterministic failures for one complete art state set."""
+
+    failures: list[dict[str, str]] = []
+    for asset in expected:
+        relative = asset["path"]
+        image = root / ADDON_ROOT / relative
+        png_problem = _png_diagnostic(image, _expected_dimensions(asset))
+        if png_problem:
+            failures.append({
+                "path": source_path,
+                "detail": f"Completed art job is missing valid PNG {relative}: {png_problem}",
+            })
+        if f"~add-ons/Star_Wars_Thrawn_Trilogy/{relative}" not in source:
+            failures.append({
+                "path": source_path,
+                "detail": f"Completed art job is not fully wired into unit WML: {relative}",
+            })
+    return failures
 
 
 def _load_manifest(path: Path) -> dict[str, Any]:
@@ -259,13 +353,9 @@ def validate_art_queue(root: Path) -> dict[str, Any]:
             pending += 1
         else:
             source = sources[live_units[unit_id]["source_path"]]
-            for asset in expected:
-                relative = asset["path"]
-                image = root / ADDON_ROOT / relative
-                if image.is_symlink() or not image.is_file() or image.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n":
-                    failures.append({"path": live_units[unit_id]["source_path"], "detail": f"Completed art job {unit_id} is missing valid PNG {relative}"})
-                elif f"~add-ons/Star_Wars_Thrawn_Trilogy/{relative}" not in source:
-                    failures.append({"path": live_units[unit_id]["source_path"], "detail": f"Completed art job {unit_id} is not fully wired into unit WML: {relative}"})
+            failures.extend(_completion_failures(
+                root, live_units[unit_id]["source_path"], source, expected,
+            ))
         public_jobs.append({
             "id": job.get("id"), "unit_id": unit_id, "unit_name": job.get("unit_name"),
             "state": state, "prompt_path": job.get("prompt_path"), "asset_count": len(expected),
@@ -277,6 +367,62 @@ def validate_art_queue(root: Path) -> dict[str, Any]:
         "jobs": public_jobs,
         "pending": pending,
         "complete": sum(1 for item in public_jobs if item["state"] == "complete"),
+    }
+
+
+def art_import_preflight(root: Path, job_id: str) -> dict[str, Any]:
+    """Verify a user-imported art set without changing its queue state."""
+
+    manifest_path = root / ADDON_ROOT / ART_MANIFEST
+    manifest = _load_manifest(manifest_path)
+    jobs = manifest.get("jobs") if isinstance(manifest, dict) else None
+    if manifest.get("schema_version") != ART_SCHEMA_VERSION or not isinstance(jobs, list):
+        return {"pass": False, "message": "Art queue manifest is missing or invalid", "requires_llm": False}
+    matches = [job for job in jobs if isinstance(job, dict) and job.get("id") == job_id]
+    if len(matches) != 1:
+        return {"pass": False, "message": "Art job is not uniquely present in the queue", "requires_llm": False}
+    job = matches[0]
+    unit_id = job.get("unit_id")
+    sources = _config_files(root)
+    units = {unit["id"]: unit for unit in _unit_definitions(sources)}
+    if not isinstance(unit_id, str) or unit_id not in units or job.get("assets") != _unit_assets(unit_id):
+        return {"pass": False, "message": "Art job contract does not match a current custom unit", "requires_llm": False}
+    source_path = units[unit_id]["source_path"]
+    failures = _completion_failures(root, source_path, sources[source_path], _unit_assets(unit_id))
+    if failures:
+        detail = " ".join(item["detail"] for item in failures[:3])
+        needs_wiring = any("not fully wired" in item["detail"] for item in failures)
+        return {
+            "pass": False,
+            "message": detail[:1200],
+            "requires_llm": needs_wiring,
+            "state": job.get("state"),
+        }
+    return {
+        "pass": True,
+        "message": "All 13 original art files are valid, correctly sized, alpha-capable, and wired into unit WML. No LLM follow-up is needed.",
+        "requires_llm": False,
+        "state": job.get("state"),
+    }
+
+
+def confirm_art_import(root: Path, job_id: str) -> dict[str, Any]:
+    """Mark exactly one fully verified user-imported art job complete."""
+
+    preflight = art_import_preflight(root, job_id)
+    if not preflight["pass"]:
+        return preflight
+    manifest_path = root / ADDON_ROOT / ART_MANIFEST
+    manifest = _load_manifest(manifest_path)
+    jobs = manifest["jobs"]
+    job = next(job for job in jobs if isinstance(job, dict) and job.get("id") == job_id)
+    if job.get("state") != "complete":
+        job["state"] = "complete"
+        _atomic_write(manifest_path, json.dumps(manifest, indent=2) + "\n")
+    return {
+        **preflight,
+        "state": "complete",
+        "message": "Art import confirmed. The complete state set is staged for governed validation and publication; no LLM follow-up was needed.",
     }
 
 
@@ -293,6 +439,10 @@ def public_art_queue(root: Path) -> dict[str, Any]:
             public_job["brief"] = _redact_sensitive_text(
                 _brief(unit, _unit_assets(unit["id"]))
             )[:MAX_PUBLIC_BRIEF_CHARS]
+        preflight = art_import_preflight(root, str(public_job.get("id") or ""))
+        public_job["import_ready"] = bool(preflight["pass"]) and public_job.get("state") != "complete"
+        public_job["import_message"] = preflight["message"]
+        public_job["requires_llm"] = preflight["requires_llm"]
         jobs.append(public_job)
     return {
         "pass": evidence["pass"],
