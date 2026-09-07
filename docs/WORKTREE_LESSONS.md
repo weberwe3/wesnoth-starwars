@@ -99,6 +99,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** Forward the existing `%USERPROFILE%\\.codex` directory through `CODEX_HOME/p` from the launcher and bridge, and derive the same profile path defensively in Python for planning, recovery, Terra, and Luna subprocesses. No credential file is copied or logged.
 - **Prevention:** The bridge fails clearly when the existing auth store is absent; regression tests require the selector to survive credential stripping and WSL path translation without exposing provider values.
 
+### 2026-09-07 — map prose was mistaken for a harmless comment
+
+- **Symptom:** Mission 1 passed the deterministic map-token check and an earlier publication test, but manual play stopped with “a terrain with a string with more than 4 characters” for `center`.
+- **Cause:** A `#`-prefixed descriptive header was added to the external `.map` file. The validator skipped such lines as if the file were WML, while Wesnoth parsed the words in that file as terrain tokens.
+- **Resolution:** Remove the prose header and reject every comment line in external `map_data` sources before publication.
+- **Prevention:** Keep external map files terrain rows only. The map-data regression fixture places a hash-prefixed `center` line in an included map and requires deterministic validation to fail.
+
 ### 2026-09-06 — empty scenario after apparently successful startup
 
 - **Symptom:** First Battle opened on a small empty map and immediately ended. The installed engine log reported `error engine/team_construction: game_error: unknown unit type` for the scenario leader and squads.

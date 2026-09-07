@@ -64,9 +64,11 @@ Do not reopen the infrastructure/reference design unless a concrete defect or ne
 
 ### Installed play-launch consistency
 
-The protected publication gate rejects malformed quoted `map_data` cells,
-including prose values such as `center`, and treats Wesnoth modal map/parser
-diagnostics as fatal even when the GUI process remains alive. The tracked
+The protected publication gate rejects malformed quoted `map_data` cells and
+external-map prose/comment lines, including a hash-prefixed line containing
+`center`; Wesnoth treats external map files as terrain data rather than WML
+comments. It also treats Wesnoth modal map/parser diagnostics as fatal even
+when the GUI process remains alive. The tracked
 `agent/runtime/Play-WesnothStarWars.cmd` launcher requires a clean `main`
 checkout, refreshes only the campaign add-on in the isolated Windows test
 userdata, and then launches the campaign from that refreshed copy. Manual play

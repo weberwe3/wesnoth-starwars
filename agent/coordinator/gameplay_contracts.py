@@ -77,6 +77,19 @@ def validate_map_data(root: Path, sources: dict[str, str]) -> dict[str, Any]:
                     continue
             for row_number, row in enumerate(value.splitlines(), start=1):
                 if row.lstrip().startswith("#"):
+                    # External .map files are terrain data, not WML. Wesnoth
+                    # does not ignore hash-prefixed prose here; it attempts to
+                    # parse the words as terrain identifiers at scenario load.
+                    failures.append({
+                        "path": path,
+                        "row": row_number,
+                        "column": 1,
+                        "token": row.strip()[:80],
+                        "detail": (
+                            f"{path}: map_data row {row_number} contains a comment; "
+                            "Wesnoth map files may contain terrain rows only"
+                        ),
+                    })
                     continue
                 for column, cell in enumerate(row.split(","), start=1):
                     token = cell.strip()
