@@ -32,6 +32,12 @@
       "expected_id": "sw_unit_im_rem_stormtrooper"
     },
     {
+      "id": "sw-new-republic-rifle-squad",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_nr_rifle_squad"
+    },
+    {
       "id": "sw-first-battle-hero-roster",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
