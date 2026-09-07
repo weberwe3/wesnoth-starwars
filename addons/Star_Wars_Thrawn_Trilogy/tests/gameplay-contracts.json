@@ -2,6 +2,12 @@
   "schema_version": 1,
   "contracts": [
     {
+      "id": "sw-new-republic-field-engineer-team",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_nr_field_engineer_team"
+    },
+    {
       "id": "sw-thrawn-campaign-registration",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",

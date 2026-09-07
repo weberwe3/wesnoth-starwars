@@ -78,6 +78,918 @@
           "purpose": "Unit profile portrait"
         }
       ]
+    },
+    {
+      "id": "art-thrawn-phalanx",
+      "unit_id": "Thrawn_Phalanx",
+      "unit_name": "Thrawn Phalanx",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/thrawn-phalanx.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/thrawn-phalanx/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/thrawn-phalanx/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/thrawn-phalanx/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/thrawn-phalanx/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/thrawn-phalanx/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/thrawn-phalanx/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/thrawn-phalanx/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/thrawn-phalanx/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/thrawn-phalanx/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/thrawn-phalanx/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/thrawn-phalanx/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/thrawn-phalanx/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/thrawn-phalanx.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-rifle-squad",
+      "unit_id": "sw_unit_nr_rifle_squad",
+      "unit_name": "New Republic Rifle Squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-rifle-squad.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-rifle-squad/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-rifle-squad/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-rifle-squad/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-rifle-squad/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-rifle-squad/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-rifle-squad/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-rifle-squad/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-rifle-squad/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-rifle-squad/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-rifle-squad/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-rifle-squad/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-rifle-squad/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-rifle-squad.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-rem-stormtrooper",
+      "unit_id": "sw_unit_im_rem_stormtrooper",
+      "unit_name": "Imperial Remnant Stormtrooper",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-rem-stormtrooper.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-rem-stormtrooper/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-rem-stormtrooper.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-recon-squad",
+      "unit_id": "sw_unit_nr_recon_squad",
+      "unit_name": "New Republic Recon Squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-recon-squad.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-recon-squad/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-recon-squad/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-recon-squad/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-recon-squad/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-recon-squad/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-recon-squad/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-recon-squad/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-recon-squad/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-recon-squad/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-recon-squad/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-recon-squad/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-recon-squad/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-recon-squad.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-recon-squad",
+      "unit_id": "sw_unit_im_recon_squad",
+      "unit_name": "Imperial Remnant Recon Squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-recon-squad.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-recon-squad/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-recon-squad/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-recon-squad/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-recon-squad/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-recon-squad/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-recon-squad/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-recon-squad/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-recon-squad/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-recon-squad/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-recon-squad/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-recon-squad/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-recon-squad/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-recon-squad.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-engineer-squad",
+      "unit_id": "sw_unit_nr_engineer_squad",
+      "unit_name": "New Republic Combat Engineer Squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-engineer-squad.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-engineer-squad/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-engineer-squad/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-engineer-squad/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-engineer-squad/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-engineer-squad/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-engineer-squad/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-engineer-squad/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-engineer-squad/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-engineer-squad/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-engineer-squad/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-engineer-squad/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-engineer-squad/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-engineer-squad.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-heavy-weapons-squad",
+      "unit_id": "sw_unit_nr_heavy_weapons_squad",
+      "unit_name": "New Republic Heavy Weapons Squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-heavy-weapons-squad.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-heavy-weapons-squad/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-heavy-weapons-squad.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-slicer-team",
+      "unit_id": "sw_unit_nr_slicer_team",
+      "unit_name": "New Republic Slicer Team",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-slicer-team.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-slicer-team/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-slicer-team/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-slicer-team/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-slicer-team/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-slicer-team/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-slicer-team/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-slicer-team/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-slicer-team/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-slicer-team/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-slicer-team/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-slicer-team/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-slicer-team/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-slicer-team.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-signal-jammer-team",
+      "unit_id": "sw_unit_im_signal_jammer_team",
+      "unit_name": "Imperial Remnant Signal Jammer Team",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-signal-jammer-team.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-signal-jammer-team/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-signal-jammer-team/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-signal-jammer-team/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-signal-jammer-team/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-signal-jammer-team/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-signal-jammer-team/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-signal-jammer-team/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-signal-jammer-team/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-signal-jammer-team/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-signal-jammer-team/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-signal-jammer-team/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-signal-jammer-team/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-signal-jammer-team.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-perimeter-guard-squad",
+      "unit_id": "sw_unit_nr_perimeter_guard_squad",
+      "unit_name": "New Republic Perimeter Guard Squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-perimeter-guard-squad.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-perimeter-guard-squad/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-perimeter-guard-squad.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-pathfinder-squad",
+      "unit_id": "sw_unit_nr_pathfinder_squad",
+      "unit_name": "New Republic Pathfinder Squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-pathfinder-squad.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-pathfinder-squad/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-pathfinder-squad.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-field-engineer-team",
+      "unit_id": "sw_unit_nr_field_engineer_team",
+      "unit_name": "New Republic Field Engineer Team",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-field-engineer-team.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-field-engineer-team/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-field-engineer-team/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-field-engineer-team/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-field-engineer-team/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-field-engineer-team/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-field-engineer-team/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-field-engineer-team/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-field-engineer-team/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-field-engineer-team/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-field-engineer-team/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-field-engineer-team/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-field-engineer-team/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-field-engineer-team.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
     }
   ]
 }
