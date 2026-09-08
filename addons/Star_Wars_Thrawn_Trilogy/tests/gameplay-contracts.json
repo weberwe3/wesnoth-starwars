@@ -83,6 +83,22 @@
       }
     },
     {
+      "id": "sw-first-battle-forward-observer-counterattack",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_forward_observer_counterattack",
+      "expected": {
+        "name": "turn",
+        "turn": "5",
+        "first_time_only": "yes",
+        "unit_id": "sw_first_battle_observer_counterattack",
+        "side": "2",
+        "type": "sw_unit_im_rem_stormtrooper",
+        "x": "16",
+        "y": "8"
+      }
+    },
+    {
       "id": "sw-first-battle-archive-records-acquisition-event",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
