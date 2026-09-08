@@ -606,6 +606,7 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
         "historical_repair",
         "acceptance",
         "base_sha",
+        "resume_diagnostic",
     }
 
     unknown = sorted(set(ticket) - allowed_keys)
@@ -621,6 +622,11 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
         or not re.fullmatch(r"[0-9a-f]{40}", ticket["base_sha"])
     ):
         raise SystemExit("ERROR: base_sha must be a 40-character Git SHA.")
+    if "resume_diagnostic" in ticket and (
+        not isinstance(ticket["resume_diagnostic"], str)
+        or not 1 <= len(ticket["resume_diagnostic"]) <= 2000
+    ):
+        raise SystemExit("ERROR: resume_diagnostic must be bounded text.")
 
     task_id = ticket.get("task_id")
     if not isinstance(task_id, str) or not re.fullmatch(
@@ -2155,6 +2161,12 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
         if resume_branch else
         "This is an explicitly authorized fresh ticket worktree."
     )
+    resume_diagnostic = ticket.get("resume_diagnostic")
+    prior_failure_instruction = (
+        "\nPRIOR FAILED GATE (address this before changing anything else):\n"
+        + resume_diagnostic + "\n"
+        if isinstance(resume_diagnostic, str) else ""
+    )
     implementation_prompt = f"""
 TASK ID: {task_id}
 
@@ -2173,6 +2185,7 @@ edit the acceptance contract; it is coordinator evidence, not a source file.
 
 CONTINUATION POLICY:
 {continuation_instruction}
+{prior_failure_instruction}
 
 You may modify ONLY paths matching these patterns:
 
