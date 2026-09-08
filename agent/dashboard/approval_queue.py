@@ -112,6 +112,48 @@ class ApprovalQueue:
             _atomic_json(self.path, _default())
         else:
             self._recover_interrupted_publication()
+            self._migrate_legacy_gameplay_queue_records()
+
+    @staticmethod
+    def _is_gameplay_record(record: dict[str, Any]) -> bool:
+        """Recognize legacy add-on records that predate validation_profile."""
+
+        if record.get("validation_profile") == "wesnoth-addon-static":
+            return True
+        return any(
+            isinstance(path, str)
+            and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+            for path in record.get("changed_paths") or []
+        )
+
+    def _migrate_legacy_gameplay_queue_records(self) -> None:
+        """Never let a pre-contract gameplay candidate take the old publish path."""
+
+        state = self.read()
+        stale = [
+            record for record in state["records"]
+            if isinstance(record, dict)
+            and record.get("state") in {"ready", "committing"}
+            and self._is_gameplay_record(record)
+            and not isinstance(record.get("acceptance"), dict)
+        ]
+        if not stale:
+            return
+        stale_ids = {str(record.get("id")) for record in stale}
+
+        def migrate(value: dict[str, Any]) -> None:
+            for record in value["records"]:
+                if str(record.get("id")) in stale_ids:
+                    record.update({
+                        "state": "failed",
+                        "error": (
+                            "This gameplay ticket was queued before baseline-aware acceptance "
+                            "contracts existed. Recode with AI will preserve its original objective "
+                            "and create the missing proof before it can publish."
+                        ),
+                        "updated_at": utc_now(),
+                    })
+        self._update(migrate)
 
     def _recover_interrupted_publication(self) -> None:
         state = self.read()

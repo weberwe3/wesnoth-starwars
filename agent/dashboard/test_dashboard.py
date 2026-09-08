@@ -2938,6 +2938,21 @@ class PublicationGameValidationTests(unittest.TestCase):
         history = json.loads(self.history.read_text(encoding="utf-8"))
         self.assertEqual((history["state"], history["main_head"]), ("passed", self.head))
 
+    def test_legacy_gameplay_queue_record_requires_recode_before_publication(self) -> None:
+        legacy = {
+            "id": "b" * 16,
+            "ticket_id": "LEGACY-GAMEPLAY",
+            "state": "ready",
+            "changed_paths": ["addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"],
+            "commit_sha": "c" * 40,
+            "branch": "agent/legacy-gameplay",
+        }
+        self.queue._update(lambda state: state["records"].append(legacy))
+        restarted = ApprovalQueue(self.root)
+        migrated = restarted.record(legacy["id"])
+        self.assertEqual(migrated["state"], "failed")
+        self.assertIn("Recode with AI", migrated["error"])
+
     def test_failed_engine_preserves_merge_and_repair_accepts_current_schema(self) -> None:
         engine = {**self.engine, "pass": False, "diagnostic": "Unknown unit type", "failure_class": "addon_validation"}
         with (
