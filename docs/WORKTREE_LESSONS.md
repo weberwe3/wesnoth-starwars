@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-08 — published game checks did not prove the player launcher mirror
+
+- **Symptom:** A ticket could be labeled Published and Tested after its isolated engine validation while the dashboard had no evidence that `Play-WesnothStarWars.cmd` had refreshed the player-facing add-on copy to a revision containing that ticket.
+- **Cause:** The CMD launcher correctly fetched protected `main`, fast-forwarded, mirrored the add-on, and wrote its commit manifest, but publication validation did not invoke or inspect that independent path.
+- **Resolution:** Run the CMD launcher in validation-only mode after protected merge. Read its manifest and require its mirrored revision, local `HEAD`, and `origin/main` to agree, with the ticket's merge commit as an ancestor.
+- **Prevention:** “Published and Tested” now requires installed-engine, gameplay-contract, and player-launcher evidence. A launcher that is missing, stale, dirty, cannot fast-forward, or cannot prove the merged ticket is present must withhold the final tested label.
+
 ### 2026-09-08 — redundant ticket audit cards retained path ownership
 
 - **Symptom:** Automation deleted a generated candidate whose acceptance behavior already existed, then repeatedly rejected later planning with “paths already owned by queued work or an open pull request.”

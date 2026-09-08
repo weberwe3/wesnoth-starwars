@@ -63,6 +63,8 @@ ENGINE_TIMEOUT_SECONDS = 120
 CAMPAIGN_STARTUP_PROBE_SECONDS = 20
 SCENARIO_RUNTIME_PROBE_SECONDS = 15
 MAX_DIAGNOSTIC_CHARS = 6000
+PLAYER_LAUNCHER_TIMEOUT_SECONDS = 90
+PLAYER_LAUNCHER_MANIFEST_PREFIX = "WESNOTH_LAUNCH_MANIFEST="
 
 
 def find_wesnoth_executable() -> Path | None:
@@ -150,6 +152,134 @@ def diagnostic_paths(diagnostic: str) -> list[str]:
 
 def _powershell_literal(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
+
+
+def _git_revision(root: Path, ref: str) -> str | None:
+    """Read one verified revision without accepting partial Git output."""
+
+    completed = subprocess.run(
+        ["git", "rev-parse", "--verify", ref], cwd=root, text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20, check=False,
+    )
+    value = completed.stdout.strip()
+    return value if completed.returncode == 0 and re.fullmatch(r"[0-9a-f]{40}", value) else None
+
+
+def _is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
+    completed = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", ancestor, descendant], cwd=root,
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20, check=False,
+    )
+    return completed.returncode == 0
+
+
+def _launcher_manifest(text: str) -> dict[str, str] | None:
+    """Parse the launcher's deliberately small key=value proof file."""
+
+    values: dict[str, str] = {}
+    for line in text.splitlines():
+        key, separator, value = line.partition("=")
+        if not separator or not key or key in values:
+            return None
+        values[key] = value
+    required = {"add-on", "published_main", "source"}
+    return values if set(values) == required else None
+
+
+def validate_published_player_launcher(root: Path, expected_main_sha: str) -> dict:
+    """Refresh the real player add-on and prove it includes a merged ticket.
+
+    The CMD launcher is the player's authoritative entry point. Validation-only
+    mode performs its normal protected-main fetch, fast-forward, and isolated
+    add-on mirror without starting the GUI, then emits the exact revision it
+    mirrored in a local manifest.
+    """
+
+    launcher = root / "agent" / "runtime" / "Play-WesnothStarWars.cmd"
+    checks = {
+        "launcher_present": launcher.is_file() and not launcher.is_symlink(),
+        "expected_merge_sha": bool(re.fullmatch(r"[0-9a-f]{40}", expected_main_sha)),
+        "launcher_exit_zero": False,
+        "launcher_manifest_present": False,
+        "launcher_manifest_matches_addon": False,
+        "launcher_contains_merged_ticket": False,
+        "local_main_matches_launcher": False,
+        "origin_main_matches_launcher": False,
+    }
+    evidence = {
+        "pass": False,
+        "command_kind": "published-player-launcher-refresh",
+        "exit_code": None,
+        "checks": checks,
+        "expected_main_sha": expected_main_sha,
+        "launcher_main_sha": None,
+        "diagnostic": "",
+        "failure_class": "launcher_synchronization",
+    }
+    if not checks["launcher_present"]:
+        evidence["diagnostic"] = "Published player launcher is missing or unsafe."
+        return evidence
+    if not checks["expected_merge_sha"]:
+        evidence["diagnostic"] = "Protected merge did not provide a valid commit identity."
+        return evidence
+    if shutil.which("powershell.exe") is None:
+        evidence["diagnostic"] = "Windows PowerShell is unavailable for player-launcher validation."
+        evidence["failure_class"] = "engine_infrastructure"
+        return evidence
+    try:
+        command_line = 'call "' + windows_path(launcher) + '"'
+        script = (
+            "$ErrorActionPreference='Stop';"
+            "$env:WESNOTH_PLAY_VALIDATE_ONLY='1';"
+            "$command=" + _powershell_literal(command_line) + ";"
+            "& $env:ComSpec /d /c $command;"
+            "$exitCode=$LASTEXITCODE;"
+            "$manifest=Join-Path $env:LOCALAPPDATA 'WesnothStarWarsTest\\userdata\\wesnoth-starwars-launch.txt';"
+            "if(!(Test-Path -LiteralPath $manifest)){Write-Error 'Player launcher did not create its manifest.';exit 97};"
+            "$encoded=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes([IO.File]::ReadAllText($manifest)));"
+            "[Console]::Out.WriteLine('" + PLAYER_LAUNCHER_MANIFEST_PREFIX + "'+$encoded);"
+            "exit $exitCode"
+        )
+        encoded = base64.b64encode(script.encode("utf-16le")).decode("ascii")
+        completed = subprocess.run(
+            ["powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
+            cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            timeout=PLAYER_LAUNCHER_TIMEOUT_SECONDS, check=False,
+        )
+        evidence["exit_code"] = completed.returncode
+        checks["launcher_exit_zero"] = completed.returncode == 0
+        encoded_manifest = next(
+            (line.removeprefix(PLAYER_LAUNCHER_MANIFEST_PREFIX) for line in completed.stdout.splitlines()
+             if line.startswith(PLAYER_LAUNCHER_MANIFEST_PREFIX)),
+            "",
+        )
+        try:
+            manifest_text = base64.b64decode(encoded_manifest, validate=True).decode("utf-8")
+        except (ValueError, UnicodeDecodeError):
+            manifest_text = ""
+        manifest = _launcher_manifest(manifest_text)
+        checks["launcher_manifest_present"] = manifest is not None
+        if manifest is not None:
+            launcher_sha = manifest["published_main"]
+            evidence["launcher_main_sha"] = launcher_sha
+            checks["launcher_manifest_matches_addon"] = manifest["add-on"] == ADDON_ID
+            checks["launcher_contains_merged_ticket"] = bool(
+                re.fullmatch(r"[0-9a-f]{40}", launcher_sha)
+                and _is_ancestor(root, expected_main_sha, launcher_sha)
+            )
+            checks["local_main_matches_launcher"] = _git_revision(root, "HEAD") == launcher_sha
+            checks["origin_main_matches_launcher"] = _git_revision(root, "origin/main") == launcher_sha
+        evidence["diagnostic"] = _bounded_diagnostic(completed.stdout)
+    except (OSError, subprocess.SubprocessError, ValueError, RuntimeError) as exc:
+        evidence["diagnostic"] = f"Player launcher validation infrastructure failed: {exc.__class__.__name__}"
+        evidence["failure_class"] = "engine_infrastructure"
+    evidence["pass"] = all(checks.values())
+    if evidence["pass"]:
+        evidence["failure_class"] = None
+        evidence["diagnostic"] = ""
+    elif not evidence["diagnostic"]:
+        evidence["diagnostic"] = "Player launcher did not mirror the required protected-main revision."
+    return evidence
 
 
 def run_engine(command: list[str], *, cwd: Path, timeout: int) -> subprocess.CompletedProcess:
@@ -450,9 +580,10 @@ def runtime_scenario_probes(root: Path, executable: Path, selected: set[str]) ->
 
 
 def validate_post_publish_game(
-    root: Path, *, required_gameplay_paths: list[str] | None = None
+    root: Path, *, required_gameplay_paths: list[str] | None = None,
+    expected_main_sha: str | None = None,
 ) -> dict:
-    """Fail closed unless engine startup and declared gameplay contracts pass."""
+    """Fail closed unless engine, contracts, and the player launcher all pass."""
 
     evidence = validate_engine_002(root)
     evidence["command_kind"] = "wesnoth-wml-preprocess-and-campaign-startup"
@@ -460,6 +591,7 @@ def validate_post_publish_game(
     evidence["checks"]["campaign_temporary_artifacts_cleaned"] = False
     evidence["checks"]["scenario_structure_contracts"] = False
     evidence["checks"]["scenario_runtime_probes"] = False
+    evidence["checks"]["published_player_launcher"] = False
     if not evidence["pass"]:
         return evidence
     executable = find_wesnoth_executable()
@@ -494,7 +626,10 @@ def validate_post_publish_game(
         evidence["checks"]["campaign_temporary_artifacts_cleaned"] = not temporary.exists()
     evidence["pass"] = all(
         value for key, value in evidence["checks"].items()
-        if key not in {"scenario_structure_contracts", "scenario_runtime_probes"}
+        if key not in {
+            "scenario_structure_contracts", "scenario_runtime_probes",
+            "published_player_launcher",
+        }
     )
     if not evidence["pass"]:
         return evidence
@@ -532,6 +667,17 @@ def validate_post_publish_game(
         evidence["diagnostic_paths"] = sorted(set(
             evidence.get("diagnostic_paths", []) + contract_evidence.get("diagnostic_paths", [])
         ))[:20]
+        evidence["pass"] = False
+        return evidence
+    target_sha = expected_main_sha or _git_revision(root, "HEAD")
+    launcher = validate_published_player_launcher(root, target_sha or "")
+    evidence["player_launcher"] = launcher
+    evidence["checks"]["published_player_launcher"] = launcher["pass"] is True
+    if not evidence["checks"]["published_player_launcher"]:
+        evidence["failure_class"] = launcher.get("failure_class") or "launcher_synchronization"
+        evidence["diagnostic"] = _bounded_diagnostic(
+            evidence.get("diagnostic", ""), launcher.get("diagnostic", "")
+        )
     evidence["pass"] = all(evidence["checks"].values())
     return evidence
 
@@ -1088,6 +1234,66 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         self.assertIn("WIN:userdata", command)
         self.assertIn("WIN:_main.cfg", command)
         self.assertIn("WIN:output", command)
+
+    def test_player_launcher_validation_requires_a_manifest_with_the_merged_commit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            launcher = root / "agent" / "runtime" / "Play-WesnothStarWars.cmd"
+            launcher.parent.mkdir(parents=True)
+            launcher.write_text("@echo off\n", encoding="utf-8")
+            expected = "a" * 40
+            mirrored = "b" * 40
+            manifest = (
+                f"add-on={ADDON_ID}\n"
+                f"published_main={mirrored}\n"
+                f"source={root.as_posix()}\n"
+            )
+            encoded_manifest = base64.b64encode(manifest.encode("utf-8")).decode("ascii")
+            completed = subprocess.CompletedProcess(
+                ["powershell.exe"], 0,
+                PLAYER_LAUNCHER_MANIFEST_PREFIX + encoded_manifest + "\n", "",
+            )
+            with (
+                mock.patch(__name__ + ".shutil.which", return_value="powershell.exe"),
+                mock.patch(__name__ + ".windows_path", return_value=r"\\wsl.localhost\\Ubuntu-24.04\\launcher.cmd"),
+                mock.patch(__name__ + ".subprocess.run", return_value=completed) as run,
+                mock.patch(__name__ + "._is_ancestor", return_value=True),
+                mock.patch(__name__ + "._git_revision", side_effect=[mirrored, mirrored]),
+            ):
+                evidence = validate_published_player_launcher(root, expected)
+            self.assertTrue(evidence["pass"], evidence)
+            self.assertEqual(evidence["launcher_main_sha"], mirrored)
+            script = base64.b64decode(run.call_args.args[0][-1]).decode("utf-16le")
+            self.assertIn("WESNOTH_PLAY_VALIDATE_ONLY", script)
+
+    def test_player_launcher_validation_rejects_a_mirror_without_the_merged_ticket(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            launcher = root / "agent" / "runtime" / "Play-WesnothStarWars.cmd"
+            launcher.parent.mkdir(parents=True)
+            launcher.write_text("@echo off\n", encoding="utf-8")
+            expected = "a" * 40
+            mirrored = "b" * 40
+            manifest = (
+                f"add-on={ADDON_ID}\n"
+                f"published_main={mirrored}\n"
+                f"source={root.as_posix()}\n"
+            )
+            encoded_manifest = base64.b64encode(manifest.encode("utf-8")).decode("ascii")
+            completed = subprocess.CompletedProcess(
+                ["powershell.exe"], 0,
+                PLAYER_LAUNCHER_MANIFEST_PREFIX + encoded_manifest + "\n", "",
+            )
+            with (
+                mock.patch(__name__ + ".shutil.which", return_value="powershell.exe"),
+                mock.patch(__name__ + ".windows_path", return_value=r"\\wsl.localhost\\Ubuntu-24.04\\launcher.cmd"),
+                mock.patch(__name__ + ".subprocess.run", return_value=completed),
+                mock.patch(__name__ + "._is_ancestor", return_value=False),
+                mock.patch(__name__ + "._git_revision", side_effect=[mirrored, mirrored]),
+            ):
+                evidence = validate_published_player_launcher(root, expected)
+            self.assertFalse(evidence["pass"])
+            self.assertFalse(evidence["checks"]["launcher_contains_merged_ticket"])
 
     def test_windows_engine_runner_uses_a_waiting_hidden_process(self) -> None:
         command = ["C:\\Wesnoth\\wesnoth.exe", "--preprocess", "a b.cfg", "output"]
