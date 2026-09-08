@@ -59,6 +59,42 @@ SENSITIVE_ENV = re.compile(
     re.IGNORECASE,
 )
 
+# The planner API requires every declared field to be required. Fields that do
+# not apply to a claim kind are therefore explicitly null, then the local
+# acceptance validator normalizes only the relevant fields.
+ACCEPTANCE_CLAIM_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": [
+        "kind", "path", "base", "contains", "unit_type", "instance_id",
+        "side", "x", "y", "event_id", "row", "column", "terrain",
+    ],
+    "properties": {
+        "kind": {"type": "string", "enum": ["source_text", "unit_placement", "event_contains", "map_cell"]},
+        "path": {"type": "string", "minLength": 1, "maxLength": 240},
+        "base": {"type": "string", "enum": ["absent", "different"]},
+        "contains": {"type": ["string", "null"], "maxLength": 500},
+        "unit_type": {"type": ["string", "null"], "maxLength": 160},
+        "instance_id": {"type": ["string", "null"], "maxLength": 160},
+        "side": {"type": ["string", "integer", "null"]},
+        "x": {"type": ["string", "integer", "null"]},
+        "y": {"type": ["string", "integer", "null"]},
+        "event_id": {"type": ["string", "null"], "maxLength": 160},
+        "row": {"type": ["integer", "null"]},
+        "column": {"type": ["integer", "null"]},
+        "terrain": {"type": ["string", "null"], "maxLength": 12},
+    },
+}
+ACCEPTANCE_SCHEMA = {
+    "type": ["object", "null"],
+    "additionalProperties": False,
+    "required": ["schema_version", "claims"],
+    "properties": {
+        "schema_version": {"type": "integer", "enum": [1]},
+        "claims": {"type": "array", "minItems": 1, "maxItems": 12, "items": ACCEPTANCE_CLAIM_SCHEMA},
+    },
+}
+
 TICKET_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
@@ -79,7 +115,7 @@ TICKET_SCHEMA = {
                         "validation_profile", "validation_root", "resume_branch",
                         "resume_pr_number", "resume_pr_head_sha",
                         "replace_pr_number", "replace_pr_head_sha",
-                        "replace_pr_branch",
+                        "replace_pr_branch", "acceptance",
                     ],
                     "properties": {
                         "worker": {
@@ -118,6 +154,7 @@ TICKET_SCHEMA = {
                         "replace_pr_branch": {
                             "type": ["string", "null"], "maxLength": 200,
                         },
+                        "acceptance": ACCEPTANCE_SCHEMA,
                     },
                 },
             ]
@@ -142,6 +179,7 @@ BACKLOG_SCHEMA = {
                 "required": [
                     "summary", "impact", "worker", "objective",
                     "allowed_paths", "validation_profile", "validation_root",
+                    "acceptance",
                 ],
                 "properties": {
                     "summary": {"type": "string", "minLength": 1, "maxLength": 500},
@@ -159,6 +197,7 @@ BACKLOG_SCHEMA = {
                         "enum": ["static-text", "wesnoth-addon-static"],
                     },
                     "validation_root": {"type": ["string", "null"], "maxLength": 240},
+                    "acceptance": ACCEPTANCE_SCHEMA,
                 },
             },
         },
@@ -642,7 +681,7 @@ class AutonomyController:
             if recode_record is None and continuous:
                 recode_record = self._automatic_recode_record()
             if recode_record is not None:
-                proposal = self._exact_recode_proposal(recode_record)
+                proposal = self._exact_recode_proposal(recode_record, mode)
                 self.queue.event(
                     "Sol ticket selection avoided for exact recode",
                     detail=(
@@ -948,8 +987,8 @@ class AutonomyController:
                 return self.queue.failed_record(record_id, commit_sha)
         return None
 
-    def _exact_recode_proposal(self, failed: dict) -> dict:
-        """Bind recode to the already authorized queue record without model selection."""
+    def _exact_recode_proposal(self, failed: dict, mode: str = "sol-low") -> dict:
+        """Bind recode to one record; draft missing legacy acceptance evidence only."""
 
         branch = failed.get("branch")
         commit_sha = failed.get("commit_sha")
@@ -975,6 +1014,7 @@ class AutonomyController:
                 raise ControlError(
                     "The failed ticket pull request is no longer open at the exact approved head"
                 )
+            self._ensure_recode_acceptance(item, mode)
             proposal = self._resume_item_proposal(item)
             proposal.update({
                 "summary": f"Recode {failed.get('ticket_id')} on its exact pull-request branch",
@@ -1034,9 +1074,12 @@ class AutonomyController:
             "allowed_paths": evidence.get("allowed_paths"),
             "validation_profile": evidence.get("validation_profile"),
             "validation_root": evidence.get("validation_root"),
+            "acceptance": evidence.get("acceptance"),
+            "base_sha": evidence.get("base_sha"),
             "number": None,
             "head_sha": None,
         }
+        self._ensure_recode_acceptance(item, mode, worktree=worktree)
         proposal = self._resume_item_proposal(item)
         proposal.update({
             "summary": f"Recode {failed.get('ticket_id')} on its exact failed branch",
@@ -1050,6 +1093,82 @@ class AutonomyController:
             },
         })
         return proposal
+
+    def _ensure_recode_acceptance(
+        self, item: dict, mode: str, *, worktree: Path | None = None
+    ) -> None:
+        """Spend one bounded Sol call only when an old ticket lacks proof data."""
+
+        if item.get("validation_profile") != "wesnoth-addon-static":
+            return
+        if item.get("acceptance") is not None:
+            return
+        if worktree is None:
+            try:
+                worktree = ticket_runner.resolve_resume_worktree(self.root, str(item.get("name") or ""))
+            except SystemExit as exc:
+                raise ControlError("The legacy recode worktree is unavailable") from exc
+        base = subprocess.run(
+            ["git", "merge-base", "HEAD", "main"], cwd=worktree,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            text=True, timeout=30, check=False,
+        )
+        base_sha = base.stdout.strip()
+        if base.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", base_sha):
+            raise ControlError("Could not determine the legacy ticket base revision")
+        executable = ticket_runner.resolve_codex_executable()
+        if not executable:
+            raise ControlError("Codex CLI is unavailable to create legacy ticket acceptance evidence")
+        runtime = self.root / "agent" / "runtime"
+        runtime.mkdir(parents=True, exist_ok=True)
+        os.chmod(runtime, 0o700)
+        request_id = uuid.uuid4().hex[:12]
+        schema_path = runtime / f"sol-recode-acceptance-schema-{request_id}.json"
+        output_path = runtime / f"sol-recode-acceptance-{request_id}.json"
+        schema_path.write_text(json.dumps(ACCEPTANCE_SCHEMA, indent=2) + "\n", encoding="utf-8")
+        os.chmod(schema_path, 0o600)
+        windows_binary = executable.lower().endswith(".exe")
+        prompt = f"""Draft only a truthful acceptance contract for this legacy Wesnoth ticket.
+Read the exact existing worktree and its original objective. Do not edit files or run write commands.
+Return only the schema JSON, never null. The contract must prove a promised visible/gameplay
+outcome differs from base {base_sha}; use unit_placement, map_cell, event_contains, or a
+precise source_text claim. Do not use installed_game_repair, comments, notes, generic loading,
+or existing contracts as evidence. Every schema field is mandatory; use null where irrelevant.
+Original objective: {json.dumps(item.get('objective'))}
+Allowed paths: {json.dumps(item.get('allowed_paths'))}
+Existing candidate paths: {json.dumps(item.get('changed_paths'))}
+"""
+        command = [
+            executable, "exec", "-C", self._command_path(worktree, windows_binary), "-s", "read-only",
+            "-m", VALID_MODES[mode]["cli_model"], "-c",
+            f'model_reasoning_effort="{VALID_MODES[mode]["effort"]}"',
+            "--ephemeral", "--ignore-user-config", "--color", "never",
+            "--output-schema", self._command_path(schema_path, windows_binary),
+            "-o", self._command_path(output_path, windows_binary), "-",
+        ]
+        environment = {
+            key: value for key, value in ticket_runner.codex_environment(executable).items()
+            if not SENSITIVE_ENV.search(key)
+        }
+        try:
+            completed = subprocess.run(
+                command, cwd=worktree, env=environment, input=prompt, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                timeout=PLANNER_TIMEOUT_SECONDS, check=False,
+            )
+            if completed.returncode != 0:
+                raise ControlError(self._planner_failure_detail(completed))
+            acceptance = json.loads(output_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
+            raise ControlError("Sol did not return legacy ticket acceptance evidence") from exc
+        finally:
+            schema_path.unlink(missing_ok=True)
+            output_path.unlink(missing_ok=True)
+        validated = ticket_runner.validate_acceptance_contract(acceptance)
+        if not validated.get("pass"):
+            raise ControlError("Sol returned an invalid legacy ticket acceptance contract")
+        item["acceptance"] = validated["contract"]
+        item["base_sha"] = base_sha
 
     def _plan(
         self,
@@ -1167,6 +1286,7 @@ when no safe non-overlapping priority can proceed without an unmerged dependency
 Describe its user-visible or mod-facing impact separately from its implementation summary.
 Python will validate your JSON, create the isolated worktree, invoke workers, run gates, and stop before commit/push/merge.
 Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must also update addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json with a compact contract for each changed gameplay source. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Existing published gameplay IDs, including campaign first_scenario targets, are compatibility contracts: never rename or remove them solely to apply a naming convention. Python runs historical-retention validation locally and rejects a candidate that breaks one.
+Every wesnoth-addon-static ticket MUST include a non-null acceptance contract. It is immutable evidence that the promised feature is absent or different at the ticket base and present in the candidate. Use unit_placement for a promised placed unit (type, instance id, side, x, y), map_cell for a map coordinate (row, column, terrain), event_contains for a named event behavior, or source_text only for a precise non-gameplay WML text change. Every claim object must include every schema field; set fields irrelevant to its kind to null. Never use a note, comment, or generic existing contract as evidence that a new gameplay promise was fulfilled. Set acceptance null only for static-text tickets.
 Set ticket.resume_branch to the exact branch from resumable_local_work when continuing remnants.
 For resumable_pull_requests, also copy its exact number and head_sha into
 ticket.resume_pr_number and ticket.resume_pr_head_sha. Published history must only
@@ -1288,6 +1408,14 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "replace_pr_number": None,
                 "replace_pr_head_sha": None,
                 "replace_pr_branch": None,
+                "acceptance": {
+                    "schema_version": 1,
+                    "claims": [{
+                        "kind": "installed_game_repair",
+                        "path": ADDON_ROOT + "/_main.cfg",
+                        "base": "different",
+                    }],
+                },
             },
             "_planning_inventory": inventory,
             "_post_publish_game_repair": True,
@@ -1363,6 +1491,14 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "replace_pr_number": None,
                 "replace_pr_head_sha": None,
                 "replace_pr_branch": None,
+                "acceptance": {
+                    "schema_version": 1,
+                    "claims": [{
+                        "kind": "installed_game_repair",
+                        "path": ADDON_ROOT + "/_main.cfg",
+                        "base": "different",
+                    }],
+                },
             },
             "_planning_inventory": inventory,
             "_historical_gameplay_repair": True,
@@ -1555,6 +1691,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                     "replace_pr_number": None,
                     "replace_pr_head_sha": None,
                     "replace_pr_branch": None,
+                    "acceptance": source.get("acceptance"),
                 },
                 "_planning_inventory": inventory,
             }
@@ -1614,7 +1751,10 @@ the schema JSON. Do not edit files or propose governance, dashboard, security, o
 already completed work. Tickets must be independently reviewable, narrowly scoped,
 safe to run sequentially from protected main, and use exact files or directory/**
 patterns. Use wesnoth-addon-static with the add-on root for game WML; otherwise use
-static-text and null. Prefer fast-fix only for unambiguous one- or two-file work.
+static-text and null. Every wesnoth-addon-static ticket must include a non-null
+baseline-aware acceptance contract using unit_placement, map_cell, event_contains,
+or a narrowly precise source_text claim; set irrelevant claim fields to null.
+Prefer fast-fix only for unambiguous one- or two-file work.
 If no safe implementation sequence exists, return stop with an empty tickets list.
 Owner brief: {json.dumps(brief)}
 Owner planning guidance: {json.dumps(guidance)}
@@ -1678,6 +1818,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                     "replace_pr_number": None,
                     "replace_pr_head_sha": None,
                     "replace_pr_branch": None,
+                    "acceptance": raw.get("acceptance"),
                 },
                 "_planning_inventory": inventory,
             }
@@ -1697,6 +1838,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                     for key in (
                         "worker", "objective", "allowed_paths",
                         "validation_profile", "validation_root",
+                        "acceptance",
                     )
                 },
             })
@@ -1744,6 +1886,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "allowed_paths": item.get("allowed_paths"),
                 "validation_profile": item.get("validation_profile"),
                 "validation_root": item.get("validation_root"),
+                "acceptance": item.get("acceptance"),
+                "base_sha": item.get("base_sha"),
             }, sort_keys=True, separators=(",", ":"))
             for item in unique.values()
         }
@@ -1786,6 +1930,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "replace_pr_number": None,
                 "replace_pr_head_sha": None,
                 "replace_pr_branch": None,
+                "acceptance": item.get("acceptance"),
+                "base_sha": item.get("base_sha"),
             },
         }
 
@@ -1922,6 +2068,19 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             resume_pr_head_sha = resumable.get("head_sha")
         if resume_branch is None and proposal.get("action") != "replace_pr":
             source = raw
+        base_sha = source.get("base_sha")
+        if source.get("validation_profile") == "wesnoth-addon-static":
+            if base_sha is None:
+                base_completed = subprocess.run(
+                    ["git", "rev-parse", "main"], cwd=self.root,
+                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                    text=True, timeout=30, check=False,
+                )
+                base_sha = base_completed.stdout.strip()
+                if base_completed.returncode != 0:
+                    raise ControlError("Could not determine the exact main revision for ticket acceptance")
+            if not isinstance(base_sha, str) or not re.fullmatch(r"[0-9a-f]{40}", base_sha):
+                raise ControlError("Ticket acceptance base is invalid")
         timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
         ticket = {
             "task_id": f"SOL-{timestamp}-{run_id[:4].upper()}",
@@ -1938,7 +2097,10 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "replace_pr_number": replace_pr_number if proposal.get("action") == "replace_pr" else None,
             "replace_pr_head_sha": replace_pr_head_sha if proposal.get("action") == "replace_pr" else None,
             "replace_pr_branch": replace_pr_branch,
+            "acceptance": source.get("acceptance"),
         }
+        if base_sha is not None:
+            ticket["base_sha"] = base_sha
         if proposal.get("_historical_gameplay_repair") or source.get("historical_repair") is True:
             ticket["historical_repair"] = True
         runtime = self.root / "agent" / "runtime"
@@ -1953,6 +2115,13 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 raise ControlError("Generated ticket contract failed protected-path validation") from exc
         finally:
             temporary.unlink(missing_ok=True)
+        if (
+            validated["validation_profile"] == "wesnoth-addon-static"
+            and validated.get("acceptance") is None
+        ):
+            raise ControlError(
+                "A gameplay ticket requires a baseline-aware acceptance contract before work can start"
+            )
         for pattern in validated["allowed_paths"]:
             if self._pattern_can_touch_protected(pattern):
                 raise ControlError("Sol proposed a protected path")
@@ -2321,6 +2490,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                     "allowed_paths": evidence["allowed_paths"],
                     "validation_profile": evidence["validation_profile"],
                     "validation_root": evidence.get("validation_root"),
+                    "acceptance": evidence.get("acceptance"),
+                    "base_sha": evidence.get("base_sha"),
                     "historical_repair": evidence.get("historical_repair") is True,
             }
             if len(changed_paths) > 200:
@@ -2413,6 +2584,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "allowed_paths": contract["allowed_paths"],
                 "validation_profile": contract["validation_profile"],
                 "validation_root": contract.get("validation_root"),
+                "acceptance": contract.get("acceptance"),
+                "base_sha": contract.get("base_sha"),
             }
             worktree = worktrees.get(branch)
             if worktree is None:
@@ -2618,6 +2791,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 ),
                 "validation_profile": ticket["validation_profile"],
                 "validation_root": ticket.get("validation_root"),
+                "acceptance": ticket.get("acceptance"),
+                "base_sha": ticket.get("base_sha"),
                 "historical_repair": ticket.get("historical_repair") is True,
             }
         return evidence

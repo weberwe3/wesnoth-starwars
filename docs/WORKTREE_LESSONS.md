@@ -134,6 +134,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** Remove the prose header and reject every comment line in external `map_data` sources before publication.
 - **Prevention:** Keep external map files terrain rows only. The map-data regression fixture places a hash-prefixed `center` line in an included map and requires deterministic validation to fail.
 
+### 2026-09-08 — a ticket was tested without delivering its promised gameplay
+
+- **Symptom:** `SOL-20260908-073809-EB7F` was marked Published and Tested, yet its stated Mission 1 unit/map change was not visible in play. Its implementation diff contained only a tactical note.
+- **Cause:** The pre-existing gates proved that the current add-on loaded and that retained source/event contracts still existed. They did not compare the candidate against the ticket's own starting revision, so an already-present unit contract could pass while the new ticket made no related change.
+- **Resolution:** Every new `wesnoth-addon-static` ticket now carries an immutable, baseline-aware acceptance contract. The coordinator records the exact base SHA before work begins and requires each claimed unit placement, map cell, named event behavior, or precise source change to be absent/different at that base and present in the candidate. The contract is checked before review/queueing, again immediately before push, and again with the exact post-merge installed-game validation. A reactive repair created from a real engine failure is explicitly marked deferred and can be certified only by that post-merge engine run.
+- **Prevention:** Never mark a gameplay ticket tested because WML loads, an old contract remains, or a worker reports completion. Put an acceptance claim in the coordinator ticket before implementation; use `unit_placement` for visible units, `map_cell` for terrain, and `event_contains` for scripted behavior. A note or unrelated source edit must fail the baseline-aware regression test.
+
 ### 2026-09-07 — custom units were included without Wesnoth registration
 
 - **Symptom:** Mission 1's map opened after a ticket was marked Published and Tested, but every commander and squad was absent. The normal campaign log reported `unknown unit type` for all scenario unit instances.

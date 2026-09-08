@@ -1184,3 +1184,19 @@ inspection and in-scope patch application. They continue to forbid tests,
 package-manager or network operations, commits, merges, pushes, and other Git
 writes. Recovery therefore has enough information access to act on a precise
 diagnostic without broadening execution or publication authority.
+
+### 2026-09-08 — baseline-aware gameplay acceptance contracts
+
+The publication pipeline now distinguishes a surviving existing gameplay
+contract from proof that the current ticket delivered its stated change. New
+`wesnoth-addon-static` tickets must include one to twelve immutable acceptance
+claims and an exact `base_sha` recorded before implementation. Claims describe
+a concrete unit placement, map cell, named event behavior, or precise source
+outcome. Python verifies that each candidate claim is in scope, present in the
+candidate, and absent or different in that ticket's base revision. It repeats
+the verification before publication and pairs it with the exact post-merge
+installed Wesnoth test before assigning **Published and Tested**. This prevents
+an unrelated note, comment, or already-existing unit from certifying a promised
+gameplay change. Legacy tickets without this evidence are preserved as legacy
+records rather than treated as proof for future autonomous work; their repairs
+retain the original objective and must establish a new contract.
