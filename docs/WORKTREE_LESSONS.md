@@ -155,6 +155,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** Keep PNGs physically under `images/`, but reference them in WML as `units/...` and `portraits/...`. Stage runtime probes with the same `[binary_path]`, `[+units]`, utility macros, and ordering as the player campaign. Preserve `--log-to-file` on preprocessing so an engine exit always retains the real diagnostic.
 - **Prevention:** Reject `~add-ons/.../images/...` and `images/units|portraits/...` in runtime image fields, map canonical runtime references back to their on-disk `images/` files for deterministic validation, and require player-equivalent startup probes for every scenario using newly imported art.
 
+### 2026-09-08 — malformed planner acceptance contract stopped automation
+
+- **Symptom:** Historical gameplay validation passed, but autonomous planning then stopped with the misleading dashboard error “Generated ticket contract failed protected-path validation.” No worktree was created.
+- **Cause:** The planner schema allowed a `source_text` acceptance claim to set its required `contains` evidence to null. The local acceptance validator correctly rejected that proposal, but the control layer collapsed every ticket-schema rejection into a protected-path error and did not attempt a corrected planning retry.
+- **Resolution:** Use strict per-kind acceptance-schema branches that require the evidence fields for each claim type. Preserve the actual safe validator diagnostic in the dashboard, and retry only one malformed planner contract with that diagnostic before automation can stop.
+- **Prevention:** A planner proposal must validate before any worktree exists. Tests cover non-null `source_text` evidence, truthful validation diagnostics, and exactly one corrective retry; no retry may weaken ticket scope, acceptance rules, model routing, or publication controls.
+
 ### 2026-09-06 — empty scenario after apparently successful startup
 
 - **Symptom:** First Battle opened on a small empty map and immediately ended. The installed engine log reported `error engine/team_construction: game_error: unknown unit type` for the scenario leader and squads.
