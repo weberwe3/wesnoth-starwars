@@ -26,6 +26,7 @@ import ticket_runner  # noqa: E402
 import ticket_acceptance  # noqa: E402
 import worktree_paths  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
+from game_validation_state import gameplay_revalidation_required  # noqa: E402
 from autonomy import (  # noqa: E402
     ACCEPTANCE_CLAIM_SCHEMA,
     AutonomyController,
@@ -987,6 +988,75 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertEqual(proposal["ticket"]["worker"], "fast-fix")
             overlap.assert_called_once()
             build.assert_called_once()
+
+    def test_static_ticket_selection_uses_no_planner_call(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            execution = {
+                "worker": "fast-fix",
+                "objective": "priority-01: Add one bounded static fixture",
+                "impact": "Makes the ordered priority executable without a planning call.",
+                "allowed_paths": ["addons/fixture.cfg"],
+                "validation_profile": "static-text",
+                "validation_root": None,
+                "acceptance": None,
+            }
+            inventory = {"planned_priorities": [{
+                "id": "priority-01", "label": "Priority one", "status": "pending",
+                "source": "static", "execution": execution,
+            }]}
+            with (
+                mock.patch.object(controller, "_reject_overlapping_proposal") as overlap,
+                mock.patch.object(controller, "_build_ticket") as build,
+            ):
+                proposal = controller._next_static_priority(inventory)
+            self.assertEqual(proposal["ticket"]["objective"], execution["objective"])
+            self.assertEqual(proposal["impact"], execution["impact"])
+            overlap.assert_called_once()
+            build.assert_called_once()
+
+    def test_static_priority_without_a_complete_contract_remains_ambiguous(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            inventory = {"planned_priorities": [{
+                "id": "priority-01", "label": "Priority one", "status": "pending",
+                "source": "static",
+            }]}
+            self.assertIsNone(controller._next_static_priority(inventory))
+
+    def test_static_priority_completion_contract_marks_stale_roadmap_entry_complete(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            planned = root / "agent" / "dashboard" / "static" / "planned-tickets.json"
+            contracts = root / "addons" / "Star_Wars_Thrawn_Trilogy" / "tests" / "gameplay-contracts.json"
+            planned.parent.mkdir(parents=True)
+            contracts.parent.mkdir(parents=True)
+            planned.write_text(json.dumps({"tickets": [{
+                "id": "priority-01", "label": "Priority one", "brief": "Completed fixture",
+                "completion_contracts": ["fixture-contract"],
+            }]}), encoding="utf-8")
+            contracts.write_text(json.dumps({"contracts": [{"id": "fixture-contract"}]}), encoding="utf-8")
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            self.assertEqual(controller._planned_priorities()[0]["status"], "completed")
+
+    def test_candidate_only_acceptance_parser_does_not_rerun_historical_gameplay(self) -> None:
+        self.assertFalse(gameplay_revalidation_required([
+            "agent/coordinator/ticket_acceptance.py",
+        ]))
+        self.assertTrue(gameplay_revalidation_required([
+            "agent/coordinator/gameplay_contracts.py",
+        ]))
 
     def test_priority_exhaustion_requires_no_pending_ticket(self) -> None:
         self.assertTrue(AutonomyController._priorities_exhausted({

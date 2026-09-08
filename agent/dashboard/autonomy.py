@@ -1337,6 +1337,17 @@ Existing candidate diff excerpt (facts only; use it to select exact proof text):
                     ticket_id=generated["ticket"]["objective"].split(":", 1)[0],
                 )
                 return generated
+            static = self._next_static_priority(inventory)
+            if static is not None:
+                self.queue.event(
+                    "Documented priority selected without a Sol call",
+                    detail=(
+                        "Python selected the first ordered static priority with a complete, "
+                        "non-overlapping execution contract."
+                    ),
+                    ticket_id=static["ticket"]["objective"].split(":", 1)[0],
+                )
+                return static
             if self._priorities_exhausted(inventory):
                 return self._refill_backlog(run_id, mode, brief, inventory)
         fingerprint = hashlib.sha256(json.dumps({
@@ -1837,6 +1848,60 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 self._reject_overlapping_proposal(proposal["ticket"], inventory)
                 self._build_ticket(
                     "generated000", proposal, "continuous automation",
+                    fresh_start_authorized=True,
+                )
+            except (ControlError, SystemExit, ValueError):
+                continue
+            return proposal
+        return None
+
+    def _next_static_priority(self, inventory: dict) -> dict | None:
+        """Select only a fully specified, ordered static priority without a planner call."""
+
+        ticket_fields = (
+            "worker", "objective", "allowed_paths", "validation_profile",
+            "validation_root", "acceptance",
+        )
+        for item in inventory.get("planned_priorities") or []:
+            if not (
+                isinstance(item, dict)
+                and item.get("source") == "static"
+                and item.get("status") == "pending"
+            ):
+                continue
+            execution = item.get("execution")
+            priority_id = item.get("id")
+            if not isinstance(execution, dict) or not isinstance(priority_id, str):
+                continue
+            ticket = {field: execution.get(field) for field in ticket_fields}
+            ticket.update({
+                "resume_branch": None,
+                "resume_pr_number": None,
+                "resume_pr_head_sha": None,
+                "replace_pr_number": None,
+                "replace_pr_head_sha": None,
+                "replace_pr_branch": None,
+            })
+            objective = ticket.get("objective")
+            impact = execution.get("impact")
+            if not (
+                isinstance(objective, str)
+                and objective.startswith(priority_id + ":")
+                and isinstance(impact, str)
+                and impact.strip()
+            ):
+                continue
+            proposal = {
+                "action": "run_ticket",
+                "summary": execution.get("summary") or item.get("label"),
+                "impact": impact,
+                "ticket": ticket,
+                "_planning_inventory": inventory,
+            }
+            try:
+                self._reject_overlapping_proposal(ticket, inventory)
+                self._build_ticket(
+                    "staticpriority", proposal, "continuous automation",
                     fresh_start_authorized=True,
                 )
             except (ControlError, SystemExit, ValueError):
@@ -2780,7 +2845,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
 
     def _planned_priorities(
         self, recently_published: list[dict] | None = None
-    ) -> list[dict[str, str]]:
+    ) -> list[dict[str, object]]:
         """Return static and generated priorities as bounded planning data."""
 
         published_history = [
@@ -2799,6 +2864,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
         tickets = value.get("tickets") if isinstance(value, dict) else None
         if not isinstance(tickets, list):
             return []
+        contract_ids = self._completed_gameplay_contract_ids()
         planned = []
         for item in tickets[:25]:
             if not isinstance(item, dict):
@@ -2820,13 +2886,28 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                     ).casefold()
                     if marker in evidence:
                         status = "completed"
-                planned.append({
+                completion_contracts = item.get("completion_contracts")
+                if (
+                    status == "pending"
+                    and isinstance(completion_contracts, list)
+                    and completion_contracts
+                    and all(
+                        isinstance(contract_id, str) and contract_id in contract_ids
+                        for contract_id in completion_contracts
+                    )
+                ):
+                    status = "completed"
+                entry: dict[str, object] = {
                     "id": ticket_id[:80],
                     "label": label[:160],
                     "brief": brief[:1200],
                     "status": status,
                     "source": "static",
-                })
+                }
+                execution = item.get("execution")
+                if isinstance(execution, dict):
+                    entry["execution"] = execution
+                planned.append(entry)
         for item in self._generated_backlog()["tickets"]:
             if not isinstance(item, dict):
                 continue
@@ -2851,6 +2932,25 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "source": "generated",
             })
         return planned
+
+    def _completed_gameplay_contract_ids(self) -> set[str]:
+        """Read compact published-feature evidence without invoking the engine."""
+
+        path = self.root / ADDON_ROOT / "tests" / "gameplay-contracts.json"
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return set()
+        contracts = value.get("contracts") if isinstance(value, dict) else None
+        if not isinstance(contracts, list):
+            return set()
+        return {
+            contract["id"]
+            for contract in contracts
+            if isinstance(contract, dict)
+            and isinstance(contract.get("id"), str)
+            and contract["id"]
+        }
 
     @staticmethod
     def _represented_pr_branches(pull_requests: list[object]) -> set[str]:
