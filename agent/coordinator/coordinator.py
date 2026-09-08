@@ -22,6 +22,15 @@ AGENT_TIMEOUT_SECONDS = 240
 # These are stripped from any future deterministic test subprocess.
 # The initial smoke test does not execute generated code at all.
 SENSITIVE_ENV_VARS = {
+    # OpenAI-model workers are deliberately account-backed Codex CLI runs.
+    # Never let an API key or API-routing override reach a subprocess.
+    "OPENAI_API_KEY",
+    "OPENAI_BASE_URL",
+    "OPENAI_ORG_ID",
+    "OPENAI_ORGANIZATION",
+    "OPENAI_PROJECT",
+    "CODEX_API_KEY",
+    "CODEX_ACCESS_TOKEN",
     "GEMINI_API_KEY",
     "GOOGLE_GENERATIVE_AI_API_KEY",
     "GROQ_API_KEY",

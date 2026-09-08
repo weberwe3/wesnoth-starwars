@@ -17,6 +17,7 @@ from typing import Any, Callable
 
 import worktree_paths
 from gameplay_contracts import validate_historical_retention
+from ticket_acceptance import validate_ticket_acceptance
 from game_validation_state import HISTORICAL_GAMEPLAY_VALIDATION_FILE, historical_record
 from recovery_policy import safe_text
 from scenario_launch_selftest import validate_post_publish_game
@@ -111,6 +112,48 @@ class ApprovalQueue:
             _atomic_json(self.path, _default())
         else:
             self._recover_interrupted_publication()
+            self._migrate_legacy_gameplay_queue_records()
+
+    @staticmethod
+    def _is_gameplay_record(record: dict[str, Any]) -> bool:
+        """Recognize legacy add-on records that predate validation_profile."""
+
+        if record.get("validation_profile") == "wesnoth-addon-static":
+            return True
+        return any(
+            isinstance(path, str)
+            and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+            for path in record.get("changed_paths") or []
+        )
+
+    def _migrate_legacy_gameplay_queue_records(self) -> None:
+        """Never let a pre-contract gameplay candidate take the old publish path."""
+
+        state = self.read()
+        stale = [
+            record for record in state["records"]
+            if isinstance(record, dict)
+            and record.get("state") in {"ready", "committing"}
+            and self._is_gameplay_record(record)
+            and not isinstance(record.get("acceptance"), dict)
+        ]
+        if not stale:
+            return
+        stale_ids = {str(record.get("id")) for record in stale}
+
+        def migrate(value: dict[str, Any]) -> None:
+            for record in value["records"]:
+                if str(record.get("id")) in stale_ids:
+                    record.update({
+                        "state": "failed",
+                        "error": (
+                            "This gameplay ticket was queued before baseline-aware acceptance "
+                            "contracts existed. Recode with AI will preserve its original objective "
+                            "and create the missing proof before it can publish."
+                        ),
+                        "updated_at": utc_now(),
+                    })
+        self._update(migrate)
 
     def _recover_interrupted_publication(self) -> None:
         state = self.read()
@@ -233,10 +276,12 @@ class ApprovalQueue:
         allowed = {
             "id", "ticket_id", "purpose", "impact", "original_objective", "dependency_index",
             "changed_paths", "deleted_paths", "branch", "base_sha", "commit_sha",
-            "state", "created_at", "updated_at", "validation", "reviewer",
+            "state", "created_at", "updated_at", "validation", "validation_profile", "reviewer",
             "pr_number", "pr_url", "merge_sha", "error", "deletion_request",
             "depends_on_id", "depends_on_commit", "automation_authorized", "recode_of",
+            "recode_candidate_id",
             "post_publish_validation", "post_publish_checked_at", "post_publish_evidence",
+            "acceptance", "acceptance_evidence",
         }
         records = [
             {key: item.get(key) for key in allowed}
@@ -367,13 +412,19 @@ class ApprovalQueue:
         if _run(["git", "branch", "--show-current"], worktree) != branch:
             raise QueueError("Ticket branch no longer matches its evidence")
 
-        base_sha = _run(["git", "merge-base", "main", "HEAD"], worktree)
+        base_sha = ticket.get("base_sha") or _run(["git", "merge-base", "main", "HEAD"], worktree)
         if not HEX_SHA.fullmatch(base_sha):
             raise QueueError("Ticket base commit is invalid")
         changed_paths, deleted_paths = self._changes(worktree)
         validated = result.get("validation", {}).get("scope", {}).get("changed_paths", [])
         if sorted(changed_paths) != sorted(validated):
             raise QueueError("Ticket changes no longer match validated evidence")
+        acceptance_evidence = result.get("validation", {}).get("ticket_acceptance")
+        if ticket.get("validation_profile") == "wesnoth-addon-static" and (
+            not isinstance(acceptance_evidence, dict)
+            or acceptance_evidence.get("pass") is not True
+        ):
+            raise QueueError("Ticket did not pass its baseline-aware gameplay acceptance contract")
         queued_records = self.read()["records"]
         queued_ids = {item.get("ticket_id") for item in queued_records}
         if ticket.get("task_id") in queued_ids:
@@ -421,6 +472,9 @@ class ApprovalQueue:
             "created_at": utc_now(),
             "updated_at": utc_now(),
             "validation": "PASS",
+            "validation_profile": ticket.get("validation_profile"),
+            "acceptance": ticket.get("acceptance"),
+            "acceptance_evidence": acceptance_evidence,
             "reviewer": result.get("reviewer_used"),
             "pr_number": None,
             "pr_url": None,
@@ -444,7 +498,21 @@ class ApprovalQueue:
             record["commit_sha"] = self._commit(record, worktree)
             record["state"] = "ready"
 
-        self._update(lambda state: state["records"].append(record))
+        def queue_record(state: dict[str, Any]) -> None:
+            if recode_of is not None:
+                parent = next(
+                    (item for item in state["records"] if item.get("id") == recode_of),
+                    None,
+                )
+                if parent is None or parent.get("state") not in {"failed", "stale"}:
+                    raise QueueError("The failed ticket disappeared before its recode was queued")
+                parent.update({
+                    "recode_candidate_id": record_id,
+                    "updated_at": utc_now(),
+                })
+            state["records"].append(record)
+
+        self._update(queue_record)
         if deleted_paths:
             self.event(
                 f"{ticket['task_id']} requires deletion approval",
@@ -735,6 +803,10 @@ class ApprovalQueue:
                     "ticket_id": member.get("ticket_id"),
                     "commit_sha": member.get("commit_sha"),
                     "purpose": member.get("purpose"),
+                    "changed_paths": member.get("changed_paths"),
+                    "base_sha": member.get("base_sha"),
+                    "validation_profile": member.get("validation_profile"),
+                    "acceptance": member.get("acceptance"),
                 }
                 for member in members
             ],
@@ -852,7 +924,7 @@ class ApprovalQueue:
             key: record.get(key)
             for key in (
                 "id", "ticket_id", "purpose", "impact", "branch", "commit_sha",
-                "pr_number", "pr_url",
+                "pr_number", "pr_url", "recode_candidate_id",
             )
         }
 
@@ -999,6 +1071,28 @@ class ApprovalQueue:
         head = _run(["git", "rev-parse", "HEAD"], worktree)
         if head != record["commit_sha"]:
             raise QueueError("Queued branch head changed after approval")
+        acceptance_checks = [
+            validate_ticket_acceptance(
+                worktree,
+                {
+                    "validation_profile": (
+                        member.get("validation_profile")
+                        or ("wesnoth-addon-static" if any(
+                            isinstance(path, str) and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+                            for path in member.get("changed_paths") or []
+                        ) else "static-text")
+                    ),
+                    "acceptance": member.get("acceptance"),
+                    "allowed_paths": member.get("changed_paths") or [],
+                },
+                base_sha=member.get("base_sha"),
+            )
+            for member in record.get("batch_members") or [record]
+        ]
+        if not all(item.get("pass") is True for item in acceptance_checks):
+            raise QueueError(
+                "Queued ticket no longer satisfies its baseline-aware acceptance contract"
+            )
         try:
             _run(["git", "merge-base", "--is-ancestor", "main", "HEAD"], worktree)
         except QueueError as exc:
@@ -1082,6 +1176,7 @@ class ApprovalQueue:
             pr_url=self.record(record["id"]).get("pr_url"),
             post_publish_validation="RUNNING", post_publish_checked_at=None,
         )
+        self._retire_published_recode_parents(record)
         _run(["git", "pull", "--ff-only", "origin", "main"], self.root, 180)
         recode_note = " Recoded ticket successfully published." if record.get("recode_of") else ""
         self.event(
@@ -1099,6 +1194,7 @@ class ApprovalQueue:
             item for item in record.get("changed_paths", [])
             if isinstance(item, str)
         ]
+        acceptance_checks: list[dict[str, Any]] = []
         try:
             if _run(["git", "rev-parse", "HEAD"], self.root) != merge_sha:
                 raise QueueError("Local main changed before the installed-game check")
@@ -1107,6 +1203,28 @@ class ApprovalQueue:
             evidence = validate_post_publish_game(
                 self.root, required_gameplay_paths=changed_paths
             )
+            for member in record.get("batch_members") or [record]:
+                acceptance_checks.append(validate_ticket_acceptance(
+                    self.root,
+                    {
+                        "validation_profile": (
+                            member.get("validation_profile")
+                            or ("wesnoth-addon-static" if any(
+                                isinstance(path, str) and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+                                for path in member.get("changed_paths") or []
+                            ) else "static-text")
+                        ),
+                        "acceptance": member.get("acceptance"),
+                        "allowed_paths": member.get("changed_paths") or [],
+                    },
+                    base_sha=member.get("base_sha"),
+                ))
+            if not all(item.get("pass") is True for item in acceptance_checks):
+                failed = next(item for item in acceptance_checks if item.get("pass") is not True)
+                raise QueueError(
+                    "Post-merge ticket acceptance check failed: "
+                    + safe_text(failed.get("diagnostic"), "No acceptance diagnostic was returned.", 500)
+                )
             history_path = self.runtime / HISTORICAL_GAMEPLAY_VALIDATION_FILE
             try:
                 history = json.loads(history_path.read_text(encoding="utf-8"))
@@ -1156,6 +1274,10 @@ class ApprovalQueue:
                 "gameplay_contracts": {
                     "pass": (evidence.get("gameplay_contracts") or {}).get("pass") is True,
                     "count": len((evidence.get("gameplay_contracts") or {}).get("contracts") or []),
+                },
+                "ticket_acceptance": {
+                    "pass": all(item.get("pass") is True for item in acceptance_checks),
+                    "count": len(acceptance_checks),
                 },
             },
         }
@@ -1208,6 +1330,37 @@ class ApprovalQueue:
                 current.update(values)
                 current["updated_at"] = utc_now()
         self._update(update)
+
+    def _retire_published_recode_parents(self, record: dict[str, Any]) -> None:
+        """Hide an original failed card only after its exact replacement merged.
+
+        Keeping the parent record public while its recode is running means a
+        failed AI repair can never make the user lose the original ticket,
+        branch identity, or recovery controls.
+        """
+
+        members = record.get("batch_members") or [record]
+
+        def retire(state: dict[str, Any]) -> None:
+            by_id = {item.get("id"): item for item in state["records"]}
+            for member in members:
+                child = by_id.get(member.get("id"))
+                if not isinstance(child, dict):
+                    continue
+                parent_id = child.get("recode_of")
+                parent = by_id.get(parent_id)
+                if (
+                    isinstance(parent, dict)
+                    and parent.get("state") in {"failed", "stale"}
+                    and parent.get("recode_candidate_id") == child.get("id")
+                ):
+                    parent.update({
+                        "state": "superseded",
+                        "superseded_by": child.get("ticket_id"),
+                        "updated_at": utc_now(),
+                    })
+
+        self._update(retire)
 
     def _wait_for_pr_head(
         self,

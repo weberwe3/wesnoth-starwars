@@ -26,6 +26,7 @@ from art_pipeline import (
     validate_art_queue,
 )
 from gameplay_contracts import validate_declared_contracts, validate_historical_retention
+from ticket_acceptance import validate_acceptance_contract, validate_ticket_acceptance
 from scenario_launch_selftest import find_wesnoth_executable
 import worktree_paths
 
@@ -183,7 +184,7 @@ def resolve_codex_executable() -> str | None:
 
 
 def codex_environment(executable: str | None = None) -> dict[str, str]:
-    """Build a secret-stripped environment with the existing Codex auth store.
+    """Build an API-key-free environment with the existing Codex auth store.
 
     The secure launcher keeps the authenticated Codex store on Windows. A
     Windows Codex executable started from WSL cannot reliably infer that store
@@ -194,6 +195,20 @@ def codex_environment(executable: str | None = None) -> dict[str, str]:
     """
 
     environment = core.make_test_env()
+    # This is a hard billing/authentication boundary.  A Codex model worker
+    # must use the signed-in ChatGPT account's Codex allowance, never an API
+    # key or endpoint override inherited from the launcher or WSL.
+    forbidden = {
+        "OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_ORG_ID",
+        "OPENAI_ORGANIZATION", "OPENAI_PROJECT", "CODEX_API_KEY",
+        "CODEX_ACCESS_TOKEN",
+    }
+    for key in forbidden:
+        environment.pop(key, None)
+    environment["WSLENV"] = ":".join(
+        entry for entry in environment.get("WSLENV", "").split(":")
+        if entry and entry.split("/", 1)[0].upper() not in forbidden
+    )
     executable = executable or resolve_codex_executable()
     if not executable:
         return environment
@@ -219,6 +234,33 @@ def codex_environment(executable: str | None = None) -> dict[str, str]:
         ]
         entries.append("CODEX_HOME/p")
         environment["WSLENV"] = ":".join(entries)
+    return environment
+
+
+def require_codex_chatgpt_quota(executable: str) -> dict[str, str]:
+    """Return a safe Codex environment only for ChatGPT-account authentication.
+
+    Codex supports both subscription and API-key authentication.  This project
+    intentionally permits only the former for GPT-5.x worker models, so an
+    unknown or API-key login is a hard stop before any model prompt is sent.
+    """
+
+    environment = codex_environment(executable)
+    auth_home = Path(environment.get("CODEX_HOME") or (Path.home() / ".codex"))
+    try:
+        auth_path = auth_home / "auth.json"
+        if auth_path.is_symlink():
+            raise OSError("Codex authentication file must not be a symlink")
+        auth = json.loads(auth_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(
+            "Could not verify Codex ChatGPT-account authentication; API-key model use is prohibited."
+        ) from exc
+    if not isinstance(auth, dict) or auth.get("auth_mode") != "chatgpt":
+        raise RuntimeError(
+            "Codex is not authenticated with ChatGPT. API-key model use is prohibited; "
+            "sign in to Codex with the ChatGPT account before running workers."
+        )
     return environment
 
 
@@ -314,6 +356,12 @@ def invoke_terra(
         output = "Codex Terra fallback executable is unavailable to the secure runner."
         log_file.write_text(output + "\n", encoding="utf-8")
         return 127, output
+    try:
+        environment = require_codex_chatgpt_quota(executable)
+    except RuntimeError as exc:
+        output = str(exc)
+        log_file.write_text(output + "\n", encoding="utf-8")
+        return 127, output
     windows_binary = executable.lower().endswith(".exe")
     codex_worktree = _codex_path(worktree, windows_binary)
     if (
@@ -340,13 +388,6 @@ def invoke_terra(
         command.insert(command.index("--ephemeral"), "--approve-for-me")
     else:
         command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
-    environment = {
-        key: value for key, value in codex_environment(executable).items()
-        if not re.search(
-            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
-            key, re.IGNORECASE,
-        )
-    }
     try:
         completed = subprocess.run(
             command, cwd=worktree, env=environment, input=prompt, text=True,
@@ -385,6 +426,12 @@ def invoke_luna(
         output = "Codex Luna fallback executable is unavailable to the secure runner."
         log_file.write_text(output + "\n", encoding="utf-8")
         return 127, output
+    try:
+        environment = require_codex_chatgpt_quota(executable)
+    except RuntimeError as exc:
+        output = str(exc)
+        log_file.write_text(output + "\n", encoding="utf-8")
+        return 127, output
     windows_binary = executable.lower().endswith(".exe")
     codex_worktree = _codex_path(worktree, windows_binary)
     if (
@@ -411,13 +458,6 @@ def invoke_luna(
         command.insert(command.index("--ephemeral"), "--approve-for-me")
     else:
         command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
-    environment = {
-        key: value for key, value in codex_environment(executable).items()
-        if not re.search(
-            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
-            key, re.IGNORECASE,
-        )
-    }
     try:
         completed = subprocess.run(
             command, cwd=worktree, env=environment, input=prompt, text=True,
@@ -564,6 +604,8 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
         "replace_pr_head_sha",
         "replace_pr_branch",
         "historical_repair",
+        "acceptance",
+        "base_sha",
     }
 
     unknown = sorted(set(ticket) - allowed_keys)
@@ -574,6 +616,11 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
 
     if "historical_repair" in ticket and type(ticket["historical_repair"]) is not bool:
         raise SystemExit("ERROR: historical_repair must be a boolean.")
+    if "base_sha" in ticket and (
+        not isinstance(ticket["base_sha"], str)
+        or not re.fullmatch(r"[0-9a-f]{40}", ticket["base_sha"])
+    ):
+        raise SystemExit("ERROR: base_sha must be a 40-character Git SHA.")
 
     task_id = ticket.get("task_id")
     if not isinstance(task_id, str) or not re.fullmatch(
@@ -635,6 +682,16 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
                 "ERROR: wesnoth-addon-static requires a safe "
                 "validation_root."
             )
+        if ticket.get("acceptance") is not None:
+            acceptance = validate_acceptance_contract(ticket["acceptance"])
+            if not acceptance["pass"]:
+                raise SystemExit("ERROR: " + acceptance["diagnostic"])
+            ticket["acceptance"] = acceptance["contract"]
+    elif "acceptance" in ticket and ticket["acceptance"] is not None:
+        acceptance = validate_acceptance_contract(ticket["acceptance"])
+        if not acceptance["pass"]:
+            raise SystemExit("ERROR: " + acceptance["diagnostic"])
+        ticket["acceptance"] = acceptance["contract"]
 
     resume_branch = ticket.get("resume_branch")
     if resume_branch is not None and (
@@ -1286,6 +1343,7 @@ def run_validation(
     )
 
     profile_result = None
+    acceptance_result = None
 
     if ticket["validation_profile"] == "wesnoth-addon-static":
         addon_result = validate_wesnoth_addon(
@@ -1297,13 +1355,16 @@ def run_validation(
         # reviewer, queue, or publication resources.
         declared = validate_declared_contracts(worktree)
         retained = validate_historical_retention(worktree)
+        acceptance_result = validate_ticket_acceptance(worktree, ticket)
         profile_result = {
             **addon_result,
             "declared_contracts": declared,
             "historical_retention": retained,
+            "ticket_acceptance": acceptance_result,
             "art_queue": art_queue,
             "pass": (
                 addon_result["pass"] and declared["pass"] and retained["pass"]
+                and acceptance_result["pass"]
                 and art_queue["pass"] and art_sync_pass
             ),
         }
@@ -1322,6 +1383,7 @@ def run_validation(
         "art_queue_sync": art_sync,
         "profile": ticket["validation_profile"],
         "profile_result": profile_result,
+        "ticket_acceptance": acceptance_result,
         "pass": (
             implementer_rc == 0
             and asset_result["pass"]
@@ -1368,6 +1430,7 @@ def plan_recovery(
     executable = resolve_codex_executable()
     if not executable:
         raise RuntimeError("Codex recovery planner is unavailable")
+    environment = require_codex_chatgpt_quota(executable)
     schema_path = log_dir / f"recovery-{attempt}-schema.json"
     output_path = log_dir / f"recovery-{attempt}-plan.json"
     schema_path.write_text(json.dumps(RECOVERY_SCHEMA, indent=2) + "\n")
@@ -1413,14 +1476,6 @@ DETERMINISTIC LOCAL CONTEXT:
         _codex_path(output_path, windows_binary),
         "-",
     ]
-    environment = {
-        key: value for key, value in codex_environment(executable).items()
-        if not re.search(
-            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
-            key,
-            re.IGNORECASE,
-        )
-    }
     completed = subprocess.run(
         command,
         cwd=worktree,
@@ -1932,6 +1987,24 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     ACTIVE_STATUS = status
     core.verify_main_baseline(root)
 
+    if (
+        ticket["validation_profile"] == "wesnoth-addon-static"
+        and ticket.get("acceptance") is None
+    ):
+        status.fail_system(
+            "Gameplay ticket stopped before model dispatch",
+            detail=(
+                "This legacy ticket has no baseline-aware acceptance contract, so it cannot "
+                "truthfully be marked tested. Its original objective and worktree were preserved."
+            ),
+            failure_class="missing_acceptance_contract",
+            required_action=(
+                "Use Recode with AI to create a new acceptance contract from the original ticket "
+                "objective before spending worker-provider calls."
+            ),
+        )
+        return 13
+
     reference_package = load_reference_package(root)
     governance_references = reference_package["canonical_references"]
     governance_prompt = (
@@ -2059,6 +2132,16 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
         core.require_success(rc, output, "Create isolated ticket worktree")
         print("[1/5] Worktree created.")
         status.event("Isolated ticket worktree created", source="coordinator")
+    if ticket.get("base_sha") is None:
+        rc, output = core.git(worktree, "rev-parse", "HEAD", timeout=30)
+        core.require_success(rc, output, "Read ticket worktree base")
+        base_sha = output.strip()
+        if not re.fullmatch(r"[0-9a-f]{40}", base_sha):
+            raise RuntimeError("Ticket worktree base was not a commit SHA")
+        ticket["base_sha"] = base_sha
+        (log_dir / "ticket.json").write_text(
+            json.dumps(ticket, indent=2) + "\n"
+        )
     status.handoff("coordinator", ticket["worker"], "Implementation assigned")
     status.set_worker("coordinator", "idle", "Monitoring ticket gates")
     status.set_worker(ticket["worker"], "active", ticket["objective"])
@@ -2079,6 +2162,14 @@ TASK ID: {task_id}
 
 OBJECTIVE:
 {ticket["objective"]}
+
+IMMUTABLE ACCEPTANCE CONTRACT:
+{json.dumps(ticket.get("acceptance"), indent=2)}
+
+The deterministic gate compares this worktree to its original base revision.
+Implement every acceptance claim as written. A note, comment, or unrelated
+change cannot substitute for a promised unit, map, or event behavior. Do not
+edit the acceptance contract; it is coordinator evidence, not a source file.
 
 CONTINUATION POLICY:
 {continuation_instruction}

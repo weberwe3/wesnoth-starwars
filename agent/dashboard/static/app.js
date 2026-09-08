@@ -153,7 +153,8 @@ function renderQueue(control) {
     const tested = item.state === "published_and_tested";
     const testFailed = item.state === "published_test_failed";
     const needsRecovery = ["failed", "stale"].includes(item.state);
-    const recoverable = needsRecovery && Boolean(item.commit_sha) && !ticketActive && !newerRevision;
+    const recodePending = Boolean(item.recode_candidate_id);
+    const recoverable = needsRecovery && Boolean(item.commit_sha) && !ticketActive && !newerRevision && !recodePending;
     const commit = item.commit_sha || "Pending deletion approval";
     const paths = (item.changed_paths || []).map(path => `<li>${esc(path)}</li>`).join("");
     const deletion = (item.deleted_paths || []).length
@@ -161,7 +162,7 @@ function renderQueue(control) {
     return `<article class="queue-card state-${esc(item.state)}">
       <div class="queue-summary"><div><span class="queue-ticket">${esc(item.ticket_id)}</span><h3>${esc(item.purpose)}</h3><p>${esc(item.impact)}</p></div>
       <div class="queue-action"><span class="state-tag queue-state ${testFailed ? "is-test-failed" : published ? "is-published" : ""}">${esc(publicationLabel(item.state))}</span>
-        ${published ? `<span class="publication-proof ${testFailed ? "test-failed" : ""}">Published to protected main${item.pr_number ? ` · PR #${esc(item.pr_number)}` : ""} · ${tested ? "Installed-game checks passed" : testFailed ? "Game repair required" : item.post_publish_validation === "RUNNING" ? "Game checks running…" : "Game test result not recorded"}</span>` : needsRecovery ? `<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="delete-stale-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" data-ticket-id="${esc(item.ticket_id)}" data-branch="${esc(item.branch)}" ${recoverable && !controlBusy ? "" : "disabled"}>Delete code &amp; entry</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
+        ${published ? `<span class="publication-proof ${testFailed ? "test-failed" : ""}">Published to protected main${item.pr_number ? ` · PR #${esc(item.pr_number)}` : ""} · ${tested ? "Installed-game checks passed" : testFailed ? "Game repair required" : item.post_publish_validation === "RUNNING" ? "Game checks running…" : "Game test result not recorded"}</span>` : needsRecovery ? `${recodePending ? `<span class="publication-proof">Recode candidate queued; this original ticket stays visible until the replacement publishes.</span>` : ""}<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${recodePending ? "A recode candidate is awaiting publication" : newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="delete-stale-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" data-ticket-id="${esc(item.ticket_id)}" data-branch="${esc(item.branch)}" ${recoverable && !controlBusy ? "" : "disabled"}>Delete code &amp; entry</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
       </div></div>
       <details class="persistent-details" data-detail-id="queue-${esc(item.id)}" ${expandedDetails.has(`queue-${item.id}`) ? "open" : ""}><summary>Ticket impact and publication evidence</summary><div class="queue-details">
         <div><strong>Original ticket description</strong><p>${esc(item.original_objective || item.impact)}</p></div>
@@ -186,8 +187,18 @@ function renderActivity(data, control) {
     at: item.at, sortAt: item.at, level: "info", message: item.message,
     detail: item.message, route: `${item.from} → ${item.to}`,
   }));
+  const seenActivity = new Set();
   const activity = [...queueActivity, ...telemetry, ...routing]
-    .sort((a, b) => String(b.sortAt || "").localeCompare(String(a.sortAt || ""))).slice(0, 16);
+    .sort((a, b) => String(b.sortAt || "").localeCompare(String(a.sortAt || "")))
+    .filter(item => {
+      // Queue activity and dashboard telemetry can describe the same event.
+      // Preserve distinct retry attempts, but never render the same timestamp,
+      // severity, message, and detail twice just because it arrived on both feeds.
+      const identity = [item.sortAt, item.level, item.message, item.detail || item.message].join("\u0000");
+      if (seenActivity.has(identity)) return false;
+      seenActivity.add(identity);
+      return true;
+    }).slice(0, 16);
   $("activity-log").innerHTML = activity.map(item => {
     const recovery = item.recovery_attempt != null
       ? `<span class="recovery-badge">Attempt ${esc(item.recovery_attempt)} / ${esc(item.recovery_limit || 2)}</span>` : "";

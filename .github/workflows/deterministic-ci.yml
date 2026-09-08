@@ -88,6 +88,9 @@ jobs:
       - name: Test deterministic scenario validation
         run: python3 agent/coordinator/scenario_launch_selftest.py
 
+      - name: Test ticket acceptance contracts
+        run: python3 agent/coordinator/ticket_acceptance_selftest.py
+
       - name: Verify coordinator reference enforcement
         env:
           PYTHONPATH: agent/coordinator
