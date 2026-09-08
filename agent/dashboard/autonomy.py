@@ -2187,6 +2187,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "replace_pr_branch": None,
                 "acceptance": item.get("acceptance"),
                 "base_sha": item.get("base_sha"),
+                "resume_diagnostic": item.get("resume_diagnostic"),
             },
         }
 
@@ -2354,6 +2355,9 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "replace_pr_branch": replace_pr_branch,
             "acceptance": source.get("acceptance"),
         }
+        resume_diagnostic = source.get("resume_diagnostic")
+        if isinstance(resume_diagnostic, str) and resume_diagnostic:
+            ticket["resume_diagnostic"] = resume_diagnostic[:2000]
         if base_sha is not None:
             ticket["base_sha"] = base_sha
         if proposal.get("_historical_gameplay_repair") or source.get("historical_repair") is True:
@@ -2750,6 +2754,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                     "validation_root": evidence.get("validation_root"),
                     "acceptance": evidence.get("acceptance"),
                     "base_sha": evidence.get("base_sha"),
+                    "resume_diagnostic": evidence.get("resume_diagnostic"),
                     "historical_repair": evidence.get("historical_repair") is True,
             }
             if len(changed_paths) > 200:
@@ -2844,6 +2849,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "validation_root": contract.get("validation_root"),
                 "acceptance": contract.get("acceptance"),
                 "base_sha": contract.get("base_sha"),
+                "resume_diagnostic": contract.get("resume_diagnostic"),
             }
             worktree = worktrees.get(branch)
             if worktree is None:
@@ -3067,6 +3073,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             else:
                 continue
             result_path = path.parent / "result.json"
+            result: dict = {}
             if result_path.exists():
                 try:
                     result = json.loads(result_path.read_text(encoding="utf-8"))
@@ -3075,6 +3082,16 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 if result.get("final_verdict") == "PASS" and not include_passed:
                     evidence.pop(branch, None)
                     continue
+            failure = result.get("failure") if isinstance(result, dict) else None
+            resume_diagnostic = None
+            if isinstance(failure, dict):
+                detail = recovery_policy.safe_text(
+                    failure.get("detail"), "The previous candidate did not pass a local gate.", 1800
+                )
+                failure_class = recovery_policy.safe_text(
+                    failure.get("class"), "validation failure", 120
+                )
+                resume_diagnostic = f"{failure_class}: {detail}"
             evidence[branch] = {
                 "task_id": task_id,
                 "worker": ticket["worker"],
@@ -3087,6 +3104,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 "acceptance": ticket.get("acceptance"),
                 "base_sha": ticket.get("base_sha"),
                 "historical_repair": ticket.get("historical_repair") is True,
+                "resume_diagnostic": resume_diagnostic,
             }
         return evidence
 

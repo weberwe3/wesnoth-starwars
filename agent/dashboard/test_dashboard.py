@@ -1022,6 +1022,20 @@ class CoordinationControlTests(unittest.TestCase):
             overlap.assert_called_once()
             build.assert_called_once()
 
+    def test_resume_ticket_carries_the_last_safe_gate_diagnostic_to_the_worker(self) -> None:
+        proposal = AutonomyController._resume_item_proposal({
+            "name": "agent/fixture", "previous_task_id": "SOL-FIXTURE",
+            "worker": "fast-fix", "objective": "Preserve the original objective",
+            "allowed_paths": ["addons/fixture.cfg"], "validation_profile": "static-text",
+            "validation_root": None, "acceptance": None, "base_sha": None,
+            "resume_diagnostic": "declared_contracts: Invalid event-unit contract",
+            "number": None, "head_sha": None,
+        })
+        self.assertEqual(
+            proposal["ticket"]["resume_diagnostic"],
+            "declared_contracts: Invalid event-unit contract",
+        )
+
     def test_static_priority_without_a_complete_contract_remains_ambiguous(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
