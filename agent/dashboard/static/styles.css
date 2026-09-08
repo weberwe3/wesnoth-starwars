@@ -208,6 +208,8 @@ h2 { margin-bottom: 0; font-size: clamp(1.05rem, 1.6vw, 1.35rem); letter-spacing
 .queue-card.state-ready { border-color: rgba(82,230,154,.45); box-shadow: inset 3px 0 var(--green); }
 .queue-card.state-published, .queue-card.state-published_and_tested { border-color: rgba(82,230,154,.58); box-shadow: inset 3px 0 var(--green), 0 0 18px rgba(82,230,154,.12); }
 .queue-card.state-published_test_failed { border-color: #e8a64e; box-shadow: inset 3px 0 #e8a64e, 0 0 18px rgba(232,166,78,.18); }
+.queue-card.state-redundant { border-color: rgba(123,213,255,.55); box-shadow: inset 3px 0 var(--cyan); }
+.queue-state.is-redundant, .publication-proof.redundant-proof { color: var(--cyan); border-color: rgba(123,213,255,.5); }
 .queue-state.is-test-failed, .publication-proof.test-failed { color: #ffd18a; border-color: #e8a64e; text-shadow: 0 0 12px rgba(232,166,78,.7); }
 .queue-state.is-test-failed { box-shadow: 0 0 12px rgba(232,166,78,.25); }
 .queue-card.state-failed, .queue-card.state-rejected, .queue-card.state-stale { border-color: rgba(255,107,117,.45); box-shadow: inset 3px 0 var(--red); }

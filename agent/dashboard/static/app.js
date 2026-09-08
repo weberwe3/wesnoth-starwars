@@ -122,7 +122,8 @@ const publishedStates = new Set(["published", "published_and_tested", "published
 
 function publicationLabel(state) {
   return state === "published_and_tested" ? "Published and Tested"
-    : state === "published_test_failed" ? "Published · Test failed" : displayState(state);
+    : state === "published_test_failed" ? "Published · Test failed"
+    : state === "redundant" ? "Deleted · redundant" : displayState(state);
 }
 
 function renderQueue(control) {
@@ -152,6 +153,7 @@ function renderQueue(control) {
     const published = publishedStates.has(item.state);
     const tested = item.state === "published_and_tested";
     const testFailed = item.state === "published_test_failed";
+    const redundant = item.state === "redundant";
     const needsRecovery = ["failed", "stale"].includes(item.state);
     const recodePending = Boolean(item.recode_candidate_id);
     const recoverable = needsRecovery && Boolean(item.commit_sha) && !ticketActive && !newerRevision && !recodePending;
@@ -161,8 +163,8 @@ function renderQueue(control) {
       ? `<p class="queue-warning">Deletes ${item.deleted_paths.length} file(s); Codex approval is required before commit.</p>` : "";
     return `<article class="queue-card state-${esc(item.state)}">
       <div class="queue-summary"><div><span class="queue-ticket">${esc(item.ticket_id)}</span><h3>${esc(item.purpose)}</h3><p>${esc(item.impact)}</p></div>
-      <div class="queue-action"><span class="state-tag queue-state ${testFailed ? "is-test-failed" : published ? "is-published" : ""}">${esc(publicationLabel(item.state))}</span>
-        ${published ? `<span class="publication-proof ${testFailed ? "test-failed" : ""}">Published to protected main${item.pr_number ? ` · PR #${esc(item.pr_number)}` : ""} · ${tested ? "Installed-game checks passed" : testFailed ? "Game repair required" : item.post_publish_validation === "RUNNING" ? "Game checks running…" : "Game test result not recorded"}</span>` : needsRecovery ? `${recodePending ? `<span class="publication-proof">Recode candidate queued; this original ticket stays visible until the replacement publishes.</span>` : ""}<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${recodePending ? "A recode candidate is awaiting publication" : newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="delete-stale-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" data-ticket-id="${esc(item.ticket_id)}" data-branch="${esc(item.branch)}" ${recoverable && !controlBusy ? "" : "disabled"}>Delete code &amp; entry</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
+      <div class="queue-action"><span class="state-tag queue-state ${testFailed ? "is-test-failed" : published ? "is-published" : redundant ? "is-redundant" : ""}">${esc(publicationLabel(item.state))}</span>
+        ${published ? `<span class="publication-proof ${testFailed ? "test-failed" : ""}">Published to protected main${item.pr_number ? ` · PR #${esc(item.pr_number)}` : ""} · ${tested ? "Installed-game checks passed" : testFailed ? "Game repair required" : item.post_publish_validation === "RUNNING" ? "Game checks running…" : "Game test result not recorded"}</span>` : redundant ? `<span class="publication-proof redundant-proof">Candidate code and managed worktree were deleted because the promised event behavior already existed at the ticket base.</span>` : needsRecovery ? `${recodePending ? `<span class="publication-proof">Recode candidate queued; this original ticket stays visible until the replacement publishes.</span>` : ""}<div class="queue-recovery-actions"><button type="button" class="recode-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" title="${recodePending ? "A recode candidate is awaiting publication" : newerRevision ? "A newer queued revision already owns this branch" : "Resume this exact branch and ask the selected Sol coordinator to repair it"}" ${recoverable && !controlBusy ? "" : "disabled"}>Recode with AI</button><button type="button" class="delete-stale-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" data-ticket-id="${esc(item.ticket_id)}" data-branch="${esc(item.branch)}" ${recoverable && !controlBusy ? "" : "disabled"}>Delete code &amp; entry</button></div>` : `<button type="button" class="publish-button" data-record-id="${esc(item.id)}" data-commit-sha="${esc(item.commit_sha, "")}" ${publishable && !controlBusy ? "" : "disabled"}>Approve &amp; publish</button>`}
       </div></div>
       <details class="persistent-details" data-detail-id="queue-${esc(item.id)}" ${expandedDetails.has(`queue-${item.id}`) ? "open" : ""}><summary>Ticket impact and publication evidence</summary><div class="queue-details">
         <div><strong>Original ticket description</strong><p>${esc(item.original_objective || item.impact)}</p></div>

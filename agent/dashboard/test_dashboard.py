@@ -3149,6 +3149,42 @@ class ApprovalQueueTests(unittest.TestCase):
             self.assertEqual(queue.public_state()["records"], [])
             self.assertEqual(queue.read()["records"][0]["state"], "discarded")
 
+    def test_redundant_candidate_deletes_uncommitted_worktree_and_keeps_completed_card(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            root = base / "project"
+            worktrees = base / "project-worktrees"
+            root.mkdir()
+            self.git(root, "init", "-b", "main")
+            self.git(root, "config", "user.email", "test@example.invalid")
+            self.git(root, "config", "user.name", "Dashboard Test")
+            (root / "base.txt").write_text("base\n", encoding="utf-8")
+            self.git(root, "add", "base.txt")
+            self.git(root, "commit", "-m", "fixture")
+            worktree = worktrees / "redundant-ticket"
+            self.git(root, "worktree", "add", "-b", "agent/redundant-ticket", str(worktree), "main")
+            (worktree / "candidate.txt").write_text("redundant\n", encoding="utf-8")
+            queue = ApprovalQueue(root)
+            queue.archive_redundant_candidate(
+                {
+                    "branch": "agent/redundant-ticket", "worktree": str(worktree),
+                    "validation": {"scope": {"changed_paths": ["candidate.txt"]}},
+                },
+                {
+                    "task_id": "SOL-REDUNDANT", "objective": "Add an already present behavior",
+                    "base_sha": self.git(root, "rev-parse", "HEAD"),
+                    "validation_profile": "wesnoth-addon-static", "acceptance": {"claims": []},
+                },
+                summary="Generated redundant ticket", impact="No gameplay change was required.",
+                reason="Acceptance claim 1 was already satisfied by the ticket base.",
+            )
+            self.assertFalse(worktree.exists())
+            self.assertNotIn("agent/redundant-ticket", self.git(root, "branch", "--list"))
+            card = queue.public_state()["records"][0]
+            self.assertEqual(card["state"], "redundant")
+            self.assertEqual(card["validation"], "REDUNDANT")
+            self.assertIn("already satisfied", card["error"])
+
     def test_failed_queue_item_blocks_normal_planning_but_can_be_excluded_for_recode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
