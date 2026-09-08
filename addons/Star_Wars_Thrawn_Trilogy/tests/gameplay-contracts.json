@@ -124,6 +124,19 @@
       "expected_id": "sw_first_battle_archive_records_delivery"
     },
     {
+      "id": "sw-first-battle-archive-delivery-objective-refresh",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_archive_records_delivery",
+      "expected": {
+        "name": "moveto",
+        "first_time_only": "no",
+        "unit_id": "sw_nr_recon_squad",
+        "x": "3",
+        "y": "7"
+      }
+    },
+    {
       "id": "sw-first-battle-archive-delivery-warning",
       "kind": "event-unit",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
