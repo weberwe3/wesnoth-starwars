@@ -226,11 +226,19 @@ def _wml_code(text: str) -> str:
 
 
 def _project_resource_references(sources: dict[str, str]) -> list[tuple[str, str]]:
-    """Collect project-owned binary and Lua resources named by WML."""
+    """Collect project-owned runtime resources named through a binary path.
+
+    ``~add-ons`` is WML preprocessor syntax, not an image-loader path.  Game
+    assets must therefore be relative to the add-on ``[binary_path]`` (for
+    example ``images/units/sw_unit/standing.png``).  This scanner deliberately
+    recognizes only that runtime form, so the matching resource can be checked
+    on disk before a candidate reaches the engine.
+    """
 
     references: list[tuple[str, str]] = []
     expression = re.compile(
-        r"~add-ons/Star_Wars_Thrawn_Trilogy/([A-Za-z0-9_./-]+\.(?:png|jpe?g|webp|ogg|wav|mp3|lua))",
+        r"(?m)^\s*(?:image|icon|profile)\s*=\s*\"?"
+        r"(images/[A-Za-z0-9_./-]+\.(?:png|jpe?g|webp))",
         re.IGNORECASE,
     )
     for source_path, text in sources.items():
@@ -239,6 +247,20 @@ def _project_resource_references(sources: dict[str, str]) -> list[tuple[str, str
             if ".." not in Path(relative).parts:
                 references.append((source_path, relative))
     return sorted(set(references))
+
+
+def _invalid_preprocessor_image_paths(sources: dict[str, str]) -> list[tuple[str, str]]:
+    """Find image references that the runtime will treat as literal paths."""
+
+    expression = re.compile(
+        r"~add-ons/Star_Wars_Thrawn_Trilogy/(images/[A-Za-z0-9_./-]+\.(?:png|jpe?g|webp))",
+        re.IGNORECASE,
+    )
+    return sorted({
+        (source_path, match.group(1))
+        for source_path, text in sources.items()
+        for match in expression.finditer(_wml_code(text))
+    })
 
 
 def _project_lua_actions(root: Path) -> set[str]:
@@ -306,6 +328,15 @@ def validate_campaign_dependencies(root: Path, sources: dict[str, str]) -> dict[
         target = root / ADDON_ROOT / relative
         if target.is_symlink() or not target.is_file():
             failures.append({"path": source_path, "detail": f"Project resource is missing or unsafe: {relative}"})
+
+    for source_path, relative in _invalid_preprocessor_image_paths(sources):
+        failures.append({
+            "path": source_path,
+            "detail": (
+                "Project image uses ~add-ons preprocessor syntax as a runtime path: "
+                f"{relative}; use the add-on binary-path-relative images/... form"
+            ),
+        })
 
     macro_definitions = {
         match.group(1)

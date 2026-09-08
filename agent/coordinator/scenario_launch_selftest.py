@@ -245,6 +245,8 @@ def campaign_error_lines(text: str) -> list[str]:
             r"\berror\s+(?:wml|config|engine(?:/[a-z0-9_/-]+)?):|"
             r"\bgame_error:|\bunknown unit type:|"
             r"\bunknown tile in map:|"
+            r"\berror\s+(?:image|display|gui/draw):.*(?:could not open image|"
+            r"could not find image|not found and won't be drawn)|"
             r"the game map could not be loaded|"
             r"terrain with a string with more than 4 characters|"
             r"unexpected characters after variable name|"
@@ -850,7 +852,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             root = Path(directory)
             sources = {
                 "addons/Star_Wars_Thrawn_Trilogy/units/fixture.cfg": (
-                    "icon=~add-ons/Star_Wars_Thrawn_Trilogy/images/fixture.png\n"
+                    "icon=images/fixture.png\n"
                     "{SW_MISSING}\n"
                 ),
                 "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
@@ -871,6 +873,23 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             ),
         }
         self.assertTrue(validate_campaign_dependencies(Path("."), sources)["pass"])
+
+    def test_campaign_dependencies_reject_preprocessor_syntax_as_runtime_image_path(self) -> None:
+        sources = {
+            "addons/Star_Wars_Thrawn_Trilogy/units/fixture.cfg": (
+                "icon=~add-ons/Star_Wars_Thrawn_Trilogy/images/fixture.png\n"
+            ),
+        }
+        evidence = validate_campaign_dependencies(Path("."), sources)
+        self.assertFalse(evidence["pass"])
+        self.assertIn("preprocessor syntax", evidence["diagnostic"])
+
+    def test_campaign_error_lines_include_runtime_image_resolution_failures(self) -> None:
+        failures = campaign_error_lines(
+            "error display: could not find image for report: 'images/units/missing.png'\n"
+            "error gui/draw: Image: 'images/portraits/missing.png' not found and won't be drawn.\n"
+        )
+        self.assertEqual(len(failures), 2)
 
     def test_campaign_dependencies_require_custom_terrain_before_scenarios(self) -> None:
         sources = {
@@ -897,7 +916,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             unit = root / "addons" / ADDON_ID / "units" / "fixture.cfg"
             unit.parent.mkdir(parents=True)
             unit.write_text(
-                "icon=~add-ons/Star_Wars_Thrawn_Trilogy/images/fixture.png\n",
+                "icon=images/fixture.png\n",
                 encoding="utf-8",
             )
             result = materialize_missing_project_images(root)
@@ -955,7 +974,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             sync = synchronize_art_queue(root, {"sw_unit_fixture"})
             job = sync["jobs"][0]
             references = [
-                f"image=~add-ons/{ADDON_ID}/{asset['path']}"
+                f"image={asset['path']}"
                 for asset in job["assets"]
             ]
             unit.write_text(
@@ -1002,7 +1021,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
                     target.parent.mkdir(parents=True, exist_ok=True)
                     width, height = (256, 256) if asset["state"] == "portrait" else (72, 72)
                     target.write_bytes(_test_png(width, height))
-                    references.append(f"image=~add-ons/{ADDON_ID}/{asset['path']}")
+                    references.append(f"image={asset['path']}")
             unit.write_text(unit.read_text(encoding="utf-8").replace(
                 "[/unit_type]", "\n" + "\n".join(references) + "\n[/unit_type]"
             ), encoding="utf-8")
