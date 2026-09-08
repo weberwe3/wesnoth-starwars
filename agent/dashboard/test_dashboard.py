@@ -23,6 +23,7 @@ from coordination_control import ControlStore, VALID_MODES  # noqa: E402
 import recovery_policy  # noqa: E402
 import model_policy  # noqa: E402
 import ticket_runner  # noqa: E402
+import ticket_acceptance  # noqa: E402
 import worktree_paths  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from autonomy import (  # noqa: E402
@@ -429,6 +430,42 @@ class CoordinationControlTests(unittest.TestCase):
             }],
         })
         self.assertTrue(result["pass"])
+
+    def test_unit_placement_accepts_side_inherited_from_scenario_side(self) -> None:
+        claim = {
+            "unit_type": "sw_unit_im_recon_squad",
+            "instance_id": "sw_first_battle_forward_observer",
+            "side": "2", "x": "5", "y": "6",
+        }
+        text = """[side]
+    side=2
+    [unit]
+        type=sw_unit_im_recon_squad
+        id=sw_first_battle_forward_observer
+        x=5
+        y=6
+    [/unit]
+[/side]
+"""
+        self.assertTrue(ticket_acceptance._unit_present(text, claim))
+
+    def test_unit_placement_preserves_explicit_event_unit_side(self) -> None:
+        claim = {
+            "unit_type": "sw_unit_im_recon_squad",
+            "instance_id": "sw_first_battle_forward_observer",
+            "side": "2", "x": "5", "y": "6",
+        }
+        text = """[event]
+    [unit]
+        type=sw_unit_im_recon_squad
+        id=sw_first_battle_forward_observer
+        side=2
+        x=5
+        y=6
+    [/unit]
+[/event]
+"""
+        self.assertTrue(ticket_acceptance._unit_present(text, claim))
 
     def test_build_ticket_reports_the_actual_acceptance_contract_rejection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
