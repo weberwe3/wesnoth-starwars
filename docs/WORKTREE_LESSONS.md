@@ -238,3 +238,10 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** The evidence checker compared the model’s compact multi-line fragment byte-for-byte against indented WML. Indentation is formatting, not event behavior, so the checker produced a false negative before tester, review, or publication.
 - **Resolution:** Event-body evidence now normalizes leading/trailing whitespace on each line before matching. Selector rejection, event-ID-only rejection, path scope, baseline comparison, and all other acceptance safeguards remain unchanged.
 - **Prevention:** Write behavioral multi-line evidence without relying on a particular indentation width. A valid contract identifies its event by `event_id` and its changed behavior by literal body lines; the validator ignores only line indentation.
+
+### 2026-09-08 — resumed deterministic failure lost its corrective diagnosis
+
+- **Symptom:** A preserved worktree that failed the declared gameplay-contract gate resumed with its original objective but without the exact gate failure, so the worker could repeat the same invalid contract format.
+- **Cause:** Resume inventory recovered the immutable ticket contract but discarded the terminal failure detail from its prior result record before rebuilding the secure worker ticket.
+- **Resolution:** Safe bounded failure evidence now travels with a resumed ticket as a `resume_diagnostic`. The worker sees it before the original objective and is explicitly directed to repair that gate first while preserving the original scope and acceptance contract.
+- **Prevention:** Every autonomous resumption must retain both the original ticket contract and the last deterministic failure class/detail. Do not replace the original objective, broaden allowed paths, or use the diagnostic as permission to alter governance.
