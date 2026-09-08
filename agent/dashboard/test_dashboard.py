@@ -26,6 +26,7 @@ import ticket_runner  # noqa: E402
 import worktree_paths  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from autonomy import (  # noqa: E402
+    ACCEPTANCE_CLAIM_SCHEMA,
     AutonomyController,
     BACKLOG_SCHEMA,
     ControlError,
@@ -379,6 +380,132 @@ class CoordinationControlTests(unittest.TestCase):
             set(ticket_schema["required"]),
             set(ticket_schema["properties"]),
         )
+
+    def test_source_text_schema_requires_its_actual_evidence(self) -> None:
+        source_text = next(
+            branch for branch in ACCEPTANCE_CLAIM_SCHEMA["anyOf"]
+            if branch["properties"]["kind"]["enum"] == ["source_text"]
+        )
+        self.assertEqual(source_text["properties"]["contains"]["type"], "string")
+        self.assertEqual(source_text["properties"]["contains"]["minLength"], 1)
+
+    def test_build_ticket_reports_the_actual_acceptance_contract_rejection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(runtime / "coordination-control.json"),
+                ApprovalQueue(root, runtime / "approval-queue.json"),
+            )
+            proposal = {
+                "action": "run_ticket",
+                "summary": "Fixture",
+                "impact": "Fixture",
+                "ticket": {
+                    "worker": "fast-fix",
+                    "objective": "Create a fixture",
+                    "allowed_paths": ["README.md"],
+                    "validation_profile": "static-text",
+                    "validation_root": None,
+                    "resume_branch": None,
+                    "resume_pr_number": None,
+                    "resume_pr_head_sha": None,
+                    "replace_pr_number": None,
+                    "replace_pr_head_sha": None,
+                    "replace_pr_branch": None,
+                    "acceptance": {
+                        "schema_version": 1,
+                        "claims": [{
+                            "kind": "source_text",
+                            "path": "addons/Star_Wars_Thrawn_Trilogy/tests/fixture.cfg",
+                            "base": "absent",
+                            "contains": None,
+                            "unit_type": None,
+                            "instance_id": None,
+                            "side": None,
+                            "x": None,
+                            "y": None,
+                            "event_id": None,
+                            "row": None,
+                            "column": None,
+                            "terrain": None,
+                        }],
+                    },
+                },
+            }
+            with self.assertRaisesRegex(ControlError, "source_text claim 1 needs bounded text"):
+                controller._build_ticket(
+                    "abc123def456", proposal, "Start a fresh ticket",
+                    fresh_start_authorized=True,
+                )
+
+    def test_planner_retries_once_after_a_rejected_ticket_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(runtime / "coordination-control.json"),
+                ApprovalQueue(root, runtime / "approval-queue.json"),
+            )
+            inventory = {
+                "main_head": "a" * 40,
+                "planned_priorities": [],
+                "recently_published": [],
+                "approval_queue": [],
+                "open_pull_requests": [],
+            }
+            proposal = {
+                "action": "run_ticket",
+                "summary": "Fixture priority",
+                "impact": "Fixture impact",
+                "ticket": {"worker": "fast-fix"},
+            }
+            prompts: list[str] = []
+
+            def run_planner(command, **kwargs):
+                prompts.append(str(kwargs["input"]))
+                Path(command[command.index("-o") + 1]).write_text(
+                    json.dumps(proposal), encoding="utf-8"
+                )
+                return subprocess.CompletedProcess(command, 0, "", "")
+
+            with (
+                mock.patch.object(controller, "_planning_inventory", return_value=inventory),
+                mock.patch.object(controller, "_historical_gameplay_repair_proposal", return_value=None),
+                mock.patch.object(controller, "_post_publish_game_repair_proposal", return_value=None),
+                mock.patch.object(controller, "_blocked_resume_proposal", return_value=None),
+                mock.patch.object(controller, "_failure_streak_resume_proposal", return_value=None),
+                mock.patch.object(controller, "_single_resume_proposal", return_value=None),
+                mock.patch.object(controller, "_priorities_exhausted", return_value=False),
+                mock.patch.object(controller, "_cached_plan", return_value=None),
+                mock.patch.object(controller, "_reject_overlapping_proposal"),
+                mock.patch.object(ticket_runner, "resolve_codex_executable", return_value="/usr/bin/codex"),
+                mock.patch("autonomy.subprocess.run", side_effect=run_planner),
+                mock.patch.object(
+                    controller,
+                    "_build_ticket",
+                    side_effect=[
+                        ControlError(
+                            "Generated ticket contract is invalid: "
+                            "Acceptance source_text claim 1 needs bounded text."
+                        ),
+                        {"task_id": "FIXTURE"},
+                    ],
+                ) as build,
+            ):
+                result = controller._plan(
+                    "abc123def456", "sol-medium", "Start a fresh ticket",
+                    fresh_start_authorized=True,
+                )
+            self.assertEqual(result["summary"], "Fixture priority")
+            self.assertEqual(build.call_count, 2)
+            self.assertEqual(len(prompts), 2)
+            self.assertIn("preceding proposal was rejected", prompts[1])
+            self.assertIn("needs bounded text", prompts[1])
 
     def test_planner_schema_preflight_rejects_optional_declared_property(self) -> None:
         invalid = {

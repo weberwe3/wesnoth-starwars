@@ -59,31 +59,54 @@ SENSITIVE_ENV = re.compile(
     re.IGNORECASE,
 )
 
-# The planner API requires every declared field to be required. Fields that do
-# not apply to a claim kind are therefore explicitly null, then the local
-# acceptance validator normalizes only the relevant fields.
-ACCEPTANCE_CLAIM_SCHEMA = {
-    "type": "object",
-    "additionalProperties": False,
-    "required": [
-        "kind", "path", "base", "contains", "unit_type", "instance_id",
-        "side", "x", "y", "event_id", "row", "column", "terrain",
-    ],
-    "properties": {
-        "kind": {"type": "string", "enum": ["source_text", "unit_placement", "event_contains", "map_cell"]},
+# The planner API requires every declared field to be required.  A single
+# nullable shape lets a model emit a source_text claim without its required
+# evidence text, so use a strict branch per claim kind instead.  Irrelevant
+# fields remain explicit nulls, preserving the API's strict-object rule.
+_CLAIM_FIELDS = (
+    "kind", "path", "base", "contains", "unit_type", "instance_id",
+    "side", "x", "y", "event_id", "row", "column", "terrain",
+)
+
+
+def _acceptance_claim_schema(kind: str, required: dict[str, dict]) -> dict:
+    properties = {
+        "kind": {"type": "string", "enum": [kind]},
         "path": {"type": "string", "minLength": 1, "maxLength": 240},
         "base": {"type": "string", "enum": ["absent", "different"]},
-        "contains": {"type": ["string", "null"], "maxLength": 500},
-        "unit_type": {"type": ["string", "null"], "maxLength": 160},
-        "instance_id": {"type": ["string", "null"], "maxLength": 160},
-        "side": {"type": ["string", "integer", "null"]},
-        "x": {"type": ["string", "integer", "null"]},
-        "y": {"type": ["string", "integer", "null"]},
-        "event_id": {"type": ["string", "null"], "maxLength": 160},
-        "row": {"type": ["integer", "null"]},
-        "column": {"type": ["integer", "null"]},
-        "terrain": {"type": ["string", "null"], "maxLength": 12},
-    },
+        **{field: {"type": "null"} for field in _CLAIM_FIELDS[3:]},
+    }
+    properties.update(required)
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": list(_CLAIM_FIELDS),
+        "properties": properties,
+    }
+
+
+ACCEPTANCE_CLAIM_SCHEMA = {
+    "anyOf": [
+        _acceptance_claim_schema("source_text", {
+            "contains": {"type": "string", "minLength": 1, "maxLength": 500},
+        }),
+        _acceptance_claim_schema("unit_placement", {
+            "unit_type": {"type": ["string", "integer"], "minLength": 1, "maxLength": 160},
+            "instance_id": {"type": ["string", "integer"], "minLength": 1, "maxLength": 160},
+            "side": {"type": ["string", "integer"], "minLength": 1},
+            "x": {"type": ["string", "integer"], "minLength": 1},
+            "y": {"type": ["string", "integer"], "minLength": 1},
+        }),
+        _acceptance_claim_schema("event_contains", {
+            "contains": {"type": "string", "minLength": 1, "maxLength": 500},
+            "event_id": {"type": "string", "minLength": 1, "maxLength": 160},
+        }),
+        _acceptance_claim_schema("map_cell", {
+            "row": {"type": "integer", "minimum": 1},
+            "column": {"type": "integer", "minimum": 1},
+            "terrain": {"type": "string", "minLength": 1, "maxLength": 12},
+        }),
+    ],
 }
 RECODE_ACCEPTANCE_SCHEMA = {
     # The Codex model API only accepts an object at the root of a strict
@@ -1318,7 +1341,6 @@ Existing candidate diff excerpt (facts only; use it to select exact proof text):
         windows_binary = executable.lower().endswith(".exe")
         root_arg = self._command_path(self.root, windows_binary)
         schema_arg = self._command_path(schema_path, windows_binary)
-        output_arg = self._command_path(output_path, windows_binary)
         prompt = f"""You are the bounded planning layer for the Wesnoth Star Wars project.
 Read AGENTS.md, docs/PROJECT_CONTINUITY.md, and docs/WORKTREE_LESSONS.md before deciding. AGENTS.md permits the
 coordinator-supplied controlled-reference digest; do not reread full controlled references
@@ -1369,54 +1391,88 @@ Already queued work, which must not be duplicated or overlapped:
 continuous_automation: {json.dumps(fresh_start_authorized)}
 fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_requested(brief))}
 """
-        command = [
-            executable, "exec", "-C", root_arg, "-s", "read-only",
-            "-m", VALID_MODES[mode]["cli_model"], "-c", f'model_reasoning_effort="{effort}"',
-            "--ephemeral", "--ignore-user-config", "--color", "never",
-            "--output-schema", schema_arg, "-o", output_arg, "-",
-        ]
         try:
             environment = ticket_runner.require_codex_chatgpt_quota(executable)
         except RuntimeError as exc:
             raise ControlError(str(exc)) from exc
-        try:
-            completed = subprocess.run(
-                command,
-                cwd=self.root,
-                env=environment,
-                input=prompt,
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=PLANNER_TIMEOUT_SECONDS,
-                check=False,
+        contract_diagnostic = ""
+        for attempt in range(1, 3):
+            attempt_output = output_path if attempt == 1 else runtime / (
+                f"sol-ticket-proposal-{run_id}-retry-{attempt}.json"
             )
-        except subprocess.TimeoutExpired as exc:
-            raise ControlError("Sol ticket selection reached its five-minute limit") from exc
-        if completed.returncode != 0:
-            raise ControlError(self._planner_failure_detail(completed))
-        try:
-            proposal = json.loads(output_path.read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError) as exc:
-            raise ControlError("Sol planner returned no valid proposal") from exc
-        if proposal.get("action") not in {"run_ticket", "replace_pr", "stop"}:
-            raise ControlError("Sol planner returned an unsupported action")
-        if proposal["action"] in {"run_ticket", "replace_pr"} and not isinstance(proposal.get("ticket"), dict):
-            raise ControlError("Sol planner omitted the ticket")
-        if proposal["action"] == "run_ticket":
-            self._reject_overlapping_proposal(proposal["ticket"], inventory)
-        proposal["_planning_inventory"] = inventory
-        if proposal["action"] in {"run_ticket", "replace_pr"}:
-            self._build_ticket(
-                run_id, proposal, brief,
-                fresh_start_authorized=fresh_start_authorized,
+            attempt_output.unlink(missing_ok=True)
+            attempt_arg = self._command_path(attempt_output, windows_binary)
+            correction = "" if not contract_diagnostic else (
+                "\nYour immediately preceding proposal was rejected before any worktree was "
+                "created. Correct only the ticket contract and return a new complete proposal. "
+                "The deterministic diagnostic was: " + json.dumps(contract_diagnostic)
+                + "\n"
             )
-        self._cache_plan(
-            runtime,
-            fingerprint,
-            {key: value for key, value in proposal.items() if not key.startswith("_")},
+            command = [
+                executable, "exec", "-C", root_arg, "-s", "read-only",
+                "-m", VALID_MODES[mode]["cli_model"], "-c", f'model_reasoning_effort="{effort}"',
+                "--ephemeral", "--ignore-user-config", "--color", "never",
+                "--output-schema", schema_arg, "-o", attempt_arg, "-",
+            ]
+            try:
+                completed = subprocess.run(
+                    command,
+                    cwd=self.root,
+                    env=environment,
+                    input=prompt + correction,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=PLANNER_TIMEOUT_SECONDS,
+                    check=False,
+                )
+            except subprocess.TimeoutExpired as exc:
+                raise ControlError("Sol ticket selection reached its five-minute limit") from exc
+            if completed.returncode != 0:
+                raise ControlError(self._planner_failure_detail(completed))
+            try:
+                proposal = json.loads(attempt_output.read_text(encoding="utf-8"))
+            except (FileNotFoundError, json.JSONDecodeError) as exc:
+                raise ControlError("Sol planner returned no valid proposal") from exc
+            try:
+                if proposal.get("action") not in {"run_ticket", "replace_pr", "stop"}:
+                    raise ControlError("Sol planner returned an unsupported action")
+                if proposal["action"] in {"run_ticket", "replace_pr"} and not isinstance(proposal.get("ticket"), dict):
+                    raise ControlError("Sol planner omitted the ticket")
+                if proposal["action"] == "run_ticket":
+                    self._reject_overlapping_proposal(proposal["ticket"], inventory)
+                proposal["_planning_inventory"] = inventory
+                if proposal["action"] in {"run_ticket", "replace_pr"}:
+                    self._build_ticket(
+                        run_id, proposal, brief,
+                        fresh_start_authorized=fresh_start_authorized,
+                    )
+            except ControlError as exc:
+                detail = str(exc)
+                if attempt == 1 and detail.startswith("Generated ticket contract is invalid:"):
+                    contract_diagnostic = detail.removeprefix(
+                        "Generated ticket contract is invalid:"
+                    ).strip()[:600]
+                    self.queue.event(
+                        "Sol planner contract rejected; corrected retry started",
+                        level="warning",
+                        detail=(
+                            "Python rejected the proposal before creating a worktree. "
+                            "One corrected planning retry is running: " + contract_diagnostic
+                        ),
+                    )
+                    continue
+                raise
+            self._cache_plan(
+                runtime,
+                fingerprint,
+                {key: value for key, value in proposal.items() if not key.startswith("_")},
+            )
+            return proposal
+        raise ControlError(
+            "Sol returned an invalid ticket contract after one corrected retry: "
+            + contract_diagnostic
         )
-        return proposal
 
     def _post_publish_game_repair_proposal(self, inventory: dict) -> dict | None:
         """Turn a failed installed-game check into one bounded repair before backlog work."""
@@ -2169,7 +2225,10 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             try:
                 validated = ticket_runner.load_ticket(temporary)
             except SystemExit as exc:
-                raise ControlError("Generated ticket contract failed protected-path validation") from exc
+                detail = recovery_policy.safe_text(
+                    exc, "The generated ticket contract was rejected."
+                )
+                raise ControlError("Generated ticket contract is invalid: " + detail) from exc
         finally:
             temporary.unlink(missing_ok=True)
         if (
