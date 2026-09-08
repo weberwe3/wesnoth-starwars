@@ -1135,6 +1135,124 @@ class CoordinationControlTests(unittest.TestCase):
             command = planner.call_args.args[0]
             self.assertEqual(command[command.index("-m") + 1], "gpt-5.6-terra")
 
+    def test_refill_retries_contract_only_backlog_with_literal_event_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "agent" / "runtime").mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+
+            def response_for(contains: str) -> dict:
+                return {
+                    "action": "refill", "summary": "Mission one increment",
+                    "impact": "Adds a bounded scripted objective.", "tickets": [{
+                        "summary": "Extend the opening briefing",
+                        "impact": "Shows the new briefing objective.",
+                        "worker": "fast-fix", "objective": "Add a briefing objective",
+                        "allowed_paths": ["addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"],
+                        "validation_profile": "wesnoth-addon-static",
+                        "validation_root": "addons/Star_Wars_Thrawn_Trilogy",
+                        "acceptance": {
+                            "schema_version": 1,
+                            "claims": [{
+                                "kind": "event_contains",
+                                "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+                                "base": "different", "contains": contains,
+                                "unit_type": None, "instance_id": None, "side": None,
+                                "x": None, "y": None, "event_id": "sw_opening_briefing",
+                                "row": None, "column": None, "terrain": None,
+                            }],
+                        },
+                    }],
+                }
+
+            responses = iter([
+                response_for("/event[id=sw_opening_briefing]"),
+                response_for("message= _ \"Secure the command post.\""),
+            ])
+
+            def run_planner(command, **_kwargs):
+                Path(command[command.index("-o") + 1]).write_text(
+                    json.dumps(next(responses)), encoding="utf-8"
+                )
+                return subprocess.CompletedProcess(command, 0, "", "")
+
+            def validate_ticket(_run_id, proposal, _brief, **_kwargs):
+                contains = proposal["ticket"]["acceptance"]["claims"][0]["contains"]
+                if contains.startswith("/event["):
+                    raise ControlError(
+                        "Generated ticket contract is invalid: ERROR: Acceptance event_contains "
+                        "claim 1 must use literal event-body evidence, not an event selector."
+                    )
+                return {"task_id": "TEST", **proposal["ticket"]}
+
+            inventory = {
+                "main_head": "a" * 40,
+                "planned_priorities": [{"id": "old", "status": "completed", "source": "static"}],
+                "recently_published": [], "approval_queue": [], "open_pull_requests": [],
+            }
+            with (
+                mock.patch.object(ticket_runner, "resolve_codex_executable", return_value="/usr/bin/codex"),
+                mock.patch("autonomy.subprocess.run", side_effect=run_planner) as planner,
+                mock.patch.object(controller, "_reject_overlapping_proposal"),
+                mock.patch.object(controller, "_build_ticket", side_effect=validate_ticket),
+                mock.patch.object(controller, "_planned_priorities", side_effect=lambda _recent: [
+                    {
+                        "id": item["id"], "status": "pending", "source": "generated",
+                        "label": item["summary"], "brief": item["objective"],
+                    }
+                    for item in controller._generated_backlog()["tickets"]
+                ]),
+            ):
+                proposal = controller._refill_backlog(
+                    "abc123def456", "terra-high", "Continue autonomously", inventory
+                )
+            self.assertTrue(proposal["summary"].startswith("generated-"))
+            self.assertEqual(planner.call_count, 2)
+            self.assertIn("literal event-body evidence", planner.call_args.kwargs["input"])
+            self.assertIn("Never use /event", planner.call_args_list[0].kwargs["input"])
+
+    def test_refill_reports_contract_diagnostics_after_corrected_retry(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "agent" / "runtime").mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            response = {
+                "action": "refill", "summary": "Bad contract", "impact": "None", "tickets": [{
+                    "summary": "Bad", "impact": "Bad", "worker": "fast-fix", "objective": "Bad",
+                    "allowed_paths": ["addons/fixture.cfg"], "validation_profile": "static-text",
+                    "validation_root": None, "acceptance": None,
+                }],
+            }
+
+            def run_planner(command, **_kwargs):
+                Path(command[command.index("-o") + 1]).write_text(json.dumps(response), encoding="utf-8")
+                return subprocess.CompletedProcess(command, 0, "", "")
+
+            inventory = {
+                "main_head": "a" * 40,
+                "planned_priorities": [{"id": "old", "status": "completed", "source": "static"}],
+                "recently_published": [], "approval_queue": [], "open_pull_requests": [],
+            }
+            with (
+                mock.patch.object(ticket_runner, "resolve_codex_executable", return_value="/usr/bin/codex"),
+                mock.patch("autonomy.subprocess.run", side_effect=run_planner) as planner,
+                mock.patch.object(controller, "_reject_overlapping_proposal"),
+                mock.patch.object(controller, "_build_ticket", side_effect=ControlError(
+                    "Generated ticket contract is invalid: ERROR: explicit diagnostic"
+                )),
+            ):
+                with self.assertRaisesRegex(ControlError, "Ticket 1: Generated ticket contract is invalid"):
+                    controller._refill_backlog("abc123def456", "terra-high", "Continue autonomously", inventory)
+            self.assertEqual(planner.call_count, 2)
+
     def test_planner_stop_does_not_launch_a_guaranteed_conflicting_refill(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
