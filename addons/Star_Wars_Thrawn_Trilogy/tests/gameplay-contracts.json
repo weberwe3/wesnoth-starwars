@@ -179,6 +179,22 @@
       }
     },
     {
+      "id": "sw-first-battle-delayed-search-patrol",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_delayed_search_patrol",
+      "expected": {
+        "name": "turn",
+        "turn": "7",
+        "first_time_only": "yes",
+        "unit_id": "sw_first_battle_delayed_search_patrol",
+        "side": "2",
+        "type": "sw_unit_im_recon_squad",
+        "x": "16",
+        "y": "9"
+      }
+    },
+    {
       "id": "sw-first-battle-archive-pursuit-deployment",
       "kind": "event-unit",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
