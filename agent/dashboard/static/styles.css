@@ -185,6 +185,7 @@ h2 { margin-bottom: 0; font-size: clamp(1.05rem, 1.6vw, 1.35rem); letter-spacing
 .art-queue-policy { margin: -.55rem 0 .9rem; color: var(--muted); font-size: .74rem; line-height: 1.45; }
 .art-job { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(12rem, .8fr); gap: .75rem; align-items: center; padding: .75rem .85rem; border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: 10px; background: rgba(7,11,18,.34); }
 .art-job.complete { border-left-color: var(--green); }
+.art-job.awaiting-art { border-left-color: var(--line); background: rgba(7,11,18,.22); }
 .art-job.failed { border-left-color: var(--red); }
 .art-job.validating, .art-job.committing, .art-job.publishing, .art-job.testing { border-color: rgba(244,190,99,.78); border-left-color: var(--amber); box-shadow: 0 0 0 0 rgba(244,190,99,.12); animation: art-processing-pulse 1.35s ease-in-out infinite; }
 .art-job.failed { border-color: rgba(255,107,117,.7); background: rgba(255,107,117,.055); box-shadow: inset 3px 0 var(--red); }

@@ -425,6 +425,65 @@ def art_import_preflight(root: Path, job_id: str) -> dict[str, Any]:
     }
 
 
+def art_import_batch_contract(root: Path, job_id: str) -> dict[str, Any]:
+    """Collect one safe source-file batch of fully imported pending art jobs.
+
+    A user can generate several coherent state sets before publishing.  Their
+    WML animation wiring often lands in the same unit source file, so treating
+    the neighboring complete sets as unrelated local changes would make each
+    otherwise-valid import impossible.  This deliberately batches only jobs
+    which share the selected job's source file and independently pass the full
+    local import contract.  Missing or partially wired jobs never enter the
+    batch.
+    """
+
+    selected = art_import_contract(root, job_id)
+    if not selected.get("pass"):
+        return selected
+    selected_preflight = art_import_preflight(root, job_id)
+    if not selected_preflight.get("pass"):
+        return {**selected_preflight, "job_ids": []}
+
+    manifest = _load_manifest(root / ADDON_ROOT / ART_MANIFEST)
+    jobs = manifest.get("jobs") if isinstance(manifest, dict) else None
+    if not isinstance(jobs, list):
+        return {"pass": False, "message": "Art queue manifest is missing or invalid", "job_ids": []}
+    source_path = selected["source_path"]
+    contracts: list[dict[str, Any]] = []
+    for job in jobs:
+        candidate_id = job.get("id") if isinstance(job, dict) else None
+        # ``complete`` is the durable manifest state of an already-published
+        # import.  It must never be reintroduced into a later batch merely
+        # because it shares its WML source file.
+        if not isinstance(candidate_id, str) or job.get("state") == "complete":
+            continue
+        candidate = art_import_contract(root, candidate_id)
+        if not candidate.get("pass") or candidate.get("source_path") != source_path:
+            continue
+        if art_import_preflight(root, candidate_id).get("pass"):
+            contracts.append(candidate)
+    if not any(contract["job"]["id"] == job_id for contract in contracts):
+        return {"pass": False, "message": "Selected art is no longer eligible for governed import", "job_ids": []}
+
+    assets: dict[str, dict[str, str]] = {}
+    for contract in contracts:
+        for asset in contract["assets"]:
+            assets[asset["path"]] = asset
+    return {
+        "pass": True,
+        "job_ids": [contract["job"]["id"] for contract in contracts],
+        "unit_ids": [contract["unit_id"] for contract in contracts],
+        "unit_names": [contract["unit_name"] for contract in contracts],
+        "source_path": source_path,
+        "assets": [assets[path] for path in sorted(assets)],
+        "message": (
+            "One verified art import is ready for governed publication."
+            if len(contracts) == 1
+            else f"{len(contracts)} verified art imports share one unit source and will publish as one ordered batch."
+        ),
+    }
+
+
 def confirm_art_import(root: Path, job_id: str) -> dict[str, Any]:
     """Mark exactly one fully verified user-imported art job complete."""
 
@@ -442,6 +501,35 @@ def confirm_art_import(root: Path, job_id: str) -> dict[str, Any]:
         **preflight,
         "state": "complete",
         "message": "Art import confirmed. The complete state set is staged for governed validation and publication; no LLM follow-up was needed.",
+    }
+
+
+def confirm_art_import_batch(root: Path, job_ids: list[str]) -> dict[str, Any]:
+    """Atomically mark an already-verified, same-source art batch complete."""
+
+    unique_ids = list(dict.fromkeys(job_ids))
+    if not unique_ids or len(unique_ids) > MAX_ART_JOBS or any(
+        not isinstance(job_id, str) or not job_id.startswith("art-") for job_id in unique_ids
+    ):
+        return {"pass": False, "message": "Art import batch identity is invalid"}
+    first = art_import_batch_contract(root, unique_ids[0])
+    if not first.get("pass") or first.get("job_ids") != unique_ids:
+        return {"pass": False, "message": "Art import batch changed before confirmation"}
+    manifest_path = root / ADDON_ROOT / ART_MANIFEST
+    manifest = _load_manifest(manifest_path)
+    for job in manifest["jobs"]:
+        if isinstance(job, dict) and job.get("id") in unique_ids:
+            job["state"] = "complete"
+    _atomic_write(manifest_path, json.dumps(manifest, indent=2) + "\n")
+    return {
+        "pass": True,
+        "state": "complete",
+        "job_ids": unique_ids,
+        "message": (
+            "Art import confirmed for governed validation and publication."
+            if len(unique_ids) == 1
+            else f"{len(unique_ids)} art imports confirmed as one governed batch."
+        ),
     }
 
 

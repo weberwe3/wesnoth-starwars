@@ -21,8 +21,10 @@ import zlib
 
 from asset_scaffold import materialize_missing_project_images
 from art_pipeline import (
+    art_import_batch_contract,
     art_import_preflight,
     confirm_art_import,
+    confirm_art_import_batch,
     public_art_queue,
     synchronize_art_queue,
     unit_ids_for_source_paths,
@@ -929,6 +931,38 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             self.assertEqual(result["state"], "complete")
             self.assertFalse(result["requires_llm"])
             self.assertTrue(validate_art_queue(root)["pass"])
+
+    def test_ready_art_jobs_that_share_a_unit_source_form_one_safe_batch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            unit = root / "addons" / ADDON_ID / "units" / "infantry.cfg"
+            unit.parent.mkdir(parents=True)
+            unit.write_text(
+                "[unit_type]\nid=sw_unit_fixture_one\nname=_\"Fixture One\"\n"
+                "description=_\"An original unit.\"\n[/unit_type]\n"
+                "[unit_type]\nid=sw_unit_fixture_two\nname=_\"Fixture Two\"\n"
+                "description=_\"An original unit.\"\n[/unit_type]\n",
+                encoding="utf-8",
+            )
+            sync = synchronize_art_queue(root, {"sw_unit_fixture_one", "sw_unit_fixture_two"})
+            self.assertTrue(sync["pass"])
+            references: list[str] = []
+            for job in sync["jobs"]:
+                for asset in job["assets"]:
+                    target = root / "addons" / ADDON_ID / asset["path"]
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    width, height = (256, 256) if asset["state"] == "portrait" else (72, 72)
+                    target.write_bytes(_test_png(width, height))
+                    references.append(f"image=~add-ons/{ADDON_ID}/{asset['path']}")
+            unit.write_text(unit.read_text(encoding="utf-8").replace(
+                "[/unit_type]", "\n" + "\n".join(references) + "\n[/unit_type]"
+            ), encoding="utf-8")
+            batch = art_import_batch_contract(root, sync["jobs"][0]["id"])
+            self.assertTrue(batch["pass"], batch)
+            self.assertEqual(batch["job_ids"], [job["id"] for job in sync["jobs"]])
+            result = confirm_art_import_batch(root, batch["job_ids"])
+            self.assertTrue(result["pass"], result)
+            self.assertEqual(validate_art_queue(root)["complete"], 2)
 
     def test_runtime_probe_stages_a_one_scenario_campaign(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
