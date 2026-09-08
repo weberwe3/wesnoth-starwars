@@ -10,8 +10,10 @@ HISTORICAL_GAMEPLAY_VALIDATION_FILE = "historical-gameplay-validation.json"
 GAMEPLAY_VALIDATOR_PATHS = {
     "agent/coordinator/gameplay_contracts.py",
     "agent/coordinator/scenario_launch_selftest.py",
-    "agent/coordinator/ticket_acceptance.py",
 }
+# ticket_acceptance.py validates a ticket's candidate against its own base; the
+# historical sweep never imports it. Changing that candidate-only parser must
+# not force an expensive replay of unchanged protected-main gameplay evidence.
 
 
 def gameplay_revalidation_required(changed_paths: list[str]) -> bool:
