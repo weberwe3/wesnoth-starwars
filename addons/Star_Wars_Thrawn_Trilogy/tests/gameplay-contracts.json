@@ -49,6 +49,9 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_first_battle_eastern_observation",
       "expected": {
+        "name": "moveto",
+        "first_time_only": "yes",
+        "unit_id": "sw_nr_recon_squad",
         "x": "15",
         "y": "2"
       }
@@ -137,6 +140,15 @@
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "expected_id": "sw_air_support_sortie"
+    },
+    {
+      "id": "sw-first-battle-air-support-jammer-gate",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_air_support_configuration",
+      "expected": {
+        "name": "prestart"
+      }
     },
     {
       "id": "sw-first-battle-hero-roster",
