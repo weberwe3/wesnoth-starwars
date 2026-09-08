@@ -132,6 +132,12 @@
       "expected_id": "sw_unit_nr_hero_commander"
     },
     {
+      "id": "sw-first-battle-archive-security-squad",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "expected_id": "sw_first_battle_archive_security"
+    },
+    {
       "id": "sw-imperial-reinforcement-turn-four",
       "kind": "event-unit",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
