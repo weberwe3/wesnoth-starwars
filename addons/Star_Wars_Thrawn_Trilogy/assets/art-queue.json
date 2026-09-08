@@ -464,7 +464,7 @@
       "unit_id": "sw_unit_nr_engineer_squad",
       "unit_name": "New Republic Combat Engineer Squad",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-engineer-squad.md",
       "assets": [
@@ -540,7 +540,7 @@
       "unit_id": "sw_unit_nr_heavy_weapons_squad",
       "unit_name": "New Republic Heavy Weapons Squad",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-heavy-weapons-squad.md",
       "assets": [
@@ -616,7 +616,7 @@
       "unit_id": "sw_unit_nr_slicer_team",
       "unit_name": "New Republic Slicer Team",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-slicer-team.md",
       "assets": [
@@ -692,7 +692,7 @@
       "unit_id": "sw_unit_im_signal_jammer_team",
       "unit_name": "Imperial Remnant Signal Jammer Team",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-signal-jammer-team.md",
       "assets": [
