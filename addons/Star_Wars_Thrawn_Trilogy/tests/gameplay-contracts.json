@@ -135,6 +135,22 @@
       }
     },
     {
+      "id": "sw-first-battle-archive-delivery-interception",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_archive_delivery_interception",
+      "expected": {
+        "name": "turn",
+        "turn": "14",
+        "first_time_only": "yes",
+        "unit_id": "sw_first_battle_archive_delivery_interception",
+        "side": "2",
+        "type": "sw_unit_im_rem_stormtrooper",
+        "x": "12",
+        "y": "5"
+      }
+    },
+    {
       "id": "sw-first-battle-recon-squad-loss-event",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
