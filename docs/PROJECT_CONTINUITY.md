@@ -1200,3 +1200,10 @@ an unrelated note, comment, or already-existing unit from certifying a promised
 gameplay change. Legacy tickets without this evidence are preserved as legacy
 records rather than treated as proof for future autonomous work; their repairs
 retain the original objective and must establish a new contract.
+
+At dashboard startup, a ready or committing legacy add-on queue record that
+predates this evidence is atomically moved to **failed** with its branch,
+commit, and original objective preserved. The existing **Recode with AI** path
+then performs one bounded read-only Sol contract-drafting pass before it can
+dispatch a worker. This migration prevents a pre-upgrade record from reaching
+the former publication route while retaining its useful worktree remnants.
