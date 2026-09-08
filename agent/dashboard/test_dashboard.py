@@ -918,6 +918,69 @@ class CoordinationControlTests(unittest.TestCase):
                 ],
             )
 
+    def test_redundant_generated_ticket_is_retired_from_the_backlog(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "agent" / "dashboard" / "static" / "planned-tickets.json"
+            catalog.parent.mkdir(parents=True)
+            catalog.write_text('{"tickets": []}', encoding="utf-8")
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir()
+            runtime.joinpath("generated-planned-tickets.json").write_text(
+                json.dumps({"schema_version": 1, "tickets": [
+                    {
+                        "id": "generated-redundant-01",
+                        "summary": "generated-redundant-01: Existing behavior",
+                        "impact": "No new change is required",
+                        "worker": "implementer",
+                        "objective": "generated-redundant-01: Add existing behavior",
+                        "allowed_paths": ["addons/example.cfg"],
+                        "validation_profile": "static-text",
+                        "validation_root": None,
+                    },
+                    {
+                        "id": "generated-next-02",
+                        "summary": "generated-next-02: New behavior",
+                        "impact": "Deliver the next bounded change",
+                        "worker": "implementer",
+                        "objective": "generated-next-02: Add new behavior",
+                        "allowed_paths": ["addons/example.cfg"],
+                        "validation_profile": "static-text",
+                        "validation_root": None,
+                    },
+                ]}),
+                encoding="utf-8",
+            )
+            queue = ApprovalQueue(root, root / "approval-queue.json")
+            queue._update(lambda state: state["records"].append({
+                "id": "1" * 16,
+                "ticket_id": "SOL-REDUNDANT",
+                "purpose": "generated-redundant-01: Existing behavior",
+                "impact": "Already satisfied by the ticket base",
+                "changed_paths": [],
+                "state": "redundant",
+            }))
+            controller = AutonomyController(
+                root, ControlStore(root / "control.json"), queue
+            )
+            priorities = controller._planned_priorities([])
+            self.assertEqual(
+                [(item["id"], item["status"]) for item in priorities],
+                [
+                    ("generated-redundant-01", "completed"),
+                    ("generated-next-02", "pending"),
+                ],
+            )
+            self.assertEqual(controller._queued_context(), [])
+            inventory = {
+                "planned_priorities": priorities,
+                "approval_queue": controller._queued_context(),
+                "open_pull_requests": [],
+            }
+            with mock.patch.object(controller, "_build_ticket"):
+                proposal = controller._next_generated_priority(inventory)
+            self.assertEqual(proposal["summary"], "generated-next-02: New behavior")
+
     def test_pending_planned_tickets_is_a_rolling_uncompleted_list(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -3206,6 +3269,32 @@ class ApprovalQueueTests(unittest.TestCase):
                 controller._queued_context(exclude_id="2" * 16),
                 [],
             )
+
+    def test_terminal_queue_items_do_not_retain_planning_path_ownership(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            controller.queue._update(lambda state: state["records"].extend([
+                {
+                    "id": "1" * 16,
+                    "ticket_id": "REDUNDANT-TEST",
+                    "changed_paths": ["addons/example.cfg"],
+                    "branch": "agent/redundant-test",
+                    "state": "redundant",
+                },
+                {
+                    "id": "2" * 16,
+                    "ticket_id": "DISCARDED-TEST",
+                    "changed_paths": ["addons/example.cfg"],
+                    "branch": "agent/discarded-test",
+                    "state": "discarded",
+                },
+            ]))
+            self.assertEqual(controller._queued_context(), [])
 
     def test_automation_selects_oldest_non_deleting_failed_ticket_for_recode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

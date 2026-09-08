@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-08 — redundant ticket audit cards retained path ownership
+
+- **Symptom:** Automation deleted a generated candidate whose acceptance behavior already existed, then repeatedly rejected later planning with “paths already owned by queued work or an open pull request.”
+- **Cause:** Redundant and discarded cards were terminal for display but remained in the coordinator's queue inventory, so their historical `changed_paths` still blocked new tickets. Redundancy also was not completion evidence for its generated backlog ID, allowing the same request to be selected again. An all-state PR query capped at 100 could additionally hide old open PRs behind newer merged history.
+- **Resolution:** Exclude every terminal queue state from path ownership, count a redundancy proof as completion of its exact planned contract, and inventory up to 1,000 PRs so old open work remains visible.
+- **Prevention:** Regression tests require terminal cards to own no paths and redundant generated IDs to become completed; only active queued candidates and genuinely open PRs may block overlapping work.
+
 ### 2026-09-08 — scenario-side unit placement inherited its side in WML
 
 - **Symptom:** A candidate correctly added a side-2 Imperial Remnant Recon Squad at its promised coordinates, but its `unit_placement` acceptance claim reported the unit missing and autonomous planning repeated the same valid worktree.

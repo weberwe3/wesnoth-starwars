@@ -16,7 +16,14 @@ import time
 import uuid
 
 from coordination_control import ControlStore, VALID_MODES, utc_now
-from approval_queue import ApprovalQueue, QueueError, PUBLISHED_STATES, _atomic_json, _run as queue_run
+from approval_queue import (
+    ApprovalQueue,
+    QueueError,
+    PUBLISHED_STATES,
+    TERMINAL_QUEUE_STATES,
+    _atomic_json,
+    _run as queue_run,
+)
 from game_validation_state import (
     carried_forward_record,
     gameplay_revalidation_required,
@@ -2633,7 +2640,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             }
             for item in self.queue.public_state()["records"]
             if item.get("id") != exclude_id
-            and item.get("state") not in {*PUBLISHED_STATES, "rejected", "stale"}
+            and item.get("state") not in TERMINAL_QUEUE_STATES
         ]
 
     def _planning_inventory(self, *, queue_exclude_id: str | None = None) -> dict:
@@ -2659,7 +2666,9 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
 
         try:
             pull_requests = json.loads(checked([
-                "gh", "pr", "list", "--state", "all", "--limit", "100",
+                # Include old still-open PRs. A short all-state window can hide
+                # them once the repository has enough newer merged PRs.
+                "gh", "pr", "list", "--state", "all", "--limit", "1000",
                 "--json", (
                     "number,title,headRefName,headRefOid,baseRefName,url,files,state,"
                     "isCrossRepository,mergeable,mergeStateStatus"
@@ -2928,9 +2937,20 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             item for item in self.queue.public_state()["records"]
             if item.get("state") in PUBLISHED_STATES
         ]
+        redundant_history = [
+            item for item in self.queue.public_state()["records"]
+            if item.get("state") == "redundant"
+        ]
         if recently_published is None:
             recently_published = published_history
-        completion_evidence = [*published_history, *recently_published]
+        # A redundancy gate proves that the requested behavior was already in
+        # the ticket base. Retire that planned contract just like completed
+        # work so continuous automation advances instead of recreating it.
+        completion_evidence = [
+            *published_history,
+            *redundant_history,
+            *recently_published,
+        ]
 
         path = self.root / "agent" / "dashboard" / "static" / "planned-tickets.json"
         try:
