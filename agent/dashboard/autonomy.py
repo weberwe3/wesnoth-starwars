@@ -1566,8 +1566,10 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         ):
             return None
         evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
-        if evidence.get("failure_class") in {"engine_infrastructure", "publication_infrastructure"}:
-            raise ControlError("Post-publish game validation could not run; restore local main and engine health before planning repairs")
+        if evidence.get("failure_class") in {
+            "engine_infrastructure", "publication_infrastructure", "launcher_synchronization",
+        }:
+            raise ControlError("Post-publish game validation could not run; restore local main, the player launcher, and engine health before planning repairs")
         paths = [
             item for item in evidence.get("diagnostic_paths", [])
             if isinstance(item, str)
@@ -1650,8 +1652,8 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         if record.get("state") != "pending_repair":
             return None
         evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
-        if evidence.get("engine_failure_class") == "engine_infrastructure":
-            raise ControlError("Historical game validation could not run; restore the installed engine before planning repairs")
+        if evidence.get("engine_failure_class") in {"engine_infrastructure", "launcher_synchronization"}:
+            raise ControlError("Historical game validation could not run; restore the installed engine and player launcher before planning repairs")
         paths = [
             item for item in evidence.get("diagnostic_paths", [])
             if isinstance(item, str) and item.startswith(ADDON_ROOT + "/") and ".." not in Path(item).parts

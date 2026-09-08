@@ -3612,7 +3612,7 @@ class PublicationGameValidationTests(unittest.TestCase):
     def test_success_sets_tested_and_refreshes_stale_history(self) -> None:
         self.history.write_text(json.dumps({"state": "pending_repair", "main_head": "b" * 40}), encoding="utf-8")
         with (
-            mock.patch("approval_queue.validate_post_publish_game", return_value=self.engine),
+            mock.patch("approval_queue.validate_post_publish_game", return_value=self.engine) as probe,
             mock.patch("approval_queue.validate_historical_retention", return_value=self.retained),
         ):
             self.queue._record_post_publish_game_validation(self.record, self.head)
@@ -3621,6 +3621,7 @@ class PublicationGameValidationTests(unittest.TestCase):
         self.assertEqual(record["post_publish_validation"], "PASS")
         self.assertTrue(record["post_publish_checked_at"])
         self.assertEqual(record["post_publish_evidence"]["exit_code"], 0)
+        self.assertEqual(probe.call_args.kwargs["expected_main_sha"], self.head)
         history = json.loads(self.history.read_text(encoding="utf-8"))
         self.assertEqual((history["state"], history["main_head"]), ("passed", self.head))
 
@@ -3681,6 +3682,21 @@ class PublicationGameValidationTests(unittest.TestCase):
         with mock.patch("approval_queue.validate_post_publish_game", side_effect=OSError("offline")):
             self.queue._record_post_publish_game_validation(self.record, self.head)
         with self.assertRaisesRegex(ControlError, "engine health"):
+            self.controller._post_publish_game_repair_proposal({"main_head": self.head})
+
+    def test_player_launcher_unavailability_does_not_generate_a_code_repair(self) -> None:
+        launcher = {
+            **self.engine, "pass": False,
+            "failure_class": "launcher_synchronization",
+            "diagnostic": "Player launcher did not mirror protected main.",
+            "player_launcher": {"pass": False},
+        }
+        with (
+            mock.patch("approval_queue.validate_post_publish_game", return_value=launcher),
+            mock.patch("approval_queue.validate_historical_retention", return_value=self.retained),
+        ):
+            self.queue._record_post_publish_game_validation(self.record, self.head)
+        with self.assertRaisesRegex(ControlError, "player launcher"):
             self.controller._post_publish_game_repair_proposal({"main_head": self.head})
 
     def test_batch_members_keep_the_final_game_result_even_after_merge_exception(self) -> None:

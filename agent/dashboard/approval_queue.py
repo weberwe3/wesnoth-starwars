@@ -1289,7 +1289,8 @@ class ApprovalQueue:
             if _run(["git", "status", "--porcelain=v1", "--untracked-files=no"], self.root):
                 raise QueueError("Local main contains uncommitted changes before the game check")
             evidence = validate_post_publish_game(
-                self.root, required_gameplay_paths=changed_paths
+                self.root, required_gameplay_paths=changed_paths,
+                expected_main_sha=merge_sha,
             )
             for member in record.get("batch_members") or [record]:
                 acceptance_checks.append(validate_ticket_acceptance(
@@ -1321,7 +1322,7 @@ class ApprovalQueue:
             # Pending historical repairs require the whole assembled game,
             # whereas the publication check also enforces this ticket's contracts.
             history_engine = (
-                validate_post_publish_game(self.root)
+                validate_post_publish_game(self.root, expected_main_sha=merge_sha)
                 if history.get("state") != "passed" and changed_paths else evidence
             )
             retained = validate_historical_retention(self.root)
@@ -1367,6 +1368,11 @@ class ApprovalQueue:
                     "pass": all(item.get("pass") is True for item in acceptance_checks),
                     "count": len(acceptance_checks),
                 },
+                "player_launcher": {
+                    "pass": (evidence.get("player_launcher") or {}).get("pass") is True,
+                    "expected_main_sha": (evidence.get("player_launcher") or {}).get("expected_main_sha"),
+                    "launcher_main_sha": (evidence.get("player_launcher") or {}).get("launcher_main_sha"),
+                },
             },
         }
         _atomic_json(self.runtime / POST_PUBLISH_GAME_VALIDATION_FILE, payload)
@@ -1388,19 +1394,21 @@ class ApprovalQueue:
                 ticket_id=str(record.get("ticket_id") or ""),
             )
             return
-        infrastructure = evidence.get("failure_class") in {"engine_infrastructure", "publication_infrastructure"}
+        infrastructure = evidence.get("failure_class") in {
+            "engine_infrastructure", "publication_infrastructure", "launcher_synchronization",
+        }
         self.event(
             "Installed Wesnoth validation unavailable; infrastructure recovery required" if infrastructure
             else "Installed Wesnoth check failed on updated main; repair required",
             level="error",
             detail=(
-                ("Restore engine/local-main availability before resuming validation. " if infrastructure
+                ("Restore engine/local-main/player-launcher availability before resuming validation. " if infrastructure
                  else "Automation will prioritize a bounded game-repair ticket before normal backlog work. ")
                 + str(payload["evidence"]["diagnostic"] or "The engine returned no diagnostic text.")
             )[:6000],
             ticket_id=str(record.get("ticket_id") or ""),
             failure_class="post_publish_game_validation",
-            required_action=("Restore the engine/local-main infrastructure, then retry validation." if infrastructure
+            required_action=("Restore the engine, local main, and player launcher, then retry validation." if infrastructure
                              else "Automation will repair the current main add-on before continuing other tickets."),
         )
 
