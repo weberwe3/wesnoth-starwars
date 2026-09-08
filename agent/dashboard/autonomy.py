@@ -44,6 +44,7 @@ AUTONOMOUS_CONTRACT_REPLAN_FAILURES = {
 MAX_MANAGED_AGENT_BRANCHES = 1000
 GENERATED_BACKLOG_FILE = "generated-planned-tickets.json"
 GENERATED_BACKLOG_SIZE = 4
+BACKLOG_PLANNER_ATTEMPTS = 2
 POST_PUBLISH_GAME_VALIDATION_FILE = "post-publish-game-validation.json"
 HISTORICAL_GAMEPLAY_VALIDATION_FILE = "historical-gameplay-validation.json"
 ADDON_ROOT = "addons/Star_Wars_Thrawn_Trilogy"
@@ -61,6 +62,17 @@ SENSITIVE_ENV = re.compile(
     r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
     re.IGNORECASE,
 )
+
+# These rules are shared by single-ticket and backlog planning.  The
+# acceptance parser intentionally searches the body of the named event, not
+# WML/XPath-style selectors used to find that event.
+GAMEPLAY_ACCEPTANCE_RULES = """Published gameplay WML IDs, including campaign
+first_scenario targets, are compatibility contracts: never rename or remove
+them. Extend an established event with new behavior or add a new event instead.
+For every event_contains acceptance claim, event_id identifies the event and
+contains must be literal behavioral text that occurs inside that event body
+(for example name=..., message=..., or an action). Never use /event[...],
+[event], XPath/CSS selector syntax, or merely repeat the event ID as contains."""
 
 # The planner API requires every declared field to be required.  A single
 # nullable shape lets a model emit a source_text claim without its required
@@ -1400,7 +1412,8 @@ Do not stop merely because the first documented priority is already queued; stop
 when no safe non-overlapping priority can proceed without an unmerged dependency.
 Describe its user-visible or mod-facing impact separately from its implementation summary.
 Python will validate your JSON, create the isolated worktree, invoke workers, run gates, and stop before commit/push/merge.
-Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must also update addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json with a compact contract for each changed gameplay source. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Existing published gameplay IDs, including campaign first_scenario targets, are compatibility contracts: never rename or remove them solely to apply a naming convention. Python runs historical-retention validation locally and rejects a candidate that breaks one.
+Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must also update addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json with a compact contract for each changed gameplay source. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Python runs historical-retention validation locally and rejects a candidate that breaks one.
+{GAMEPLAY_ACCEPTANCE_RULES}
 Every wesnoth-addon-static ticket MUST include a non-null acceptance contract. It is immutable evidence that the promised feature is absent or different at the ticket base and present in the candidate. Use unit_placement for a promised placed unit (type, instance id, side, x, y), map_cell for a map coordinate (row, column, terrain), event_contains for a named event behavior, or source_text only for a precise non-gameplay WML text change. Every claim object must include every schema field; set fields irrelevant to its kind to null. Never use a note, comment, or generic existing contract as evidence that a new gameplay promise was fulfilled. Set acceptance null only for static-text tickets.
 Set ticket.resume_branch to the exact branch from resumable_local_work when continuing remnants.
 For resumable_pull_requests, also copy its exact number and head_sha into
@@ -1933,7 +1946,6 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         windows_binary = executable.lower().endswith(".exe")
         root_arg = self._command_path(self.root, windows_binary)
         schema_arg = self._command_path(schema_path, windows_binary)
-        output_arg = self._command_path(output_path, windows_binary)
         compact = {
             "main": inventory.get("main_head"),
             "completed": [
@@ -1957,55 +1969,71 @@ patterns. Use wesnoth-addon-static with the add-on root for game WML; otherwise 
 static-text and null. Every wesnoth-addon-static ticket must include a non-null
 baseline-aware acceptance contract using unit_placement, map_cell, event_contains,
 or a narrowly precise source_text claim; set irrelevant claim fields to null.
+{GAMEPLAY_ACCEPTANCE_RULES}
 Prefer fast-fix only for unambiguous one- or two-file work.
 If no safe implementation sequence exists, return stop with an empty tickets list.
 Owner brief: {json.dumps(brief)}
 Owner planning guidance: {json.dumps(guidance)}
 Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
 """
-        command = [
-            executable, "exec", "-C", root_arg, "-s", "read-only",
-            "-m", VALID_MODES[mode]["cli_model"], "-c",
-            f'model_reasoning_effort="{VALID_MODES[mode]["effort"]}"',
-            "--ephemeral", "--ignore-user-config", "--color", "never",
-            "--output-schema", schema_arg, "-o", output_arg, "-",
-        ]
         try:
             environment = ticket_runner.require_codex_chatgpt_quota(executable)
         except RuntimeError as exc:
             raise ControlError(str(exc)) from exc
-        try:
-            completed = subprocess.run(
-                command, cwd=self.root, env=environment, input=prompt, text=True,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                timeout=PLANNER_TIMEOUT_SECONDS, check=False,
+        rejection_details: list[str] = []
+        for attempt in range(1, BACKLOG_PLANNER_ATTEMPTS + 1):
+            attempt_output = output_path if attempt == 1 else runtime / (
+                f"sol-backlog-proposal-{run_id}-retry-{attempt}.json"
             )
-        except subprocess.TimeoutExpired as exc:
-            raise ControlError("Sol backlog generation reached its five-minute limit") from exc
-        if completed.returncode != 0:
-            raise ControlError(self._planner_failure_detail(completed))
-        try:
-            response = json.loads(output_path.read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError) as exc:
-            raise ControlError("Sol backlog planner returned no valid proposal") from exc
-        if response.get("action") == "stop":
-            return {
-                "action": "stop",
-                "summary": str(response.get("summary") or "No safe backlog can be generated"),
-                "impact": str(response.get("impact") or "Autonomous work remains paused."),
-                "ticket": None,
-                "_planning_inventory": inventory,
-            }
-        if response.get("action") != "refill" or not isinstance(response.get("tickets"), list):
-            raise ControlError("Sol backlog planner returned an unsupported action")
+            attempt_output.unlink(missing_ok=True)
+            attempt_arg = self._command_path(attempt_output, windows_binary)
+            correction = "" if not rejection_details else (
+                "\nThe preceding backlog was rejected before any worktree was created. "
+                "Return a complete corrected backlog, preserving only safe intent and order. "
+                "Do not repeat these deterministic contract diagnostics:\n- "
+                + "\n- ".join(rejection_details[:5]) + "\n"
+            )
+            command = [
+                executable, "exec", "-C", root_arg, "-s", "read-only",
+                "-m", VALID_MODES[mode]["cli_model"], "-c",
+                f'model_reasoning_effort="{VALID_MODES[mode]["effort"]}"',
+                "--ephemeral", "--ignore-user-config", "--color", "never",
+                "--output-schema", schema_arg, "-o", attempt_arg, "-",
+            ]
+            try:
+                completed = subprocess.run(
+                    command, cwd=self.root, env=environment, input=prompt + correction, text=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    timeout=PLANNER_TIMEOUT_SECONDS, check=False,
+                )
+            except subprocess.TimeoutExpired as exc:
+                raise ControlError("Sol backlog generation reached its five-minute limit") from exc
+            if completed.returncode != 0:
+                raise ControlError(self._planner_failure_detail(completed))
+            try:
+                response = json.loads(attempt_output.read_text(encoding="utf-8"))
+            except (FileNotFoundError, json.JSONDecodeError) as exc:
+                raise ControlError("Sol backlog planner returned no valid proposal") from exc
+            if response.get("action") == "stop":
+                return {
+                    "action": "stop",
+                    "summary": str(response.get("summary") or "No safe backlog can be generated"),
+                    "impact": str(response.get("impact") or "Autonomous work remains paused."),
+                    "ticket": None,
+                    "_planning_inventory": inventory,
+                }
+            if response.get("action") != "refill" or not isinstance(response.get("tickets"), list):
+                raise ControlError("Sol backlog planner returned an unsupported action")
 
-        generation_id = uuid.uuid4().hex[:8]
-        accepted = []
-        for index, raw in enumerate(response["tickets"][:5], start=1):
-            if not isinstance(raw, dict):
-                continue
-            ticket_id = f"generated-{generation_id}-{index:02d}"
-            proposal = {
+            generation_id = uuid.uuid4().hex[:8]
+            accepted = []
+            attempt_rejections: list[str] = []
+            for index, raw in enumerate(response["tickets"][:5], start=1):
+                if not isinstance(raw, dict):
+                    attempt_rejections.append(f"Ticket {index}: proposal was not an object")
+                    continue
+                ticket_id = f"generated-{generation_id}-{index:02d}"
+                proposal = {
                 "action": "run_ticket",
                 "summary": f"{ticket_id}: {str(raw.get('summary') or '')}",
                 "impact": str(raw.get("impact") or ""),
@@ -2025,28 +2053,52 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                 },
                 "_planning_inventory": inventory,
             }
-            try:
-                self._reject_overlapping_proposal(proposal["ticket"], inventory)
-                validated = self._build_ticket(
-                    run_id, proposal, brief, fresh_start_authorized=True,
-                )
-            except (ControlError, SystemExit, ValueError):
-                continue
-            accepted.append({
-                "id": ticket_id,
-                "summary": proposal["summary"],
-                "impact": proposal["impact"],
-                **{
-                    key: validated.get(key)
-                    for key in (
-                        "worker", "objective", "allowed_paths",
-                        "validation_profile", "validation_root",
-                        "acceptance",
+                try:
+                    self._reject_overlapping_proposal(proposal["ticket"], inventory)
+                    validated = self._build_ticket(
+                        run_id, proposal, brief, fresh_start_authorized=True,
                     )
-                },
-            })
+                except (ControlError, SystemExit, ValueError) as exc:
+                    attempt_rejections.append(f"Ticket {index}: {str(exc)[:600]}")
+                    continue
+                accepted.append({
+                    "id": ticket_id,
+                    "summary": proposal["summary"],
+                    "impact": proposal["impact"],
+                    **{
+                        key: validated.get(key)
+                        for key in (
+                            "worker", "objective", "allowed_paths",
+                            "validation_profile", "validation_root",
+                            "acceptance",
+                        )
+                    },
+                })
+            if accepted:
+                break
+            rejection_details = attempt_rejections or ["No ticket was supplied"]
+            if attempt < BACKLOG_PLANNER_ATTEMPTS and all(
+                "Generated ticket contract is invalid:" in detail
+                for detail in rejection_details
+            ):
+                self.queue.event(
+                    "Sol backlog contracts rejected; corrected retry started",
+                    level="warning",
+                    detail=(
+                        "Python rejected the backlog before creating a worktree. "
+                        "One corrected planning retry is running: " + rejection_details[0]
+                    ),
+                )
+                continue
+            raise ControlError(
+                "Sol backlog planner produced no safe bounded ticket contracts: "
+                + "; ".join(rejection_details[:5])
+            )
         if not accepted:
-            raise ControlError("Sol backlog planner produced no safe bounded ticket contracts")
+            raise ControlError(
+                "Sol backlog planner produced no safe bounded ticket contracts after one corrected retry: "
+                + "; ".join(rejection_details[:5])
+            )
         backlog_path = runtime / GENERATED_BACKLOG_FILE
         temporary = backlog_path.with_suffix(f".{run_id}.tmp")
         temporary.write_text(json.dumps({
