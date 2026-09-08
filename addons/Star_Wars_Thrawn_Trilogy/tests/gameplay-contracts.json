@@ -169,6 +169,21 @@
       }
     },
     {
+      "id": "sw-first-battle-archive-return-roadblock",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_archive_return_roadblock",
+      "expected": {
+        "name": "moveto",
+        "first_time_only": "yes",
+        "unit_id": "sw_archive_return_roadblock",
+        "side": "2",
+        "type": "sw_unit_im_rem_stormtrooper",
+        "x": "10",
+        "y": "5"
+      }
+    },
+    {
       "id": "sw-signal-jammer-deployment-turn-two",
       "kind": "event-unit",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
