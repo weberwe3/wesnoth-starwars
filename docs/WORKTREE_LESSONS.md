@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-08 — event acceptance evidence used a selector instead of event behavior
+
+- **Symptom:** A Mission 1 candidate added its promised `sw_first_battle_heavy_weapons_range_briefing` event, but deterministic validation failed and autonomous recovery spent time rewriting the briefing.
+- **Cause:** The planner supplied `/event[id=...]` as an `event_contains` value. Validation checks that value inside the selected WML event body, where a selector is never literal. The immutable ticket contract therefore could not be satisfied by an in-scope code repair.
+- **Resolution:** Reject selector-shaped and id-only event evidence before a worktree is created. Classify any surviving acceptance-contract failure separately, preserve its candidate, and re-plan the evidence without consuming repair attempts or the worktree failure budget.
+- **Prevention:** An `event_contains` claim must name the event by `event_id` and use a literal behavior string from that event body, such as its original message or action text. Never use XPath/CSS/WML selector syntax or repeat only the event id.
+
 ### 2026-09-08 — a syntactically valid map token was not an engine terrain
 
 - **Symptom:** Mission 1 was marked Published and Tested, but the player launcher stopped while loading the level with `Unknown tile in map: (Gg^Ff) 'Gg^Ff'`.

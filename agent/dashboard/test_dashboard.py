@@ -389,6 +389,47 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertEqual(source_text["properties"]["contains"]["type"], "string")
         self.assertEqual(source_text["properties"]["contains"]["minLength"], 1)
 
+    def test_event_contract_rejects_a_selector_instead_of_event_body_evidence(self) -> None:
+        result = ticket_runner.validate_acceptance_contract({
+            "schema_version": 1,
+            "claims": [{
+                "kind": "event_contains",
+                "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+                "base": "absent",
+                "event_id": "sw_first_battle_heavy_weapons_range_briefing",
+                "contains": "/event[id=sw_first_battle_heavy_weapons_range_briefing]",
+            }],
+        })
+        self.assertFalse(result["pass"])
+        self.assertIn("event-body evidence", result["diagnostic"])
+
+    def test_event_contract_requires_behavior_evidence_beyond_the_event_id(self) -> None:
+        result = ticket_runner.validate_acceptance_contract({
+            "schema_version": 1,
+            "claims": [{
+                "kind": "event_contains",
+                "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+                "base": "absent",
+                "event_id": "sw_first_battle_heavy_weapons_range_briefing",
+                "contains": "id=sw_first_battle_heavy_weapons_range_briefing",
+            }],
+        })
+        self.assertFalse(result["pass"])
+        self.assertIn("event behavior", result["diagnostic"])
+
+    def test_event_contract_accepts_literal_event_body_evidence(self) -> None:
+        result = ticket_runner.validate_acceptance_contract({
+            "schema_version": 1,
+            "claims": [{
+                "kind": "event_contains",
+                "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+                "base": "absent",
+                "event_id": "sw_first_battle_heavy_weapons_range_briefing",
+                "contains": "Heavy Weapons Squad, keep the native heavy blaster",
+            }],
+        })
+        self.assertTrue(result["pass"])
+
     def test_build_ticket_reports_the_actual_acceptance_contract_rejection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1482,6 +1523,22 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertTrue(failure["eligible"])
         self.assertIn("declared_contracts", failure["detail"])
         self.assertIn("unit x is not 16; unit y is not 6", failure["detail"])
+
+    def test_acceptance_contract_failure_skips_in_worktree_recovery(self) -> None:
+        failure = recovery_policy.classify_validation({
+            "scope": {"changed_paths": ["addons/example/scenario.cfg"], "violations": []},
+            "static": {"checks": []},
+            "profile_result": {
+                "pass": False,
+                "ticket_acceptance": {
+                    "pass": False,
+                    "diagnostic": "Acceptance claim 1 is missing from the candidate.",
+                },
+            },
+        }, 0)
+        self.assertEqual(failure["class"], "ticket_acceptance_contract_failure")
+        self.assertFalse(failure["eligible"])
+        self.assertIn("Acceptance claim 1", failure["detail"])
 
     def test_recovery_planner_failure_keeps_bounded_retry(self) -> None:
         failure = {
