@@ -54,6 +54,19 @@
       }
     },
     {
+      "id": "sw-first-battle-eastern-observation-air-support",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_eastern_observation",
+      "expected": {
+        "name": "moveto",
+        "first_time_only": "yes",
+        "unit_id": "sw_nr_recon_squad",
+        "x": "15",
+        "y": "2"
+      }
+    },
+    {
       "id": "sw-first-battle-archive-records-acquisition-event",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
