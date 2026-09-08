@@ -1139,12 +1139,21 @@ class AutonomyController:
         os.chmod(runtime, 0o700)
         request_id = uuid.uuid4().hex[:12]
         schema_path = runtime / f"sol-recode-acceptance-schema-{request_id}.json"
-        output_path = runtime / f"sol-recode-acceptance-{request_id}.json"
         schema_path.write_text(
             json.dumps(RECODE_ACCEPTANCE_SCHEMA, indent=2) + "\n",
             encoding="utf-8",
         )
         os.chmod(schema_path, 0o600)
+        changed_paths = [
+            path for path in item.get("changed_paths") or []
+            if isinstance(path, str) and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+        ][:12]
+        candidate_diff = subprocess.run(
+            ["git", "diff", "--unified=1", base_sha, "--", *changed_paths],
+            cwd=worktree, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            text=True, timeout=30, check=False,
+        )
+        diff_excerpt = candidate_diff.stdout[:6000] if candidate_diff.returncode == 0 else ""
         windows_binary = executable.lower().endswith(".exe")
         prompt = f"""Draft only a truthful acceptance contract for this legacy Wesnoth ticket.
 Read the exact existing worktree and its original objective. Do not edit files or run write commands.
@@ -1152,9 +1161,15 @@ Return only the schema JSON, never null. The contract must prove a promised visi
 outcome differs from base {base_sha}; use unit_placement, map_cell, event_contains, or a
 precise source_text claim. Do not use installed_game_repair, comments, notes, generic loading,
 or existing contracts as evidence. Every schema field is mandatory; use null where irrelevant.
+The `base` field is never irrelevant: it must be exactly `absent` or `different`, never null.
+For source_text, `contains` must be one non-empty exact gameplay string in the candidate;
+for unit_placement, event_contains, and map_cell, every field required by that claim kind
+must be non-null. Paths must begin with addons/Star_Wars_Thrawn_Trilogy/.
 Original objective: {json.dumps(item.get('objective'))}
 Allowed paths: {json.dumps(item.get('allowed_paths'))}
 Existing candidate paths: {json.dumps(item.get('changed_paths'))}
+Existing candidate diff excerpt (facts only; use it to select exact proof text):
+{diff_excerpt}
 """
         command = [
             executable, "exec", "-C", self._command_path(worktree, windows_binary), "-s", "read-only",
@@ -1162,31 +1177,55 @@ Existing candidate paths: {json.dumps(item.get('changed_paths'))}
             f'model_reasoning_effort="{VALID_MODES[mode]["effort"]}"',
             "--ephemeral", "--ignore-user-config", "--color", "never",
             "--output-schema", self._command_path(schema_path, windows_binary),
-            "-o", self._command_path(output_path, windows_binary), "-",
         ]
-        environment = {
-            key: value for key, value in ticket_runner.codex_environment(executable).items()
-            if not SENSITIVE_ENV.search(key)
-        }
         try:
-            completed = subprocess.run(
-                command, cwd=worktree, env=environment, input=prompt, text=True,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                timeout=PLANNER_TIMEOUT_SECONDS, check=False,
-            )
-            if completed.returncode != 0:
-                raise ControlError(self._planner_failure_detail(completed))
-            acceptance = json.loads(output_path.read_text(encoding="utf-8"))
+            environment = ticket_runner.require_codex_chatgpt_quota(executable)
+        except RuntimeError as exc:
+            raise ControlError(str(exc)) from exc
+        diagnostic = ""
+        try:
+            for attempt in range(1, 3):
+                output_path = runtime / f"sol-recode-acceptance-{request_id}-{attempt}.json"
+                attempt_prompt = prompt
+                if diagnostic:
+                    attempt_prompt += (
+                        "\nYour prior draft was rejected by the deterministic contract validator: "
+                        + diagnostic
+                        + "\nReturn a corrected contract only; do not repeat the invalid shape.\n"
+                    )
+                completed = subprocess.run(
+                    [*command, "-o", self._command_path(output_path, windows_binary), "-"],
+                    cwd=worktree, env=environment, input=attempt_prompt, text=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    timeout=PLANNER_TIMEOUT_SECONDS, check=False,
+                )
+                if completed.returncode != 0:
+                    raise ControlError(self._planner_failure_detail(completed))
+                try:
+                    acceptance = json.loads(output_path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    diagnostic = "The response was not a readable JSON acceptance contract."
+                    output_path.unlink(missing_ok=True)
+                    continue
+                validated = ticket_runner.validate_acceptance_contract(acceptance)
+                if validated.get("pass"):
+                    item["acceptance"] = validated["contract"]
+                    item["base_sha"] = base_sha
+                    return
+                diagnostic = str(validated.get("diagnostic") or "The contract was invalid.")[:600]
+                output_path.unlink(missing_ok=True)
         except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
             raise ControlError("Sol did not return legacy ticket acceptance evidence") from exc
         finally:
             schema_path.unlink(missing_ok=True)
-            output_path.unlink(missing_ok=True)
-        validated = ticket_runner.validate_acceptance_contract(acceptance)
-        if not validated.get("pass"):
-            raise ControlError("Sol returned an invalid legacy ticket acceptance contract")
-        item["acceptance"] = validated["contract"]
-        item["base_sha"] = base_sha
+            for attempt in range(1, 3):
+                (runtime / f"sol-recode-acceptance-{request_id}-{attempt}.json").unlink(
+                    missing_ok=True
+                )
+        raise ControlError(
+            "Sol returned an invalid legacy ticket acceptance contract after one corrected retry: "
+            + diagnostic
+        )
 
     def _plan(
         self,
@@ -1336,10 +1375,10 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             "--ephemeral", "--ignore-user-config", "--color", "never",
             "--output-schema", schema_arg, "-o", output_arg, "-",
         ]
-        environment = {
-            key: value for key, value in ticket_runner.codex_environment(executable).items()
-            if not SENSITIVE_ENV.search(key)
-        }
+        try:
+            environment = ticket_runner.require_codex_chatgpt_quota(executable)
+        except RuntimeError as exc:
+            raise ControlError(str(exc)) from exc
         try:
             completed = subprocess.run(
                 command,
@@ -1785,10 +1824,10 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "--ephemeral", "--ignore-user-config", "--color", "never",
             "--output-schema", schema_arg, "-o", output_arg, "-",
         ]
-        environment = {
-            key: value for key, value in ticket_runner.codex_environment(executable).items()
-            if not SENSITIVE_ENV.search(key)
-        }
+        try:
+            environment = ticket_runner.require_codex_chatgpt_quota(executable)
+        except RuntimeError as exc:
+            raise ControlError(str(exc)) from exc
         try:
             completed = subprocess.run(
                 command, cwd=self.root, env=environment, input=prompt, text=True,
