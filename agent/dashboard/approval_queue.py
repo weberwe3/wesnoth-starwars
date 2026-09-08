@@ -36,7 +36,7 @@ REQUIRED_CHECK_NAME = "repository-gates"
 POST_PUBLISH_GAME_VALIDATION_FILE = "post-publish-game-validation.json"
 PUBLISHED_STATES = {"published", "published_and_tested", "published_test_failed"}
 TERMINAL_QUEUE_STATES = PUBLISHED_STATES | {
-    "rejected", "stale", "dismissed", "superseded", "discarded",
+    "rejected", "stale", "dismissed", "superseded", "discarded", "redundant",
 }
 MAX_QUEUE_RECORDS = 10
 
@@ -1003,6 +1003,94 @@ class ApprovalQueue:
                 "the non-secret queue audit record remains."
             ),
             ticket_id=str(selected.get("ticket_id") or ""),
+        )
+
+    def archive_redundant_candidate(
+        self, result: dict[str, Any], ticket: dict[str, Any], *, summary: str,
+        impact: str, reason: str,
+    ) -> None:
+        """Remove an unpublishable redundant candidate while retaining a visible audit card."""
+
+        branch = result.get("branch")
+        worktree_value = result.get("worktree")
+        task_id = ticket.get("task_id")
+        if (
+            not isinstance(branch, str) or not BRANCH.fullmatch(branch)
+            or not isinstance(worktree_value, str)
+            or not isinstance(task_id, str) or not task_id
+        ):
+            raise QueueError("Redundant ticket identity is invalid")
+        worktree = Path(worktree_value).resolve()
+        if not worktree_paths.contains_managed_worktree(self.root, worktree):
+            raise QueueError("Redundant ticket worktree is outside the managed root")
+        if self._ref_sha(f"refs/remotes/origin/{branch}") is not None:
+            raise QueueError("A redundant ticket has a remote branch and must remain for review")
+        if _run(["git", "branch", "--show-current"], worktree) != branch:
+            raise QueueError("Redundant ticket worktree branch no longer matches the ticket")
+        local_sha = self._ref_sha(f"refs/heads/{branch}")
+        if local_sha is None:
+            raise QueueError("Redundant ticket local branch no longer exists")
+
+        # The caller matched the immutable acceptance diagnostic exactly. The
+        # owner authorized redundant work removal; `--force` is restricted to
+        # this verified managed worktree so uncommitted candidate code cannot
+        # block the queue forever.
+        _run(["git", "worktree", "remove", "--force", str(worktree)], self.root, 120)
+        _run(["git", "branch", "-D", branch], self.root)
+        changed_paths = [
+            str(path) for path in ((result.get("validation") or {}).get("scope") or {}).get(
+                "changed_paths", []
+            ) if isinstance(path, str)
+        ][:200]
+        record_id = hashlib.sha256(
+            f"redundant:{task_id}:{branch}:{utc_now()}".encode()
+        ).hexdigest()[:16]
+        now = utc_now()
+
+        def archive(state: dict[str, Any]) -> None:
+            state["records"].append({
+                "id": record_id,
+                "ticket_id": task_id,
+                "purpose": summary[:500],
+                "impact": impact[:1200],
+                "original_objective": str(ticket.get("objective") or "")[:1200],
+                "changed_paths": changed_paths,
+                "deleted_paths": [],
+                "branch": branch,
+                "base_sha": ticket.get("base_sha"),
+                "commit_sha": None,
+                "state": "redundant",
+                "created_at": now,
+                "updated_at": now,
+                "validation": "REDUNDANT",
+                "validation_profile": ticket.get("validation_profile"),
+                "reviewer": None,
+                "pr_number": None,
+                "pr_url": None,
+                "merge_sha": None,
+                "error": reason[:2000],
+                "deletion_request": None,
+                "depends_on_id": None,
+                "depends_on_commit": None,
+                "automation_authorized": False,
+                "recode_of": None,
+                "recode_candidate_id": None,
+                "post_publish_validation": None,
+                "post_publish_checked_at": None,
+                "post_publish_evidence": None,
+                "acceptance": ticket.get("acceptance"),
+                "acceptance_evidence": None,
+            })
+        self._update(archive)
+        self.event(
+            f"{task_id} deleted due to redundancy",
+            level="success",
+            detail=(
+                "The acceptance claim was already satisfied by the ticket base. "
+                f"Deleted managed worktree {worktree.name} and local branch {branch}; "
+                "the completed redundancy card preserves the reason and original objective."
+            ),
+            ticket_id=task_id,
         )
 
     def _ref_sha(self, ref: str) -> str | None:

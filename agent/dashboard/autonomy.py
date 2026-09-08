@@ -818,6 +818,24 @@ class AutonomyController:
                 failure_class = str(failure.get("class") or "ticket_failure")
                 identity = self._failed_worktree_identity(ticket["task_id"], ticket)
                 if continuous and failure_class in AUTONOMOUS_CONTRACT_REPLAN_FAILURES:
+                    if "already satisfied by the ticket base" in detail.casefold():
+                        result = self._latest_ticket_result(ticket["task_id"])
+                        self.queue.archive_redundant_candidate(
+                            result,
+                            ticket,
+                            summary=proposal["summary"],
+                            impact=proposal["impact"],
+                            reason=detail,
+                        )
+                        self._clear_failure_streak()
+                        self._finish(
+                            run_id,
+                            True,
+                            "Ticket deleted due to redundancy; selecting the next safe ticket",
+                            ticket_id=ticket["task_id"],
+                            run_state="redundant",
+                        )
+                        return
                     # An immutable ticket contract cannot be repaired from the
                     # candidate's allowed files. Preserve the useful candidate
                     # and let the next planning pass correct its evidence.

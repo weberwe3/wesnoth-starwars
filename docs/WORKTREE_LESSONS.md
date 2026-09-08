@@ -245,3 +245,10 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** Resume inventory recovered the immutable ticket contract but discarded the terminal failure detail from its prior result record before rebuilding the secure worker ticket.
 - **Resolution:** Safe bounded failure evidence now travels with a resumed ticket as a `resume_diagnostic`. The worker sees it before the original objective and is explicitly directed to repair that gate first while preserving the original scope and acceptance contract.
 - **Prevention:** Every autonomous resumption must retain both the original ticket contract and the last deterministic failure class/detail. Do not replace the original objective, broaden allowed paths, or use the diagnostic as permission to alter governance.
+
+### 2026-09-08 — an already-satisfied acceptance claim is a redundant ticket, not a code repair
+
+- **Symptom:** A ticket stopped because its promised event behavior was already satisfied by its base revision. The dashboard asked for a corrected contract and left a stale uncommitted worktree that could block later autonomous planning.
+- **Cause:** The acceptance result correctly proved that the ticket did not create the claimed behavior, but automation treated every acceptance failure as a recoverable planning error instead of distinguishing the exact redundant-base outcome.
+- **Resolution:** In continuous mode, the exact “already satisfied by the ticket base” result now removes only the verified managed local worktree and branch after confirming no remote branch or pull request exists. It preserves a ten-item rolling, completed `Deleted · redundant` queue card with the original objective and diagnostic, then advances after the normal cooldown.
+- **Prevention:** Do not edit source files merely to manufacture a diff for an already-present feature. Treat this exact baseline result as evidence to delete the unused candidate and select the next independent ticket; all other acceptance failures remain preserved for corrected evidence planning.
