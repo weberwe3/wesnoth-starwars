@@ -10,6 +10,7 @@ HISTORICAL_GAMEPLAY_VALIDATION_FILE = "historical-gameplay-validation.json"
 GAMEPLAY_VALIDATOR_PATHS = {
     "agent/coordinator/gameplay_contracts.py",
     "agent/coordinator/scenario_launch_selftest.py",
+    "agent/coordinator/ticket_acceptance.py",
 }
 
 

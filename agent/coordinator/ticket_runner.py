@@ -26,6 +26,7 @@ from art_pipeline import (
     validate_art_queue,
 )
 from gameplay_contracts import validate_declared_contracts, validate_historical_retention
+from ticket_acceptance import validate_acceptance_contract, validate_ticket_acceptance
 from scenario_launch_selftest import find_wesnoth_executable
 import worktree_paths
 
@@ -564,6 +565,8 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
         "replace_pr_head_sha",
         "replace_pr_branch",
         "historical_repair",
+        "acceptance",
+        "base_sha",
     }
 
     unknown = sorted(set(ticket) - allowed_keys)
@@ -574,6 +577,11 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
 
     if "historical_repair" in ticket and type(ticket["historical_repair"]) is not bool:
         raise SystemExit("ERROR: historical_repair must be a boolean.")
+    if "base_sha" in ticket and (
+        not isinstance(ticket["base_sha"], str)
+        or not re.fullmatch(r"[0-9a-f]{40}", ticket["base_sha"])
+    ):
+        raise SystemExit("ERROR: base_sha must be a 40-character Git SHA.")
 
     task_id = ticket.get("task_id")
     if not isinstance(task_id, str) or not re.fullmatch(
@@ -635,6 +643,16 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
                 "ERROR: wesnoth-addon-static requires a safe "
                 "validation_root."
             )
+        if ticket.get("acceptance") is not None:
+            acceptance = validate_acceptance_contract(ticket["acceptance"])
+            if not acceptance["pass"]:
+                raise SystemExit("ERROR: " + acceptance["diagnostic"])
+            ticket["acceptance"] = acceptance["contract"]
+    elif "acceptance" in ticket and ticket["acceptance"] is not None:
+        acceptance = validate_acceptance_contract(ticket["acceptance"])
+        if not acceptance["pass"]:
+            raise SystemExit("ERROR: " + acceptance["diagnostic"])
+        ticket["acceptance"] = acceptance["contract"]
 
     resume_branch = ticket.get("resume_branch")
     if resume_branch is not None and (
@@ -1286,6 +1304,7 @@ def run_validation(
     )
 
     profile_result = None
+    acceptance_result = None
 
     if ticket["validation_profile"] == "wesnoth-addon-static":
         addon_result = validate_wesnoth_addon(
@@ -1297,13 +1316,16 @@ def run_validation(
         # reviewer, queue, or publication resources.
         declared = validate_declared_contracts(worktree)
         retained = validate_historical_retention(worktree)
+        acceptance_result = validate_ticket_acceptance(worktree, ticket)
         profile_result = {
             **addon_result,
             "declared_contracts": declared,
             "historical_retention": retained,
+            "ticket_acceptance": acceptance_result,
             "art_queue": art_queue,
             "pass": (
                 addon_result["pass"] and declared["pass"] and retained["pass"]
+                and acceptance_result["pass"]
                 and art_queue["pass"] and art_sync_pass
             ),
         }
@@ -1322,6 +1344,7 @@ def run_validation(
         "art_queue_sync": art_sync,
         "profile": ticket["validation_profile"],
         "profile_result": profile_result,
+        "ticket_acceptance": acceptance_result,
         "pass": (
             implementer_rc == 0
             and asset_result["pass"]
@@ -1932,6 +1955,24 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
     ACTIVE_STATUS = status
     core.verify_main_baseline(root)
 
+    if (
+        ticket["validation_profile"] == "wesnoth-addon-static"
+        and ticket.get("acceptance") is None
+    ):
+        status.fail_system(
+            "Gameplay ticket stopped before model dispatch",
+            detail=(
+                "This legacy ticket has no baseline-aware acceptance contract, so it cannot "
+                "truthfully be marked tested. Its original objective and worktree were preserved."
+            ),
+            failure_class="missing_acceptance_contract",
+            required_action=(
+                "Use Recode with AI to create a new acceptance contract from the original ticket "
+                "objective before spending worker-provider calls."
+            ),
+        )
+        return 13
+
     reference_package = load_reference_package(root)
     governance_references = reference_package["canonical_references"]
     governance_prompt = (
@@ -2059,6 +2100,16 @@ def _run_ticket(ticket_path: Path, recovery_effort: str | None = None) -> int:
         core.require_success(rc, output, "Create isolated ticket worktree")
         print("[1/5] Worktree created.")
         status.event("Isolated ticket worktree created", source="coordinator")
+    if ticket.get("base_sha") is None:
+        rc, output = core.git(worktree, "rev-parse", "HEAD", timeout=30)
+        core.require_success(rc, output, "Read ticket worktree base")
+        base_sha = output.strip()
+        if not re.fullmatch(r"[0-9a-f]{40}", base_sha):
+            raise RuntimeError("Ticket worktree base was not a commit SHA")
+        ticket["base_sha"] = base_sha
+        (log_dir / "ticket.json").write_text(
+            json.dumps(ticket, indent=2) + "\n"
+        )
     status.handoff("coordinator", ticket["worker"], "Implementation assigned")
     status.set_worker("coordinator", "idle", "Monitoring ticket gates")
     status.set_worker(ticket["worker"], "active", ticket["objective"])
@@ -2079,6 +2130,14 @@ TASK ID: {task_id}
 
 OBJECTIVE:
 {ticket["objective"]}
+
+IMMUTABLE ACCEPTANCE CONTRACT:
+{json.dumps(ticket.get("acceptance"), indent=2)}
+
+The deterministic gate compares this worktree to its original base revision.
+Implement every acceptance claim as written. A note, comment, or unrelated
+change cannot substitute for a promised unit, map, or event behavior. Do not
+edit the acceptance contract; it is coordinator evidence, not a source file.
 
 CONTINUATION POLICY:
 {continuation_instruction}

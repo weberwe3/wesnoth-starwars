@@ -17,6 +17,7 @@ from typing import Any, Callable
 
 import worktree_paths
 from gameplay_contracts import validate_historical_retention
+from ticket_acceptance import validate_ticket_acceptance
 from game_validation_state import HISTORICAL_GAMEPLAY_VALIDATION_FILE, historical_record
 from recovery_policy import safe_text
 from scenario_launch_selftest import validate_post_publish_game
@@ -233,10 +234,11 @@ class ApprovalQueue:
         allowed = {
             "id", "ticket_id", "purpose", "impact", "original_objective", "dependency_index",
             "changed_paths", "deleted_paths", "branch", "base_sha", "commit_sha",
-            "state", "created_at", "updated_at", "validation", "reviewer",
+            "state", "created_at", "updated_at", "validation", "validation_profile", "reviewer",
             "pr_number", "pr_url", "merge_sha", "error", "deletion_request",
             "depends_on_id", "depends_on_commit", "automation_authorized", "recode_of",
             "post_publish_validation", "post_publish_checked_at", "post_publish_evidence",
+            "acceptance", "acceptance_evidence",
         }
         records = [
             {key: item.get(key) for key in allowed}
@@ -367,13 +369,19 @@ class ApprovalQueue:
         if _run(["git", "branch", "--show-current"], worktree) != branch:
             raise QueueError("Ticket branch no longer matches its evidence")
 
-        base_sha = _run(["git", "merge-base", "main", "HEAD"], worktree)
+        base_sha = ticket.get("base_sha") or _run(["git", "merge-base", "main", "HEAD"], worktree)
         if not HEX_SHA.fullmatch(base_sha):
             raise QueueError("Ticket base commit is invalid")
         changed_paths, deleted_paths = self._changes(worktree)
         validated = result.get("validation", {}).get("scope", {}).get("changed_paths", [])
         if sorted(changed_paths) != sorted(validated):
             raise QueueError("Ticket changes no longer match validated evidence")
+        acceptance_evidence = result.get("validation", {}).get("ticket_acceptance")
+        if ticket.get("validation_profile") == "wesnoth-addon-static" and (
+            not isinstance(acceptance_evidence, dict)
+            or acceptance_evidence.get("pass") is not True
+        ):
+            raise QueueError("Ticket did not pass its baseline-aware gameplay acceptance contract")
         queued_records = self.read()["records"]
         queued_ids = {item.get("ticket_id") for item in queued_records}
         if ticket.get("task_id") in queued_ids:
@@ -421,6 +429,9 @@ class ApprovalQueue:
             "created_at": utc_now(),
             "updated_at": utc_now(),
             "validation": "PASS",
+            "validation_profile": ticket.get("validation_profile"),
+            "acceptance": ticket.get("acceptance"),
+            "acceptance_evidence": acceptance_evidence,
             "reviewer": result.get("reviewer_used"),
             "pr_number": None,
             "pr_url": None,
@@ -735,6 +746,10 @@ class ApprovalQueue:
                     "ticket_id": member.get("ticket_id"),
                     "commit_sha": member.get("commit_sha"),
                     "purpose": member.get("purpose"),
+                    "changed_paths": member.get("changed_paths"),
+                    "base_sha": member.get("base_sha"),
+                    "validation_profile": member.get("validation_profile"),
+                    "acceptance": member.get("acceptance"),
                 }
                 for member in members
             ],
@@ -999,6 +1014,28 @@ class ApprovalQueue:
         head = _run(["git", "rev-parse", "HEAD"], worktree)
         if head != record["commit_sha"]:
             raise QueueError("Queued branch head changed after approval")
+        acceptance_checks = [
+            validate_ticket_acceptance(
+                worktree,
+                {
+                    "validation_profile": (
+                        member.get("validation_profile")
+                        or ("wesnoth-addon-static" if any(
+                            isinstance(path, str) and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+                            for path in member.get("changed_paths") or []
+                        ) else "static-text")
+                    ),
+                    "acceptance": member.get("acceptance"),
+                    "allowed_paths": member.get("changed_paths") or [],
+                },
+                base_sha=member.get("base_sha"),
+            )
+            for member in record.get("batch_members") or [record]
+        ]
+        if not all(item.get("pass") is True for item in acceptance_checks):
+            raise QueueError(
+                "Queued ticket no longer satisfies its baseline-aware acceptance contract"
+            )
         try:
             _run(["git", "merge-base", "--is-ancestor", "main", "HEAD"], worktree)
         except QueueError as exc:
@@ -1099,6 +1136,7 @@ class ApprovalQueue:
             item for item in record.get("changed_paths", [])
             if isinstance(item, str)
         ]
+        acceptance_checks: list[dict[str, Any]] = []
         try:
             if _run(["git", "rev-parse", "HEAD"], self.root) != merge_sha:
                 raise QueueError("Local main changed before the installed-game check")
@@ -1107,6 +1145,28 @@ class ApprovalQueue:
             evidence = validate_post_publish_game(
                 self.root, required_gameplay_paths=changed_paths
             )
+            for member in record.get("batch_members") or [record]:
+                acceptance_checks.append(validate_ticket_acceptance(
+                    self.root,
+                    {
+                        "validation_profile": (
+                            member.get("validation_profile")
+                            or ("wesnoth-addon-static" if any(
+                                isinstance(path, str) and path.startswith("addons/Star_Wars_Thrawn_Trilogy/")
+                                for path in member.get("changed_paths") or []
+                            ) else "static-text")
+                        ),
+                        "acceptance": member.get("acceptance"),
+                        "allowed_paths": member.get("changed_paths") or [],
+                    },
+                    base_sha=member.get("base_sha"),
+                ))
+            if not all(item.get("pass") is True for item in acceptance_checks):
+                failed = next(item for item in acceptance_checks if item.get("pass") is not True)
+                raise QueueError(
+                    "Post-merge ticket acceptance check failed: "
+                    + safe_text(failed.get("diagnostic"), "No acceptance diagnostic was returned.", 500)
+                )
             history_path = self.runtime / HISTORICAL_GAMEPLAY_VALIDATION_FILE
             try:
                 history = json.loads(history_path.read_text(encoding="utf-8"))
@@ -1156,6 +1216,10 @@ class ApprovalQueue:
                 "gameplay_contracts": {
                     "pass": (evidence.get("gameplay_contracts") or {}).get("pass") is True,
                     "count": len((evidence.get("gameplay_contracts") or {}).get("contracts") or []),
+                },
+                "ticket_acceptance": {
+                    "pass": all(item.get("pass") is True for item in acceptance_checks),
+                    "count": len(acceptance_checks),
                 },
             },
         }
