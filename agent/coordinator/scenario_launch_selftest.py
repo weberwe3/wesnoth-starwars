@@ -112,6 +112,7 @@ def build_command(
     convert = path_converter if executable.suffix.casefold() == ".exe" else str
     return [
         convert(executable),
+        "--log-to-file",
         "--userdata-dir", convert(userdata),
         "--preprocess", convert(source), convert(output),
         "--preprocess-defines", CAMPAIGN_DEFINE,
@@ -375,13 +376,21 @@ def prepare_runtime_probe_addon(staged_main: Path, scenario_relative: Path, scen
     staged_main.write_text(
         staged_main.read_text(encoding="utf-8")
         + "\n# Isolated deterministic runtime probe; never committed to the add-on.\n"
-        + "{~add-ons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg}\n"
-        + "{~add-ons/Star_Wars_Thrawn_Trilogy/" + relative + "}\n"
         + "[campaign]\n"
         + f"    id={campaign_id}\n"
         + f"    define=SW_RUNTIME_PROBE_{token}\n"
         + f"    first_scenario={scenario_id}\n"
-        + "[/campaign]\n",
+        + "[/campaign]\n"
+        + f"#ifdef SW_RUNTIME_PROBE_{token}\n"
+        + "[binary_path]\n"
+        + "    path=data/add-ons/Star_Wars_Thrawn_Trilogy\n"
+        + "[/binary_path]\n"
+        + "[+units]\n"
+        + "    {~add-ons/Star_Wars_Thrawn_Trilogy/units}\n"
+        + "[/units]\n"
+        + "{~add-ons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg}\n"
+        + "{~add-ons/Star_Wars_Thrawn_Trilogy/" + relative + "}\n"
+        + "#endif\n",
         encoding="utf-8",
     )
     return campaign_id
@@ -675,7 +684,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root, executable = self.fixture(directory)
             def succeed(command: list[str], **_: object) -> subprocess.CompletedProcess:
-                output = Path(command[5])
+                output = Path(command[command.index("--preprocess") + 2])
                 (output / "_main.cfg").write_text("validated\n", encoding="utf-8")
                 return subprocess.CompletedProcess(command, 0, "validated\n", "")
 
@@ -852,7 +861,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             root = Path(directory)
             sources = {
                 "addons/Star_Wars_Thrawn_Trilogy/units/fixture.cfg": (
-                    "icon=images/fixture.png\n"
+                    "icon=units/sw-unit-fixture/standing.png\n"
                     "{SW_MISSING}\n"
                 ),
                 "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
@@ -882,7 +891,17 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         }
         evidence = validate_campaign_dependencies(Path("."), sources)
         self.assertFalse(evidence["pass"])
-        self.assertIn("preprocessor syntax", evidence["diagnostic"])
+        self.assertIn("invalid loader prefix", evidence["diagnostic"])
+
+    def test_campaign_dependencies_reject_redundant_images_runtime_prefix(self) -> None:
+        sources = {
+            "addons/Star_Wars_Thrawn_Trilogy/units/fixture.cfg": (
+                "icon=images/units/sw-unit-fixture/standing.png\n"
+            ),
+        }
+        evidence = validate_campaign_dependencies(Path("."), sources)
+        self.assertFalse(evidence["pass"])
+        self.assertIn("already searches images/", evidence["diagnostic"])
 
     def test_campaign_error_lines_include_runtime_image_resolution_failures(self) -> None:
         failures = campaign_error_lines(
@@ -916,14 +935,14 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             unit = root / "addons" / ADDON_ID / "units" / "fixture.cfg"
             unit.parent.mkdir(parents=True)
             unit.write_text(
-                "icon=images/fixture.png\n",
+                "icon=units/sw-unit-fixture/standing.png\n",
                 encoding="utf-8",
             )
             result = materialize_missing_project_images(root)
-            asset = root / "addons" / ADDON_ID / "images" / "fixture.png"
+            asset = root / "addons" / ADDON_ID / "images" / "units" / "sw-unit-fixture" / "standing.png"
             self.assertTrue(result["pass"], result)
             self.assertEqual(result["generated"], [
-                "addons/Star_Wars_Thrawn_Trilogy/images/fixture.png"
+                "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-fixture/standing.png"
             ])
             self.assertTrue(asset.is_file())
             self.assertEqual(asset.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
@@ -974,7 +993,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             sync = synchronize_art_queue(root, {"sw_unit_fixture"})
             job = sync["jobs"][0]
             references = [
-                f"image={asset['path']}"
+                f"image={asset['path'].removeprefix('images/')}"
                 for asset in job["assets"]
             ]
             unit.write_text(
@@ -1021,7 +1040,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
                     target.parent.mkdir(parents=True, exist_ok=True)
                     width, height = (256, 256) if asset["state"] == "portrait" else (72, 72)
                     target.write_bytes(_test_png(width, height))
-                    references.append(f"image={asset['path']}")
+                    references.append(f"image={asset['path'].removeprefix('images/')}")
             unit.write_text(unit.read_text(encoding="utf-8").replace(
                 "[/unit_type]", "\n" + "\n".join(references) + "\n[/unit_type]"
             ), encoding="utf-8")
@@ -1043,6 +1062,9 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             self.assertIn(f"id={campaign_id}", text)
             self.assertIn("first_scenario=sw_fixture", text)
             self.assertIn("scenarios/fixture.cfg", text)
+            self.assertIn("path=data/add-ons/Star_Wars_Thrawn_Trilogy", text)
+            self.assertIn("[+units]", text)
+            self.assertLess(text.index("/units}"), text.index("scenarios/fixture.cfg"))
 
     def test_windows_command_translates_only_path_arguments(self) -> None:
         translated = []

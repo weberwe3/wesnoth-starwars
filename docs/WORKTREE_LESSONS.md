@@ -148,6 +148,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Resolution:** Put the add-on unit directory in `[+units]` before the scenario include, within each campaign loader, and declare the add-on binary path there.
 - **Prevention:** The campaign-loader gate validates every campaign define, binary path, `[+units]` loader order, scenario include, and referenced `sw_unit_*` definition before worker review or publication. The normal player launcher log remains authoritative for loader diagnostics.
 
+### 2026-09-08 — imported art existed but remained invisible in play
+
+- **Symptom:** The launcher reported the exact current main commit and custom units existed in Mission 1, but their map sprites and sidebar portraits were blank. The player log reported that `images/units/...` and `images/portraits/...` could not be opened.
+- **Cause:** The add-on's `[binary_path]` already makes its `images/` directory an image-loader root. Unit WML incorrectly repeated that directory as `images/units/...`, so Wesnoth searched one level too deep. The isolated scenario probe also omitted the real campaign's binary-path and `[+units]` setup, allowing a false-positive startup result.
+- **Resolution:** Keep PNGs physically under `images/`, but reference them in WML as `units/...` and `portraits/...`. Stage runtime probes with the same `[binary_path]`, `[+units]`, utility macros, and ordering as the player campaign. Preserve `--log-to-file` on preprocessing so an engine exit always retains the real diagnostic.
+- **Prevention:** Reject `~add-ons/.../images/...` and `images/units|portraits/...` in runtime image fields, map canonical runtime references back to their on-disk `images/` files for deterministic validation, and require player-equivalent startup probes for every scenario using newly imported art.
+
 ### 2026-09-06 — empty scenario after apparently successful startup
 
 - **Symptom:** First Battle opened on a small empty map and immediately ended. The installed engine log reported `error engine/team_construction: game_error: unknown unit type` for the scenario leader and squads.

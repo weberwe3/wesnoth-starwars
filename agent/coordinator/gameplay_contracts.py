@@ -229,35 +229,37 @@ def _project_resource_references(sources: dict[str, str]) -> list[tuple[str, str
     """Collect project-owned runtime resources named through a binary path.
 
     ``~add-ons`` is WML preprocessor syntax, not an image-loader path.  Game
-    assets must therefore be relative to the add-on ``[binary_path]`` (for
-    example ``images/units/sw_unit/standing.png``).  This scanner deliberately
-    recognizes only that runtime form, so the matching resource can be checked
-    on disk before a candidate reaches the engine.
+    assets must therefore be relative to the implicit ``images`` directory
+    beneath the add-on ``[binary_path]`` (for example
+    ``units/sw-unit-example/standing.png``). The returned path includes the
+    on-disk ``images/`` prefix so callers can validate or materialize it.
     """
 
     references: list[tuple[str, str]] = []
     expression = re.compile(
         r"(?m)^\s*(?:image|icon|profile)\s*=\s*\"?"
-        r"(images/[A-Za-z0-9_./-]+\.(?:png|jpe?g|webp))",
+        r"((?:units|portraits)/(?:sw-unit-|thrawn-)[A-Za-z0-9_./-]*\.(?:png|jpe?g|webp))",
         re.IGNORECASE,
     )
     for source_path, text in sources.items():
         for match in expression.finditer(_wml_code(text)):
-            relative = match.group(1)
-            if ".." not in Path(relative).parts:
-                references.append((source_path, relative))
+            runtime_relative = match.group(1)
+            if ".." not in Path(runtime_relative).parts:
+                references.append((source_path, f"images/{runtime_relative}"))
     return sorted(set(references))
 
 
-def _invalid_preprocessor_image_paths(sources: dict[str, str]) -> list[tuple[str, str]]:
-    """Find image references that the runtime will treat as literal paths."""
+def _invalid_project_image_paths(sources: dict[str, str]) -> list[tuple[str, str]]:
+    """Find project image references with a non-runtime path prefix."""
 
     expression = re.compile(
-        r"~add-ons/Star_Wars_Thrawn_Trilogy/(images/[A-Za-z0-9_./-]+\.(?:png|jpe?g|webp))",
+        r"(?:~add-ons/Star_Wars_Thrawn_Trilogy/"
+        r"(images/[A-Za-z0-9_./-]+\.(?:png|jpe?g|webp))|"
+        r"(images/(?:units|portraits)/[A-Za-z0-9_./-]+\.(?:png|jpe?g|webp)))",
         re.IGNORECASE,
     )
     return sorted({
-        (source_path, match.group(1))
+        (source_path, match.group(1) or match.group(2))
         for source_path, text in sources.items()
         for match in expression.finditer(_wml_code(text))
     })
@@ -329,12 +331,13 @@ def validate_campaign_dependencies(root: Path, sources: dict[str, str]) -> dict[
         if target.is_symlink() or not target.is_file():
             failures.append({"path": source_path, "detail": f"Project resource is missing or unsafe: {relative}"})
 
-    for source_path, relative in _invalid_preprocessor_image_paths(sources):
+    for source_path, relative in _invalid_project_image_paths(sources):
         failures.append({
             "path": source_path,
             "detail": (
-                "Project image uses ~add-ons preprocessor syntax as a runtime path: "
-                f"{relative}; use the add-on binary-path-relative images/... form"
+                "Project image includes an invalid loader prefix in its runtime path: "
+                f"{relative}; [binary_path] already searches images/, so use units/... "
+                "or portraits/..."
             ),
         })
 

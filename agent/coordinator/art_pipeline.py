@@ -214,6 +214,7 @@ def _completion_failures(
     failures: list[dict[str, str]] = []
     for asset in expected:
         relative = asset["path"]
+        runtime_relative = relative.removeprefix("images/")
         image = root / ADDON_ROOT / relative
         png_problem = _png_diagnostic(image, _expected_dimensions(asset))
         if png_problem:
@@ -222,7 +223,7 @@ def _completion_failures(
                 "detail": f"Completed art job is missing valid PNG {relative}: {png_problem}",
             })
         if not re.search(
-            rf'(?m)^\s*(?:image|icon|profile)\s*=\s*"?{re.escape(relative)}',
+            rf'(?m)^\s*(?:image|icon|profile)\s*=\s*"?{re.escape(runtime_relative)}',
             source,
         ):
             failures.append({
