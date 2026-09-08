@@ -80,6 +80,12 @@
       "expected_id": "sw_unit_nr_rifle_squad"
     },
     {
+      "id": "sw-rifle-squad-cover-defense-poc",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_nr_rifle_squad"
+    },
+    {
       "id": "sw-first-battle-heavy-weapons-placement",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
