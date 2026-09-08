@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-08 — a syntactically valid map token was not an engine terrain
+
+- **Symptom:** Mission 1 was marked Published and Tested, but the player launcher stopped while loading the level with `Unknown tile in map: (Gg^Ff) 'Gg^Ff'`.
+- **Cause:** PR #160 introduced `Gg^Ff`. The deterministic map gate checked only the shape and length of each token, so an unregistered code passed. The GUI smoke launched only the campaign selector path, counted a still-running process as success, and did not force a difficulty, scenario, or story skip; it therefore never proved that the map was instantiated.
+- **Resolution:** Preserve PR #160's map layout while replacing `Gg^Ff` with the supported forest overlay `Gg^Fp`. Validate every map cell against the add-on's target-engine-approved terrain registry. Direct the installed-engine probe to the exact scenario and difficulty, skip story screens, force file logging, and explicitly treat unknown-tile diagnostics as fatal.
+- **Prevention:** A well-shaped terrain code is not sufficient evidence that Wesnoth knows it. New terrain codes must first load in the supported installed engine, then be added deliberately to the approved registry. Publication cannot claim scenario coverage from a process-survival probe that did not target the scenario.
+
 ### 2026-09-08 — separately confirmed art sets shared one WML source
 
 - **Symptom:** Several complete owner-generated unit-art sets were shown as failed, even though every PNG passed import preflight and their animation references were present.

@@ -17,6 +17,13 @@ CONTRACT_FILE = "tests/gameplay-contracts.json"
 MAX_DIAGNOSTIC_CHARS = 6000
 MAX_HISTORICAL_TICKETS = 200
 _TERRAIN_TOKEN = re.compile(r"^[A-Za-z0-9]{1,4}(?:\^[A-Za-z0-9]{1,4})?$")
+# Fail closed against the exact core terrain codes exercised by this add-on on
+# its supported Wesnoth runtime. A token can satisfy the map-file grammar and
+# still be unknown to the engine (for example, Gg^Ff on Wesnoth 1.19.27).
+# Add a code here only after it has loaded successfully in the supported engine.
+APPROVED_CORE_TERRAIN_TOKENS = frozenset({
+    "Cc", "Ch", "Gg", "Gg^Fp", "Hh", "Hh^Fp", "Kh",
+})
 
 
 def _bounded(values: list[str]) -> str:
@@ -105,6 +112,18 @@ def validate_map_data(root: Path, sources: dict[str, str]) -> dict[str, Any]:
                                 f"{path}: map_data row {row_number}, column {column} "
                                 f"has invalid terrain token {token!r}; expected a "
                                 "short terrain code such as Gg or Gg^Fp"
+                            ),
+                        })
+                    elif token not in APPROVED_CORE_TERRAIN_TOKENS:
+                        failures.append({
+                            "path": path,
+                            "row": row_number,
+                            "column": column,
+                            "token": token[:80],
+                            "detail": (
+                                f"{path}: map_data row {row_number}, column {column} "
+                                f"uses terrain token {token!r}, which is not in the "
+                                "target-engine-approved terrain registry"
                             ),
                         })
     return {

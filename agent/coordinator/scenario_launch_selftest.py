@@ -60,8 +60,8 @@ def _test_png(width: int, height: int) -> bytes:
     )
 CAMPAIGN_DEFINE = "CAMPAIGN_STAR_WARS_THRAWN_TRILOGY"
 ENGINE_TIMEOUT_SECONDS = 120
-CAMPAIGN_STARTUP_PROBE_SECONDS = 12
-SCENARIO_RUNTIME_PROBE_SECONDS = 6
+CAMPAIGN_STARTUP_PROBE_SECONDS = 20
+SCENARIO_RUNTIME_PROBE_SECONDS = 15
 MAX_DIAGNOSTIC_CHARS = 6000
 
 
@@ -178,6 +178,7 @@ def run_engine(command: list[str], *, cwd: Path, timeout: int) -> subprocess.Com
 def run_campaign_startup_probe(
     executable: Path, userdata: Path, *, cwd: Path,
     campaign_id: str = ADDON_ID,
+    scenario_id: str = SCENARIO_ID,
     timeout: int = CAMPAIGN_STARTUP_PROBE_SECONDS,
 ) -> dict:
     """Launch the staged campaign briefly, then close only that child process.
@@ -189,7 +190,12 @@ def run_campaign_startup_probe(
     if executable.suffix.casefold() != ".exe":
         return {"started": False, "survived_probe": False, "exit_code": None, "diagnostic": "Campaign startup probe requires the installed Windows engine."}
     arguments = subprocess.list2cmdline([
-        "--userdata-dir", windows_path(userdata), "--campaign", campaign_id,
+        "--log-to-file",
+        "--userdata-dir", windows_path(userdata),
+        "--campaign", campaign_id,
+        "--campaign-difficulty", "1",
+        "--campaign-scenario", scenario_id,
+        "--skip-story",
     ])
     script = (
         "$ErrorActionPreference='Stop';"
@@ -238,6 +244,7 @@ def campaign_error_lines(text: str) -> list[str]:
         if re.search(
             r"\berror\s+(?:wml|config|engine(?:/[a-z0-9_/-]+)?):|"
             r"\bgame_error:|\bunknown unit type:|"
+            r"\bunknown tile in map:|"
             r"the game map could not be loaded|"
             r"terrain with a string with more than 4 characters|"
             r"unexpected characters after variable name|"
@@ -398,6 +405,7 @@ def runtime_scenario_probes(root: Path, executable: Path, selected: set[str]) ->
             )
             probe = run_campaign_startup_probe(
                 executable, userdata, cwd=root, campaign_id=campaign_id,
+                scenario_id=scenario_id,
                 timeout=SCENARIO_RUNTIME_PROBE_SECONDS,
             )
             log_text = campaign_log_text(userdata)
@@ -746,6 +754,47 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             ),
         })
         self.assertTrue(good["pass"], good["diagnostic"])
+
+    def test_map_data_rejects_unknown_but_well_shaped_terrain_codes(self) -> None:
+        bad = validate_map_data(Path("."), {
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
+                '[scenario]\nmap_data="Gg,Gg^Ff,Kh"\n[/scenario]\n'
+            ),
+        })
+        self.assertFalse(bad["pass"])
+        self.assertIn("target-engine-approved terrain registry", bad["diagnostic"])
+
+    def test_unknown_tile_diagnostics_are_fatal(self) -> None:
+        lines = campaign_error_lines(
+            "The game map could not be loaded: Unknown tile in map: (Gg^Ff) 'Gg^Ff'\n"
+        )
+        self.assertEqual(len(lines), 1)
+        self.assertIn("Gg^Ff", lines[0])
+
+    def test_campaign_probe_targets_exact_scenario_and_skips_story(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            userdata = Path(directory) / "userdata"
+            executable = Path(directory) / "wesnoth.exe"
+            executable.write_text("fixture\n", encoding="utf-8")
+            completed = subprocess.CompletedProcess(
+                [], 0, '{"started":true,"survived_probe":true,"exit_code":-1}\n', ""
+            )
+            with mock.patch(
+                "scenario_launch_selftest.windows_path", side_effect=lambda path: str(path)
+            ), mock.patch(
+                "scenario_launch_selftest.subprocess.run", return_value=completed
+            ) as runner:
+                result = run_campaign_startup_probe(
+                    executable, userdata, cwd=Path(directory),
+                    campaign_id="sw_probe", scenario_id="sw_scenario", timeout=1,
+                )
+            encoded = runner.call_args.args[0][-1]
+            script = base64.b64decode(encoded).decode("utf-16le")
+            self.assertTrue(result["survived_probe"])
+            self.assertIn("--campaign-scenario sw_scenario", script)
+            self.assertIn("--campaign-difficulty 1", script)
+            self.assertIn("--skip-story", script)
+            self.assertIn("--log-to-file", script)
 
     def test_campaign_loader_requires_active_units_container_before_scenarios(self) -> None:
         sources = {
