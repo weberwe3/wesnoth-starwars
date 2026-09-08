@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-08 — separately confirmed art sets shared one WML source
+
+- **Symptom:** Several complete owner-generated unit-art sets were shown as failed, even though every PNG passed import preflight and their animation references were present.
+- **Cause:** The governed importer treated each card as a one-unit commit. When multiple ready units legitimately edited the same `units/infantry.cfg`, the sibling art files and shared WML edit were rejected as unrelated dirty state.
+- **Resolution:** Build one bounded batch from only independently verified pending art jobs that share the selected WML source, then validate, commit, exact-head CI-check, merge, and installed-engine test that batch once. Missing art remains an awaiting-art state rather than a failed production attempt.
+- **Prevention:** Do not publish a shared-source art import one card at a time. Batch only same-source, full 13-state contracts; never include incomplete, unrelated, or already-published art.
+
 ### 2026-09-07 — GUI map error was hidden by process-survival validation
 
 - **Symptom:** The published ticket was marked tested, but the Windows play launcher showed `The game map could not be loaded` and identified `center` as a terrain token.

@@ -75,6 +75,12 @@ class ArtImportProductionTests(unittest.TestCase):
         self.assertEqual(job["production_message"], "Waiting for exact-head CI.")
         self.assertNotIn("internal_command", job)
 
+    def test_pending_art_is_not_reported_as_a_publication_failure(self) -> None:
+        source = (ROOT / "agent" / "dashboard" / "static" / "app.js").read_text(encoding="utf-8")
+        self.assertIn("Awaiting all 13 original generated PNGs", source)
+        self.assertIn("stalePreflightFailure", source)
+        self.assertIn("awaiting-art", source)
+
 
 class RuntimeStatusTests(unittest.TestCase):
     def test_write_worker_policy_allows_bounded_inspection_but_not_tests(self) -> None:

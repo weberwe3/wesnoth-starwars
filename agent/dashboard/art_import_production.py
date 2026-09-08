@@ -24,9 +24,8 @@ from approval_queue import QueueError, _atomic_json, _run
 from art_pipeline import (
     ART_MANIFEST,
     ADDON_ROOT,
-    art_import_contract,
-    art_import_preflight,
-    confirm_art_import,
+    art_import_batch_contract,
+    confirm_art_import_batch,
 )
 from scenario_launch_selftest import validate_post_publish_game
 import ticket_runner
@@ -100,7 +99,7 @@ def public_status(root: Path) -> dict[str, dict[str, Any]]:
     allowed = {
         "state", "message", "error", "branch", "commit_sha", "pr_number",
         "pr_url", "started_at", "updated_at", "completed_at", "attempt",
-        "changed_paths", "merged",
+        "changed_paths", "merged", "batch_job_ids",
     }
     return {
         job_id: {key: value for key, value in record.items() if key in allowed}
@@ -116,23 +115,41 @@ class ArtImportProduction:
         self.event = event
 
     def begin(self, job_id: str) -> dict[str, Any]:
-        preflight = art_import_preflight(self.root, job_id)
-        if not preflight.get("pass"):
+        batch = art_import_batch_contract(self.root, job_id)
+        if not batch.get("pass"):
+            # A missing generated PNG or WML reference is an awaiting-art state,
+            # not a failed publication.  Leave existing runtime failure evidence
+            # intact, but do not create a new red failure card for an incomplete
+            # owner-side art set.
+            if "requires_llm" in batch:
+                return {
+                    "pass": False, "state": "awaiting_art",
+                    "message": _safe_text(batch.get("message"), "This art set is not ready for import."),
+                }
             record = update_status(
-                self.root, job_id, state="failed", message="Art import needs correction",
-                error=_safe_text(preflight.get("message"), "The art import did not pass validation."),
+                self.root, job_id, state="failed", message="Art import configuration needs correction",
+                error=_safe_text(batch.get("message"), "The art import contract is invalid."),
                 completed_at=None,
             )
             return {"pass": False, **record}
-        prior = read_status(self.root).get(job_id, {})
-        if prior.get("state") in {"validating", "committing", "publishing", "testing"}:
-            return {"pass": True, **prior}
-        attempt = int(prior.get("attempt", 0) or 0) + 1
-        record = update_status(
-            self.root, job_id, state="validating",
-            message="Verifying the imported art contract before creating its governed commit.",
-            error=None, branch=None, commit_sha=None, pr_number=None, pr_url=None,
+        job_ids = batch["job_ids"]
+        current = read_status(self.root)
+        active = next((current.get(item, {}) for item in job_ids if current.get(item, {}).get("state") in {
+            "validating", "committing", "publishing", "testing",
+        }), None)
+        if active:
+            return {"pass": True, **active}
+        attempt = max((int(current.get(item, {}).get("attempt", 0) or 0) for item in job_ids), default=0) + 1
+        message = (
+            "Verifying the imported art contract before creating its governed commit."
+            if len(job_ids) == 1
+            else f"Verifying {len(job_ids)} compatible art imports before creating one governed batch commit."
+        )
+        record = self._update_batch(
+            job_ids, state="validating", message=message, error=None,
+            branch=None, commit_sha=None, pr_number=None, pr_url=None,
             started_at=utc_now(), completed_at=None, merged=False, attempt=attempt,
+            batch_job_ids=job_ids,
         )
         return {"pass": True, **record}
 
@@ -145,36 +162,46 @@ class ArtImportProduction:
         worktree: Path | None = None
         stash_ref: str | None = None
         merged = False
+        batch: dict[str, Any] | None = None
         try:
-            contract = art_import_contract(self.root, job_id)
-            allowed_paths = self._allowed_paths(contract)
+            batch = art_import_batch_contract(self.root, job_id)
+            if not batch.get("pass"):
+                raise ArtProductionError(_safe_text(batch.get("message"), "Art import is no longer ready."))
+            job_ids = batch["job_ids"]
+            allowed_paths = self._allowed_paths(batch)
             self._require_source_scope(allowed_paths)
             worktree, branch = self._create_candidate(job_id)
             self._copy_contract(worktree, allowed_paths)
-            completed = confirm_art_import(worktree, job_id)
+            completed = confirm_art_import_batch(worktree, job_ids)
             if not completed.get("pass"):
                 raise ArtProductionError(_safe_text(completed.get("message"), "Candidate art verification failed."))
-            validation, changed_paths = self._validate_candidate(worktree, job_id, allowed_paths)
-            commit_sha = self._commit_candidate(worktree, job_id, changed_paths)
-            update_status(
-                self.root, job_id, state="committing", branch=branch,
+            validation, changed_paths = self._validate_candidate(worktree, batch, allowed_paths)
+            commit_sha = self._commit_candidate(worktree, batch, changed_paths)
+            self._update_batch(
+                job_ids, state="committing", branch=branch,
                 commit_sha=commit_sha, changed_paths=changed_paths,
-                message="Validated art is committed on an isolated branch; preparing protected publication.",
+                message=(
+                    "Validated art is committed on an isolated branch; preparing protected publication."
+                    if len(job_ids) == 1 else
+                    f"Validated {len(job_ids)} art imports are committed as one batch; preparing protected publication."
+                ),
+                batch_job_ids=job_ids,
             )
             self.event(
                 "Original unit art committed for governed publication",
                 level="success", ticket_id=job_id,
-                detail=f"Validated {len(changed_paths)} art-import paths on exact commit {commit_sha}.",
+                detail=(f"Validated {len(changed_paths)} art-import paths for {len(job_ids)} unit state sets "
+                        f"on exact commit {commit_sha}."),
             )
             stash_ref = self._stash_matching_source(allowed_paths)
-            update_status(
-                self.root, job_id, state="publishing",
+            self._update_batch(
+                job_ids, state="publishing",
                 message="Creating pull request and waiting for exact-head CI before protected merge.",
             )
             pr_number, pr_url, merge_sha = self._publish_candidate(worktree, branch, commit_sha, job_id)
             merged = True
-            update_status(
-                self.root, job_id, state="testing", pr_number=pr_number, pr_url=pr_url,
+            self._update_batch(
+                job_ids, state="testing", pr_number=pr_number, pr_url=pr_url,
                 message="Merged into main; running the installed Wesnoth validation on the published art.",
                 merged=True,
             )
@@ -190,8 +217,8 @@ class ArtImportProduction:
                     + _safe_text(evidence.get("diagnostic"), "No engine diagnostic was returned.")
                 )
             completed_at = utc_now()
-            result = update_status(
-                self.root, job_id, state="published", message=(
+            result = self._update_batch(
+                job_ids, state="published", message=(
                     "Art production complete: exact-head CI, protected merge, and installed Wesnoth validation passed."
                 ), error=None, completed_at=completed_at, merged=True,
             )
@@ -212,8 +239,9 @@ class ArtImportProduction:
                         + " Local source remains preserved in its recovery stash: "
                         + _safe_text(restore_error, "restore it before retrying.")
                     )
-            failure = update_status(
-                self.root, job_id, state="failed", message="Art production stopped safely",
+            failed_ids = batch.get("job_ids", [job_id]) if batch else [job_id]
+            failure = self._update_batch(
+                failed_ids, state="failed", message="Art production stopped safely",
                 error=_safe_text(exc, "The art production pipeline did not complete."),
                 completed_at=None, merged=merged,
             )
@@ -229,25 +257,34 @@ class ArtImportProduction:
         record = read_status(self.root).get(job_id, {})
         if not record.get("merged"):
             return self.begin(job_id)
+        job_ids = record.get("batch_job_ids")
+        if not isinstance(job_ids, list) or not job_ids or any(not isinstance(item, str) for item in job_ids):
+            job_ids = [job_id]
         paths = record.get("changed_paths")
         if not isinstance(paths, list) or not all(isinstance(path, str) for path in paths):
             raise ArtProductionError("Published art has no safe validation path record")
-        update_status(
-            self.root, job_id, state="testing", error=None,
+        self._update_batch(
+            job_ids, state="testing", error=None,
             message="Re-running installed Wesnoth validation for the published art.",
         )
         evidence = validate_post_publish_game(self.root, required_gameplay_paths=paths)
         if evidence.get("pass") is not True:
-            return update_status(
-                self.root, job_id, state="failed", merged=True,
+            return self._update_batch(
+                job_ids, state="failed", merged=True,
                 message="Published art still needs a game-validation repair.",
                 error=_safe_text(evidence.get("diagnostic"), "No engine diagnostic was returned."),
             )
-        return update_status(
-            self.root, job_id, state="published", merged=True, error=None,
+        return self._update_batch(
+            job_ids, state="published", merged=True, error=None,
             message="Published art passed the retried installed Wesnoth validation.",
             completed_at=utc_now(),
         )
+
+    def _update_batch(self, job_ids: list[str], **values: Any) -> dict[str, Any]:
+        """Persist the same public lifecycle result for every batch member."""
+
+        results = [update_status(self.root, job_id, **values) for job_id in job_ids]
+        return results[0]
 
     def _allowed_paths(self, contract: dict[str, Any]) -> list[str]:
         source_path = contract.get("source_path")
@@ -306,12 +343,17 @@ class ArtImportProduction:
             shutil.copy2(source, target)
 
     def _validate_candidate(
-        self, worktree: Path, job_id: str, allowed_paths: list[str]
+        self, worktree: Path, contract: dict[str, Any], allowed_paths: list[str]
     ) -> tuple[dict[str, Any], list[str]]:
-        contract = art_import_contract(worktree, job_id)
+        unit_ids = contract.get("unit_ids")
+        unit_names = contract.get("unit_names")
+        if not isinstance(unit_ids, list) or not unit_ids or not isinstance(unit_names, list):
+            raise ArtProductionError("Art import batch contract is invalid")
         ticket = {
-            "task_id": "ART-" + str(contract["unit_id"]).upper().replace("_", "-")[:100],
-            "objective": f"Production import of the original art state set for {contract['unit_name']}.",
+            "task_id": "ART-BATCH-" + str(unit_ids[0]).upper().replace("_", "-")[:90],
+            "objective": "Production import of original art state sets for " + ", ".join(
+                str(name) for name in unit_names
+            ) + ".",
             "allowed_paths": allowed_paths,
             "validation_profile": "wesnoth-addon-static",
             "validation_root": ADDON_ROOT,
@@ -330,7 +372,7 @@ class ArtImportProduction:
             raise ArtProductionError("The art-import candidate changed an unsafe path")
         return validation, changed_paths
 
-    def _commit_candidate(self, worktree: Path, job_id: str, changed_paths: list[str]) -> str:
+    def _commit_candidate(self, worktree: Path, contract: dict[str, Any], changed_paths: list[str]) -> str:
         _run(["git", "add", "--", *changed_paths], worktree)
         staged = subprocess.run(
             ["git", "diff", "--cached", "--quiet"], cwd=worktree,
@@ -339,7 +381,12 @@ class ArtImportProduction:
         )
         if staged.returncode != 1:
             raise ArtProductionError("The validated art-import candidate did not stage a commit")
-        _run(["git", "commit", "-m", f"art: import original state set for {job_id[4:60]}"], worktree)
+        job_ids = contract.get("job_ids")
+        if not isinstance(job_ids, list) or not job_ids:
+            raise ArtProductionError("Art import batch has no safe job identity")
+        subject = str(job_ids[0])[4:52]
+        suffix = "" if len(job_ids) == 1 else f" plus {len(job_ids) - 1} related sets"
+        _run(["git", "commit", "-m", f"art: import original state set for {subject}{suffix}"], worktree)
         commit_sha = _run(["git", "rev-parse", "HEAD"], worktree)
         if not HEX_SHA.fullmatch(commit_sha):
             raise ArtProductionError("Art-import commit identity is invalid")

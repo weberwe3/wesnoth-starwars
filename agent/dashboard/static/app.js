@@ -63,7 +63,14 @@ function renderArtQueue(queue) {
   $("art-queue").innerHTML = jobs.map(job => {
     const prompt = safe(job.prompt_path, "");
     const canCopy = typeof job.brief === "string" && job.brief.length > 0;
-    const productionState = safe(job.production_state, "").toLowerCase();
+    const rawProductionState = safe(job.production_state, "").toLowerCase();
+    const awaitingArt = job.state !== "complete" && !job.import_ready;
+    // Old versions recorded an attempted preflight with missing art as a
+    // production failure.  A source set that has not been generated is not an
+    // error and must never keep a red retry card after this repair deploys.
+    const stalePreflightFailure = rawProductionState === "failed" &&
+      safe(job.production_message, "") === "Art import needs correction";
+    const productionState = awaitingArt && stalePreflightFailure ? "" : rawProductionState;
     const working = ["validating", "committing", "publishing", "testing"].includes(productionState);
     const failed = productionState === "failed";
     const published = productionState === "published";
@@ -74,13 +81,14 @@ function renderArtQueue(queue) {
         ? "Ready to confirm: every required asset and WML reference has passed the import check."
         : job.requires_llm
           ? "WML wiring needs a bounded repair ticket before this art set can be activated."
-          : "Generate and place every required asset, then confirm the import here.");
+          : "Awaiting all 13 original generated PNGs in the listed project paths.");
     const buttonLabel = working ? "Production in progress" : failed
       ? (job.production_message?.includes("Published art") ? "Retry validation" : "Retry production")
-      : job.state === "complete" ? "Productionalize art" : "Confirm & productionalize art";
-    const buttonDisabled = working || published || !controlToken || controlBusy;
-    return `<article class="art-job ${esc(job.state, "pending").toLowerCase()} ${esc(productionState || "waiting")}">
-      <div><strong>${esc(job.unit_name || job.unit_id)}</strong><small>${esc(displayState(productionState || job.state))} · ${esc(job.asset_count)} required PNGs</small></div>
+      : awaitingArt ? "Awaiting generated art" : job.state === "complete" ? "Productionalize art" : "Confirm & productionalize art";
+    const buttonDisabled = working || published || awaitingArt || !controlToken || controlBusy;
+    const visualState = productionState || (awaitingArt ? "awaiting-art" : job.state);
+    return `<article class="art-job ${esc(job.state, "pending").toLowerCase()} ${esc(visualState || "waiting")}">
+      <div><strong>${esc(job.unit_name || job.unit_id)}</strong><small>${esc(displayState(visualState || job.state))} · ${esc(job.asset_count)} required PNGs</small></div>
       <div class="art-job-actions"><code>${esc(prompt)}</code><p class="art-import-status ${published ? "ready" : failed || job.requires_llm || outcome ? "attention" : ""}">${esc(status)}</p><div class="art-buttons"><button type="button" class="copy-art-brief" data-art-id="${esc(job.id, "")}" ${canCopy ? "" : "disabled"}>Copy $imagegen brief</button><button type="button" class="confirm-art-import" data-art-id="${esc(job.id, "")}" ${buttonDisabled ? "disabled" : ""}>${esc(buttonLabel)}</button></div></div>
     </article>`;
   }).join("") || '<p class="empty">No unit art contracts are queued.</p>';
