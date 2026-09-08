@@ -206,10 +206,17 @@ def _unit_present(text: str, claim: dict[str, Any]) -> bool:
 
 
 def _event_contains(text: str, claim: dict[str, Any]) -> bool:
+    # WML bodies are conventionally indented.  Planner evidence is semantic
+    # event-body text, so indentation must not turn an otherwise exact
+    # multi-line behavior (for example x=15 followed by y=2) into a false
+    # negative.  Contract validation above still rejects selectors and an
+    # event id by itself, preserving the proof boundary.
+    expected = "\n".join(line.strip() for line in claim["contains"].splitlines()).strip()
     for block in _EVENT_BLOCK.findall(text):
         identity = re.search(r"(?m)^\s*id\s*=\s*([^\s#]+)", block)
         if identity and identity.group(1).strip('"') == claim["event_id"]:
-            return claim["contains"] in block
+            body = "\n".join(line.strip() for line in block.splitlines()).strip()
+            return expected in body
     return False
 
 
