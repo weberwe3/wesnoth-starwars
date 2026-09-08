@@ -187,8 +187,18 @@ function renderActivity(data, control) {
     at: item.at, sortAt: item.at, level: "info", message: item.message,
     detail: item.message, route: `${item.from} → ${item.to}`,
   }));
+  const seenActivity = new Set();
   const activity = [...queueActivity, ...telemetry, ...routing]
-    .sort((a, b) => String(b.sortAt || "").localeCompare(String(a.sortAt || ""))).slice(0, 16);
+    .sort((a, b) => String(b.sortAt || "").localeCompare(String(a.sortAt || "")))
+    .filter(item => {
+      // Queue activity and dashboard telemetry can describe the same event.
+      // Preserve distinct retry attempts, but never render the same timestamp,
+      // severity, message, and detail twice just because it arrived on both feeds.
+      const identity = [item.sortAt, item.level, item.message, item.detail || item.message].join("\u0000");
+      if (seenActivity.has(identity)) return false;
+      seenActivity.add(identity);
+      return true;
+    }).slice(0, 16);
   $("activity-log").innerHTML = activity.map(item => {
     const recovery = item.recovery_attempt != null
       ? `<span class="recovery-badge">Attempt ${esc(item.recovery_attempt)} / ${esc(item.recovery_limit || 2)}</span>` : "";

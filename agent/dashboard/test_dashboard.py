@@ -2791,6 +2791,66 @@ class ApprovalQueueTests(unittest.TestCase):
         with self.assertRaisesRegex(ControlError, "exceeds the supported safety bound"):
             bounded_agent_branch_lines("\n".join(lines))
 
+    def test_legacy_recode_contract_retries_once_with_the_validator_diagnostic(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "queue.json"),
+            )
+            base_sha = "a" * 40
+            attempts: list[str] = []
+            fields = {
+                "kind": "source_text",
+                "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+                "base": "absent",
+                "contains": "Optional sensor-data objective",
+                "unit_type": None, "instance_id": None, "side": None,
+                "x": None, "y": None, "event_id": None, "row": None,
+                "column": None, "terrain": None,
+            }
+
+            def run(command, **kwargs):
+                if command[:3] == ["git", "merge-base", "HEAD"]:
+                    return subprocess.CompletedProcess(command, 0, base_sha + "\n", "")
+                if command[:2] == ["git", "diff"]:
+                    return subprocess.CompletedProcess(command, 0, "+Optional sensor-data objective\n", "")
+                attempts.append(str(kwargs["input"]))
+                output = Path(command[command.index("-o") + 1])
+                claim = dict(fields)
+                if len(attempts) == 1:
+                    claim["path"] = "outside-the-addon.cfg"
+                output.write_text(
+                    json.dumps({"schema_version": 1, "claims": [claim]}),
+                    encoding="utf-8",
+                )
+                return subprocess.CompletedProcess(command, 0, "", "")
+
+            item = {
+                "validation_profile": "wesnoth-addon-static",
+                "objective": "Add an optional sensor-data objective.",
+                "allowed_paths": [fields["path"]],
+                "changed_paths": [fields["path"]],
+                "acceptance": None,
+            }
+            with (
+                mock.patch.object(ticket_runner, "resolve_codex_executable", return_value="/opt/codex"),
+                mock.patch.object(ticket_runner, "require_codex_chatgpt_quota", return_value={}),
+                mock.patch("autonomy.subprocess.run", side_effect=run),
+            ):
+                controller._ensure_recode_acceptance(item, "sol-medium", worktree=root)
+            self.assertEqual(len(attempts), 2)
+            self.assertIn("unsafe project path", attempts[1])
+            self.assertEqual(item["acceptance"]["claims"][0]["path"], fields["path"])
+
+    def test_activity_renderer_deduplicates_overlapping_feeds(self) -> None:
+        source = (ROOT / "agent" / "dashboard" / "static" / "app.js").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("const seenActivity = new Set()", source)
+        self.assertIn("Queue activity and dashboard telemetry can describe the same event", source)
+
     def test_exact_recode_uses_selected_branch_and_recorded_contract_without_sol(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
