@@ -124,6 +124,17 @@
       "expected_id": "sw_first_battle_archive_records_delivery"
     },
     {
+      "id": "sw-first-battle-archive-delivery-warning",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_archive_delivery_warning",
+      "expected": {
+        "name": "turn",
+        "turn": "12",
+        "first_time_only": "yes"
+      }
+    },
+    {
       "id": "sw-first-battle-recon-squad-loss-event",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
