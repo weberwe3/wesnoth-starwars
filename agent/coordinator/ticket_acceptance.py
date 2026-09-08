@@ -22,6 +22,7 @@ _SHA = re.compile(r"[0-9a-f]{40}")
 _SAFE_PATH = re.compile(r"addons/Star_Wars_Thrawn_Trilogy/[A-Za-z0-9_./-]+")
 _UNIT_BLOCK = re.compile(r"(?s)\[unit\](.*?)\[/unit\]")
 _EVENT_BLOCK = re.compile(r"(?s)\[event\](.*?)\[/event\]")
+_EVENT_SELECTOR = re.compile(r"(?:\[/?event\b|/?event\s*\[)", re.IGNORECASE)
 
 
 def _safe_path(value: object) -> str | None:
@@ -78,6 +79,27 @@ def validate_acceptance_contract(value: object) -> dict[str, Any]:
                 return {"pass": False, "diagnostic": f"Acceptance event_contains claim {index} is incomplete."}
             if len(event_id) > 160 or len(contains) > MAX_TEXT:
                 return {"pass": False, "diagnostic": f"Acceptance event_contains claim {index} is too large."}
+            # `contains` is checked against the body of the matching WML event,
+            # not against an XPath/CSS-style selector. Reject a selector before
+            # a worktree is created with proof that can never pass.
+            if _EVENT_SELECTOR.search(contains):
+                return {
+                    "pass": False,
+                    "diagnostic": (
+                        f"Acceptance event_contains claim {index} must use literal "
+                        "event-body evidence, not an event selector."
+                    ),
+                }
+            normalized_contains = re.sub(r"\s+", "", contains)
+            normalized_id = re.sub(r"\s+", "", event_id)
+            if normalized_contains in {normalized_id, f"id={normalized_id}"}:
+                return {
+                    "pass": False,
+                    "diagnostic": (
+                        f"Acceptance event_contains claim {index} must prove event behavior "
+                        "with literal body text, not repeat only its id."
+                    ),
+                }
             item.update({"event_id": event_id, "contains": contains})
         else:
             fields = ("row", "column", "terrain")

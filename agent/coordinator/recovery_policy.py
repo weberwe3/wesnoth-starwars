@@ -208,6 +208,20 @@ def classify_validation(
         )
 
     profile = validation.get("profile_result") or {}
+    acceptance = profile.get("ticket_acceptance")
+    if isinstance(acceptance, dict) and acceptance.get("pass") is False:
+        diagnostic = safe_text(
+            acceptance.get("diagnostic"), "The ticket acceptance contract could not be proved.", 1000
+        )
+        return _failure(
+            "ticket_acceptance_contract_failure",
+            "Ticket acceptance contract failed: " + diagnostic,
+            (
+                "Do not spend an in-worktree repair attempt. Preserve the candidate and have "
+                "the coordinator create a corrected acceptance contract before resuming it."
+            ),
+            eligible=False,
+        )
     profile_failures = [
         str(name) for name, passed in (profile.get("checks") or {}).items() if not passed
     ]

@@ -38,6 +38,9 @@ MAX_GUIDANCE_LENGTH = 1000
 PLANNER_CACHE_SECONDS = 900
 AUTOMATION_COOLDOWN_SECONDS = 60
 AUTONOMOUS_WORKTREE_FAILURE_LIMIT = 3
+AUTONOMOUS_CONTRACT_REPLAN_FAILURES = {
+    "ticket_acceptance_contract_failure",
+}
 MAX_MANAGED_AGENT_BRANCHES = 1000
 GENERATED_BACKLOG_FILE = "generated-planned-tickets.json"
 GENERATED_BACKLOG_SIZE = 4
@@ -802,6 +805,25 @@ class AutonomyController:
                 )
                 failure_class = str(failure.get("class") or "ticket_failure")
                 identity = self._failed_worktree_identity(ticket["task_id"], ticket)
+                if continuous and failure_class in AUTONOMOUS_CONTRACT_REPLAN_FAILURES:
+                    # An immutable ticket contract cannot be repaired from the
+                    # candidate's allowed files. Preserve the useful candidate
+                    # and let the next planning pass correct its evidence.
+                    self._clear_failure_streak()
+                    action = (
+                        "The coordinator will preserve this worktree and re-plan its "
+                        "acceptance evidence after the cooldown; no code-repair attempt was used."
+                    )
+                    self.queue.event(
+                        f"{ticket['task_id']} acceptance contract rejected; corrected planning retry scheduled",
+                        level="warning", detail=detail, ticket_id=ticket["task_id"],
+                        failure_class=failure_class, required_action=action,
+                    )
+                    self._finish(
+                        run_id, False, "Corrected acceptance planning retry scheduled",
+                        ticket_id=ticket["task_id"], error=f"{detail} {action}",
+                    )
+                    return
                 retryable = continuous and failure_class in AUTONOMOUS_RETRYABLE_FAILURES
                 streak = self._record_autonomous_failure(
                     identity, failure_class, detail, required_action
@@ -1185,9 +1207,12 @@ outcome differs from base {base_sha}; use unit_placement, map_cell, event_contai
 precise source_text claim. Do not use installed_game_repair, comments, notes, generic loading,
 or existing contracts as evidence. Every schema field is mandatory; use null where irrelevant.
 The `base` field is never irrelevant: it must be exactly `absent` or `different`, never null.
-For source_text, `contains` must be one non-empty exact gameplay string in the candidate;
-for unit_placement, event_contains, and map_cell, every field required by that claim kind
-must be non-null. Paths must begin with addons/Star_Wars_Thrawn_Trilogy/.
+For source_text, `contains` must be one non-empty exact gameplay string in the candidate.
+For event_contains, `contains` must be a literal behavior string inside the matching `[event]`
+body (for example, a message or action text), never an XPath/CSS/WML selector such as
+`/event[...]`, `[event]`, or merely the event id. For unit_placement, event_contains, and
+map_cell, every field required by that claim kind must be non-null. Paths must begin with
+addons/Star_Wars_Thrawn_Trilogy/.
 Original objective: {json.dumps(item.get('objective'))}
 Allowed paths: {json.dumps(item.get('allowed_paths'))}
 Existing candidate paths: {json.dumps(item.get('changed_paths'))}
