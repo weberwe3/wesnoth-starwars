@@ -1164,10 +1164,10 @@ Existing candidate paths: {json.dumps(item.get('changed_paths'))}
             "--output-schema", self._command_path(schema_path, windows_binary),
             "-o", self._command_path(output_path, windows_binary), "-",
         ]
-        environment = {
-            key: value for key, value in ticket_runner.codex_environment(executable).items()
-            if not SENSITIVE_ENV.search(key)
-        }
+        try:
+            environment = ticket_runner.require_codex_chatgpt_quota(executable)
+        except RuntimeError as exc:
+            raise ControlError(str(exc)) from exc
         try:
             completed = subprocess.run(
                 command, cwd=worktree, env=environment, input=prompt, text=True,
@@ -1336,10 +1336,10 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             "--ephemeral", "--ignore-user-config", "--color", "never",
             "--output-schema", schema_arg, "-o", output_arg, "-",
         ]
-        environment = {
-            key: value for key, value in ticket_runner.codex_environment(executable).items()
-            if not SENSITIVE_ENV.search(key)
-        }
+        try:
+            environment = ticket_runner.require_codex_chatgpt_quota(executable)
+        except RuntimeError as exc:
+            raise ControlError(str(exc)) from exc
         try:
             completed = subprocess.run(
                 command,
@@ -1785,10 +1785,10 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "--ephemeral", "--ignore-user-config", "--color", "never",
             "--output-schema", schema_arg, "-o", output_arg, "-",
         ]
-        environment = {
-            key: value for key, value in ticket_runner.codex_environment(executable).items()
-            if not SENSITIVE_ENV.search(key)
-        }
+        try:
+            environment = ticket_runner.require_codex_chatgpt_quota(executable)
+        except RuntimeError as exc:
+            raise ControlError(str(exc)) from exc
         try:
             completed = subprocess.run(
                 command, cwd=self.root, env=environment, input=prompt, text=True,

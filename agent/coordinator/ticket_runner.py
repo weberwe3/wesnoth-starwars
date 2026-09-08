@@ -184,7 +184,7 @@ def resolve_codex_executable() -> str | None:
 
 
 def codex_environment(executable: str | None = None) -> dict[str, str]:
-    """Build a secret-stripped environment with the existing Codex auth store.
+    """Build an API-key-free environment with the existing Codex auth store.
 
     The secure launcher keeps the authenticated Codex store on Windows. A
     Windows Codex executable started from WSL cannot reliably infer that store
@@ -195,6 +195,20 @@ def codex_environment(executable: str | None = None) -> dict[str, str]:
     """
 
     environment = core.make_test_env()
+    # This is a hard billing/authentication boundary.  A Codex model worker
+    # must use the signed-in ChatGPT account's Codex allowance, never an API
+    # key or endpoint override inherited from the launcher or WSL.
+    forbidden = {
+        "OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_ORG_ID",
+        "OPENAI_ORGANIZATION", "OPENAI_PROJECT", "CODEX_API_KEY",
+        "CODEX_ACCESS_TOKEN",
+    }
+    for key in forbidden:
+        environment.pop(key, None)
+    environment["WSLENV"] = ":".join(
+        entry for entry in environment.get("WSLENV", "").split(":")
+        if entry and entry.split("/", 1)[0].upper() not in forbidden
+    )
     executable = executable or resolve_codex_executable()
     if not executable:
         return environment
@@ -220,6 +234,33 @@ def codex_environment(executable: str | None = None) -> dict[str, str]:
         ]
         entries.append("CODEX_HOME/p")
         environment["WSLENV"] = ":".join(entries)
+    return environment
+
+
+def require_codex_chatgpt_quota(executable: str) -> dict[str, str]:
+    """Return a safe Codex environment only for ChatGPT-account authentication.
+
+    Codex supports both subscription and API-key authentication.  This project
+    intentionally permits only the former for GPT-5.x worker models, so an
+    unknown or API-key login is a hard stop before any model prompt is sent.
+    """
+
+    environment = codex_environment(executable)
+    auth_home = Path(environment.get("CODEX_HOME") or (Path.home() / ".codex"))
+    try:
+        auth_path = auth_home / "auth.json"
+        if auth_path.is_symlink():
+            raise OSError("Codex authentication file must not be a symlink")
+        auth = json.loads(auth_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(
+            "Could not verify Codex ChatGPT-account authentication; API-key model use is prohibited."
+        ) from exc
+    if not isinstance(auth, dict) or auth.get("auth_mode") != "chatgpt":
+        raise RuntimeError(
+            "Codex is not authenticated with ChatGPT. API-key model use is prohibited; "
+            "sign in to Codex with the ChatGPT account before running workers."
+        )
     return environment
 
 
@@ -315,6 +356,12 @@ def invoke_terra(
         output = "Codex Terra fallback executable is unavailable to the secure runner."
         log_file.write_text(output + "\n", encoding="utf-8")
         return 127, output
+    try:
+        environment = require_codex_chatgpt_quota(executable)
+    except RuntimeError as exc:
+        output = str(exc)
+        log_file.write_text(output + "\n", encoding="utf-8")
+        return 127, output
     windows_binary = executable.lower().endswith(".exe")
     codex_worktree = _codex_path(worktree, windows_binary)
     if (
@@ -341,13 +388,6 @@ def invoke_terra(
         command.insert(command.index("--ephemeral"), "--approve-for-me")
     else:
         command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
-    environment = {
-        key: value for key, value in codex_environment(executable).items()
-        if not re.search(
-            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
-            key, re.IGNORECASE,
-        )
-    }
     try:
         completed = subprocess.run(
             command, cwd=worktree, env=environment, input=prompt, text=True,
@@ -386,6 +426,12 @@ def invoke_luna(
         output = "Codex Luna fallback executable is unavailable to the secure runner."
         log_file.write_text(output + "\n", encoding="utf-8")
         return 127, output
+    try:
+        environment = require_codex_chatgpt_quota(executable)
+    except RuntimeError as exc:
+        output = str(exc)
+        log_file.write_text(output + "\n", encoding="utf-8")
+        return 127, output
     windows_binary = executable.lower().endswith(".exe")
     codex_worktree = _codex_path(worktree, windows_binary)
     if (
@@ -412,13 +458,6 @@ def invoke_luna(
         command.insert(command.index("--ephemeral"), "--approve-for-me")
     else:
         command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
-    environment = {
-        key: value for key, value in codex_environment(executable).items()
-        if not re.search(
-            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
-            key, re.IGNORECASE,
-        )
-    }
     try:
         completed = subprocess.run(
             command, cwd=worktree, env=environment, input=prompt, text=True,
@@ -1391,6 +1430,7 @@ def plan_recovery(
     executable = resolve_codex_executable()
     if not executable:
         raise RuntimeError("Codex recovery planner is unavailable")
+    environment = require_codex_chatgpt_quota(executable)
     schema_path = log_dir / f"recovery-{attempt}-schema.json"
     output_path = log_dir / f"recovery-{attempt}-plan.json"
     schema_path.write_text(json.dumps(RECOVERY_SCHEMA, indent=2) + "\n")
@@ -1436,14 +1476,6 @@ DETERMINISTIC LOCAL CONTEXT:
         _codex_path(output_path, windows_binary),
         "-",
     ]
-    environment = {
-        key: value for key, value in codex_environment(executable).items()
-        if not re.search(
-            r"(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE[_-]?KEY)",
-            key,
-            re.IGNORECASE,
-        )
-    }
     completed = subprocess.run(
         command,
         cwd=worktree,

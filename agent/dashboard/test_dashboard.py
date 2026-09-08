@@ -240,6 +240,17 @@ class RuntimeStatusTests(unittest.TestCase):
 
 
 class CoordinationControlTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # Unit tests exercise dispatch construction, not the host's Codex
+        # account.  Dedicated tests below cover the fail-closed auth gate.
+        self._codex_quota_patcher = mock.patch.object(
+            ticket_runner, "require_codex_chatgpt_quota", return_value={}
+        )
+        self._codex_quota_patcher.start()
+
+    def tearDown(self) -> None:
+        self._codex_quota_patcher.stop()
+
     @staticmethod
     def controller(directory: str) -> AutonomyController:
         base = Path(directory)
@@ -1685,6 +1696,41 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertEqual(environment["CODEX_HOME"], "/mnt/c/Users/fixture/.codex")
         self.assertIn("CODEX_HOME/p", environment["WSLENV"])
         self.assertNotIn("GROQ_API_KEY", environment)
+
+    def test_codex_environment_removes_api_billing_and_routing_variables(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                "CODEX_HOME": "/mnt/c/Users/fixture/.codex",
+                "OPENAI_API_KEY": "must-not-reach-codex",
+                "OPENAI_BASE_URL": "https://example.invalid/v1",
+                "CODEX_API_KEY": "must-not-reach-codex",
+                "WSLENV": "OPENAI_API_KEY/p:OPENAI_BASE_URL/p:CODEX_API_KEY/p:SAFE/u",
+            },
+            clear=True,
+        ):
+            environment = ticket_runner.codex_environment("/opt/codex")
+        self.assertEqual(environment["WSLENV"], "SAFE/u:CODEX_HOME/p")
+        for key in ("OPENAI_API_KEY", "OPENAI_BASE_URL", "CODEX_API_KEY"):
+            self.assertNotIn(key, environment)
+
+    def test_codex_worker_requires_chatgpt_account_authentication(self) -> None:
+        self._codex_quota_patcher.stop()
+        with tempfile.TemporaryDirectory() as directory:
+            auth_home = Path(directory)
+            (auth_home / "auth.json").write_text(
+                json.dumps({"auth_mode": "chatgpt"}), encoding="utf-8"
+            )
+            with mock.patch.dict(os.environ, {"CODEX_HOME": str(auth_home)}, clear=True):
+                environment = ticket_runner.require_codex_chatgpt_quota("/opt/codex")
+            self.assertIsInstance(environment, dict)
+
+            (auth_home / "auth.json").write_text(
+                json.dumps({"auth_mode": "api_key"}), encoding="utf-8"
+            )
+            with mock.patch.dict(os.environ, {"CODEX_HOME": str(auth_home)}, clear=True):
+                with self.assertRaisesRegex(RuntimeError, "API-key model use is prohibited"):
+                    ticket_runner.require_codex_chatgpt_quota("/opt/codex")
 
     def test_installed_codex_path_survives_stripped_secure_environment(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
