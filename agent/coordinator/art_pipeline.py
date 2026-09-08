@@ -221,7 +221,10 @@ def _completion_failures(
                 "path": source_path,
                 "detail": f"Completed art job is missing valid PNG {relative}: {png_problem}",
             })
-        if f"~add-ons/Star_Wars_Thrawn_Trilogy/{relative}" not in source:
+        if not re.search(
+            rf'(?m)^\s*(?:image|icon|profile)\s*=\s*"?{re.escape(relative)}',
+            source,
+        ):
             failures.append({
                 "path": source_path,
                 "detail": f"Completed art job is not fully wired into unit WML: {relative}",
