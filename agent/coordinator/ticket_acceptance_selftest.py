@@ -108,6 +108,20 @@ class TicketAcceptanceTests(unittest.TestCase):
         self.assertFalse(result["pass"])
         self.assertIn("already satisfied by the ticket base", result["diagnostic"])
 
+    def test_event_evidence_ignores_wml_indentation_but_remains_baseline_aware(self) -> None:
+        Path(self.root / SCENARIO).write_text(
+            "[scenario]\n    id=sw_first_battle\n[/scenario]\n\n"
+            "[event]\n    id=sw_first_battle_eastern_observation\n    name=moveto\n"
+            "    [filter_location]\n        x=15\n        y=2\n    [/filter_location]\n[/event]\n",
+            encoding="utf-8",
+        )
+        result = validate_ticket_acceptance(self.root, self.ticket({
+            "kind": "event_contains", "path": SCENARIO, "base": "different",
+            "event_id": "sw_first_battle_eastern_observation", "contains": "x=15\ny=2",
+        }))
+        self.assertTrue(result["pass"])
+        self.assertFalse(result["checks"][0]["base_present"])
+
     def test_invalid_contract_fails_closed(self) -> None:
         result = validate_acceptance_contract({"schema_version": 1, "claims": []})
         self.assertFalse(result["pass"])

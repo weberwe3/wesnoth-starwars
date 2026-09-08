@@ -231,3 +231,10 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** Every generated `event_contains` claim put a WML selector such as `/event[id=...]` in `contains`. The deterministic checker needs literal behavioral text inside the named event body. Unlike ordinary single-ticket planning, the backlog path silently discarded each rejected candidate and never gave Sol the precise rejection to correct.
 - **Resolution:** Backlog and single-ticket planning now share the published-ID and literal-event-body acceptance rules. When every backlog candidate fails only the deterministic contract shape, Python records the per-ticket diagnostics and permits exactly one corrected backlog call before failing with those diagnostics.
 - **Prevention:** For `event_contains`, use `event_id` to identify the event and make `contains` an exact body fragment such as a message, `name=`, or WML action. Never use selectors as evidence. Preserve every published gameplay ID; extend existing events or add new ones instead of replacing their identifiers.
+
+### 2026-09-08 — valid multi-line WML evidence failed because of indentation
+
+- **Symptom:** A generated ticket correctly moved an event’s `x=15` / `y=2` filter and preserved the event ID, but its deterministic acceptance gate claimed the `event_contains` evidence was missing.
+- **Cause:** The evidence checker compared the model’s compact multi-line fragment byte-for-byte against indented WML. Indentation is formatting, not event behavior, so the checker produced a false negative before tester, review, or publication.
+- **Resolution:** Event-body evidence now normalizes leading/trailing whitespace on each line before matching. Selector rejection, event-ID-only rejection, path scope, baseline comparison, and all other acceptance safeguards remain unchanged.
+- **Prevention:** Write behavioral multi-line evidence without relying on a particular indentation width. A valid contract identifies its event by `event_id` and its changed behavior by literal body lines; the validator ignores only line indentation.
