@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-09-08 — scenario-side unit placement inherited its side in WML
+
+- **Symptom:** A candidate correctly added a side-2 Imperial Remnant Recon Squad at its promised coordinates, but its `unit_placement` acceptance claim reported the unit missing and autonomous planning repeated the same valid worktree.
+- **Cause:** The deterministic checker read only properties inside `[unit]`. Scenario setup units nested in `[side]` inherit their side from the parent, so valid WML omits a redundant `side=` field on the unit.
+- **Resolution:** Parse balanced `[side]` bodies and supply their inherited side only when the nested unit has no explicit side. Keep explicit-side event and standalone units authoritative.
+- **Prevention:** Validate WML placement semantics, not only flat tag text. Regression coverage must include both a scenario-side inherited unit and an event-created explicit-side unit.
+
 ### 2026-09-08 — event acceptance evidence used a selector instead of event behavior
 
 - **Symptom:** A Mission 1 candidate added its promised `sw_first_battle_heavy_weapons_range_briefing` event, but deterministic validation failed and autonomous recovery spent time rewriting the briefing.

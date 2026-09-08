@@ -23,6 +23,8 @@ _SAFE_PATH = re.compile(r"addons/Star_Wars_Thrawn_Trilogy/[A-Za-z0-9_./-]+")
 _UNIT_BLOCK = re.compile(r"(?s)\[unit\](.*?)\[/unit\]")
 _EVENT_BLOCK = re.compile(r"(?s)\[event\](.*?)\[/event\]")
 _EVENT_SELECTOR = re.compile(r"(?:\[/?event\b|/?event\s*\[)", re.IGNORECASE)
+_SIDE_TAG = re.compile(r"(?m)^\s*\[(/?)side\]\s*$")
+_WML_TAG = re.compile(r"^\s*\[(/?)[A-Za-z_][A-Za-z0-9_]*\]\s*$")
 
 
 def _safe_path(value: object) -> str | None:
@@ -133,18 +135,73 @@ def _base_sha(worktree: Path) -> str | None:
     return value if completed.returncode == 0 and _SHA.fullmatch(value) else None
 
 
+def _unit_fields(block: str) -> dict[str, str]:
+    return {
+        key: value.strip().strip('"')
+        for key, value in re.findall(r"(?m)^\s*(type|id|side|x|y)\s*=\s*([^\n#]+)", block)
+    }
+
+
+def _side_blocks(text: str) -> list[str]:
+    """Return balanced WML side bodies without mistaking nested tags for sides."""
+
+    blocks: list[str] = []
+    start: int | None = None
+    depth = 0
+    for match in _SIDE_TAG.finditer(text):
+        if not match.group(1):
+            if depth == 0:
+                start = match.end()
+            depth += 1
+        elif depth:
+            depth -= 1
+            if depth == 0 and start is not None:
+                blocks.append(text[start:match.start()])
+                start = None
+    return blocks
+
+
+def _direct_side_id(side_block: str) -> str | None:
+    """Read side= from a side body, excluding nested unit/event properties."""
+
+    depth = 0
+    for line in side_block.splitlines():
+        tag = _WML_TAG.match(line)
+        if tag:
+            depth += -1 if tag.group(1) else 1
+            continue
+        if depth == 0:
+            field = re.match(r"^\s*side\s*=\s*([^\n#]+)", line)
+            if field:
+                return field.group(1).strip().strip('"')
+    return None
+
+
+def _unit_matches(fields: dict[str, str], expected: dict[str, str]) -> bool:
+    return all(fields.get(key) == value for key, value in expected.items())
+
+
 def _unit_present(text: str, claim: dict[str, Any]) -> bool:
     expected = {
         "type": claim["unit_type"], "id": claim["instance_id"], "side": claim["side"],
         "x": claim["x"], "y": claim["y"],
     }
+    # Event-created and standalone units state their own side explicitly.
     for block in _UNIT_BLOCK.findall(text):
-        fields = {
-            key: value.strip().strip('"')
-            for key, value in re.findall(r"(?m)^\s*(type|id|side|x|y)\s*=\s*([^\n#]+)", block)
-        }
-        if fields == expected:
+        fields = _unit_fields(block)
+        if _unit_matches(fields, expected):
             return True
+    # Scenario setup units nested inside a [side] inherit that side in WML.
+    # They are valid without a duplicate side= field on the [unit] itself.
+    for side_block in _side_blocks(text):
+        inherited_side = _direct_side_id(side_block)
+        if inherited_side is None:
+            continue
+        for block in _UNIT_BLOCK.findall(side_block):
+            fields = _unit_fields(block)
+            fields.setdefault("side", inherited_side)
+            if _unit_matches(fields, expected):
+                return True
     return False
 
 
