@@ -85,14 +85,23 @@ ACCEPTANCE_CLAIM_SCHEMA = {
         "terrain": {"type": ["string", "null"], "maxLength": 12},
     },
 }
-ACCEPTANCE_SCHEMA = {
-    "type": ["object", "null"],
+RECODE_ACCEPTANCE_SCHEMA = {
+    # The Codex model API only accepts an object at the root of a strict
+    # output schema.  The nullable form remains useful inside TICKET_SCHEMA,
+    # but must never be passed directly to `codex exec --output-schema`.
+    "type": "object",
     "additionalProperties": False,
     "required": ["schema_version", "claims"],
     "properties": {
         "schema_version": {"type": "integer", "enum": [1]},
         "claims": {"type": "array", "minItems": 1, "maxItems": 12, "items": ACCEPTANCE_CLAIM_SCHEMA},
     },
+}
+ACCEPTANCE_SCHEMA = {
+    "anyOf": [
+        {"type": "null"},
+        RECODE_ACCEPTANCE_SCHEMA,
+    ],
 }
 
 TICKET_SCHEMA = {
@@ -533,6 +542,14 @@ class AutonomyController:
             if self._pipeline_active():
                 raise ControlError("Wait for the active governed operation to finish")
             failed = self.queue.failed_record(record_id, commit_sha)
+            candidate_id = failed.get("recode_candidate_id")
+            if isinstance(candidate_id, str):
+                candidate = self.queue.record(candidate_id)
+                if candidate and candidate.get("state") not in {"failed", "stale", "dismissed", "superseded", "discarded"}:
+                    raise ControlError(
+                        "A recode candidate is already in the approval queue; the original ticket "
+                        "will remain visible until that candidate is published."
+                    )
             branch = failed.get("branch")
             conflicts = [
                 item for item in self.queue.public_state()["records"]
@@ -850,12 +867,6 @@ class AutonomyController:
             )
             if proposal.get("_post_publish_game_repair"):
                 self._mark_post_publish_repair_queued(ticket["task_id"])
-            if recode_record is not None:
-                self.queue.dismiss_failed(
-                    recode_record["id"],
-                    recode_record["commit_sha"],
-                    superseded_by=queued["ticket_id"],
-                )
             awaiting = queued["state"] == "deletion_pending"
             if continuous and not awaiting and isinstance(authorization_id, str):
                 target = self.queue.autonomous_publication_target(
@@ -975,7 +986,11 @@ class AutonomyController:
         """Select the oldest safe failed publication for toggle-driven recovery."""
 
         for item in self.queue.public_state()["records"]:
-            if item.get("state") != "failed" or item.get("deleted_paths"):
+            if (
+                item.get("state") != "failed"
+                or item.get("deleted_paths")
+                or item.get("recode_candidate_id")
+            ):
                 continue
             record_id = item.get("id")
             commit_sha = item.get("commit_sha")
@@ -1125,7 +1140,10 @@ class AutonomyController:
         request_id = uuid.uuid4().hex[:12]
         schema_path = runtime / f"sol-recode-acceptance-schema-{request_id}.json"
         output_path = runtime / f"sol-recode-acceptance-{request_id}.json"
-        schema_path.write_text(json.dumps(ACCEPTANCE_SCHEMA, indent=2) + "\n", encoding="utf-8")
+        schema_path.write_text(
+            json.dumps(RECODE_ACCEPTANCE_SCHEMA, indent=2) + "\n",
+            encoding="utf-8",
+        )
         os.chmod(schema_path, 0o600)
         windows_binary = executable.lower().endswith(".exe")
         prompt = f"""Draft only a truthful acceptance contract for this legacy Wesnoth ticket.

@@ -279,6 +279,7 @@ class ApprovalQueue:
             "state", "created_at", "updated_at", "validation", "validation_profile", "reviewer",
             "pr_number", "pr_url", "merge_sha", "error", "deletion_request",
             "depends_on_id", "depends_on_commit", "automation_authorized", "recode_of",
+            "recode_candidate_id",
             "post_publish_validation", "post_publish_checked_at", "post_publish_evidence",
             "acceptance", "acceptance_evidence",
         }
@@ -497,7 +498,21 @@ class ApprovalQueue:
             record["commit_sha"] = self._commit(record, worktree)
             record["state"] = "ready"
 
-        self._update(lambda state: state["records"].append(record))
+        def queue_record(state: dict[str, Any]) -> None:
+            if recode_of is not None:
+                parent = next(
+                    (item for item in state["records"] if item.get("id") == recode_of),
+                    None,
+                )
+                if parent is None or parent.get("state") not in {"failed", "stale"}:
+                    raise QueueError("The failed ticket disappeared before its recode was queued")
+                parent.update({
+                    "recode_candidate_id": record_id,
+                    "updated_at": utc_now(),
+                })
+            state["records"].append(record)
+
+        self._update(queue_record)
         if deleted_paths:
             self.event(
                 f"{ticket['task_id']} requires deletion approval",
@@ -909,7 +924,7 @@ class ApprovalQueue:
             key: record.get(key)
             for key in (
                 "id", "ticket_id", "purpose", "impact", "branch", "commit_sha",
-                "pr_number", "pr_url",
+                "pr_number", "pr_url", "recode_candidate_id",
             )
         }
 
@@ -1161,6 +1176,7 @@ class ApprovalQueue:
             pr_url=self.record(record["id"]).get("pr_url"),
             post_publish_validation="RUNNING", post_publish_checked_at=None,
         )
+        self._retire_published_recode_parents(record)
         _run(["git", "pull", "--ff-only", "origin", "main"], self.root, 180)
         recode_note = " Recoded ticket successfully published." if record.get("recode_of") else ""
         self.event(
@@ -1314,6 +1330,37 @@ class ApprovalQueue:
                 current.update(values)
                 current["updated_at"] = utc_now()
         self._update(update)
+
+    def _retire_published_recode_parents(self, record: dict[str, Any]) -> None:
+        """Hide an original failed card only after its exact replacement merged.
+
+        Keeping the parent record public while its recode is running means a
+        failed AI repair can never make the user lose the original ticket,
+        branch identity, or recovery controls.
+        """
+
+        members = record.get("batch_members") or [record]
+
+        def retire(state: dict[str, Any]) -> None:
+            by_id = {item.get("id"): item for item in state["records"]}
+            for member in members:
+                child = by_id.get(member.get("id"))
+                if not isinstance(child, dict):
+                    continue
+                parent_id = child.get("recode_of")
+                parent = by_id.get(parent_id)
+                if (
+                    isinstance(parent, dict)
+                    and parent.get("state") in {"failed", "stale"}
+                    and parent.get("recode_candidate_id") == child.get("id")
+                ):
+                    parent.update({
+                        "state": "superseded",
+                        "superseded_by": child.get("ticket_id"),
+                        "updated_at": utc_now(),
+                    })
+
+        self._update(retire)
 
     def _wait_for_pr_head(
         self,

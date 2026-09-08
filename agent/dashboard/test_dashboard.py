@@ -29,6 +29,7 @@ from autonomy import (  # noqa: E402
     AutonomyController,
     BACKLOG_SCHEMA,
     ControlError,
+    RECODE_ACCEPTANCE_SCHEMA,
     TICKET_SCHEMA,
     bounded_agent_branch_lines,
     validate_strict_output_schema,
@@ -360,6 +361,8 @@ class CoordinationControlTests(unittest.TestCase):
 
     def test_planner_schema_is_strict_at_every_object_level(self) -> None:
         validate_strict_output_schema(TICKET_SCHEMA)
+        validate_strict_output_schema(RECODE_ACCEPTANCE_SCHEMA)
+        self.assertEqual(RECODE_ACCEPTANCE_SCHEMA["type"], "object")
         ticket_schema = TICKET_SCHEMA["properties"]["ticket"]["anyOf"][1]
         self.assertEqual(
             set(ticket_schema["required"]),
@@ -2531,6 +2534,35 @@ class ApprovalQueueTests(unittest.TestCase):
             self.assertEqual(stored["branch"], "agent/dash-test")
             with self.assertRaises(QueueError):
                 queue.dismiss_failed(record_id, commit)
+
+    def test_recode_parent_stays_public_until_its_replacement_is_published(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            parent_id, child_id = "1" * 16, "2" * 16
+            parent_sha, child_sha = "a" * 40, "b" * 40
+            queue._update(lambda state: state["records"].extend([
+                {
+                    "id": parent_id, "ticket_id": "ORIGINAL", "state": "failed",
+                    "commit_sha": parent_sha, "branch": "agent/original",
+                    "recode_candidate_id": child_id,
+                },
+                {
+                    "id": child_id, "ticket_id": "RECODED", "state": "ready",
+                    "commit_sha": child_sha, "branch": "agent/recoded",
+                    "recode_of": parent_id,
+                },
+            ]))
+            self.assertEqual(
+                [item["id"] for item in queue.public_state()["records"]],
+                [parent_id, child_id],
+            )
+            queue._retire_published_recode_parents({"id": child_id})
+            self.assertEqual(queue.record(parent_id)["state"], "superseded")
+            self.assertEqual(queue.record(parent_id)["superseded_by"], "RECODED")
+            self.assertEqual(
+                [item["id"] for item in queue.public_state()["records"]], [child_id]
+            )
 
     def test_cumulative_ready_tickets_form_one_exact_batch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
