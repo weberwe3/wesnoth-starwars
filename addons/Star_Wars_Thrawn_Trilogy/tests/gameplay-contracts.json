@@ -154,6 +154,22 @@
       }
     },
     {
+      "id": "sw-first-battle-archive-return-interdiction",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_archive_return_interdiction",
+      "expected": {
+        "name": "turn",
+        "turn": "10",
+        "first_time_only": "yes",
+        "unit_id": "sw_first_battle_archive_return_interdiction",
+        "side": "2",
+        "type": "sw_unit_im_rem_stormtrooper",
+        "x": "11",
+        "y": "7"
+      }
+    },
+    {
       "id": "sw-first-battle-archive-delivery-interception",
       "kind": "event-unit",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
