@@ -154,6 +154,21 @@
       }
     },
     {
+      "id": "sw-first-battle-delivery-relief",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_delivery_relief",
+      "expected": {
+        "name": "moveto",
+        "first_time_only": "yes",
+        "unit_id": "sw_first_battle_delivery_relief",
+        "side": "1",
+        "type": "sw_unit_nr_perimeter_guard_squad",
+        "x": "2",
+        "y": "8"
+      }
+    },
+    {
       "id": "sw-first-battle-archive-return-interdiction",
       "kind": "event-unit",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
