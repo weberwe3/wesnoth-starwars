@@ -1106,12 +1106,14 @@ def prepare_local_resume(root: Path, worktree: Path) -> bool:
 
     before_head = core.git(worktree, "rev-parse", "HEAD")[1].strip()
     before_paths = inspection.get("dirty_paths", [])
-    merge_args = ("merge", "--no-edit", "main") if inspection["mode"] == "clean-merge" else (
-        "merge", "--ff-only", "main"
+    merge_args = (
+        ("merge", "--no-edit", "main")
+        if inspection["mode"] in {"clean-merge", "dirty-disjoint-reconciled"}
+        else ("merge", "--ff-only", "main")
     )
     rc, output = core.git(worktree, *merge_args, timeout=120)
     if rc != 0:
-        if inspection["mode"] == "clean-merge":
+        if inspection["mode"] in {"clean-merge", "dirty-disjoint-reconciled"}:
             core.git(worktree, "merge", "--abort", timeout=60)
         raise SystemExit(
             "ERROR: local remnant cannot be reconciled with main without conflicts. "
