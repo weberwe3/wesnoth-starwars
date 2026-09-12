@@ -27,6 +27,7 @@ import ticket_acceptance  # noqa: E402
 import worktree_paths  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from game_validation_state import gameplay_revalidation_required  # noqa: E402
+import bridge_mailbox  # noqa: E402
 from autonomy import (  # noqa: E402
     ACCEPTANCE_CLAIM_SCHEMA,
     AutonomyController,
@@ -87,6 +88,49 @@ class ArtImportProductionTests(unittest.TestCase):
 
 
 class RuntimeStatusTests(unittest.TestCase):
+    def test_bridge_failure_binds_the_run_ticket_identity(self) -> None:
+        run_id = "abc123def456"
+        ticket_id = "SOL-BRIDGE-IDENTITY"
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = Path(directory)
+            (runtime / f"sol-ticket-{run_id}.json").write_text(
+                json.dumps({"task_id": ticket_id}), encoding="utf-8"
+            )
+            with (
+                mock.patch.object(bridge_mailbox, "RUNTIME", runtime),
+                mock.patch.object(sys, "argv", ["bridge_mailbox.py", "failure", run_id]),
+            ):
+                self.assertEqual(bridge_mailbox.main(), 0)
+            result = json.loads((runtime / f"sol-result-{run_id}.json").read_text(
+                encoding="utf-8"
+            ))
+            self.assertEqual(result["ticket_id"], ticket_id)
+            self.assertEqual(result["return_code"], 125)
+            self.assertEqual(result["failure"]["class"], "secure_bridge_failure")
+
+    def test_secure_ticket_failure_with_matching_identity_is_not_rejected(self) -> None:
+        run_id = "abc123def456"
+        ticket_id = "SOL-BRIDGE-IDENTITY"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            ticket_path = runtime / f"sol-ticket-{run_id}.json"
+            ticket_path.write_text(json.dumps({"task_id": ticket_id}), encoding="utf-8")
+            (runtime / f"sol-result-{run_id}.json").write_text(json.dumps({
+                "ticket_id": ticket_id,
+                "return_code": 125,
+                "failure": {"class": "secure_bridge_failure", "detail": "Bridge failed."},
+            }), encoding="utf-8")
+            controller = AutonomyController(
+                root,
+                ControlStore(runtime / "control.json"),
+                ApprovalQueue(root, runtime / "queue.json"),
+            )
+            result = controller._run_secure_ticket(ticket_path, recovery_effort=None)
+            self.assertEqual(result["return_code"], 125)
+            self.assertEqual(result["failure"]["class"], "secure_bridge_failure")
+
     def test_write_worker_policy_allows_bounded_inspection_but_not_tests(self) -> None:
         policy = ticket_runner.WRITE_WORKER_COMMAND_POLICY
         self.assertIn("read-only file inspection commands", policy)

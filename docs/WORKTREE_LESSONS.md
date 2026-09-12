@@ -273,3 +273,10 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** The browser sent only the ticket’s editable brief to the generic manual-run endpoint. That endpoint had no way to distinguish an unchanged live catalog selection from new owner guidance, so it bypassed the deterministic generated/static priority selectors and required a model call even though the complete execution contract had already been validated.
 - **Resolution:** The dashboard now submits an unchanged selection by ID. Python rebuilds its execution proposal from the live authoritative backlog, applies the normal repair/resume and priority gates, and launches only the current next recorded contract without a planner call. Edited briefs still use the governed planner path.
 - **Prevention:** Never treat a browser-displayed planned-ticket brief as its execution contract. The client may request only an ID; the controller must revalidate it against current inventory, reject stale or out-of-order selections, and retain manual publication approval.
+
+### 2026-09-11 — secure-bridge fallback discarded its ticket identity
+
+- **Symptom:** A native secure-bridge failure stopped autonomous dispatch with “Secure ticket runner returned a result for a different ticket,” even though the result belonged to the active run.
+- **Cause:** The bridge mailbox fallback wrote its generic `secure_bridge_failure` result without the immutable ticket ID. The controller correctly fails closed on every unbound result, so it could not distinguish that diagnostic envelope from a stale or mismatched result.
+- **Resolution:** The fallback now reads and validates the run-bound ticket identity before writing the result. A missing or malformed ticket remains unbound and is still rejected; only the valid exact ticket ID is propagated with the bridge failure.
+- **Prevention:** Every bridge result path, including timeout and launcher-error fallbacks, must carry the exact validated ticket identity. Preserve the controller's strict equality check; repair result producers rather than relaxing it.
