@@ -329,3 +329,16 @@ by coordinator and approval-queue publication; all other tracked or untracked pa
 remain rejected.
 **Prevention:** Test both art-source staging and post-merge verification with the
 allowed handoff entry, plus an arbitrary untracked path that must remain visible.
+
+### 2026-09-12 — governed art imports need immutable WML acceptance proof
+
+**Symptom:** A fully preflighted art candidate stopped at deterministic validation
+after the source hygiene repair, before committing or publishing.
+**Confirmed cause:** The common Wesnoth validation path now requires a baseline-aware
+acceptance contract, but the art importer supplied only its asset contract and no
+WML proof.
+**Resolution:** Derive one bounded `source_text` claim per imported standing state,
+proving its runtime `image=` reference exists in the declared WML source and differs
+from the candidate base. The art pipeline continues to validate all thirteen files.
+**Prevention:** When a specialized production path adopts shared ticket validation,
+provide equivalent immutable acceptance evidence rather than bypassing that gate.
