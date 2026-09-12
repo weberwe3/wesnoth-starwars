@@ -289,6 +289,22 @@
       }
     },
     {
+      "id": "sw-first-battle-relay-response-turn-eight",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_relay_response",
+      "expected": {
+        "name": "turn",
+        "turn": "8",
+        "first_time_only": "yes",
+        "unit_id": "sw_first_battle_relay_response",
+        "side": "2",
+        "type": "sw_unit_im_recon_squad",
+        "x": "16",
+        "y": "4"
+      }
+    },
+    {
       "id": "sw-first-battle-hero-roster",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
