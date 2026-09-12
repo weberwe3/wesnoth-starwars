@@ -307,7 +307,7 @@ class ArtImportProduction:
             self.root, strip=False,
         )
         paths: list[str] = []
-        for line in raw.splitlines():
+        for line in worktree_paths.unexpected_main_status_entries(raw):
             if len(line) < 4 or " -> " in line:
                 raise ArtProductionError("Local main has an unsupported pending Git change")
             paths.append(line[3:])
@@ -476,7 +476,8 @@ class ArtImportProduction:
         head = _run(["git", "rev-parse", "HEAD"], self.root)
         if not HEX_SHA.fullmatch(head):
             raise ArtProductionError("Local main could not confirm its merged revision")
-        if _run(["git", "status", "--porcelain=v1", "--untracked-files=all"], self.root):
+        status = _run(["git", "status", "--porcelain=v1", "--untracked-files=all"], self.root)
+        if worktree_paths.unexpected_main_status_entries(status):
             raise ArtProductionError("Local main changed while applying the published art")
         for relative in allowed_paths:
             candidate_blob = _run(["git", "rev-parse", f"{commit_sha}:{relative}"], self.root)
