@@ -25,6 +25,7 @@ import model_policy  # noqa: E402
 import ticket_runner  # noqa: E402
 import ticket_acceptance  # noqa: E402
 import worktree_paths  # noqa: E402
+import coordinator  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from game_validation_state import gameplay_revalidation_required  # noqa: E402
 import bridge_mailbox  # noqa: E402
@@ -89,6 +90,35 @@ class ArtImportProductionTests(unittest.TestCase):
 
 
 class RuntimeStatusTests(unittest.TestCase):
+    def test_baseline_accepts_the_required_local_handoff_reference(self) -> None:
+        with mock.patch.object(
+            coordinator,
+            "git",
+            side_effect=[
+                (0, "main\n"),
+                (0, "?? docs/AI_HANDOFF_REFERENCE.md\n"),
+                (0, "a" * 40 + "\n"),
+            ],
+        ) as git_call:
+            coordinator.verify_main_baseline(ROOT)
+        self.assertEqual(git_call.call_count, 3)
+
+    def test_baseline_allows_only_the_local_handoff_reference(self) -> None:
+        self.assertEqual(
+            coordinator.unexpected_main_status_entries(
+                "?? docs/AI_HANDOFF_REFERENCE.md\n"
+            ),
+            [],
+        )
+        self.assertEqual(
+            coordinator.unexpected_main_status_entries(
+                "?? docs/AI_HANDOFF_REFERENCE.md\n"
+                " M agent/coordinator/coordinator.py\n"
+                "?? scratch.txt\n"
+            ),
+            [" M agent/coordinator/coordinator.py", "?? scratch.txt"],
+        )
+
     def test_bridge_failure_binds_the_run_ticket_identity(self) -> None:
         run_id = "abc123def456"
         ticket_id = "SOL-BRIDGE-IDENTITY"
