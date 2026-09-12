@@ -181,7 +181,7 @@ def verify_main_baseline(root: Path) -> None:
     rc, status = git(root, "status", "--porcelain")
     require_success(rc, status, "Read Git status")
 
-    unexpected = unexpected_main_status_entries(status)
+    unexpected = worktree_paths.unexpected_main_status_entries(status)
     if unexpected:
         print("ERROR: main is not clean:")
         print("\n".join(unexpected))
@@ -189,18 +189,6 @@ def verify_main_baseline(root: Path) -> None:
 
     rc, head = git(root, "rev-parse", "--verify", "HEAD")
     require_success(rc, head, "Verify baseline commit")
-
-
-def unexpected_main_status_entries(status: str) -> list[str]:
-    """Keep the user-owned local handoff out of the coordinator hygiene gate.
-
-    The handoff is intentionally a local, untracked input supplied before a
-    coordinated run.  It is not project source and cannot enter a ticket
-    worktree.  Every other porcelain status line remains a hard stop.
-    """
-
-    allowed = "?? docs/AI_HANDOFF_REFERENCE.md"
-    return [line for line in status.splitlines() if line and line != allowed]
 
 
 def invoke_agent(

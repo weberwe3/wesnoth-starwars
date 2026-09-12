@@ -1151,7 +1151,8 @@ class ApprovalQueue:
         )
 
     def _publish(self, record: dict[str, Any]) -> None:
-        if _run(["git", "status", "--porcelain"], self.root):
+        main_status = _run(["git", "status", "--porcelain"], self.root)
+        if worktree_paths.unexpected_main_status_entries(main_status):
             raise QueueError("Local main is not clean; publication did not start")
         worktree = self._worktree(record)
         if _run(["git", "status", "--porcelain"], worktree):
