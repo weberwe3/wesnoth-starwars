@@ -241,6 +241,40 @@ class RuntimeStatusTests(unittest.TestCase):
                 server.server_close()
                 thread.join(timeout=2)
 
+    def test_control_api_dispatches_only_a_ticket_id_from_the_live_catalog(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            server = create_server(0, Path(directory) / "state.json")
+            server.controller.start_planned_ticket = mock.Mock()
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+                host = f"127.0.0.1:{server.server_port}"
+                connection.request("GET", "/api/control", headers={"Host": host})
+                control = json.loads(connection.getresponse().read())
+                connection.request(
+                    "POST", "/api/control",
+                    body=json.dumps({
+                        "action": "run_planned_ticket",
+                        "ticket_id": "generated-next",
+                    }),
+                    headers={
+                        "Host": host,
+                        "Origin": f"http://127.0.0.1:{server.server_port}",
+                        "Content-Type": "application/json",
+                        "X-Wesnoth-CSRF": control["csrf_token"],
+                    },
+                )
+                response = connection.getresponse()
+                response.read()
+                self.assertEqual(response.status, 202)
+                server.controller.start_planned_ticket.assert_called_once_with("generated-next")
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
 
 class CoordinationControlTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -1011,6 +1045,8 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertIn("Retry production", source)
         self.assertIn("ART_SUCCESS_FLASH_MS", source)
         self.assertIn('action: "confirm_art_import"', source)
+        self.assertIn('action: "run_planned_ticket"', source)
+        self.assertIn("An unchanged brief dispatches its recorded contract", source)
         self.assertIn('job?.production_state !== "published"', source)
         self.assertIn("navigator.clipboard.writeText(job.brief)", source)
         self.assertNotIn('fetch("/planned-tickets.json"', source)
@@ -1049,6 +1085,7 @@ class CoordinationControlTests(unittest.TestCase):
                 proposal = controller._next_generated_priority(inventory)
             self.assertEqual(proposal["summary"], source["summary"])
             self.assertEqual(proposal["ticket"]["worker"], "fast-fix")
+            self.assertEqual(proposal["_planned_priority_id"], source["id"])
             overlap.assert_called_once()
             build.assert_called_once()
 
@@ -1082,8 +1119,92 @@ class CoordinationControlTests(unittest.TestCase):
                 proposal = controller._next_static_priority(inventory)
             self.assertEqual(proposal["ticket"]["objective"], execution["objective"])
             self.assertEqual(proposal["impact"], execution["impact"])
+            self.assertEqual(proposal["_planned_priority_id"], "priority-01")
             overlap.assert_called_once()
             build.assert_called_once()
+
+    def test_selected_planned_ticket_revalidates_the_current_next_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            proposal = {
+                "action": "run_ticket",
+                "summary": "generated-next: Recorded contract",
+                "impact": "Keeps the exact recorded scope.",
+                "ticket": {"objective": "generated-next: Recorded contract"},
+                "_planned_priority_id": "generated-next",
+            }
+            inventory = {"planned_priorities": []}
+            with (
+                mock.patch.object(controller, "_planning_inventory", return_value=inventory),
+                mock.patch.object(controller, "_historical_gameplay_repair_proposal", return_value=None),
+                mock.patch.object(controller, "_post_publish_game_repair_proposal", return_value=None),
+                mock.patch.object(controller, "_blocked_resume_proposal", return_value=None),
+                mock.patch.object(controller, "_failure_streak_resume_proposal", return_value=None),
+                mock.patch.object(controller, "_single_resume_proposal", return_value=None),
+                mock.patch.object(controller, "_next_generated_priority", return_value=proposal),
+                mock.patch.object(controller, "_next_static_priority") as static,
+            ):
+                self.assertIs(
+                    controller._selected_planned_ticket_proposal("generated-next"), proposal
+                )
+                with self.assertRaisesRegex(ControlError, "no longer the next safe priority"):
+                    controller._selected_planned_ticket_proposal("generated-later")
+            static.assert_not_called()
+
+    def test_selected_planned_ticket_starts_without_calling_the_planner(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self.controller(directory)
+            controller.set_mode("terra-low")
+            with (
+                mock.patch.object(controller, "_secure_bridge_online", return_value=True),
+                mock.patch.object(controller, "_launch_locked") as launch,
+                mock.patch.object(controller, "_plan") as planner,
+            ):
+                controller.start_planned_ticket("generated-next")
+            launch.assert_called_once_with(
+                "terra-low", "Dispatch the selected planned ticket", continuous=False,
+                planned_ticket_id="generated-next",
+            )
+            planner.assert_not_called()
+
+    def test_selected_planned_ticket_run_skips_planning_and_authorizes_its_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "agent" / "runtime").mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(root / "control.json"),
+                ApprovalQueue(root, root / "approval-queue.json"),
+            )
+            run_id = "a" * 12
+            controller.store.update(lambda state: state.update({"run": {
+                "state": "planning", "run_id": run_id,
+                "requested_at": None, "started_at": None, "completed_at": None,
+                "ticket_id": None, "summary": "Planning", "error": None,
+            }}))
+            proposal = {
+                "action": "run_ticket",
+                "summary": "generated-next: Recorded contract",
+                "impact": "Keeps the exact recorded scope.",
+                "ticket": {"objective": "generated-next: Recorded contract"},
+                "_planned_priority_id": "generated-next",
+            }
+            ticket = {"task_id": "SELECTED-PLAN"}
+            with (
+                mock.patch.object(controller, "_plan") as planner,
+                mock.patch.object(controller, "_selected_planned_ticket_proposal", return_value=proposal),
+                mock.patch.object(controller, "_build_ticket", return_value=ticket) as build,
+                mock.patch.object(ticket_runner, "load_ticket"),
+                mock.patch.object(controller, "_run_secure_ticket", return_value={"return_code": 1}),
+                mock.patch.object(controller, "_resolve_empty_historical_repair", return_value=True),
+            ):
+                controller._run(
+                    run_id, "terra-low", "Dispatch the selected planned ticket", False,
+                    planned_ticket_id="generated-next",
+                )
+            planner.assert_not_called()
+            self.assertTrue(build.call_args.kwargs["fresh_start_authorized"])
+            self.assertEqual(controller.public_state()["run"]["state"], "already_resolved")
 
     def test_resume_ticket_carries_the_last_safe_gate_diagnostic_to_the_worker(self) -> None:
         proposal = AutonomyController._resume_item_proposal({

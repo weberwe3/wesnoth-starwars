@@ -426,6 +426,25 @@ class AutonomyController:
         with self._lock:
             return self._start_locked(brief, continuous=False)
 
+    def start_planned_ticket(self, ticket_id: str) -> dict:
+        """Dispatch the current highest-priority recorded contract without a planner call."""
+
+        if (
+            not isinstance(ticket_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", ticket_id)
+        ):
+            raise ControlError("Invalid planned-ticket identifier")
+        with self._lock:
+            current = self.store.read()
+            self._assert_handoff_ready(current)
+            self._launch_locked(
+                current["mode"],
+                "Dispatch the selected planned ticket",
+                continuous=False,
+                planned_ticket_id=ticket_id,
+            )
+            return self.store.read()
+
     def set_automation(self, enabled: bool, brief: str) -> dict:
         brief = self._validated_brief(brief)
         authorization_id = uuid.uuid4().hex if enabled else None
@@ -691,14 +710,17 @@ class AutonomyController:
     def _start_locked(self, brief: str, *, continuous: bool) -> dict:
         brief = self._validated_brief(brief)
         current = self.store.read()
+        self._assert_handoff_ready(current)
+        self._launch_locked(current["mode"], brief, continuous=continuous)
+        return self.store.read()
+
+    def _assert_handoff_ready(self, current: dict) -> None:
         if current["mode"] == "deterministic":
             raise ControlError("Select a Sol mode before handing off")
         if not self._secure_bridge_online():
             raise ControlError("Secure bridge offline — restart with the Windows launcher")
         if self._pipeline_active():
             raise ControlError("A governed ticket is already active")
-        self._launch_locked(current["mode"], brief, continuous=continuous)
-        return self.store.read()
 
     def _launch_locked(
         self,
@@ -707,6 +729,7 @@ class AutonomyController:
         *,
         continuous: bool = True,
         recode_record: dict | None = None,
+        planned_ticket_id: str | None = None,
     ) -> None:
         run_id = uuid.uuid4().hex[:12]
 
@@ -718,14 +741,17 @@ class AutonomyController:
                 "started_at": utc_now(),
                 "completed_at": None,
                 "ticket_id": None,
-                "summary": "Sol is selecting one bounded ticket",
+                "summary": (
+                    "Python is revalidating the selected planned ticket"
+                    if planned_ticket_id is not None else "Sol is selecting one bounded ticket"
+                ),
                 "error": None,
             }
 
         self.store.update(queue_run)
         self._thread = threading.Thread(
             target=self._run,
-            args=(run_id, mode, brief, continuous, recode_record),
+            args=(run_id, mode, brief, continuous, recode_record, planned_ticket_id),
             name=f"sol-coordinator-{run_id}",
             daemon=True,
         )
@@ -738,6 +764,7 @@ class AutonomyController:
         brief: str,
         continuous: bool,
         recode_record: dict | None = None,
+        planned_ticket_id: str | None = None,
     ) -> None:
         try:
             if recode_record is None and continuous:
@@ -751,6 +778,16 @@ class AutonomyController:
                         "contract deterministically identify the only permitted worktree."
                     ),
                     ticket_id=str(recode_record.get("ticket_id") or ""),
+                )
+            elif planned_ticket_id is not None:
+                proposal = self._selected_planned_ticket_proposal(planned_ticket_id)
+                self.queue.event(
+                    "Planned ticket dispatched without a Sol call",
+                    detail=(
+                        "The live dashboard selection exactly matched the next safe recorded "
+                        "contract. Python revalidated it before worker launch."
+                    ),
+                    ticket_id=planned_ticket_id,
                 )
             else:
                 proposal = self._plan(
@@ -788,7 +825,7 @@ class AutonomyController:
                 run_id,
                 proposal,
                 brief,
-                fresh_start_authorized=continuous,
+                fresh_start_authorized=continuous or planned_ticket_id is not None,
             )
             ticket_path = self.root / "agent" / "runtime" / f"sol-ticket-{run_id}.json"
             ticket_path.write_text(json.dumps(ticket, indent=2) + "\n", encoding="utf-8")
@@ -1848,6 +1885,42 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             return {"tickets": []}
         return {**value, "tickets": tickets[:5]}
 
+    def _selected_planned_ticket_proposal(self, ticket_id: str) -> dict:
+        """Revalidate one UI selection against the live, ordered backlog.
+
+        A browser-supplied id never carries execution data.  The controller must
+        reconstruct the proposal from the current authoritative inventory and
+        may dispatch only the same contract that regular fresh-start selection
+        would choose next.
+        """
+
+        inventory = self._planning_inventory()
+        blockers = (
+            ("historical gameplay validation", self._historical_gameplay_repair_proposal),
+            ("post-publish game repair", self._post_publish_game_repair_proposal),
+            ("blocked interrupted work", self._blocked_resume_proposal),
+            ("the bounded worktree retry", self._failure_streak_resume_proposal),
+            ("the only verified unfinished ticket", self._single_resume_proposal),
+        )
+        for label, selector in blockers:
+            if selector(inventory) is not None:
+                raise ControlError(
+                    f"Resolve {label} before starting a new planned ticket"
+                )
+
+        generated = self._next_generated_priority(inventory)
+        if generated is not None:
+            proposal = generated
+        else:
+            proposal = self._next_static_priority(inventory)
+        if proposal is None:
+            raise ControlError("The selected planned ticket is no longer executable")
+        if proposal.get("_planned_priority_id") != ticket_id:
+            raise ControlError(
+                "The selected planned ticket is no longer the next safe priority"
+            )
+        return proposal
+
     def _next_generated_priority(self, inventory: dict) -> dict | None:
         pending = [
             item for item in inventory.get("planned_priorities") or []
@@ -1883,6 +1956,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                     "acceptance": source.get("acceptance"),
                 },
                 "_planning_inventory": inventory,
+                "_planned_priority_id": item.get("id"),
             }
             try:
                 self._reject_overlapping_proposal(proposal["ticket"], inventory)
@@ -1937,6 +2011,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                 "impact": impact,
                 "ticket": ticket,
                 "_planning_inventory": inventory,
+                "_planned_priority_id": priority_id,
             }
             try:
                 self._reject_overlapping_proposal(ticket, inventory)
