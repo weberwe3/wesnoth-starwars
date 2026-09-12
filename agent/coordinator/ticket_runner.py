@@ -944,18 +944,22 @@ def inspect_local_resume_reconciliation(worktree: Path) -> dict:
         }
 
     rc, _ = core.git(worktree, "merge-base", "--is-ancestor", "HEAD", "main")
-    if rc != 0 and dirty_paths:
-        return {
-            "safe": False,
-            "mode": "dirty-diverged",
-            "reason": (
-                "Interrupted work has both committed and uncommitted changes on a divergent "
-                "base; automatic reconciliation could not prove preservation."
-            ),
-        }
-    if rc != 0:
+    if rc != 0 and not dirty_paths:
         return {"safe": True, "mode": "clean-merge", "dirty_paths": [], "upstream_paths": []}
-    rc, output = core.git(worktree, "diff", "--name-status", "-M", "HEAD..main")
+    if rc == 0:
+        upstream_range = "HEAD..main"
+        safe_mode = "dirty-disjoint-fast-forward" if dirty_paths else "clean-fast-forward"
+    else:
+        # A prior reconciliation merge may leave the ticket branch divergent
+        # while a scoped recovery edit is still uncommitted.  Compare only the
+        # main-only side since the merge base; the normal overlap check below
+        # still rejects any shared path.
+        rc, merge_base = core.git(worktree, "merge-base", "HEAD", "main")
+        if rc != 0 or not merge_base.strip():
+            return {"safe": False, "mode": "unknown", "reason": "Git merge base could not be verified."}
+        upstream_range = f"{merge_base.strip()}..main"
+        safe_mode = "dirty-disjoint-reconciled" if dirty_paths else "clean-merge"
+    rc, output = core.git(worktree, "diff", "--name-status", "-M", upstream_range)
     core.require_success(rc, output, "Inspect changes introduced by current main")
     upstream_paths: list[str] = []
     for line in output.splitlines():
@@ -981,7 +985,7 @@ def inspect_local_resume_reconciliation(worktree: Path) -> dict:
         }
     return {
         "safe": True,
-        "mode": "dirty-disjoint-fast-forward" if dirty_paths else "clean-fast-forward",
+        "mode": safe_mode,
         "dirty_paths": dirty_paths,
         "upstream_paths": sorted(set(upstream_paths)),
     }
