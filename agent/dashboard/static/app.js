@@ -108,7 +108,7 @@ function loadPlannedTickets(catalog) {
   picker.replaceChildren(new Option("Choose an outstanding ticket…", ""));
   for (const ticket of catalog.tickets) {
     if (!ticket || typeof ticket.id !== "string" || typeof ticket.label !== "string" || typeof ticket.brief !== "string") continue;
-    plannedTickets.set(ticket.id, ticket.brief);
+    plannedTickets.set(ticket.id, {brief: ticket.brief});
     picker.add(new Option(ticket.label, ticket.id));
   }
   ticketCatalogReady = plannedTickets.size > 0;
@@ -496,11 +496,18 @@ $("coordinator-guidance").addEventListener("input", () => {
 $("coordinator-guidance").addEventListener("blur", () => persistGuidance());
 
 $("planned-ticket").addEventListener("change", event => {
-  const brief = plannedTickets.get(event.target.value);
-  if (!brief) return;
-  $("coordination-brief").value = brief;
+  const ticket = plannedTickets.get(event.target.value);
+  if (!ticket) return;
+  $("coordination-brief").value = ticket.brief;
   $("coordination-brief").focus();
-  $("planned-ticket-status").textContent = "Planned ticket brief loaded. You can edit it before handoff.";
+  $("planned-ticket-status").textContent = "Planned ticket loaded. An unchanged brief dispatches its recorded contract; edits request a new governed plan.";
+});
+
+$("coordination-brief").addEventListener("input", () => {
+  const ticket = plannedTickets.get($("planned-ticket").value);
+  if (ticket && $("coordination-brief").value !== ticket.brief) {
+    $("planned-ticket-status").textContent = "Brief edited. Handoff will request a new governed plan instead of the recorded contract.";
+  }
 });
 
 $("approval-queue").addEventListener("click", event => {
@@ -581,6 +588,12 @@ $("activity-log").addEventListener("click", event => {
 
 $("mode-form").addEventListener("submit", event => {
   event.preventDefault();
+  const ticketId = $("planned-ticket").value;
+  const ticket = plannedTickets.get(ticketId);
+  if (ticket && $("coordination-brief").value === ticket.brief) {
+    controlAction({action: "run_planned_ticket", ticket_id: ticketId});
+    return;
+  }
   controlAction({action: "run", brief: $("coordination-brief").value});
 });
 

@@ -204,6 +204,12 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 controller.set_mode(data.get("mode"))
             elif data.get("action") == "run" and set(data) == {"action", "brief"}:
                 controller.start(data.get("brief") if isinstance(data.get("brief"), str) else "")
+            elif data.get("action") == "run_planned_ticket" and set(data) == {
+                "action", "ticket_id",
+            }:
+                if not isinstance(data.get("ticket_id"), str):
+                    raise ControlError("Invalid planned-ticket request")
+                controller.start_planned_ticket(data["ticket_id"])
             elif data.get("action") == "set_automation" and set(data) == {
                 "action", "enabled", "brief",
             }:
