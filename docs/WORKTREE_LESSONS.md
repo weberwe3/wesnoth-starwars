@@ -342,3 +342,18 @@ proving its runtime `image=` reference exists in the declared WML source and dif
 from the candidate base. The art pipeline continues to validate all thirteen files.
 **Prevention:** When a specialized production path adopts shared ticket validation,
 provide equivalent immutable acceptance evidence rather than bypassing that gate.
+
+### 2026-09-12 — explicit recodes must preserve reconciled ticket identity
+
+**Symptom:** An explicit Recode with AI stopped after the retained branch had already
+merged current `main` and contained a scoped recovery fix, reporting that the failed
+commit was no longer the exact worktree head.
+**Confirmed cause:** The controller required byte-for-byte head equality with the
+original failed candidate, even though its own reconciliation policy intentionally
+advances that branch by merging current `main`. Explicit recodes also omitted the
+bounded recovery effort used by continuous coordination.
+**Resolution:** Keep the original failed SHA as the authorization anchor, require it
+to be an ancestor of the reconciled worktree head, revalidate scope and reconciliation,
+and pass the normal bounded recovery effort to explicit recodes.
+**Prevention:** Test both a non-descendant rejection and an accepted reconciled
+descendant. Never accept an unrelated head or skip the existing scope and safety gates.
