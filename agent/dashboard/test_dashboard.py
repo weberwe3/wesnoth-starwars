@@ -105,13 +105,13 @@ class RuntimeStatusTests(unittest.TestCase):
 
     def test_baseline_allows_only_the_local_handoff_reference(self) -> None:
         self.assertEqual(
-            coordinator.unexpected_main_status_entries(
+            worktree_paths.unexpected_main_status_entries(
                 "?? docs/AI_HANDOFF_REFERENCE.md\n"
             ),
             [],
         )
         self.assertEqual(
-            coordinator.unexpected_main_status_entries(
+            worktree_paths.unexpected_main_status_entries(
                 "?? docs/AI_HANDOFF_REFERENCE.md\n"
                 " M agent/coordinator/coordinator.py\n"
                 "?? scratch.txt\n"
@@ -3260,6 +3260,35 @@ class ApprovalQueueTests(unittest.TestCase):
                 )
             self.assertEqual(result["headRefOid"], expected)
             self.assertEqual(run.call_count, 1)
+
+    def test_publish_allows_only_the_required_local_handoff_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            queue = ApprovalQueue(root)
+            record = {
+                "id": "1" * 16,
+                "ticket_id": "HANDOFF-PUBLISH",
+                "branch": "agent/handoff-publish",
+                "commit_sha": "a" * 40,
+                "changed_paths": ["fixture.cfg"],
+            }
+            with (
+                mock.patch.object(queue, "_worktree", return_value=root),
+                mock.patch(
+                    "approval_queue._run",
+                    side_effect=[
+                        "?? docs/AI_HANDOFF_REFERENCE.md",
+                        "",
+                        "a" * 40,
+                    ],
+                ),
+                mock.patch(
+                    "approval_queue.validate_ticket_acceptance",
+                    return_value={"pass": False},
+                ),
+            ):
+                with self.assertRaisesRegex(QueueError, "no longer satisfies"):
+                    queue._publish(record)
 
     def test_ci_registration_waits_for_required_exact_head_check(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
