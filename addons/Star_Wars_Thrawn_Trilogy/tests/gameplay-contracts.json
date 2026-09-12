@@ -276,6 +276,15 @@
       }
     },
     {
+      "id": "sw-first-battle-air-support-relay-objective",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_air_support_configuration",
+      "expected": {
+        "name": "prestart"
+      }
+    },
+    {
       "id": "sw-first-battle-field-relay-restoration",
       "kind": "event-unit",
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
