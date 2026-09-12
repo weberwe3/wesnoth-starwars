@@ -42,12 +42,64 @@ from autonomy import (  # noqa: E402
 )
 import approval_queue  # noqa: E402
 from approval_queue import ApprovalQueue, QueueError  # noqa: E402
+import art_import_production  # noqa: E402
 from art_import_production import ArtImportProduction, public_status, update_status  # noqa: E402
 from art_pipeline import public_art_queue  # noqa: E402
 from server import create_server, public_state  # noqa: E402
 
 
 class ArtImportProductionTests(unittest.TestCase):
+    def test_art_import_builds_bounded_wml_acceptance_proof(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            production = ArtImportProduction(Path(directory), lambda *args, **kwargs: None)
+            contract = {
+                "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+                "assets": [
+                    {
+                        "state": "standing",
+                        "path": "images/units/sw-unit-fixture/standing.png",
+                    },
+                    {
+                        "state": "portrait",
+                        "path": "images/portraits/sw-unit-fixture.png",
+                    },
+                ],
+            }
+            acceptance = production._art_acceptance_contract(contract)
+            validated = ticket_acceptance.validate_acceptance_contract(acceptance)
+            self.assertTrue(validated["pass"])
+            self.assertEqual(
+                validated["contract"]["claims"][0]["contains"],
+                "image=units/sw-unit-fixture/standing.png",
+            )
+
+    def test_art_import_source_scope_allows_only_the_required_local_handoff(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            production = ArtImportProduction(Path(directory), lambda *args, **kwargs: None)
+            with mock.patch.object(
+                art_import_production,
+                "_run",
+                return_value="?? docs/AI_HANDOFF_REFERENCE.md\n",
+            ):
+                self.assertEqual(production._source_status(), [])
+            with mock.patch.object(
+                art_import_production,
+                "_run",
+                return_value="?? docs/AI_HANDOFF_REFERENCE.md\n?? scratch.txt\n",
+            ):
+                self.assertEqual(production._source_status(), ["scratch.txt"])
+
+    def test_art_import_post_merge_hygiene_allows_only_the_required_local_handoff(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            production = ArtImportProduction(Path(directory), lambda *args, **kwargs: None)
+            commit = "a" * 40
+            with mock.patch.object(
+                art_import_production,
+                "_run",
+                side_effect=["", commit, "?? docs/AI_HANDOFF_REFERENCE.md\n", "blob", "blob"],
+            ):
+                production._pull_main_and_verify(commit, ["addons/example.png"])
+
     def test_invalid_art_contract_becomes_a_safe_retryable_failure(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
