@@ -60,13 +60,18 @@ def main() -> int:
         bridge_error = True
     failure = None
     try:
-        state = json.loads((ROOT / "agent/runtime/dashboard-state.json").read_text(encoding="utf-8"))
+        state_value = json.loads(
+            (ROOT / "agent/runtime/dashboard-state.json").read_text(encoding="utf-8")
+        )
+        state = state_value if isinstance(state_value, dict) else {}
+        job = state.get("job")
         errors = [
             item for item in state.get("events", [])
             if (
                 isinstance(item, dict)
                 and item.get("level") == "error"
-                and state.get("job", {}).get("task_id") == ticket_id
+                and isinstance(job, dict)
+                and job.get("task_id") == ticket_id
             )
         ]
         if errors:

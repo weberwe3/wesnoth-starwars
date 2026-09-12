@@ -287,3 +287,10 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** The native control bridge discarded the child's exit code and phase when its catch path invoked the mailbox fallback. The fallback deliberately accepts no stderr or environment data, so diagnosis could not safely distinguish preparation, launch, wait, or result handling.
 - **Resolution:** The bridge now forwards only a fixed phase name and a validated `0..255` child exit code. The mailbox validates both, retains the exact ticket identity, and includes the bounded context in its secret-free failure record.
 - **Prevention:** For native child-process fallbacks, expose only allowlisted phase and numeric-status telemetry. Never copy launcher output, environment values, or credentials into dashboard/runtime diagnostics.
+
+### 2026-09-11 — an empty dashboard job crashed the secure ticket bridge
+
+- **Symptom:** The native launcher reached the bridge result phase with exit code zero, but no `sol-result` file existed even when a bounded no-model probe caused the ticket runner to reject its input.
+- **Cause:** The bridge's optional dashboard-error lookup assumed `dashboard-state.json` always held a mapping in `job`. Early runner failures legitimately leave `job` as `null`, and the error-reporting code raised before it wrote the mandatory result envelope.
+- **Resolution:** The bridge now treats a non-mapping state or job as empty telemetry and always writes the run-bound result. It still preserves a matching dashboard error whenever one exists.
+- **Prevention:** Optional telemetry must never prevent a ticket result from being written. Type-check state fields at the diagnostic boundary and retain the result writer's exact-ticket identity guarantee.

@@ -28,6 +28,7 @@ import worktree_paths  # noqa: E402
 sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from game_validation_state import gameplay_revalidation_required  # noqa: E402
 import bridge_mailbox  # noqa: E402
+import secure_ticket_bridge  # noqa: E402
 from autonomy import (  # noqa: E402
     ACCEPTANCE_CLAIM_SCHEMA,
     AutonomyController,
@@ -156,6 +157,35 @@ class RuntimeStatusTests(unittest.TestCase):
             result = controller._run_secure_ticket(ticket_path, recovery_effort=None)
             self.assertEqual(result["return_code"], 125)
             self.assertEqual(result["failure"]["class"], "secure_bridge_failure")
+
+    def test_secure_ticket_bridge_writes_result_when_dashboard_job_is_missing(self) -> None:
+        run_id = "abc123def456"
+        ticket_id = "SOL-BRIDGE-NULL-JOB"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            ticket_path = runtime / f"sol-ticket-{run_id}.json"
+            result_path = runtime / f"sol-result-{run_id}.json"
+            ticket_path.write_text(json.dumps({"task_id": ticket_id}), encoding="utf-8")
+            (runtime / "dashboard-state.json").write_text(
+                json.dumps({"events": [], "job": None}), encoding="utf-8"
+            )
+            completed = subprocess.CompletedProcess([], 1)
+            with (
+                mock.patch.object(secure_ticket_bridge, "ROOT", root),
+                mock.patch.object(sys, "argv", [
+                    "secure_ticket_bridge.py", str(ticket_path), str(result_path),
+                ]),
+                mock.patch.object(
+                    secure_ticket_bridge.subprocess, "run", return_value=completed
+                ),
+            ):
+                self.assertEqual(secure_ticket_bridge.main(), 1)
+            result = json.loads(result_path.read_text(encoding="utf-8"))
+            self.assertEqual(result["ticket_id"], ticket_id)
+            self.assertEqual(result["return_code"], 1)
+            self.assertEqual(result["failure"]["class"], "ticket_failure")
 
     def test_write_worker_policy_allows_bounded_inspection_but_not_tests(self) -> None:
         policy = ticket_runner.WRITE_WORKER_COMMAND_POLICY
