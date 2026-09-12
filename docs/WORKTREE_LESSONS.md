@@ -294,3 +294,14 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** The bridge's optional dashboard-error lookup assumed `dashboard-state.json` always held a mapping in `job`. Early runner failures legitimately leave `job` as `null`, and the error-reporting code raised before it wrote the mandatory result envelope.
 - **Resolution:** The bridge now treats a non-mapping state or job as empty telemetry and always writes the run-bound result. It still preserves a matching dashboard error whenever one exists.
 - **Prevention:** Optional telemetry must never prevent a ticket result from being written. Type-check state fields at the diagnostic boundary and retain the result writer's exact-ticket identity guarantee.
+
+### 2026-09-11 — the required local handoff must not block a clean ticket base
+
+**Symptom:** The coordinator refused to create a ticket worktree even though the only
+local status entry was the user-provided `docs/AI_HANDOFF_REFERENCE.md`.
+**Confirmed cause:** The hygiene gate treated every untracked file alike, including the
+required local handoff input that is deliberately not repository source.
+**Resolution:** Permit exactly the porcelain entry for that fixed handoff path; retain
+the fail-closed gate for every other tracked or untracked status entry.
+**Prevention:** Test the narrow exception alongside dirty-source and arbitrary-untracked
+entries; never broaden it into a general untracked-file allowance.
