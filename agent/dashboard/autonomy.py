@@ -843,7 +843,14 @@ class AutonomyController:
             self.store.update(executing)
             secure_result = self._run_secure_ticket(
                 ticket_path,
-                recovery_effort=VALID_MODES[mode]["effort"] if continuous else None,
+                # An explicit recode resumes a preserved failed ticket under the
+                # same bounded recovery policy as continuous coordination.  The
+                # repair attempt is still limited by ticket_runner; omitting the
+                # effort here would stop before it could revalidate a scoped fix.
+                recovery_effort=(
+                    VALID_MODES[mode]["effort"]
+                    if continuous or recode_record is not None else None
+                ),
             )
             if secure_result["return_code"] != 0:
                 if self._resolve_empty_historical_repair(ticket, secure_result):
@@ -1174,10 +1181,19 @@ class AutonomyController:
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             text=True, timeout=30, check=False,
         )
-        if completed.returncode != 0 or completed.stdout.strip() != commit_sha:
-            raise ControlError(
-                "The selected failed commit is no longer the exact worktree head"
+        current_head = completed.stdout.strip()
+        if completed.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", current_head):
+            raise ControlError("The selected failed ticket no longer has a valid worktree head")
+        if current_head != commit_sha:
+            ancestor = subprocess.run(
+                ["git", "merge-base", "--is-ancestor", commit_sha, current_head],
+                cwd=worktree, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=30, check=False,
             )
+            if ancestor.returncode != 0:
+                raise ControlError(
+                    "The selected failed commit is no longer an ancestor of the worktree head"
+                )
 
         _, changed_paths = ticket_runner.read_resume_changes(worktree)
         scope = ticket_runner.validate_resume_scope(
@@ -1199,7 +1215,9 @@ class AutonomyController:
 
         item = {
             "name": branch,
-            "head": commit_sha,
+            # Retain the failed record's exact approved SHA as the authorization
+            # anchor, while the runner receives the reconciled descendant head.
+            "head": current_head,
             "worktree": worktree.name,
             "changed_paths": changed_paths,
             "previous_task_id": evidence.get("task_id"),

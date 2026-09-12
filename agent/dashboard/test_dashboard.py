@@ -3814,6 +3814,7 @@ class ApprovalQueueTests(unittest.TestCase):
                 "validation_profile": "static-text", "validation_root": None,
             }
             completed = subprocess.CompletedProcess([], 0, stdout="b" * 40 + "\n")
+            rejected_ancestor = subprocess.CompletedProcess([], 1, stdout="")
             with (
                 mock.patch.object(
                     controller, "_ticket_evidence",
@@ -3822,14 +3823,55 @@ class ApprovalQueueTests(unittest.TestCase):
                 mock.patch.object(
                     ticket_runner, "resolve_resume_worktree", return_value=worktree
                 ),
-                mock.patch("autonomy.subprocess.run", return_value=completed),
+                mock.patch(
+                    "autonomy.subprocess.run",
+                    side_effect=[completed, rejected_ancestor],
+                ),
             ):
-                with self.assertRaisesRegex(ControlError, "exact worktree head"):
+                with self.assertRaisesRegex(ControlError, "no longer an ancestor"):
                     controller._exact_recode_proposal({
                         "id": "2" * 16, "ticket_id": "DASH-FAILED",
                         "branch": "agent/dash-failed", "commit_sha": "a" * 40,
                         "pr_number": None,
                     })
+
+    def test_exact_recode_accepts_reconciled_descendant_head(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            worktree = base / "managed-worktree"
+            worktree.mkdir()
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            approved = "a" * 40
+            reconciled = "b" * 40
+            evidence = {
+                "task_id": "DASH-FAILED", "worker": "implementer",
+                "objective": "Repair fixture", "allowed_paths": ["fixture.txt"],
+                "validation_profile": "static-text", "validation_root": None,
+            }
+            with (
+                mock.patch.object(controller, "_ticket_evidence", return_value={"agent/dash-failed": evidence}),
+                mock.patch.object(ticket_runner, "resolve_resume_worktree", return_value=worktree),
+                mock.patch.object(ticket_runner, "read_resume_changes", return_value=(["M fixture.txt"], ["fixture.txt"])),
+                mock.patch.object(ticket_runner, "validate_resume_scope", return_value={"pass": True}),
+                mock.patch.object(ticket_runner, "inspect_local_resume_reconciliation", return_value={"safe": True, "mode": "reconciled"}),
+                mock.patch(
+                    "autonomy.subprocess.run",
+                    side_effect=[
+                        subprocess.CompletedProcess([], 0, stdout=reconciled + "\n"),
+                        subprocess.CompletedProcess([], 0, stdout=""),
+                    ],
+                ),
+            ):
+                proposal = controller._exact_recode_proposal({
+                    "id": "2" * 16, "ticket_id": "DASH-FAILED",
+                    "branch": "agent/dash-failed", "commit_sha": approved,
+                    "pr_number": None,
+                })
+            self.assertEqual(proposal["_planning_inventory"]["local_agent_branches"][0]["head"], reconciled)
 
     def test_continuous_automation_observes_completion_cooldown(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
