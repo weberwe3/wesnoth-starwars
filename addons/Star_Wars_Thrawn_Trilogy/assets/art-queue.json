@@ -388,7 +388,7 @@
       "unit_id": "sw_unit_im_recon_squad",
       "unit_name": "Imperial Remnant Recon Squad",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-recon-squad.md",
       "assets": [
