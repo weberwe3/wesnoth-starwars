@@ -276,6 +276,19 @@
       }
     },
     {
+      "id": "sw-first-battle-field-relay-restoration",
+      "kind": "event-unit",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "event_id": "sw_first_battle_field_relay_restoration",
+      "expected": {
+        "name": "moveto",
+        "first_time_only": "yes",
+        "unit_id": "sw_nr_field_engineer_team",
+        "x": "5",
+        "y": "5"
+      }
+    },
+    {
       "id": "sw-first-battle-hero-roster",
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
