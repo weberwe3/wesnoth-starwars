@@ -108,6 +108,32 @@ class RuntimeStatusTests(unittest.TestCase):
             self.assertEqual(result["return_code"], 125)
             self.assertEqual(result["failure"]["class"], "secure_bridge_failure")
 
+    def test_bridge_failure_reports_valid_child_exit_context(self) -> None:
+        run_id = "abc123def456"
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = Path(directory)
+            (runtime / f"sol-ticket-{run_id}.json").write_text(
+                json.dumps({"task_id": "SOL-BRIDGE-EXIT"}), encoding="utf-8"
+            )
+            with (
+                mock.patch.object(bridge_mailbox, "RUNTIME", runtime),
+                mock.patch.object(
+                    sys, "argv", ["bridge_mailbox.py", "failure", run_id, "result", "1"]
+                ),
+            ):
+                self.assertEqual(bridge_mailbox.main(), 0)
+            result = json.loads((runtime / f"sol-result-{run_id}.json").read_text(
+                encoding="utf-8"
+            ))
+            self.assertEqual(result["bridge_phase"], "result")
+            self.assertEqual(result["child_exit_code"], 1)
+            self.assertIn("Bridge phase: result.", result["failure"]["detail"])
+            self.assertIn("Child exit code: 1.", result["failure"]["detail"])
+
+    def test_bridge_failure_rejects_unbounded_child_exit_context(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "invalid bridge child exit code"):
+            bridge_mailbox.failure_context(["result", "256"])
+
     def test_secure_ticket_failure_with_matching_identity_is_not_rejected(self) -> None:
         run_id = "abc123def456"
         ticket_id = "SOL-BRIDGE-IDENTITY"
@@ -2487,6 +2513,9 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertIn('forwardWslEnv += "WESNOTH_AGENT_WORKTREE_ROOT"', text)
         self.assertIn('EnvironmentVariables["CODEX_HOME"]', text)
         self.assertIn('forwardWslEnv += "CODEX_HOME/p"', text)
+        self.assertIn('$bridgePhase = "prepare"', text)
+        self.assertIn('$childExitCode = $process.ExitCode', text)
+        self.assertIn('Invoke-Mailbox -MailboxArguments $failureArguments', text)
 
     def test_batch_launcher_exports_codex_compatible_worktree_root(self) -> None:
         text = (ROOT / "Start-WesnothAgentEnvironment.cmd").read_text(encoding="utf-8")

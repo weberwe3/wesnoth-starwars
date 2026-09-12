@@ -280,3 +280,10 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 - **Cause:** The bridge mailbox fallback wrote its generic `secure_bridge_failure` result without the immutable ticket ID. The controller correctly fails closed on every unbound result, so it could not distinguish that diagnostic envelope from a stale or mismatched result.
 - **Resolution:** The fallback now reads and validates the run-bound ticket identity before writing the result. A missing or malformed ticket remains unbound and is still rejected; only the valid exact ticket ID is propagated with the bridge failure.
 - **Prevention:** Every bridge result path, including timeout and launcher-error fallbacks, must carry the exact validated ticket identity. Preserve the controller's strict equality check; repair result producers rather than relaxing it.
+
+### 2026-09-11 — native bridge fallback hid the failing child boundary
+
+- **Symptom:** After the result identity repair and a clean bridge restart, the secure launcher still exited before producing a ticket result, but the dashboard could report only the same generic bridge failure.
+- **Cause:** The native control bridge discarded the child's exit code and phase when its catch path invoked the mailbox fallback. The fallback deliberately accepts no stderr or environment data, so diagnosis could not safely distinguish preparation, launch, wait, or result handling.
+- **Resolution:** The bridge now forwards only a fixed phase name and a validated `0..255` child exit code. The mailbox validates both, retains the exact ticket identity, and includes the bounded context in its secret-free failure record.
+- **Prevention:** For native child-process fallbacks, expose only allowlisted phase and numeric-status telemetry. Never copy launcher output, environment values, or credentials into dashboard/runtime diagnostics.
