@@ -342,6 +342,30 @@ class ArtImportProduction:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
 
+    def _art_acceptance_contract(self, contract: dict[str, Any]) -> dict[str, Any]:
+        """Build baseline-aware WML proof for each imported art state set."""
+
+        source_path = contract.get("source_path")
+        assets = contract.get("assets")
+        if not isinstance(source_path, str) or not isinstance(assets, list):
+            raise ArtProductionError("Art import batch has no safe acceptance source")
+        claims: list[dict[str, object]] = []
+        for asset in assets:
+            if not isinstance(asset, dict) or asset.get("state") != "standing":
+                continue
+            relative = asset.get("path")
+            if not isinstance(relative, str) or not relative.startswith("images/units/"):
+                raise ArtProductionError("Art import batch has an invalid standing-art path")
+            claims.append({
+                "kind": "source_text",
+                "path": source_path,
+                "base": "different",
+                "contains": "image=" + relative.removeprefix("images/"),
+            })
+        if not 1 <= len(claims) <= 12:
+            raise ArtProductionError("Art import batch has no bounded WML acceptance proof")
+        return {"schema_version": 1, "claims": claims}
+
     def _validate_candidate(
         self, worktree: Path, contract: dict[str, Any], allowed_paths: list[str]
     ) -> tuple[dict[str, Any], list[str]]:
@@ -357,6 +381,7 @@ class ArtImportProduction:
             "allowed_paths": allowed_paths,
             "validation_profile": "wesnoth-addon-static",
             "validation_root": ADDON_ROOT,
+            "acceptance": self._art_acceptance_contract(contract),
         }
         validation = ticket_runner.run_validation(
             worktree=worktree, ticket=ticket, implementer_rc=0,

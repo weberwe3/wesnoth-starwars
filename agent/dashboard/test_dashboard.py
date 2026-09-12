@@ -49,6 +49,30 @@ from server import create_server, public_state  # noqa: E402
 
 
 class ArtImportProductionTests(unittest.TestCase):
+    def test_art_import_builds_bounded_wml_acceptance_proof(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            production = ArtImportProduction(Path(directory), lambda *args, **kwargs: None)
+            contract = {
+                "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+                "assets": [
+                    {
+                        "state": "standing",
+                        "path": "images/units/sw-unit-fixture/standing.png",
+                    },
+                    {
+                        "state": "portrait",
+                        "path": "images/portraits/sw-unit-fixture.png",
+                    },
+                ],
+            }
+            acceptance = production._art_acceptance_contract(contract)
+            validated = ticket_acceptance.validate_acceptance_contract(acceptance)
+            self.assertTrue(validated["pass"])
+            self.assertEqual(
+                validated["contract"]["claims"][0]["contains"],
+                "image=units/sw-unit-fixture/standing.png",
+            )
+
     def test_art_import_source_scope_allows_only_the_required_local_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             production = ArtImportProduction(Path(directory), lambda *args, **kwargs: None)
