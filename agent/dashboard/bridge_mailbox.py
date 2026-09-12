@@ -22,6 +22,7 @@ CONTROL = RUNTIME / "coordination-control.json"
 ACTIVE_RUN_STATES = {"planning", "executing", "publishing"}
 RUN_ID = re.compile(r"[a-f0-9]{12}")
 RECOVERY_EFFORTS = {"low", "medium", "high"}
+FAILURE_PHASES = {"prepare", "launch", "wait", "result"}
 
 
 def write_json(path: Path, value: object) -> None:
@@ -62,6 +63,22 @@ def ticket_identity(run_id: str) -> str | None:
     ):
         return None
     return ticket_id
+
+
+def failure_context(values: list[str]) -> tuple[str | None, int | None]:
+    """Validate the small, secret-free bridge context allowed in a fallback."""
+    if not values:
+        return None, None
+    if len(values) not in {1, 2} or values[0] not in FAILURE_PHASES:
+        raise SystemExit("ERROR: invalid bridge failure context")
+    if len(values) == 1:
+        return values[0], None
+    if not re.fullmatch(r"(?:0|[1-9][0-9]{0,2})", values[1]):
+        raise SystemExit("ERROR: invalid bridge child exit code")
+    exit_code = int(values[1])
+    if exit_code > 255:
+        raise SystemExit("ERROR: invalid bridge child exit code")
+    return values[0], exit_code
 
 
 def read_request(path: Path) -> dict[str, object] | None:
@@ -165,23 +182,33 @@ def main() -> int:
         os.chmod(bootstrap, 0o700)
         print(bootstrap)
         return 0
-    if command == "failure" and len(sys.argv) == 3:
+    if command == "failure" and len(sys.argv) in {3, 4, 5}:
         run_id = valid_run_id(sys.argv[2])
+        phase, child_exit_code = failure_context(sys.argv[3:])
         result = RUNTIME / f"sol-result-{run_id}.json"
         # A delayed timeout callback must not overwrite an already-complete
         # result written by the secure bridge.
         if not result.exists():
+            detail = "The secure ticket process did not return a valid result."
+            if phase is not None:
+                detail += f" Bridge phase: {phase}."
+            if child_exit_code is not None:
+                detail += f" Child exit code: {child_exit_code}."
             failure = {
                 "return_code": 125,
                 "failure": {
                     "class": "secure_bridge_failure",
-                    "detail": "The secure ticket process did not return a valid result.",
+                    "detail": detail,
                     "required_action": "Restart the secure Windows launcher and try again.",
                     "eligible": False,
                     "attempt": 0,
                     "limit": 2,
                 },
             }
+            if phase is not None:
+                failure["bridge_phase"] = phase
+            if child_exit_code is not None:
+                failure["child_exit_code"] = child_exit_code
             ticket_id = ticket_identity(run_id)
             if ticket_id is not None:
                 failure["ticket_id"] = ticket_id

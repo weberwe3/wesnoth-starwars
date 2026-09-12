@@ -74,6 +74,8 @@ try {
             Start-Sleep -Seconds 1
             continue
         }
+        $bridgePhase = "prepare"
+        $childExitCode = $null
         try {
             if ($runId -notmatch '^[a-f0-9]{12}$') {
                 throw "Invalid secure-run request."
@@ -84,6 +86,7 @@ try {
             }
 
             Write-Health "executing" "Deterministic ticket gates running"
+            $bridgePhase = "launch"
             $info = [Diagnostics.ProcessStartInfo]::new()
             $info.FileName = "powershell.exe"
             $info.Arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "' +
@@ -121,6 +124,7 @@ try {
             ) -join ":"
             $process = [Diagnostics.Process]::Start($info)
             $process.StandardInput.Close()
+            $bridgePhase = "wait"
             $deadline = [DateTime]::UtcNow.AddMinutes(20)
             $cancelMarker = Join-Path $runtime "secure-run-cancel.$runId"
             $shutdownRequested = $false
@@ -140,13 +144,20 @@ try {
                 Write-Health "executing" "Deterministic ticket gates running"
                 Start-Sleep -Milliseconds 1000
             }
+            $childExitCode = $process.ExitCode
+            $bridgePhase = "result"
             if ((Invoke-Mailbox @("result", $runId)) -ne "ready") {
                 throw "Secure ticket runner returned no structured result."
             }
         }
         catch {
             if ($runId -match '^[a-f0-9]{12}$') {
-                Invoke-Mailbox @("failure", $runId) | Out-Null
+                $failureArguments = @("failure", $runId, $bridgePhase)
+                if ($null -ne $childExitCode -and
+                    [int]$childExitCode -ge 0 -and [int]$childExitCode -le 255) {
+                    $failureArguments += [string]$childExitCode
+                }
+                Invoke-Mailbox -MailboxArguments $failureArguments | Out-Null
             }
             Write-Health "error" "Secure bridge stopped the request"
         }
