@@ -7,6 +7,20 @@ from pathlib import Path
 
 
 WORKTREE_ROOT_ENV = "WESNOTH_AGENT_WORKTREE_ROOT"
+LOCAL_HANDOFF_STATUS = "?? docs/AI_HANDOFF_REFERENCE.md"
+
+
+def unexpected_main_status_entries(status: str) -> list[str]:
+    """Return all main-worktree changes except the required local handoff.
+
+    The handoff is intentionally supplied locally and stays out of ticket
+    worktrees. Every other porcelain status entry remains a hard stop.
+    """
+
+    return [
+        line for line in status.splitlines()
+        if line and line != LOCAL_HANDOFF_STATUS
+    ]
 
 
 def legacy_worktree_root(repo_root: Path) -> Path:

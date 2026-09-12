@@ -305,3 +305,14 @@ required local handoff input that is deliberately not repository source.
 the fail-closed gate for every other tracked or untracked status entry.
 **Prevention:** Test the narrow exception alongside dirty-source and arbitrary-untracked
 entries; never broaden it into a general untracked-file allowance.
+
+### 2026-09-11 — every protected main hygiene gate needs the same narrow handoff rule
+
+**Symptom:** The ticket could pass its isolated gates but its queue publication still
+stopped before it pushed an exact PR.
+**Confirmed cause:** The approval queue repeated its own full-porcelain cleanliness
+check instead of sharing the coordinator's exact local-handoff exception.
+**Resolution:** Centralize the status filter and use it for both ticket creation and
+publication; no other status entry is permitted.
+**Prevention:** Exercise the publication preflight with the handoff entry and require it
+to reach the next deterministic gate, not merely pass a helper-only test.
