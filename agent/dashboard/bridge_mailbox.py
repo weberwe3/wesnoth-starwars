@@ -48,6 +48,22 @@ def valid_run_id(value: object) -> str:
     return value
 
 
+def ticket_identity(run_id: str) -> str | None:
+    """Return the validated identity bound to a run's immutable ticket."""
+    try:
+        ticket = json.loads((RUNTIME / f"sol-ticket-{run_id}.json").read_text(
+            encoding="utf-8"
+        ))
+    except (OSError, json.JSONDecodeError):
+        return None
+    ticket_id = ticket.get("task_id") if isinstance(ticket, dict) else None
+    if not isinstance(ticket_id, str) or not re.fullmatch(
+        r"SOL-[A-Za-z0-9-]{4,120}", ticket_id
+    ):
+        return None
+    return ticket_id
+
+
 def read_request(path: Path) -> dict[str, object] | None:
     """Return a schema-valid mailbox request, without trusting stale files."""
     try:
@@ -155,7 +171,7 @@ def main() -> int:
         # A delayed timeout callback must not overwrite an already-complete
         # result written by the secure bridge.
         if not result.exists():
-            write_json(result, {
+            failure = {
                 "return_code": 125,
                 "failure": {
                     "class": "secure_bridge_failure",
@@ -165,7 +181,11 @@ def main() -> int:
                     "attempt": 0,
                     "limit": 2,
                 },
-            })
+            }
+            ticket_id = ticket_identity(run_id)
+            if ticket_id is not None:
+                failure["ticket_id"] = ticket_id
+            write_json(result, failure)
         return 0
     if command == "cleanup" and len(sys.argv) == 3:
         run_id = valid_run_id(sys.argv[2])
