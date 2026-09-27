@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-first-battle-hero-roster",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
+      "expected_id": "sw_unit_nr_hero_commander"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-new-republic-field-engineer-team",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_nr_field_engineer_team"
+    },
+    {
+      "id": "sw-first-battle-infantry-roster",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_im_rem_stormtrooper"
+    },
+    {
+      "id": "sw-new-republic-rifle-squad",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_nr_rifle_squad"
+    },
+    {
+      "id": "sw-rifle-squad-ranged-combat-poc",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_nr_rifle_squad"
+    },
+    {
+      "id": "sw-rifle-squad-cover-defense-poc",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "expected_id": "sw_unit_nr_rifle_squad"
+    }
+  ]
+}

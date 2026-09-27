@@ -948,191 +948,191 @@
   "gameplay_contract_ids": [
     {
       "id": "sw-first-battle-air-support-jammer-gate",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-air-support-relay-objective",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-air-support-sortie",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-alarm-reserve-deployment",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-delivery-interception",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-delivery-objective-refresh",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-delivery-warning",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-pursuit-deployment",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-records-acquisition-event",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-records-delivery-event",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-records-objective-refresh",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-return-interdiction",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-return-roadblock",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-archive-security-squad",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-command-guard",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-delayed-search-patrol",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-delivery-relief",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-eastern-observation-air-support",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-eastern-observation-event",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-eastern-observation-location",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-field-engineer-placement",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-field-relay-restoration",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-forward-observer",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-forward-observer-counterattack",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-heavy-weapons-placement",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-hero-roster",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/heroes.json"
     },
     {
       "id": "sw-first-battle-infantry-roster",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json"
     },
     {
       "id": "sw-first-battle-jammer-carryover",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-mission-briefing-event",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-obroa-skai-map-setup",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-pathfinder-squad-placement",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-recon-squad-loss-event",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-relay-response-turn-eight",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-rifle-cover-position",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-rifle-range-guidance",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-scenario-identity",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-first-battle-time-over-event",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-imperial-reinforcement-turn-four",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-new-republic-field-engineer-team",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json"
     },
     {
       "id": "sw-new-republic-rifle-squad",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json"
     },
     {
       "id": "sw-rifle-squad-cover-defense-poc",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json"
     },
     {
       "id": "sw-rifle-squad-ranged-combat-poc",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json"
     },
     {
       "id": "sw-signal-jammer-deployment-turn-two",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-signal-jammer-destruction-event",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json"
     },
     {
       "id": "sw-space-interception-jammer-readiness",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/space-interception.json"
     },
     {
       "id": "sw-space-interception-torpedo-bomber-deployment-turn-four",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/space-interception.json"
     },
     {
       "id": "sw-thrawn-campaign-registration",
-      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/campaign.json"
     }
   ],
   "source_files": [
@@ -1246,7 +1246,27 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
-      "sha256": "b974a14a34e12c21897324abd9a7111654d55e8b1152497979fa646f6b89299e"
+      "sha256": "28ce2d2a057f1313e8034836a672740051d0483391ad9f7047298030c44cc235"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/campaign.json",
+      "sha256": "273f97d73c12074efcbaccfd0c3107b50e5b2c272e3c6245c7564080071a0745"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json",
+      "sha256": "1221439f652eed4d2037ea3b056c011ab48212a54312e1c730b028b4b42c7b88"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/heroes.json",
+      "sha256": "e0e7cda20acdd1a071519cec852a6b8dc0fcac6365c06441dd701e84d061e694"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json",
+      "sha256": "673178cff89c58f43d9bb998eaa49a4a297ab8b2cbff7c7bbb57c57403252c06"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/space-interception.json",
+      "sha256": "2dcbae9c0146bd6bf09ac7d7604e7922de59626b0943e88c3da28ec8af3a1ce3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-recon-squad.png",

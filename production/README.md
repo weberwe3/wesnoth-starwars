@@ -105,7 +105,29 @@ The result is a freshness check, **not a readiness decision**: the protected
 coordinator must still prove the run came from its authorized validation path
 and that the observed behavior satisfies the requirement. Existing historical
 ticket evidence is not migrated or reinterpreted by this module. Consumer
-wiring, transitive dependency registration, and contract-index migration remain
-separate package-4 work.
+wiring and transitive dependency registration remain separate package-4 work.
 
 Run `python production/evidence_selftest.py` for the focused freshness controls.
+
+## Indexed gameplay contracts
+
+`addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json` is the v2
+authoritative index. It names five v1 contract shards under the adjacent
+`gameplay-contracts/` directory. The migration retained all 47 IDs and their
+complete assertions as JSON values; a pre/post comparison against the prior
+main verified equality. The index requires sorted, unique, safe shard names,
+an exact directory listing, at most 32 shards, at most 100 contracts per shard,
+and at most 1,000 contracts overall. Duplicate IDs, omitted files, symlinks,
+unsupported versions, and invalid JSON fail closed. The legacy v1 single-file
+form remains readable for historical fixtures; the repository's current source
+of truth is v2.
+
+The declared-contract validator, dashboard completion check, ticket path scope,
+and production inventory now read the index. Inventory hashes the index and
+every shard so a changed assertion invalidates its snapshot. Add coverage to
+the relevant shard; add a new sorted index entry only for a new shard. Run
+`python production/contract_store_selftest.py`,
+`python agent/coordinator/scenario_launch_selftest.py`,
+`python agent/dashboard/test_dashboard.py`, and
+`python production/inventory.py --check` after contract changes. The protected
+evidence-to-readiness consumer remains separate package-4 work.
