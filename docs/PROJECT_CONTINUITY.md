@@ -1422,3 +1422,18 @@ Ignored raw SHA-256:
 `1126a8800b49f198f52ad59e0a41c2a6214305c421f5f33c7475d8af33119b57`.
 The probe is explicitly a test-mode initial-state check, not a transition or
 save/load observation.
+
+Subsequent movement diagnostics found an early-victory defect in Ground
+Extraction: a sibling `[filter_location]` on `moveto` did not constrain the
+hero, and the first move to (4,2) ended the level. The same pattern existed in
+Space Interception's victory and breakthrough events. Their destination
+coordinates are now inside the moving-unit filters. Ground Extraction's
+one-move hero starts on the castle route, a grass corridor approaches the
+extraction point, and the turn-five reinforcement no longer takes the terminal
+hex. A stricter installed-engine test now observes first legal moves in both
+missions, rejects premature victory and failed assertions, and exits 0 in both
+cases. This is not a complete route or transition test. The historical
+integrated load record above and the Restore the Beacon envelope are stale
+after these source changes because their dependency hashes changed. Re-run
+scoped tests from the next integrated commit; the main remaining play gates
+are full legal victory/defeat, transition, carryover, and save/load.

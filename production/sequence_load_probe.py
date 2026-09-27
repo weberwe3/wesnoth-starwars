@@ -1,7 +1,8 @@
 """Check initial engine state for missions 2 and 3 in isolated test mode.
 
 Each fixture retains the scenario body and changes only its root to [test],
-then asserts one source unit and an initialized variable. The isolated loader
+then asserts one source unit and an initialized variable. Each fixture also
+makes one legal player move that must not end the mission. The isolated loader
 does not include successor scenarios, so its next-scenario warnings cannot
 serve as transition evidence. This probe does not play an objective or save.
 """
@@ -21,8 +22,8 @@ import tempfile
 
 ADDON_ID = "Star_Wars_Thrawn_Trilogy"
 CASES = (
-    ("02_space_interception.cfg", "sw_02_space_interception", "sw_escort_unit", "sw_turn_limit", "12"),
-    ("03_ground_extraction.cfg", "sw_03_ground_extraction", "sw_hero_commander", "sw_turn_limit", "10"),
+    ("02_space_interception.cfg", "sw_02_space_interception", "sw_escort_unit", "sw_turn_limit", "12", (2, 1, 3, 1)),
+    ("03_ground_extraction.cfg", "sw_03_ground_extraction", "sw_hero_commander", "sw_turn_limit", "10", (3, 2, 4, 2)),
 )
 
 
@@ -34,12 +35,38 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _fixture(source: str, scenario_id: str, unit_id: str, variable: str, expected: str) -> str:
+def _fixture(source: str, scenario_id: str, unit_id: str, variable: str,
+             expected: str, move: tuple[int, int, int, int] | None) -> str:
     if (source.count("[scenario]") != 1 or source.count("[/scenario]") != 1
             or source.count("id=" + scenario_id) != 1):
         raise ValueError("scenario structure changed; refusing fixture transformation")
     fixture = source.replace("[scenario]", "[test]\n    is_unit_test=yes", 1)
     fixture = fixture.replace("id=" + scenario_id, "id=sw_load_" + scenario_id, 1)
+    movement = ""
+    if move:
+        x0, y0, x1, y1 = move
+        movement = f'''{{ASSERT (
+            [have_unit]
+                id={unit_id}
+                x,y={x0},{y0}
+            [/have_unit]
+        )}}
+        [do_command]
+            [move]
+                x={x0},{x1}
+                y={y0},{y1}
+            [/move]
+        [/do_command]
+        {{ASSERT (
+            [have_unit]
+                id={unit_id}
+                x,y={x1},{y1}
+            [/have_unit]
+        )}}
+        [wml_message]
+            logger=warning
+            message=sw_sequence_first_move_verified
+        [/wml_message]'''
     return fixture.replace("[/scenario]", f'''
     [event]
         name=side 1 turn 1
@@ -54,13 +81,15 @@ def _fixture(source: str, scenario_id: str, unit_id: str, variable: str, expecte
                 equals={expected}
             [/variable]
         )}}
+        {movement}
         {{SUCCEED}}
     [/event]
 [/test]''', 1)
 
 
 def _latest_log(userdata: Path) -> str:
-    logs = sorted((p for p in userdata.rglob("*.log") if p.is_file()),
+    logs = sorted((p for p in userdata.rglob("*.log")
+                   if p.is_file() and not p.name.endswith(".out.log")),
                   key=lambda p: p.stat().st_mtime_ns)
     if not logs or logs[-1].stat().st_size > 5_000_000:
         return ""
@@ -80,12 +109,12 @@ def probe(root: Path, engine: Path) -> dict:
         fixtures = addon / "probe-tests"
         fixtures.mkdir()
         prepared = []
-        for name, scenario_id, unit_id, variable, expected in CASES:
+        for name, scenario_id, unit_id, variable, expected, move in CASES:
             source_path = addon_source / "scenarios" / name
             fixture_path = fixtures / name
             fixture_path.write_text(_fixture(source_path.read_text(encoding="utf-8"),
-                                             scenario_id, unit_id, variable, expected), encoding="utf-8")
-            prepared.append((scenario_id, source_path, fixture_path))
+                                             scenario_id, unit_id, variable, expected, move), encoding="utf-8")
+            prepared.append((scenario_id, source_path, fixture_path, move))
         (addon / "_main.cfg").write_text(
             "#ifdef TEST\n"
             "[binary_path]\n    path=data/add-ons/" + ADDON_ID + "\n[/binary_path]\n"
@@ -95,7 +124,7 @@ def probe(root: Path, engine: Path) -> dict:
             "#endif\n", encoding="utf-8")
         results = []
         version = None
-        for scenario_id, source_path, fixture_path in prepared:
+        for scenario_id, source_path, fixture_path, move in prepared:
             test_id = "sw_load_" + scenario_id
             try:
                 completed = subprocess.run(
@@ -109,9 +138,12 @@ def probe(root: Path, engine: Path) -> dict:
             if version_match:
                 version = version_match.group(1)
             passed = (exit_code == 0 and f"PASS TEST (0): {test_id}" in log
+                      and (not move or "sw_sequence_first_move_verified" in log)
                       and "error wml:" not in log and "Unknown tile in map" not in log
-                      and "FAIL TEST" not in log)
+                      and "conditional test unexpectedly failed" not in log
+                      and "Error via [do_command]" not in log and "FAIL TEST" not in log)
             results.append({"scenario_id": scenario_id, "test_id": test_id,
+                            "exercise_type": "legal_player_first_move" if move else "initial_state",
                             "source_sha256": _sha256(source_path),
                             "fixture_sha256": _sha256(fixture_path),
                             "exit_code": exit_code, "pass": passed,
