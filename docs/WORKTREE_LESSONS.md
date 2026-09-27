@@ -405,3 +405,43 @@ the GUI marker is absent, so the package is not qualified.
 **Prevention:** A GUI process staying alive does not prove a scenario loaded.
 Require a positive in-game observation and a negative fixture for a surviving
 title screen before accepting installed-engine startup evidence.
+
+### 2026-09-27 — a parseable mission map used an unknown castle tile
+
+**Symptom:** Ground Extraction's installed-engine test hung before its first
+turn and logged `Unknown tile in map: (Cc) 'Cc'`.
+**Confirmed cause:** The inline map used `Cc` for its castle interior, but the
+installed Wesnoth 1.19.27 core defines human castle as `Ch`.
+**Resolution:** Replace the invalid tiles with `Ch`. The isolated mission
+initial-state engine test then reaches turn one and passes.
+**Prevention:** Check terrain tokens against the installed core catalog and
+require an engine scenario-load observation; preprocessing alone does not
+establish that an inline map is playable.
+
+### 2026-09-27 — sibling location filters allowed victory on the first move
+
+**Symptom:** Ground Extraction reported victory when its hero first moved to
+(4,2), far from the extraction point at (8,1).
+**Confirmed cause:** Its `moveto` event put coordinates in a sibling
+`[filter_location]`, which did not constrain the moving unit. Space
+Interception used the same pattern for escort victory and enemy breakthroughs.
+**Resolution:** Put the destination `x,y` inside each event's moving-unit
+`[filter]`. Installed-engine first-move fixtures for both missions now exit 0
+without premature victory or defeat.
+**Prevention:** For `moveto`, assert a legal nonterminal move leaves the level
+running, then separately prove the correct terminal move. A successful load
+does not validate event filter placement.
+
+### 2026-09-27 — a victory marker survived a failed WML assertion
+
+**Symptom:** A longer Ground Extraction diagnostic printed `PASS TEST
+(VICTORY) (8)` while its victory-event assertion that the hero was at the
+extraction point had failed; the hero was at (4,2).
+**Confirmed cause:** The engine test runner's victory marker did not by itself
+make that assertion failure fatal to the surrounding Python probe.
+**Resolution:** The shared mission probe now rejects positive verdicts if its
+log contains `conditional test unexpectedly failed`, while retaining the
+deliberate negative assertion fixture. Focused tests and the installed-engine
+Restore the Beacon cases pass under the new rule.
+**Prevention:** Treat a pass/victory marker and exit code as insufficient for
+WML evidence; scan assertion and command diagnostics before accepting it.
