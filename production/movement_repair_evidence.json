@@ -1,0 +1,47 @@
+{
+  "schema_id": "wesnoth-starwars.production.movement-repair-evidence",
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-27T04:13:16+00:00",
+  "prior_diagnostic_sha256": "62da6f173a7524351474f6b4c6d3394af8ef2168f961b52010857b1e47b68dbe",
+  "scenario_id": "sw_21_restore_the_beacon",
+  "scenario_source_sha256": "871b5b12c3629b915d9e660a73ca9acd57a791fe273304a59e7da6924fbe79e1",
+  "unit_source_sha256": {
+    "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg": "c0a28a5afbe93d67a86ddec5685508a8dd7e05c35b18d8f91538d5efac3c242d",
+    "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg": "06801d4c7b0bd9145b65d647067251b789f29416909f5fceacc7853b93f604b3",
+    "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg": "7aac6ec85f0c2be3549506d7b864fcc9e8d571520190b8b17506a1c2cacb920b",
+    "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg": "266bfd9065092b623db41666d0eb595e214c1c5e87e6d3a58bc4006d1ddd9a3e"
+  },
+  "source_inventory_sha256": "235b8002d30351b5cf43e5133b36d0c30b00e4fccdb1b15c3818a3cccd109d04",
+  "engine_version": "1.19.27",
+  "engine_binary_sha256": "120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae",
+  "probe_script_sha256": "16172b212e22cd53e59bf68a7efe3263e9ef9dc05297fc1c67b4661d0d1d294f",
+  "temporary_movetype_fix": false,
+  "pass": true,
+  "results": [
+    {
+      "case": "load",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "movement_point",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "first_move",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "first_move_origin",
+      "exit_code": 1,
+      "log_verdict": "fail",
+      "meets_expectation": true
+    }
+  ],
+  "limits": "The tested mission loads and its first legal move works; objective victory, defeat, transition, carryover, and save/reload remain unassessed."
+}
