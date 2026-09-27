@@ -33,10 +33,9 @@ run record is written under ignored `agent/runtime/`; the small observed
 baseline is `engine_capability_baseline.json`.
 
 This proves custom test fixture loading, test-mode action injection, and
-negative assertion detection for the recorded engine binary. It does not
-execute a project mission. Legal objective victory, wrong-unit rejection,
-defeat paths, transitions, carryover, and save/reload remain pending engine
-tests before any playable-delivery claim.
+negative assertion detection for the recorded engine binary. Mission-specific
+evidence is described below; this generic spike alone does not execute a
+project mission.
 
 ## Restore the Beacon movement probe
 
@@ -54,5 +53,25 @@ the mission failed the first legal move and let the wrong-origin fixture pass.
 The temporary movement type repair reversed both outcomes. The follow-up
 source change replaced all invalid project movement type names with registered
 installed-core names; `movement_repair_evidence.json` records the passing
-real-source move and failing wrong-origin fixture. These checks do not prove
-beacon victory, defeat handling, transitions, or save/reload.
+real-source move and failing wrong-origin fixture.
+
+## Restore the Beacon objective and filter probe
+
+Run `python production/mission_probe.py --engine <installed-wesnoth-executable>`
+to exercise the current source in isolated Wesnoth test mode. The default set
+checks mission load, the engineer's movement point, a legal first move, a
+deliberately wrong origin assertion, a six-move route to the terminal, and a
+commander move onto the terminal that must not win. The runner rejects an
+unknown scenario or a WML/configuration error even if Wesnoth also prints a
+`PASS TEST` line; an early fixture draft exposed that false-positive pattern.
+
+`mission_legal_path_evidence.json` records the exact scenario, unit, fixture,
+script, inventory, and engine binary hashes and the observed exit codes.
+The objective route retains the source engineer-only `moveto` filter and
+`[endlevel]` action, but sets the enemy controller to `null` and removes the
+terminal dialogue **only in the temporary fixture**. Those controls make the
+objective test deterministic and avoid a test-mode display stall. The negative
+fixture stages the commander one hex from the terminal and uses a normal
+player move for the final step. The shipped mission content is unchanged by
+this probe. Active-AI win reliability, the terminal dialogue, defeat paths,
+transition/carryover, save/reload, and a player-ready build remain unverified.

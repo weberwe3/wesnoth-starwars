@@ -23,6 +23,11 @@ ADDON_ID = "Star_Wars_Thrawn_Trilogy"
 SCENARIO = "scenarios/dark_force_rising/21_restore_the_beacon.cfg"
 ORIGINAL_ID = "sw_21_restore_the_beacon"
 GUARD = "#ifdef CAMPAIGN_STAR_WARS_DARK_FORCE_RISING"
+TERMINAL_DIALOGUE = '''        [message]
+            speaker=sw_beacon_field_engineer_team
+            message= _ "Beacon synchronized. New Republic channels are live again."
+        [/message]
+'''
 CASES = {
     "load": r'''
     [event]
@@ -87,12 +92,166 @@ CASES = {
         {SUCCEED}
     [/event]
 ''',
+    "two_turns": r'''
+    [event]
+        name=side 1 turn refresh
+        first_time_only=no
+        [filter_condition]
+            [variable]
+                name=turn_number
+                equals=1
+            [/variable]
+        [/filter_condition]
+        [do_command]
+            [move]
+                x=2,3
+                y=3,3
+            [/move]
+        [/do_command]
+        {ASSERT (
+            [have_unit]
+                id=sw_beacon_field_engineer_team
+                x,y=3,3
+            [/have_unit]
+        )}
+        [end_turn]
+        [/end_turn]
+    [/event]
+    [event]
+        name=side 1 turn refresh
+        first_time_only=no
+        [filter_condition]
+            [variable]
+                name=turn_number
+                equals=2
+            [/variable]
+        [/filter_condition]
+        [do_command]
+            [move]
+                x=3,4
+                y=3,3
+            [/move]
+        [/do_command]
+        {ASSERT (
+            [have_unit]
+                id=sw_beacon_field_engineer_team
+                x,y=4,3
+            [/have_unit]
+        )}
+        {SUCCEED}
+    [/event]
+''',
 }
+
+
+def _assert_unit_at(unit_id: str, x: int, y: int) -> str:
+    return (
+        "{ASSERT (\n"
+        "    [have_unit]\n"
+        f"        id={unit_id}\n"
+        f"        x,y={x},{y}\n"
+        "    [/have_unit]\n"
+        ")}"
+    )
+
+
+def _beacon_route_events() -> str:
+    """Issue player move commands; only the source objective may end the level."""
+
+    route = [(2, 3), (3, 3), (4, 3), (5, 3), (6, 4), (7, 4), (8, 3)]
+    events = []
+    for turn, (origin, target) in enumerate(zip(route, route[1:]), 1):
+        x0, y0 = origin
+        x1, y1 = target
+        expectation = (
+            "" if turn == len(route) - 1 else
+            _assert_unit_at("sw_beacon_field_engineer_team", x1, y1)
+        )
+        end_turn = "" if turn == len(route) - 1 else "[end_turn]\n[/end_turn]"
+        events.append(
+            "[event]\n"
+            "    name=side 1 turn refresh\n"
+            "    first_time_only=no\n"
+            "    [filter_condition]\n        [variable]\n"
+            f"            name=turn_number\n            equals={turn}\n"
+            "        [/variable]\n    [/filter_condition]\n"
+            "    [do_command]\n        [move]\n"
+            f"            x={x0},{x1}\n            y={y0},{y1}\n"
+            "        [/move]\n    [/do_command]\n"
+            f"    {expectation}\n    {end_turn}\n"
+            "[/event]\n"
+        )
+    events.append(
+        "[event]\n    name=victory\n"
+        "    " + _assert_unit_at("sw_beacon_field_engineer_team", 8, 3) + "\n"
+        "    {SUCCEED}\n[/event]\n"
+        "[event]\n    name=defeat\n    {FAIL}\n[/event]\n"
+    )
+    return "\n".join(events)
+
+
+CASES["path_to_beacon"] = _beacon_route_events()
+
+
+CASES["wrong_unit_terminal"] = r'''
+    [event]
+        name=side 1 turn 1
+        {ASSERT (
+            [have_unit]
+                id=sw_beacon_commander
+                x,y=7,2
+            [/have_unit]
+        )}
+        [do_command]
+            [move]
+                x=7,8
+                y=2,3
+            [/move]
+        [/do_command]
+        {ASSERT (
+            [have_unit]
+                id=sw_beacon_commander
+                x,y=8,3
+            [/have_unit]
+        )}
+        {SUCCEED}
+    [/event]
+    [event]
+        name=victory
+        {FAIL}
+    [/event]
+'''
+CASES["commander_start"] = r'''
+    [event]
+        name=side 1 turn 1
+        {ASSERT (
+            [have_unit]
+                id=sw_beacon_commander
+                x,y=1,3
+            [/have_unit]
+        )}
+        {SUCCEED}
+    [/event]
+'''
 EXPECTED_VERDICTS = {
     "load": "pass",
     "movement_point": "pass",
     "first_move": "pass",
     "first_move_origin": "fail",
+    "two_turns": "pass",
+    "path_to_beacon": "victory",
+    "wrong_unit_terminal": "pass",
+    "commander_start": "pass",
+}
+EXERCISE_TYPES = {
+    "load": "engine_scenario_initial_state",
+    "movement_point": "engine_scenario_initial_state",
+    "first_move": "engine_player_move_command",
+    "first_move_origin": "engine_negative_position_fixture",
+    "two_turns": "engine_player_move_sequence",
+    "path_to_beacon": "engine_player_move_sequence_to_original_victory",
+    "wrong_unit_terminal": "staged_wrong_unit_then_engine_player_move_command",
+    "commander_start": "engine_scenario_initial_state",
 }
 
 
@@ -109,6 +268,18 @@ def _render_test(source: str, case: str) -> str:
         raise ValueError("scenario ID changed; refusing test transformation")
     test_id = "sw_probe_restore_beacon_" + case
     transformed = source.replace(GUARD, "", 1).replace("#endif", "", 1)
+    if case == "path_to_beacon":
+        if transformed.count(TERMINAL_DIALOGUE) != 1:
+            raise ValueError("terminal dialogue changed; refusing fixture transformation")
+        transformed = transformed.replace(TERMINAL_DIALOGUE, "", 1)
+        if transformed.count("controller=ai") != 1:
+            raise ValueError("enemy controller changed; refusing fixture transformation")
+        transformed = transformed.replace("controller=ai", "controller=null", 1)
+    if case == "wrong_unit_terminal":
+        commander_start = "id=sw_beacon_commander\n        name= _ \"New Republic Commander\"\n        x=1\n        y=3"
+        if transformed.count(commander_start) != 1:
+            raise ValueError("commander start changed; refusing fixture transformation")
+        transformed = transformed.replace(commander_start, commander_start.replace("x=1", "x=7").replace("y=3", "y=2"), 1)
     transformed = transformed.replace("[scenario]", "[test]\n    is_unit_test=yes", 1)
     transformed = transformed.replace("id=" + ORIGINAL_ID, "id=" + test_id, 1)
     transformed = transformed.replace("[/scenario]", CASES[case] + "[/test]", 1)
@@ -122,7 +293,7 @@ def _latest_log(userdata: Path) -> str:
     )
     if not paths or paths[-1].stat().st_size > 5_000_000:
         return ""
-    return paths[-1].read_text(encoding="utf-8", errors="replace")[-3000:]
+    return paths[-1].read_text(encoding="utf-8", errors="replace")[-12000:]
 
 
 def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_movetype_fix: bool = False) -> dict:
@@ -176,7 +347,14 @@ def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_move
                 version_match = re.search(r"Battle for Wesnoth v([0-9]+(?:\.[0-9]+)+)", log)
                 if version_match:
                     engine_version = version_match.group(1)
-                if f"PASS TEST (0): {test_id}" in log:
+                if any(marker in log for marker in (
+                    "Unknown scenario:", "Couldn't find [test]", "error config:",
+                    "error wml:", "Error via [do_command]",
+                )):
+                    verdict = "invalid_fixture"
+                elif f"PASS TEST (VICTORY) (8): {test_id}" in log:
+                    verdict = "victory"
+                elif f"PASS TEST (0): {test_id}" in log:
                     verdict = "pass"
                 elif re.search(rf"FAIL TEST .*: {re.escape(test_id)}", log):
                     verdict = "fail"
@@ -185,22 +363,27 @@ def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_move
                 expected = EXPECTED_VERDICTS[case]
                 meets_expectation = (
                     verdict == expected
-                    and completed.returncode == (0 if expected == "pass" else 1)
+                    and completed.returncode == {"pass": 0, "fail": 1, "victory": 8}[expected]
                     and (expected != "fail" or "conditional test unexpectedly failed" in log)
                 )
                 results.append({
                     "case": case,
                     "test_id": test_id,
+                    "fixture_sha256": _sha256(fixtures / (case + ".cfg")),
+                    "exercise_type": EXERCISE_TYPES[case],
                     "exit_code": completed.returncode,
                     "log_verdict": verdict,
                     "expected_verdict": expected,
                     "meets_expectation": meets_expectation,
-                    "diagnostic_tail": log[-1200:],
+                    "diagnostic_tail": log[-6000:],
                 })
             except subprocess.TimeoutExpired:
-                results.append({"case": case, "test_id": test_id, "exit_code": None,
+                log = _latest_log(userdata)
+                results.append({"case": case, "test_id": test_id,
+                                "exercise_type": EXERCISE_TYPES[case], "exit_code": None,
                                 "log_verdict": "timeout", "expected_verdict": EXPECTED_VERDICTS[case],
-                                "meets_expectation": False, "diagnostic_tail": ""})
+                                "meets_expectation": False, "diagnostic_tail": log[-6000:]})
+    verified_cases = {row["case"] for row in results if row["meets_expectation"]}
     return {
         "schema_id": "wesnoth-starwars.production.mission-probe",
         "schema_version": 1,
@@ -210,11 +393,23 @@ def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_move
         "engine_binary_sha256": _sha256(engine),
         "engine_version": engine_version,
         "exercise_type": "instrumented_real_scenario_test_mode",
+        "terminal_dialogue_suppressed_in_path_fixture": "path_to_beacon" in case_names,
+        "enemy_turn_disabled_in_path_fixture": "path_to_beacon" in case_names,
+        "commander_start_staged_in_wrong_unit_fixture": "wrong_unit_terminal" in case_names,
         "temporary_movetype_fix": temporary_movetype_fix,
         "temporary_movetype_replacements": changed_movetypes,
         "results": results,
         "pass": all(row["meets_expectation"] for row in results),
-        "legal_objective_victory": "unassessed",
+        "legal_objective_victory": (
+            "observed_with_enemy_turn_disabled_and_terminal_dialogue_suppressed"
+            if "path_to_beacon" in verified_cases else "unassessed"
+        ),
+        "wrong_unit_rejection": (
+            "observed_with_commander_start_staged"
+            if "wrong_unit_terminal" in verified_cases else "unassessed"
+        ),
+        "mission_transition": "unassessed",
+        "defeat_paths": "unassessed",
         "save_reload": "unassessed",
     }
 
@@ -223,7 +418,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--engine", required=True)
     parser.add_argument("--repo-root", default=Path(__file__).resolve().parents[1])
-    parser.add_argument("--cases", nargs="+", choices=sorted(CASES), default=["load", "movement_point", "first_move", "first_move_origin"])
+    parser.add_argument("--cases", nargs="+", choices=sorted(CASES), default=[
+        "load", "movement_point", "first_move", "first_move_origin",
+        "path_to_beacon", "wrong_unit_terminal",
+    ])
     parser.add_argument("--temporary-movetype-fix", action="store_true", help="diagnostic only: replace invalid movement type names in the temporary copy")
     parser.add_argument("--output", default=Path(__file__).resolve().parents[1] / "agent/runtime/mission-probe.json")
     args = parser.parse_args()

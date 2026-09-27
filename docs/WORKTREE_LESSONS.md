@@ -373,3 +373,18 @@ and the wrong-origin negative fixture fails with the engine's test diagnostic.
 catalog and run an engine action fixture that proves a representative unit
 actually changes hex. A declared movement point or successful parser run alone
 does not prove mobility.
+
+### 2026-09-27 — a test-mode PASS can hide an invalid mission fixture
+
+**Symptom:** An early multi-turn mission probe printed `PASS TEST (0)` even
+though its requested scenario never loaded.
+**Confirmed cause:** Invalid generated WML caused an `Unknown scenario` log
+entry; Wesnoth then emitted a misleading pass for the missing test ID.
+**Resolution:** Generate correctly nested multiline WML and reject `Unknown
+scenario`, missing `[test]`, configuration/WML errors, and command errors
+before interpreting a `PASS TEST` marker. Retain a deliberately failing
+position fixture to prove assertions execute.
+**Prevention:** Treat test-mode exit code and pass text as necessary but
+insufficient. Confirm the scenario loaded and inspect fatal diagnostics before
+recording engine evidence. Keep temporary fixture changes and source behavior
+separate in the evidence record.
