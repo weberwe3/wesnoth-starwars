@@ -32,12 +32,14 @@ class PackageValidationTests(unittest.TestCase):
     def test_matching_package_runs_existing_engine_gates(self) -> None:
         with (mock.patch("validate_package.verify_candidate", return_value=self.manifest) as verify,
               mock.patch("validate_package.validate_engine_002", return_value={"pass": True}) as preprocess,
+              mock.patch("validate_package.probe_sequence_load", return_value={"pass": True}) as sequence,
               mock.patch("validate_package.runtime_scenario_probes", return_value={"pass": True}) as runtime):
             result = validate_packaged_candidate(self.root, self.candidate, self.engine)
         self.assertTrue(result["pass"])
         self.assertTrue(result["package_copy_matches"])
         self.assertEqual(verify.call_count, 2)
         self.assertEqual(preprocess.call_count, 1)
+        self.assertEqual(sequence.call_count, 1)
         self.assertEqual(runtime.call_count, 1)
 
     def test_copy_mutation_stops_before_engine(self) -> None:
@@ -58,9 +60,21 @@ class PackageValidationTests(unittest.TestCase):
     def test_failed_preprocess_does_not_run_gui_probe(self) -> None:
         with (mock.patch("validate_package.verify_candidate", return_value=self.manifest),
               mock.patch("validate_package.validate_engine_002", return_value={"pass": False}),
+              mock.patch("validate_package.probe_sequence_load") as sequence,
               mock.patch("validate_package.runtime_scenario_probes") as runtime):
             result = validate_packaged_candidate(self.root, self.candidate, self.engine)
         self.assertFalse(result["pass"])
+        sequence.assert_not_called()
+        runtime.assert_not_called()
+
+    def test_failed_packaged_first_move_blocks_gui_and_promotion(self) -> None:
+        with (mock.patch("validate_package.verify_candidate", return_value=self.manifest),
+              mock.patch("validate_package.validate_engine_002", return_value={"pass": True}),
+              mock.patch("validate_package.probe_sequence_load", return_value={"pass": False}),
+              mock.patch("validate_package.runtime_scenario_probes") as runtime):
+            result = validate_packaged_candidate(self.root, self.candidate, self.engine)
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["sequence_first_moves"], {"pass": False})
         runtime.assert_not_called()
 
 

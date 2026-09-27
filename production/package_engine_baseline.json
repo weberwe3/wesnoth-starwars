@@ -1,18 +1,24 @@
 {
   "schema_id": "wesnoth-starwars.production.package-engine-baseline",
   "schema_version": 1,
-  "source_commit": "7a2262bf8aa188f3cdddde7bb4c3307853244370",
-  "source_tree": "999b50b92e4aed3a05dce64ac0e5d817e426d886",
-  "package_sha256": "c75f2eb471be524987d07ff99a66a3aee9555fbeab8e23ba46301fa2b778fb68",
+  "source_commit": "2528cb6be18fc5b6b60b9978e0888b4f2e8efb93",
+  "source_tree": "9ddf1e9d1ba3acd82fec0771d255b628715448db",
+  "package_sha256": "ad2fa5e09c165d78be3b1dc010515950199d66dc5a4a160012bc609af5fc8792",
   "engine_sha256": "120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae",
-  "validator_sha256": "1f9c250f4b6ce4784f7359ff3db7f0eae791063cabfa85365cf74471d9f8ba7f",
+  "validator_sha256": "d64c997600ba16ae74a3984d20b6bf68d979271f29fa23bcd04d00967bbd9a88",
   "harness_sha256": "57adb61a9abb83cb99a4fc6e7bda8c9d83a1055ac7c61593f0fe5571ae72ceb5",
-  "raw_artifact_sha256": "f9adf610aa840a1f7c66a1ab59f4f48d42a0bba8eef8b95235a03e078ea350f5",
-  "raw_artifact_path": "agent/runtime/package-engine-validation.json",
+  "sequence_harness_sha256": "79c37b41c7b8dc2c1ad82f4a39cd891e1d3d8627fa011d7b358aaf68b2241519",
+  "raw_artifact_sha256": "2f94dcbc1b711a9261bb426a78ac54dd8da9fb92a7e4e59c96f6ab25b1118a21",
+  "raw_artifact_path": "agent/runtime/package-sequence-validation.json",
   "observed": {
     "package_copy_matches": true,
     "preprocess_exit_code": 0,
     "preprocess_pass": true,
+    "sequence_first_moves_pass": true,
+    "sequence_first_move_exit_codes": {
+      "sw_02_space_interception": 0,
+      "sw_03_ground_extraction": 0
+    },
     "runtime_scenario_id": "01_First_Battle",
     "runtime_started": true,
     "runtime_survived_probe": true,
@@ -20,7 +26,7 @@
     "runtime_fatal_diagnostics": false,
     "candidate_still_matches": true
   },
-  "qualification": "preprocessing-only; GUI campaign entry unverified",
+  "qualification": "preprocessing and isolated first moves only; GUI campaign entry unverified",
   "pass": false,
   "build_eligibility": "candidate_unverified"
 }

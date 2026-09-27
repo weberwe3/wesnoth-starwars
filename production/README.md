@@ -179,12 +179,15 @@ this module. Those are subsequent U2 contracts.
 
 `validate_package.py` takes one candidate, verifies it, copies its exact game
 files into isolated temporary userdata, then calls the existing installed-engine
-preprocessor and first-scenario GUI startup probe. It rechecks both the staged
-copy and immutable candidate after the run and writes a bounded raw result under
-ignored runtime storage. Three deterministic wrapper fixtures pass in CI.
-The tracked `package_engine_baseline.json` records the corrected real result
-for the 108-file candidate: preprocessing exited 0, but no `Game` context was
-observed during the GUI probe. The package is not loadability-qualified or
+  preprocessor, isolated legal first-move probes for missions 2 and 3, and the
+  first-scenario GUI startup probe. It rechecks both the staged copy and immutable
+  candidate after the run and writes a bounded raw result under ignored runtime
+  storage. Four deterministic wrapper fixtures pass in CI. The tracked
+  `package_engine_baseline.json` records the current result for the 108-file
+  candidate from commit `2528cb6be18fc5b6b60b9978e0888b4f2e8efb93`:
+  preprocessing and both isolated first moves passed, but no `Game` context was
+  observed during the GUI probe. These first moves do not establish complete
+  objective routes or mission transitions. The package is not loadability-qualified or
 promotable. Earlier process-survival evidence was invalidated after discovering
 that `--skip-story` was unsupported and a title screen could remain alive.
 
