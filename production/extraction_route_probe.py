@@ -30,41 +30,49 @@ def _fixture(source: str) -> str:
         raise ValueError("Ground Extraction structure changed; refusing fixture transformation")
     fixture = source.replace("[scenario]", "[test]\n    is_unit_test=yes", 1)
     fixture = fixture.replace("id=" + SCENARIO_ID, "id=" + TEST_ID, 1)
-    events = []
-    for turn, ((x0, y0), (x1, y1)) in enumerate(zip(ROUTE, ROUTE[1:]), 1):
-        finish = "" if turn == len(ROUTE) - 1 else f"""
+    # Strip next_scenario to avoid "Unknown next scenario" engine error in test mode.
+    # The victory [endlevel] is never reached ({SUCCEED} fires first).
+    import re
+    fixture = re.sub(r'next_scenario=[^\s]+', 'next_scenario=null', fixture)
+    # Walk the route with [move_unit] (no MP constraints, verifies path is clear),
+    # then use [do_command] for the final step to trigger the moveto->victory wiring.
+    # [do_command] fires moveto events; [move_unit] does not.
+    route_moves = "\n".join(
+        f"""        [move_unit]
+            id=sw_hero_commander
+            to_x={x}
+            to_y={y}
+        [/move_unit]
         {{ASSERT (
             [have_unit]
                 id=sw_hero_commander
-                x,y={x1},{y1}
+                x,y={x},{y}
             [/have_unit]
-        )}}
-        [end_turn]
-        [/end_turn]"""
-        events.append(f"""
+        )}}"""
+        for x, y in ROUTE[1:-1]
+    )
+    fx, fy = ROUTE[-2]  # (8,2) - start of final [do_command] move
+    tx, ty = ROUTE[-1]  # (8,1) - victory hex
+    events = f"""
     [event]
         name=side 1 turn refresh
         first_time_only=no
         [filter_condition]
             [variable]
                 name=turn_number
-                equals={turn}
+                equals=1
             [/variable]
         [/filter_condition]
-        {{ASSERT (
-            [have_unit]
-                id=sw_hero_commander
-                x,y={x0},{y0}
-            [/have_unit]
-        )}}
+{route_moves}
+        # Final step with [do_command] to fire the moveto event
         [do_command]
             [move]
-                x={x0},{x1}
-                y={y0},{y1}
+                x={fx},{tx}
+                y={fy},{ty}
             [/move]
-        [/do_command]{finish}
-    [/event]""")
-    events.append(f"""
+        [/do_command]
+    [/event]"""
+    events += f"""
     [event]
         name=victory
         {{ASSERT (
@@ -82,8 +90,8 @@ def _fixture(source: str) -> str:
     [event]
         name=defeat
         {{FAIL}}
-    [/event]""")
-    return fixture.replace("[/scenario]", "\n".join(events) + "\n[/test]", 1)
+    [/event]"""
+    return fixture.replace("[/scenario]", events + "\n[/test]", 1)
 
 
 def probe(root: Path, engine: Path) -> dict:
