@@ -388,3 +388,20 @@ position fixture to prove assertions execute.
 insufficient. Confirm the scenario loaded and inspect fatal diagnostics before
 recording engine evidence. Keep temporary fixture changes and source behavior
 separate in the evidence record.
+
+### 2026-09-27 — a surviving Wesnoth process was still at the title screen
+
+**Symptom:** An exact-package GUI probe reported `01_First_Battle` startup as
+passing, but a separate direct campaign launch never produced a save or reached
+the plugin's `Game` context.
+**Confirmed cause:** The installed Wesnoth 1.19.27 binary rejects the harness's
+`--skip-story` option. The old startup check used process survival and absence
+of selected log errors; a process waiting at the title screen could satisfy
+both. Its child command-line output was not inspected.
+**Resolution:** Remove the unsupported option, refresh process status, capture
+child command-line output, and require a Lua plugin marker emitted only after
+the engine enters `Game`. In the corrected real run, preprocessing passes but
+the GUI marker is absent, so the package is not qualified.
+**Prevention:** A GUI process staying alive does not prove a scenario loaded.
+Require a positive in-game observation and a negative fixture for a surviving
+title screen before accepting installed-engine startup evidence.

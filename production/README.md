@@ -181,9 +181,9 @@ this module. Those are subsequent U2 contracts.
 files into isolated temporary userdata, then calls the existing installed-engine
 preprocessor and first-scenario GUI startup probe. It rechecks both the staged
 copy and immutable candidate after the run and writes a bounded raw result under
-ignored runtime storage. The tracked `package_engine_baseline.json` records the
-real local result and hashes for a 108-file candidate: preprocessing exited 0,
-and `01_First_Battle` started and survived the GUI probe without fatal log
-diagnostics. Three deterministic wrapper fixtures pass in CI. The baseline
-proves package loadability for that scenario only; it is not objective, save,
-transition, full campaign, or build-promotion evidence.
+ignored runtime storage. Three deterministic wrapper fixtures pass in CI.
+The tracked `package_engine_baseline.json` records the corrected real result
+for the 108-file candidate: preprocessing exited 0, but no `Game` context was
+observed during the GUI probe. The package is not loadability-qualified or
+promotable. Earlier process-survival evidence was invalidated after discovering
+that `--skip-story` was unsupported and a title screen could remain alive.
