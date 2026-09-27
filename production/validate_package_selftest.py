@@ -34,6 +34,7 @@ class PackageValidationTests(unittest.TestCase):
               mock.patch("validate_package.validate_engine_002", return_value={"pass": True}) as preprocess,
               mock.patch("validate_package.probe_sequence_load", return_value={"pass": True}) as sequence,
               mock.patch("validate_package.probe_extraction_route", return_value={"pass": True}) as route,
+              mock.patch("validate_package.probe_interception_route", return_value={"pass": True}) as interception,
               mock.patch("validate_package.runtime_scenario_probes", return_value={"pass": True}) as runtime):
             result = validate_packaged_candidate(self.root, self.candidate, self.engine)
         self.assertTrue(result["pass"])
@@ -42,6 +43,7 @@ class PackageValidationTests(unittest.TestCase):
         self.assertEqual(preprocess.call_count, 1)
         self.assertEqual(sequence.call_count, 1)
         self.assertEqual(route.call_count, 1)
+        self.assertEqual(interception.call_count, 1)
         self.assertEqual(runtime.call_count, 1)
 
     def test_copy_mutation_stops_before_engine(self) -> None:
@@ -64,11 +66,13 @@ class PackageValidationTests(unittest.TestCase):
               mock.patch("validate_package.validate_engine_002", return_value={"pass": False}),
               mock.patch("validate_package.probe_sequence_load") as sequence,
               mock.patch("validate_package.probe_extraction_route") as route,
+              mock.patch("validate_package.probe_interception_route") as interception,
               mock.patch("validate_package.runtime_scenario_probes") as runtime):
             result = validate_packaged_candidate(self.root, self.candidate, self.engine)
         self.assertFalse(result["pass"])
         sequence.assert_not_called()
         route.assert_not_called()
+        interception.assert_not_called()
         runtime.assert_not_called()
 
     def test_failed_packaged_first_move_blocks_gui_and_promotion(self) -> None:
@@ -76,11 +80,13 @@ class PackageValidationTests(unittest.TestCase):
               mock.patch("validate_package.validate_engine_002", return_value={"pass": True}),
               mock.patch("validate_package.probe_sequence_load", return_value={"pass": False}),
               mock.patch("validate_package.probe_extraction_route") as route,
+              mock.patch("validate_package.probe_interception_route") as interception,
               mock.patch("validate_package.runtime_scenario_probes") as runtime):
             result = validate_packaged_candidate(self.root, self.candidate, self.engine)
         self.assertFalse(result["pass"])
         self.assertEqual(result["sequence_first_moves"], {"pass": False})
         route.assert_not_called()
+        interception.assert_not_called()
         runtime.assert_not_called()
 
     def test_failed_packaged_objective_route_blocks_gui_and_promotion(self) -> None:
@@ -88,10 +94,24 @@ class PackageValidationTests(unittest.TestCase):
               mock.patch("validate_package.validate_engine_002", return_value={"pass": True}),
               mock.patch("validate_package.probe_sequence_load", return_value={"pass": True}),
               mock.patch("validate_package.probe_extraction_route", return_value={"pass": False}),
+              mock.patch("validate_package.probe_interception_route") as interception,
               mock.patch("validate_package.runtime_scenario_probes") as runtime):
             result = validate_packaged_candidate(self.root, self.candidate, self.engine)
         self.assertFalse(result["pass"])
         self.assertEqual(result["extraction_objective_route"], {"pass": False})
+        interception.assert_not_called()
+        runtime.assert_not_called()
+
+    def test_failed_interception_route_blocks_gui_and_promotion(self) -> None:
+        with (mock.patch("validate_package.verify_candidate", return_value=self.manifest),
+              mock.patch("validate_package.validate_engine_002", return_value={"pass": True}),
+              mock.patch("validate_package.probe_sequence_load", return_value={"pass": True}),
+              mock.patch("validate_package.probe_extraction_route", return_value={"pass": True}),
+              mock.patch("validate_package.probe_interception_route", return_value={"pass": False}),
+              mock.patch("validate_package.runtime_scenario_probes") as runtime):
+            result = validate_packaged_candidate(self.root, self.candidate, self.engine)
+        self.assertFalse(result["pass"])
+        self.assertEqual(result["interception_objective_route"], {"pass": False})
         runtime.assert_not_called()
 
 
