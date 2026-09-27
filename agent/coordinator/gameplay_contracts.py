@@ -9,11 +9,14 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import sys
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from production.contract_store import ContractStoreError, load_contracts
 
 
 ADDON_ROOT = "addons/Star_Wars_Thrawn_Trilogy"
-CONTRACT_FILE = "tests/gameplay-contracts.json"
 MAX_DIAGNOSTIC_CHARS = 6000
 MAX_HISTORICAL_TICKETS = 200
 _TERRAIN_TOKEN = re.compile(r"^[A-Za-z0-9]{1,4}(?:\^[A-Za-z0-9]{1,4})?$")
@@ -501,15 +504,12 @@ def validate_declared_contracts(root: Path, required_paths: list[str] | None = N
     """Validate explicit gameplay behavior contracts against current WML."""
     evidence: dict[str, Any] = {"schema_version": 1, "kind": "declared-gameplay-contracts", "pass": False, "checks": {"contract_file_present": False, "contract_schema_valid": False, "map_data_syntax": False, "campaign_loader": False, "campaign_dependencies": False}, "contracts": [], "diagnostic": "", "diagnostic_paths": []}
     try:
-        payload = json.loads(_read_text(root / ADDON_ROOT / CONTRACT_FILE))
-    except (OSError, json.JSONDecodeError) as exc:
+        declared, _ = load_contracts(root)
+    except (OSError, ContractStoreError) as exc:
         evidence["diagnostic"] = f"Gameplay contract file unavailable: {exc.__class__.__name__}"
         return evidence
     evidence["checks"]["contract_file_present"] = True
-    contracts = payload.get("contracts") if isinstance(payload, dict) else None
-    if payload.get("schema_version") != 1 or not isinstance(contracts, list) or not contracts or len(contracts) > 100 or any(not isinstance(item, dict) for item in contracts):
-        evidence["diagnostic"] = "Gameplay contract file has an invalid schema"
-        return evidence
+    contracts = [contract for contract, _ in declared]
     evidence["checks"]["contract_schema_valid"] = True
     try:
         sources = _config_files(root)

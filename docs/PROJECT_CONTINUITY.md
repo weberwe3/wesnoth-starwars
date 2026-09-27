@@ -1317,3 +1317,20 @@ award readiness or migrate historical ticket evidence. The protected runner
 must still establish run origin, register complete transitive dependencies,
 and connect accepted observations to requirement status before this layer can
 drive production selection or build promotion.
+
+The next package-4 contract migrated the 47 gameplay assertions from one v1
+file to five bounded v1 shards named by a v2 index. A programmatic comparison
+against the previous main confirmed all 47 IDs and full assertion objects are
+identical (canonical ID-map SHA-256
+`2d2606f2a384f1267aff9bdec3ec1e6380efd15b8db98126bbfaea0dc205ac28`).
+The declared-contract validator, dashboard completion and ticket scope, and
+source inventory now use the index. A legacy v1 reader remains for historical
+fixtures. The store rejects duplicate IDs and missing, unlisted, unsafe, or
+unsupported shards; capacity is 32 files, 100 contracts per file, and 1,000
+overall. The store selftest passed six negative/capacity cases; the scenario
+suite passed 31 under WSL Git, dashboard passed 196, and inventory selftest
+passed. Native Windows Git cannot read this WSL-created worktree's metadata,
+so the historical-retention test must run under WSL. Readiness consumer wiring
+and transitive requirement dependencies remain open. Next, connect accepted
+evidence to requirement status with a protected-runner origin gate and exact
+dependency registration; do not promote old ticket records by inference.

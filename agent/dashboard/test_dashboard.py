@@ -589,6 +589,9 @@ class CoordinationControlTests(unittest.TestCase):
             self.assertIn(
                 "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json", scoped
             )
+            self.assertIn(
+                "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/**", scoped
+            )
 
     def test_existing_protected_directory_remains_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1432,7 +1435,7 @@ class CoordinationControlTests(unittest.TestCase):
                 "id": "priority-01", "label": "Priority one", "brief": "Completed fixture",
                 "completion_contracts": ["fixture-contract"],
             }]}), encoding="utf-8")
-            contracts.write_text(json.dumps({"contracts": [{"id": "fixture-contract"}]}), encoding="utf-8")
+            contracts.write_text(json.dumps({"schema_version": 1, "contracts": [{"id": "fixture-contract"}]}), encoding="utf-8")
             controller = AutonomyController(
                 root,
                 ControlStore(root / "control.json"),

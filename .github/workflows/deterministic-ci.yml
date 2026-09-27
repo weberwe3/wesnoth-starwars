@@ -88,6 +88,11 @@ jobs:
       - name: Test deterministic scenario validation
         run: python3 agent/coordinator/scenario_launch_selftest.py
 
+      - name: Verify indexed production contracts and inventory
+        run: |
+          python3 production/contract_store_selftest.py
+          python3 production/inventory.py --check
+
       - name: Test ticket acceptance contracts
         run: python3 agent/coordinator/ticket_acceptance_selftest.py
 

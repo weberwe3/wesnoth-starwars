@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-thrawn-campaign-registration",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+      "expected_id": "Star_Wars_Thrawn_Trilogy"
+    }
+  ]
+}

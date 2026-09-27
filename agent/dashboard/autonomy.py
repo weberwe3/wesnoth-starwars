@@ -29,7 +29,7 @@ from game_validation_state import (
     gameplay_revalidation_required,
     historical_record,
 )
-from gameplay_contracts import validate_historical_retention
+from gameplay_contracts import ContractStoreError, load_contracts, validate_historical_retention
 from scenario_launch_selftest import validate_post_publish_game
 from art_pipeline import public_art_queue
 from art_import_production import ArtImportProduction, ArtProductionError, public_status
@@ -1492,7 +1492,7 @@ Do not stop merely because the first documented priority is already queued; stop
 when no safe non-overlapping priority can proceed without an unmerged dependency.
 Describe its user-visible or mod-facing impact separately from its implementation summary.
 Python will validate your JSON, create the isolated worktree, invoke workers, run gates, and stop before commit/push/merge.
-Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must also update addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json with a compact contract for each changed gameplay source. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Python runs historical-retention validation locally and rejects a candidate that breaks one.
+Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must update the relevant shard under addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/ with a compact contract for each changed gameplay source; update the gameplay-contracts.json index when adding a shard. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Python runs historical-retention validation locally and rejects a candidate that breaks one.
 {GAMEPLAY_ACCEPTANCE_RULES}
 Every wesnoth-addon-static ticket MUST include a non-null acceptance contract. It is immutable evidence that the promised feature is absent or different at the ticket base and present in the candidate. Use unit_placement for a promised placed unit (type, instance id, side, x, y), map_cell for a map coordinate (row, column, terrain), event_contains for a named event behavior, or source_text only for a precise non-gameplay WML text change. Every claim object must include every schema field; set fields irrelevant to its kind to null. Never use a note, comment, or generic existing contract as evidence that a new gameplay promise was fulfilled. Set acceptance null only for static-text tickets.
 Set ticket.resume_branch to the exact branch from resumable_local_work when continuing remnants.
@@ -2540,8 +2540,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             and (item.endswith((".cfg", ".lua", "/**")))
             for item in value
         )
-        contract = ADDON_ROOT + "/tests/gameplay-contracts.json"
-        return value + [contract] if gameplay and contract not in value else value
+        contracts = [ADDON_ROOT + "/tests/gameplay-contracts.json", ADDON_ROOT + "/tests/gameplay-contracts/**"]
+        return value + [path for path in contracts if path not in value] if gameplay else value
 
     @staticmethod
     def _fresh_start_requested(brief: str) -> bool:
@@ -3127,21 +3127,11 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
     def _completed_gameplay_contract_ids(self) -> set[str]:
         """Read compact published-feature evidence without invoking the engine."""
 
-        path = self.root / ADDON_ROOT / "tests" / "gameplay-contracts.json"
         try:
-            value = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            declared, _ = load_contracts(self.root)
+        except (OSError, ContractStoreError):
             return set()
-        contracts = value.get("contracts") if isinstance(value, dict) else None
-        if not isinstance(contracts, list):
-            return set()
-        return {
-            contract["id"]
-            for contract in contracts
-            if isinstance(contract, dict)
-            and isinstance(contract.get("id"), str)
-            and contract["id"]
-        }
+        return {contract["id"] for contract, _ in declared}
 
     @staticmethod
     def _represented_pr_branches(pull_requests: list[object]) -> set[str]:

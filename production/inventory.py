@@ -16,6 +16,11 @@ import tempfile
 from pathlib import Path
 from typing import Iterable, Mapping, Sequence
 
+try:  # Both direct script and package imports are supported.
+    from .contract_store import ContractStoreError, INDEX_PATH, load_contracts
+except ImportError:
+    from contract_store import ContractStoreError, INDEX_PATH, load_contracts
+
 SCHEMA_ID = "wesnoth-starwars.production.source-inventory"
 SCHEMA_VERSION = 1
 MAX_FILES = 512
@@ -23,7 +28,7 @@ MAX_FILE_BYTES = 2_000_000
 MAX_TOTAL_BYTES = 20_000_000
 MAX_REFERENCES = 10_000
 CAMPAIGN_FILE = Path("addons/Star_Wars_Thrawn_Trilogy/_main.cfg")
-CONTRACT_FILE = Path("addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json")
+CONTRACT_FILE = Path(INDEX_PATH)
 
 _ASSIGNMENT = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$")
 _BLOCK = re.compile(r"^\s*\[\s*([+A-Za-z_][A-Za-z0-9_]*)\s*\]\s*$")
@@ -181,8 +186,11 @@ def build_inventory(repo_root: str | os.PathLike[str]) -> dict:
     unit_files = sorted(_relative(p, root) for p in (root / "addons/Star_Wars_Thrawn_Trilogy/units").rglob("*.cfg"))
     utility_files = sorted(_relative(p, root) for p in (root / "addons/Star_Wars_Thrawn_Trilogy/utils").rglob("*.cfg"))
     lua_files = sorted(_relative(p, root) for p in (root / "addons/Star_Wars_Thrawn_Trilogy/lua").rglob("*.lua"))
-    contract_rel = _relative(root / CONTRACT_FILE, root)
-    input_files = [campaign_rel, *scenario_files, *unit_files, *utility_files, *lua_files, contract_rel]
+    try:
+        contracts, contract_files = load_contracts(root)
+    except ContractStoreError as exc:
+        raise InventoryError(str(exc)) from exc
+    input_files = [campaign_rel, *scenario_files, *unit_files, *utility_files, *lua_files, *contract_files]
     if len(input_files) > MAX_FILES:
         raise InventoryError(f"inventory input exceeds file bound: {len(input_files)}")
     total = 0
@@ -256,21 +264,9 @@ def build_inventory(repo_root: str | os.PathLike[str]) -> dict:
     if len(source_files) > MAX_FILES or total > MAX_TOTAL_BYTES:
         raise InventoryError("source input exceeds bounded inventory limits")
 
-    try:
-        contracts = json.loads(_read(root, contract_rel))
-    except json.JSONDecodeError as exc:
-        raise InventoryError("gameplay-contracts.json is not valid JSON") from exc
-    if not isinstance(contracts, dict) or not isinstance(contracts.get("contracts"), list):
-        raise InventoryError("gameplay-contracts.json has no contracts list")
     contract_ids = []
-    seen_contracts: set[str] = set()
-    for contract in contracts["contracts"]:
-        if not isinstance(contract, dict) or not isinstance(contract.get("id"), str):
-            raise InventoryError("gameplay contract is missing string id")
-        if contract["id"] in seen_contracts:
-            raise InventoryError(f"duplicate gameplay contract id: {contract['id']}")
-        seen_contracts.add(contract["id"])
-        contract_ids.append({"id": contract["id"], "source_path": contract_rel})
+    for contract, declaring_path in contracts:
+        contract_ids.append({"id": contract["id"], "source_path": declaring_path})
 
     for campaign in campaigns:
         campaign["structural_status"] = "observed"
