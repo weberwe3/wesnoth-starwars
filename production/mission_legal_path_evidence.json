@@ -1,0 +1,107 @@
+{
+  "schema_id": "wesnoth-starwars.production.mission-legal-path-evidence",
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-27T04:54:03.935808+00:00",
+  "scenario_id": "sw_21_restore_the_beacon",
+  "scenario_source_sha256": "871b5b12c3629b915d9e660a73ca9acd57a791fe273304a59e7da6924fbe79e1",
+  "unit_source_sha256": {
+    "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg": "c0a28a5afbe93d67a86ddec5685508a8dd7e05c35b18d8f91538d5efac3c242d",
+    "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg": "06801d4c7b0bd9145b65d647067251b789f29416909f5fceacc7853b93f604b3",
+    "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg": "7aac6ec85f0c2be3549506d7b864fcc9e8d571520190b8b17506a1c2cacb920b",
+    "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg": "266bfd9065092b623db41666d0eb595e214c1c5e87e6d3a58bc4006d1ddd9a3e"
+  },
+  "source_inventory_sha256": "235b8002d30351b5cf43e5133b36d0c30b00e4fccdb1b15c3818a3cccd109d04",
+  "probe_script_sha256": "b2eb716744c2cbe795e4daee95a8cea618fbc1cd711ccca2f24d039520a63e10",
+  "local_raw_run_sha256": "d27f988b05895937790df9e5aaf933f81504ebda63d28f60d2d0bc30f53ecb8a",
+  "engine_version": "1.19.27",
+  "engine_binary_sha256": "120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae",
+  "temporary_movetype_fix": false,
+  "pass": true,
+  "results": [
+    {
+      "case": "load",
+      "fixture_sha256": "af49b647c41e20aaf5ed23b76db06144923efddb0767c5bfdbfe6e38cb933b23",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "movement_point",
+      "fixture_sha256": "6efe625a7831a7f7577f8ba9214b60272750314c1070f8e481c28a480c7871d8",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "first_move",
+      "fixture_sha256": "e02401b7e936b6bbe4013b69ebcbad2eb43b29371d06ba06919b4dceaf3ddd96",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "first_move_origin",
+      "fixture_sha256": "6e42f8fa029497523ac5d5763c57eb59ad65542a47d64d0536398e24d0f97b3b",
+      "exit_code": 1,
+      "log_verdict": "fail",
+      "meets_expectation": true
+    },
+    {
+      "case": "path_to_beacon",
+      "fixture_sha256": "1de13a97419128c81f244c2c8d83d53569e2c31543a96cf42a8d8aca8dea990d",
+      "exit_code": 8,
+      "log_verdict": "victory",
+      "meets_expectation": true
+    },
+    {
+      "case": "wrong_unit_terminal",
+      "fixture_sha256": "9b23ddd4f49616421a9d7ddc1391cb4e90f129bc737db43297e579df8f39516c",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    }
+  ],
+  "objective_route": [
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      5,
+      3
+    ],
+    [
+      6,
+      4
+    ],
+    [
+      7,
+      4
+    ],
+    [
+      8,
+      3
+    ]
+  ],
+  "fixture_changes": {
+    "all_cases": "Source scenario copied into isolated userdata, root transformed to [test], observation/action events appended.",
+    "path_to_beacon": "Enemy controller set to null and terminal dialogue suppressed only in the temporary fixture; original engineer-only moveto filter and endlevel victory action retained.",
+    "wrong_unit_terminal": "Commander start staged at 7,2 in the temporary fixture; a normal player move to 8,3 must not trigger victory."
+  },
+  "observed": {
+    "engineer_objective_victory": "observed_with_enemy_turn_disabled_and_terminal_dialogue_suppressed",
+    "wrong_unit_rejection": "observed_with_commander_start_staged",
+    "mission_transition": "unassessed",
+    "defeat_paths": "unassessed",
+    "save_reload": "unassessed"
+  },
+  "limits": "This is deterministic test-mode objective and filter evidence. It does not verify the terminal dialogue, active-AI win reliability, campaign transition, defeat handling, save/reload, or a distributable player build. No shipped mission or unit source changes in this package."
+}

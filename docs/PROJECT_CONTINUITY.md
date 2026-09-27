@@ -1269,3 +1269,19 @@ wrong-origin fixture fails as intended. Campaign I preprocessing and the
 Restore the Beacon GUI startup probe also pass. The source inventory was
 regenerated to bind the changed unit hashes. These checks still do not prove
 beacon objective victory, save/load, or campaign transitions.
+
+The next instrumented Restore the Beacon probe used normal player move
+commands along a six-step engineer route and observed Wesnoth's `PASS TEST
+(VICTORY)` result. Its stable regression fixture leaves the original
+engineer-only `moveto` filter and victory action intact, but disables enemy
+turns and suppresses the terminal dialogue in the temporary copy. A separate
+fixture stages the commander next to the terminal and confirms that its normal
+player move onto that hex does not win. All six default cases passed against
+the installed 1.19.27 binary; exact hashes and fixture changes are in
+`production/mission_legal_path_evidence.json`. Active-AI runs gave both
+victory and defeat during exploration, so this is objective-wiring evidence,
+not a measured win rate or full mission play qualification. The terminal
+dialogue, defeat paths, transition/carryover, save/reload, and player-ready
+package remain unverified. Next, test the source mission's defeat and
+transition behavior with bounded engine fixtures, then qualify actual campaign
+play and packaging.
