@@ -280,3 +280,10 @@ its victory-event position assertion had failed. Intentional negative fixtures
 still require their failed assertion. A player-command error also rejects the
 result. This harness change stales previous requirement envelopes until a
 new direct run binds the revised probe hash.
+
+The clean integrated rerun on
+`ff54bc7f9e5b3805f25f3539c9d209cab75b7afe` used Wesnoth 1.19.27 and
+returned current/pass under the stricter rule. Ignored raw SHA-256:
+`d4dfd6a4b50fcc929ccece0ac3245e34bdd9e5df94dc5fd0acf763bf43cae48a`;
+envelope SHA-256:
+`e17cccd96b145b7cbc41bb1585ea416cab3eeb0173acf69f145e9dbc3d5ea169`.
