@@ -1528,3 +1528,20 @@ baseline predates this source/probe change. No normal GUI play, mission
 transition, save/load, or verified player build is established. Project rules
 now direct route designers to the official WML references and the installed
 engine's terrain and movetype definitions before constructing route tests.
+
+The clean integrated candidate from commit
+`8fe5f506fad1aadba3dda9edcf72e98d7a85af8a` supersedes the local branch
+observations above. Its 108-file package SHA-256 is
+`bec1abfe15d80f811eb541a39fd242351ed47688bcc096b7389fd3b493295b46`.
+The exact copied package passed integrity and preprocessing, both isolated
+first-move fixtures, and the six-step Ground Extraction objective route
+(victory exit 8) with installed Wesnoth 1.19.27. The GUI process started and
+survived the bounded probe, but did not reach an observed `Game` context.
+Combined validation failed, and the candidate remains `candidate_unverified`.
+The ignored raw package-validation JSON SHA-256 is
+`74c44ee38debc9a121b45faae6e3d25718e749b68aca47e8a805f0521bd40cdb`;
+its source tree and all relevant tool hashes are in
+`production/package_engine_baseline.json`. Actual campaign transition,
+carryover, ordinary GUI play, save/load, offline verified launch, and a player
+build remain unverified. Next action: establish a supported visible Game-context
+probe, then validate the exact staged package through the three-mission route.

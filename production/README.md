@@ -189,14 +189,17 @@ and accepts victory only at the required hex with no failed WML assertion. Run
 it with `--engine <installed-wesnoth-executable>`. It does not establish normal
 GUI play, transition, carryover, defeat, or save/load.
 
-The tracked `package_engine_baseline.json` records the preceding 108-file
-candidate from commit `2528cb6be18fc5b6b60b9978e0888b4f2e8efb93`:
-preprocessing and both isolated first moves passed, but no `Game` context was
-observed. That source predates the corridor repair and route gate; this baseline
-is historical until a new integrated candidate is staged and tested. The
-package is not loadability-qualified or promotable. Earlier process-survival
-evidence was invalidated after discovering that `--skip-story` was unsupported
-and a title screen could remain alive.
+The tracked `package_engine_baseline.json` records an exact 108-file candidate
+from integrated commit `8fe5f506fad1aadba3dda9edcf72e98d7a85af8a`.
+Package integrity, preprocessing, both isolated first moves, and the isolated
+Ground Extraction objective route passed with installed Wesnoth 1.19.27. The
+route reached its objective and exited 8. The GUI probe started and survived,
+but no `Game` context was observed. The combined result failed and eligibility
+remains `candidate_unverified`; normal play and promotion are unverified. The
+ignored raw JSON SHA-256 is
+`74c44ee38debc9a121b45faae6e3d25718e749b68aca47e8a805f0521bd40cdb`.
+Earlier process-survival evidence was invalidated after discovering that
+`--skip-story` was unsupported and a title screen could remain alive.
 
 ## Direct scoped requirement observation
 
