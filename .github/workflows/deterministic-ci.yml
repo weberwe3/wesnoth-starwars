@@ -106,6 +106,9 @@ jobs:
       - name: Test direct scoped requirement observation
         run: python3 production/requirement_runner_selftest.py
 
+      - name: Test engine probe verdict integrity
+        run: python3 production/mission_probe_selftest.py
+
       - name: Test ticket acceptance contracts
         run: python3 agent/coordinator/ticket_acceptance_selftest.py
 
