@@ -1461,3 +1461,11 @@ now rejects that combination for every positive case, preserves the intentional
 negative-assertion case, and rejects player-command errors. This changes the
 protected requirement harness hash, so the prior Restore the Beacon envelope
 must be rerun from a clean integrated commit before it is current again.
+
+That rerun on `ff54bc7f9e5b3805f25f3539c9d209cab75b7afe` passed with
+Wesnoth 1.19.27 under the stricter assertion rule. Its ignored raw SHA-256 is
+`d4dfd6a4b50fcc929ccece0ac3245e34bdd9e5df94dc5fd0acf763bf43cae48a`;
+envelope SHA-256 is
+`e17cccd96b145b7cbc41bb1585ea416cab3eeb0173acf69f145e9dbc3d5ea169`.
+The result remains a controlled objective fixture and does not resolve the
+three-mission route, GUI package gate, save/load, or offline verified launch.
