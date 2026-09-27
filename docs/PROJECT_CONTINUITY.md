@@ -1235,3 +1235,19 @@ so an existing dashboard choice is preserved without retaining an obsolete
 model option. The controlled orchestration specification and DOCX archive were
 synchronized with these routes; older historical Terra entries in this ledger
 describe past behavior.
+
+### 2026-09-27 — source inventory and engine test capability
+
+PR #222 merged a deterministic production source inventory covering both
+registered campaigns, 21 scenarios, 21 custom unit IDs, 47 gameplay contracts,
+79 verified local references, two unresolved stock-art references, and 107
+hashed local source files. Its readiness dimensions remain unassessed.
+
+An isolated installed-Wesnoth 1.19.27 probe can load a custom WML test, issue
+a normal one-hex move through `[do_command]`, and reject a deliberately wrong
+position assertion with `FAIL TEST` and exit code 1. The probe source and exact
+binary/fixture hashes are recorded under `production/`. This establishes a
+test-mode action-injection route, not legal victory in a project mission.
+The next capability contract must exercise an actual mission objective, a
+negative objective case, defeat, transition, and save/reload without allowing
+direct handler calls to stand in for legal play.
