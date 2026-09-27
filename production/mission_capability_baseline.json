@@ -1,0 +1,97 @@
+{
+  "schema_id": "wesnoth-starwars.production.mission-capability-baseline",
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-27T03:59:12+00:00",
+  "scenario_id": "sw_21_restore_the_beacon",
+  "scenario_source_sha256": "871b5b12c3629b915d9e660a73ca9acd57a791fe273304a59e7da6924fbe79e1",
+  "unit_source_sha256": {
+    "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg": "2118ddce56b9dc884785df97f9dd64d740bad860c8231c18ea49b7960f596653",
+    "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg": "7d1c8efc1d17cc5480d32feb445ab5ee3b99c15d54058b7e51af1dda200d3b98",
+    "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg": "7aac6ec85f0c2be3549506d7b864fcc9e8d571520190b8b17506a1c2cacb920b",
+    "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg": "e037a531bd51a8fdcc5c73da257bf0b3560f4c9a5cb4f74d82e2497cccea0d5c"
+  },
+  "engine_version": "1.19.27",
+  "engine_binary_sha256": "120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae",
+  "probe_script_sha256": "16172b212e22cd53e59bf68a7efe3263e9ef9dc05297fc1c67b4661d0d1d294f",
+  "exercise_type": "instrumented_real_scenario_test_mode",
+  "original_source": {
+    "pass": false,
+    "temporary_movetype_fix": false,
+    "temporary_movetype_replacements": 0,
+    "results": [
+      {
+        "case": "load",
+        "exit_code": 0,
+        "log_verdict": "pass",
+        "expected_verdict": "pass",
+        "meets_expectation": true
+      },
+      {
+        "case": "movement_point",
+        "exit_code": 0,
+        "log_verdict": "pass",
+        "expected_verdict": "pass",
+        "meets_expectation": true
+      },
+      {
+        "case": "first_move",
+        "exit_code": 1,
+        "log_verdict": "fail",
+        "expected_verdict": "pass",
+        "meets_expectation": false
+      },
+      {
+        "case": "first_move_origin",
+        "exit_code": 0,
+        "log_verdict": "pass",
+        "expected_verdict": "fail",
+        "meets_expectation": false
+      }
+    ]
+  },
+  "temporary_repair_diagnostic": {
+    "pass": true,
+    "temporary_movetype_fix": true,
+    "temporary_movetype_replacements": 18,
+    "results": [
+      {
+        "case": "load",
+        "exit_code": 0,
+        "log_verdict": "pass",
+        "expected_verdict": "pass",
+        "meets_expectation": true
+      },
+      {
+        "case": "movement_point",
+        "exit_code": 0,
+        "log_verdict": "pass",
+        "expected_verdict": "pass",
+        "meets_expectation": true
+      },
+      {
+        "case": "first_move",
+        "exit_code": 0,
+        "log_verdict": "pass",
+        "expected_verdict": "pass",
+        "meets_expectation": true
+      },
+      {
+        "case": "first_move_origin",
+        "exit_code": 1,
+        "log_verdict": "fail",
+        "expected_verdict": "fail",
+        "meets_expectation": true
+      }
+    ]
+  },
+  "conclusion": "The original engineer has a movement point but a legal first move fails; replacing unsupported foot/mount movement type names with installed-core smallfoot/mounted in an isolated copy makes the move pass and the wrong-origin negative fixture fail.",
+  "legal_objective_victory": "unassessed",
+  "save_reload": "unassessed",
+  "engine_core_units_sha256": "8e35d2708b9c3f0772dd90846753b0e53ad85217a89aedf59a505a00cce7c684",
+  "installed_core_movement_type_names": {
+    "foot": false,
+    "mount": false,
+    "smallfoot": true,
+    "mounted": true
+  }
+}
