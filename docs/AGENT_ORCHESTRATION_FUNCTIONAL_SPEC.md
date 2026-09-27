@@ -198,18 +198,18 @@ Current routing:
 
 | Role | Provider / model | Purpose |
 |---|---|---|
-| Implementer | OpenAI Codex - `gpt-5.6-terra` at medium reasoning; one fallback: `gpt-5.6-luna` at low reasoning | Main bounded implementation work |
-| Fast fix | OpenAI Codex - `gpt-5.6-luna` at medium reasoning; one fallback: `gpt-5.6-luna` at low reasoning | Small mechanical corrections |
-| Tester | OpenAI Codex - `gpt-5.6-luna` at medium reasoning; one fallback: `gpt-5.6-luna` at low reasoning | Independent read-only test evaluation |
+| Implementer | OpenAI Codex - `gpt-6-sol` at medium reasoning; one fallback: `gpt-6-luna` at low reasoning | Main bounded implementation work |
+| Fast fix | OpenAI Codex - `gpt-6-luna` at medium reasoning; one fallback: `gpt-6-luna` at low reasoning | Small mechanical corrections |
+| Tester | OpenAI Codex - `gpt-6-luna` at medium reasoning; one fallback: `gpt-6-luna` at low reasoning | Independent read-only test evaluation |
 | Primary reviewer | Cloudflare Workers AI - `@cf/nvidia/nemotron-3-120b-a12b` | Preferred independent review |
-| Reviewer fallback | OpenAI Codex - `gpt-5.6-luna` at low reasoning | Only when Nemotron is unavailable or non-decisive |
+| Reviewer fallback | OpenAI Codex - `gpt-6-luna` at low reasoning | Only when Nemotron is unavailable or non-decisive |
 
 Routing is policy, not permanence. Models may change if availability, capability, retirement, quota, or quality changes. The role separation and fallback rules are more important than any specific model.
 
 Known provider observations:
 
-- Terra Medium is the primary implementation model. Luna Medium is used for bounded Fast-Fix and independent Tester work; deterministic validation remains model-free.
-- When an Implementer, Fast-Fix, Tester, or Reviewer invocation is unavailable or non-decisive, the coordinator may invoke exactly one GPT-5.6 Luna Light fallback for that same stage. A substantive `FAIL` or `REQUEST_CHANGES` is authoritative and must not be bypassed. Write-capable Terra and Luna calls use the Codex CLI's auto-reviewed write path from a native Windows-backed worktree, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. They may not test, commit, merge, push, delete, or broaden scope.
+- Sol Medium is the primary implementation model. Luna Medium is used for bounded Fast-Fix and independent Tester work; deterministic validation remains model-free.
+- When an Implementer, Fast-Fix, Tester, or Reviewer invocation is unavailable or non-decisive, the coordinator may invoke exactly one GPT-6 Luna Light fallback for that same stage. A substantive `FAIL` or `REQUEST_CHANGES` is authoritative and must not be bypassed. Write-capable Sol and Luna calls use the Codex CLI's auto-reviewed write path from a native Windows-backed worktree, disabled web search, an ephemeral session, a credential-stripped environment, the original objective, and the original allowed-path boundary. They may not test, commit, merge, push, delete, or broaden scope.
 - Codex 0.153.4 reports `sandbox: read-only` for its base command sandbox even when `--approve-for-me` is active and approved patches are applied through automatic review. Python therefore requires a native drive-letter worktree, invokes `--approve-for-me` without the incompatible explicit `--sandbox workspace-write` option, requires `approval: on-request` transcript evidence, and then relies on the process result plus deterministic Git diff, scope, protected-path, validation, tester, and reviewer gates. A UNC or WSL-only worktree, missing approval evidence, or unsupported sandbox report is a local infrastructure hard stop. It must not be recorded as a provider failure or open a Codex worker two-run provider circuit.
 - A failed Luna Light fallback is an immediate provider/worker hard stop and does not consume either of the two bounded code-recovery attempts. If a worker produces a candidate but a later deterministic, test, or review gate fails, the normal bounded recovery policy applies.
 - The Tester uses Luna Medium in a read-only sandbox and may use Luna Light once when unavailable or non-decisive. A substantive tester `FAIL` remains authoritative and must not be bypassed. The Reviewer uses independent Nemotron first and may use Luna Light once only for an unavailable or non-decisive primary review.
@@ -259,7 +259,7 @@ Security rules:
 - tester/reviewer roles are read-only;
 - deterministic test execution belongs to Python, not the LLM worker.
 
-Write-capable Terra and Luna worker calls are narrowly authorized exceptions to the OpenCode worker tool profile. Codex runs through automatic review in a native Windows-backed managed worktree, with no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Its base shell may remain read-only while approved patch operations write through the application review path. Deterministic Git diff, scope, and protected-path gates remain authoritative immediately after it returns; patch approval never grants publication or governance authority.
+Write-capable Sol and Luna worker calls are narrowly authorized exceptions to the OpenCode worker tool profile. Codex runs through automatic review in a native Windows-backed managed worktree, with no web search, no forwarded provider credentials, and explicit instructions to edit only the allowed project paths. Its base shell may remain read-only while approved patch operations write through the application review path. Deterministic Git diff, scope, and protected-path gates remain authoritative immediately after it returns; patch approval never grants publication or governance authority.
 
 Tool denial is an application-level security boundary. It is not claimed to be equivalent to a separately virtualized OS sandbox.
 
@@ -440,7 +440,7 @@ Engine validation should become an automatic trusted coordinator gate rather tha
 
 ### Stage 5 - Tester
 
-A separate read-only model evaluates the implementation against the objective and available evidence. GLM-4.7 Flash is primary. Terra Medium may run once when GLM is unavailable or non-decisive, provided Terra did not implement the candidate.
+A separate read-only Luna Medium tester evaluates the implementation against the objective and available evidence. Luna Light may run once only when Luna Medium is unavailable or non-decisive.
 
 Tester must not modify files or compensate for deterministic failures.
 
@@ -560,7 +560,7 @@ coordinator must minimize usage without weakening gates by:
   and planned-priority inventory have an identical fingerprint;
 - using compact reference digests, planning inventory, allowed-path lists, and
   validation summaries in model prompts;
-- using Luna Medium for mechanical Fast-Fix work and Terra Medium for
+- using Luna Medium for mechanical Fast-Fix work and Sol Medium for
   substantive implementation;
 - waiting at least 60 seconds between completed autonomous tickets to avoid
   predictable rolling per-minute quota failures and unnecessary fallbacks; and

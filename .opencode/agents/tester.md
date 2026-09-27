@@ -1,7 +1,7 @@
 ---
 description: Independently evaluates implementation and deterministic test evidence
 mode: all
-model: openai/gpt-5.6-luna
+model: openai/gpt-6-luna
 permission:
   "*": deny
   read:

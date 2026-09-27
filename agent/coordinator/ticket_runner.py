@@ -349,11 +349,11 @@ def invoke_terra(
     *, worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
     reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
-    """Run one sandboxed Terra worker through the Codex application."""
+    """Run one sandboxed Sol worker through the Codex application."""
 
     executable = resolve_codex_executable()
     if not executable:
-        output = "Codex Terra fallback executable is unavailable to the secure runner."
+        output = "Codex Sol fallback executable is unavailable to the secure runner."
         log_file.write_text(output + "\n", encoding="utf-8")
         return 127, output
     try:
@@ -377,7 +377,7 @@ def invoke_terra(
         return recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE, output
     command = [
         executable, "exec", "-C", codex_worktree,
-        "-m", "gpt-5.6-terra",
+        "-m", "gpt-6-sol",
         "-c", f'model_reasoning_effort="{reasoning_effort}"',
         "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
         "--color", "never", "-",
@@ -447,14 +447,14 @@ def invoke_luna(
         return recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE, output
     command = [
         executable, "exec", "-C", codex_worktree,
-        "-m", "gpt-5.6-luna",
+        "-m", "gpt-6-luna",
         "-c", f'model_reasoning_effort="{reasoning_effort}"',
         "-c", 'web_search="disabled"', "--ephemeral", "--ignore-user-config",
         "--color", "never", "-",
     ]
     if sandbox == "workspace-write":
         # Keep write-capable Luna runs on the same audited auto-review path as
-        # Terra. Explicit --sandbox conflicts with current Codex auto-review.
+        # Sol. Explicit --sandbox conflicts with current Codex auto-review.
         command.insert(command.index("--ephemeral"), "--approve-for-me")
     else:
         command[command.index("-m"):command.index("-m")] = ["-s", sandbox]
@@ -488,7 +488,7 @@ def invoke_luna(
 def invoke_terra_implementer(
     *, worktree: Path, prompt: str, log_file: Path
 ) -> tuple[int, str]:
-    """Compatibility wrapper for the Terra implementation path."""
+    """Compatibility wrapper for the Sol implementation path."""
 
     return invoke_terra(
         worktree=worktree,
@@ -504,22 +504,22 @@ def invoke_managed_terra(
     worktree: Path, prompt: str, log_file: Path, sandbox: str, timeout: int,
     decisive_verdicts: tuple[str, ...] = (), reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
-    model = "openai/gpt-5.6-terra"
+    model = "openai/gpt-6-sol"
     available, wait = policy.before_attempt(model, run_sequence)
     if not available:
         output = (
-            f"[COORDINATOR] Terra {reasoning_effort.title()} skipped: provider-failure circuit remains open "
+            f"[COORDINATOR] Sol {reasoning_effort.title()} skipped: provider-failure circuit remains open "
             "for this worktree run.\n"
         )
         log_file.write_text(output, encoding="utf-8")
         status.event(
-            f"Skipped Terra {reasoning_effort.title()}", level="warning", source="coordinator",
-            detail="A recent Codex failure suppresses Terra for two later worktree runs.",
+            f"Skipped Sol {reasoning_effort.title()}", level="warning", source="coordinator",
+            detail="A recent Codex failure suppresses Sol for two later worktree runs.",
         )
         return MODEL_CIRCUIT_OPEN, output
     if wait:
         status.event(
-            f"Rate-limit pacing delayed Terra {reasoning_effort.title()}", source="coordinator",
+            f"Rate-limit pacing delayed Sol {reasoning_effort.title()}", source="coordinator",
             detail=f"Launch delayed {wait:.2f} seconds.",
         )
     rc, output = invoke_terra(
@@ -548,7 +548,7 @@ def invoke_managed_luna(
     decisive_verdicts: tuple[str, ...] = (),
     reasoning_effort: str = "medium",
 ) -> tuple[int, str]:
-    model = f"openai/gpt-5.6-luna-{reasoning_effort}"
+    model = f"openai/gpt-6-luna-{reasoning_effort}"
     available, wait = policy.before_attempt(model, run_sequence)
     if not available:
         output = (
@@ -1475,7 +1475,7 @@ DETERMINISTIC LOCAL CONTEXT:
         "-s",
         "read-only",
         "-m",
-        "gpt-5.6-sol",
+        "gpt-6-sol",
         "-c",
         f'model_reasoning_effort="{effort}"',
         "--ephemeral",
@@ -1704,7 +1704,7 @@ def evaluate_candidate(
         }
 
     status.handoff("validation", "tester", "Validated change sent to tester")
-    status.set_assignment("tester", "OpenAI", "GPT-5.6 Luna · Medium")
+    status.set_assignment("tester", "OpenAI", "GPT-6 Luna · Medium")
     status.set_worker("tester", "active", "Independent verification")
     validation_evidence = compact_validation_evidence(validation)
     deterministic_context = collect_recovery_context(worktree, ticket)
@@ -1732,7 +1732,7 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
     tester_primary_output = ""
     tester_primary_pass = bool(prior.get("tester_primary_pass")) if resume_stage == "reviewer" else False
     tester_primary_fail = bool(prior.get("tester_primary_fail")) if resume_stage == "reviewer" else False
-    tester_used = prior.get("tester_used", "openai/gpt-5.6-luna-medium") if resume_stage == "reviewer" else "openai/gpt-5.6-luna-medium"
+    tester_used = prior.get("tester_used", "openai/gpt-6-luna-medium") if resume_stage == "reviewer" else "openai/gpt-6-luna-medium"
     tester_rc = prior.get("tester_exit_code") if resume_stage == "reviewer" else None
     tester_output = ""
     tester_pass = bool(prior.get("tester_pass")) if resume_stage == "reviewer" else False
@@ -1767,7 +1767,7 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
         tester_pass = tester_primary_pass
     if resume_stage != "reviewer" and not tester_pass and not tester_primary_fail:
         status.handoff("tester", "tester", "Luna Light tester fallback activated")
-        status.set_assignment("tester", "OpenAI", "GPT-5.6 Luna · Light")
+        status.set_assignment("tester", "OpenAI", "GPT-6 Luna · Light")
         status.set_worker("tester", "active", "Independent Luna Light fallback testing")
         luna_tester_prompt = tester_prompt.replace(
             "Do not execute commands, edit files, or use the web.",
@@ -1795,7 +1795,7 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
             tester_luna_rc == 0
             and core.contains_verdict(tester_luna_output, "FAIL")
         )
-        tester_used = "openai/gpt-5.6-luna-light"
+        tester_used = "openai/gpt-6-luna-light"
         tester_rc = tester_luna_rc
         tester_output = tester_luna_output
         tester_pass = tester_luna_pass
@@ -1908,7 +1908,7 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
     else:
         status.set_worker("reviewer", "waiting", "Unavailable or non-decisive")
         status.handoff("reviewer", "reviewer-fallback", "Luna Light review activated")
-        status.set_assignment("reviewer-fallback", "OpenAI", "GPT-5.6 Luna · Light")
+        status.set_assignment("reviewer-fallback", "OpenAI", "GPT-6 Luna · Light")
         status.set_worker("reviewer-fallback", "active", "Independent Luna Light review")
         luna_reviewer_prompt = reviewer_prompt.replace(
             "Do not execute commands, edit files, invoke another agent, or use the web.",
@@ -1936,7 +1936,7 @@ Return your normal report beginning with VERDICT: APPROVE or VERDICT: REQUEST_CH
             luna_reviewer_rc == 0
             and core.contains_verdict(luna_reviewer_output, "REQUEST_CHANGES")
         )
-        reviewer_used = "openai/gpt-5.6-luna"
+        reviewer_used = "openai/gpt-6-luna"
         reviewer_approve = luna_reviewer_approve
         decisive_output = luna_reviewer_output
         decisive_rc = luna_reviewer_rc
@@ -2220,7 +2220,7 @@ Return your normal structured implementation report.
         impl_rc = int(prior.get("implementation_exit_code", 0))
         primary_impl_rc = int(prior.get("primary_implementation_exit_code", impl_rc))
         worker_fallback = prior.get("worker_fallback") or prior.get("terra_implementer_fallback") or {
-            "used": False, "provider": "OpenAI", "model": "gpt-5.6-luna",
+            "used": False, "provider": "OpenAI", "model": "gpt-6-luna",
             "reasoning_effort": "low", "available_at_start": None,
             "exit_code": None,
         }
@@ -2243,21 +2243,21 @@ Return your normal structured implementation report.
 
         status.set_dispatch_prompt(ticket["worker"], implementation_prompt)
         if ticket["worker"] == "implementer":
-            status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
+            status.set_assignment("implementer", "OpenAI", "GPT-6 Sol · Medium")
             impl_rc, impl_output = invoke_managed_terra(
                 policy=model_policy,
                 run_sequence=run_sequence,
                 status=status,
                 worktree=worktree,
                 prompt=implementation_prompt,
-                log_file=log_dir / "implementer-terra-medium.txt",
+                log_file=log_dir / "implementer-sol-medium.txt",
                 sandbox="workspace-write",
                 timeout=TERRA_IMPLEMENTER_TIMEOUT,
                 reasoning_effort="medium",
             )
-            primary_label = "Terra Medium Implementer"
+            primary_label = "Sol Medium Implementer"
         else:
-            status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Luna · Medium")
+            status.set_assignment("fast-fix", "OpenAI", "GPT-6 Luna · Medium")
             impl_rc, impl_output = invoke_managed_luna(
                 policy=model_policy,
                 run_sequence=run_sequence,
@@ -2274,7 +2274,7 @@ Return your normal structured implementation report.
         primary_impl_rc = impl_rc
         implementation_failure = None
         worker_fallback = {
-            "used": False, "provider": "OpenAI", "model": "gpt-5.6-luna",
+            "used": False, "provider": "OpenAI", "model": "gpt-6-luna",
             "reasoning_effort": "low",
             "available_at_start": codex_available_at_start,
             "exit_code": None,
@@ -2282,7 +2282,7 @@ Return your normal structured implementation report.
         if recovery_policy.should_use_luna_light_fallback(ticket["worker"], impl_rc, False):
             worker_fallback["used"] = True
             status.handoff("coordinator", ticket["worker"], "Primary worker to Luna Light fallback")
-            status.set_assignment(ticket["worker"], "OpenAI", "GPT-5.6 Luna · Light")
+            status.set_assignment(ticket["worker"], "OpenAI", "GPT-6 Luna · Light")
             status.set_worker(ticket["worker"], "active", "Running single Luna Light fallback")
             luna_prompt = implementation_prompt
             status.set_dispatch_prompt(ticket["worker"], luna_prompt)
@@ -2480,7 +2480,7 @@ Return your normal structured implementation report.
             recovery_limit=recovery_policy.MAX_RECOVERY_ATTEMPTS,
         )
         status.handoff("coordinator", "fast-fix", f"Scoped recovery attempt {attempt} assigned")
-        status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Luna · Medium")
+        status.set_assignment("fast-fix", "OpenAI", "GPT-6 Luna · Medium")
         status.set_worker("fast-fix", "active", plan["corrective_action"])
         repair_prompt = f"""TASK ID: {task_id}
 
@@ -2522,7 +2522,7 @@ Inspect the existing candidate and make the smallest correction.
         luna_recovery_rc = None
         if recovery_policy.should_use_luna_light_fallback("fast-fix", impl_rc, False):
             status.handoff("fast-fix", "fast-fix", "Fast-Fix to Luna Light fallback")
-            status.set_assignment("fast-fix", "OpenAI", "GPT-5.6 Luna · Light")
+            status.set_assignment("fast-fix", "OpenAI", "GPT-6 Luna · Light")
             status.set_worker("fast-fix", "active", "Running single Luna Light fallback")
             luna_repair_prompt = repair_prompt
             status.set_dispatch_prompt("fast-fix", luna_repair_prompt)

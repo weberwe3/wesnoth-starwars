@@ -29,14 +29,13 @@ MODEL_RPM: dict[str, int | None] = {
     "opencode/ling-3.0-flash-fin-free": None,
     "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash": 300,
     "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b": 40,
-    "openai/gpt-5.6-sol": None,
-    "openai/gpt-5.6-terra": None,
-    "openai/gpt-5.6-luna": None,  # legacy persisted route key
+    "openai/gpt-6-sol": None,
+    "openai/gpt-6-luna": None,
     # The Codex CLI exposes Luna through one model name, but policy tracks the
     # reasoning tier separately. A Medium failure must not silently suppress
     # the explicitly configured Light fallback for the same bounded stage.
-    "openai/gpt-5.6-luna-medium": None,
-    "openai/gpt-5.6-luna-low": None,
+    "openai/gpt-6-luna-medium": None,
+    "openai/gpt-6-luna-low": None,
 }
 
 MODEL_LIMIT_SOURCE = {
@@ -44,17 +43,16 @@ MODEL_LIMIT_SOURCE = {
     "opencode/ling-3.0-flash-fin-free": "provider/account assigned (legacy route)",
     "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash": "published free tier (legacy route)",
     "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b": "published free tier",
-    "openai/gpt-5.6-sol": "Codex account managed",
-    "openai/gpt-5.6-terra": "Codex account managed",
-    "openai/gpt-5.6-luna": "Codex account managed (legacy route)",
-    "openai/gpt-5.6-luna-medium": "Codex account managed",
-    "openai/gpt-5.6-luna-low": "Codex account managed",
+    "openai/gpt-6-sol": "Codex account managed",
+    "openai/gpt-6-luna": "Codex account managed",
+    "openai/gpt-6-luna-medium": "Codex account managed",
+    "openai/gpt-6-luna-low": "Codex account managed",
 }
 
 AGENT_MODELS = {
-    "implementer": "openai/gpt-5.6-terra",
-    "fast-fix": "openai/gpt-5.6-luna-medium",
-    "tester": "openai/gpt-5.6-luna-medium",
+    "implementer": "openai/gpt-6-sol",
+    "fast-fix": "openai/gpt-6-luna-medium",
+    "tester": "openai/gpt-6-luna-medium",
     "reviewer": "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
 }
 

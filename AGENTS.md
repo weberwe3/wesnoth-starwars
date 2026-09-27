@@ -48,8 +48,8 @@ publication, deletion, and three-failure safety boundary.
 
 The dashboard planned-ticket selector is a rolling view of pending static and
 coordinator-generated tickets; completed tickets must not remain selectable.
-When the primary Fast-Fix model fails, the coordinator may invoke one GPT-5.6
-Terra fallback at low reasoning in the same isolated worktree. It retains the
+When the primary Fast-Fix model fails, the coordinator may invoke one GPT-6
+Luna fallback at low reasoning in the same isolated worktree. It retains the
 original objective and allowed paths and receives no authority to test, commit,
 publish, merge, delete, or broaden scope.
 

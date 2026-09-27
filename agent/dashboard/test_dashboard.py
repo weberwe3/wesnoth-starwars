@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent" / "coordinator"))
 
 from runtime_status import RuntimeStatus, default_state  # noqa: E402
-from coordination_control import ControlStore, VALID_MODES  # noqa: E402
+from coordination_control import ControlStore, VALID_MODES, default_control_state  # noqa: E402
 import recovery_policy  # noqa: E402
 import model_policy  # noqa: E402
 import ticket_runner  # noqa: E402
@@ -330,10 +330,10 @@ class RuntimeStatusTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "agent" / "runtime" / "state.json"
             status = RuntimeStatus(path)
-            status.set_assignment("implementer", "OpenAI", "GPT-5.6 Terra · Medium")
+            status.set_assignment("implementer", "OpenAI", "GPT-6 Sol · Medium")
             state = public_state(json.loads(path.read_text(encoding="utf-8")))
             self.assertEqual(state["workers"]["implementer"]["provider"], "OpenAI")
-            self.assertEqual(state["workers"]["implementer"]["model"], "GPT-5.6 Terra · Medium")
+            self.assertEqual(state["workers"]["implementer"]["model"], "GPT-6 Sol · Medium")
 
     def test_runtime_publishes_the_exact_secret_safe_worker_dispatch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -485,20 +485,30 @@ class CoordinationControlTests(unittest.TestCase):
             controller.set_mode("sol-high")
             public = controller.public_state()
             self.assertEqual(public["mode"], "sol-high")
-            self.assertEqual(public["assignment"]["model"], "GPT-5.6 Sol")
+            self.assertEqual(public["assignment"]["model"], "GPT-6 Sol")
             self.assertEqual(public["assignment"]["effort"], "high")
             self.assertTrue(public["capabilities"]["merge"])
             self.assertFalse(public["automation"]["enabled"])
             with self.assertRaises(ControlError):
                 controller.set_mode("danger-full-access")
 
-    def test_terra_high_is_an_allowlisted_planner_mode(self) -> None:
+    def test_sol_high_is_an_allowlisted_planner_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
-            controller.set_mode("terra-high")
+            controller.set_mode("sol-high")
             public = controller.public_state()
-            self.assertEqual(public["assignment"]["model"], "GPT-5.6 Terra")
-            self.assertEqual(VALID_MODES["terra-high"]["cli_model"], "gpt-5.6-terra")
+            self.assertEqual(public["assignment"]["model"], "GPT-6 Sol")
+            self.assertEqual(VALID_MODES["sol-high"]["cli_model"], "gpt-6-sol")
+
+    def test_saved_terra_selection_migrates_to_sol_with_same_effort(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "control.json"
+            state = default_control_state()
+            state["mode"] = "terra-high"
+            path.write_text(json.dumps(state), encoding="utf-8")
+            controller = self.controller(directory)
+            self.assertEqual(controller.public_state()["mode"], "sol-high")
+            self.assertEqual(controller.public_state()["assignment"]["effort"], "high")
 
     def test_worktree_lessons_are_required_and_bounded_for_llm_prompts(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1336,7 +1346,7 @@ class CoordinationControlTests(unittest.TestCase):
     def test_selected_planned_ticket_starts_without_calling_the_planner(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
-            controller.set_mode("terra-low")
+            controller.set_mode("sol-low")
             with (
                 mock.patch.object(controller, "_secure_bridge_online", return_value=True),
                 mock.patch.object(controller, "_launch_locked") as launch,
@@ -1344,7 +1354,7 @@ class CoordinationControlTests(unittest.TestCase):
             ):
                 controller.start_planned_ticket("generated-next")
             launch.assert_called_once_with(
-                "terra-low", "Dispatch the selected planned ticket", continuous=False,
+                "sol-low", "Dispatch the selected planned ticket", continuous=False,
                 planned_ticket_id="generated-next",
             )
             planner.assert_not_called()
@@ -1381,7 +1391,7 @@ class CoordinationControlTests(unittest.TestCase):
                 mock.patch.object(controller, "_resolve_empty_historical_repair", return_value=True),
             ):
                 controller._run(
-                    run_id, "terra-low", "Dispatch the selected planned ticket", False,
+                    run_id, "sol-low", "Dispatch the selected planned ticket", False,
                     planned_ticket_id="generated-next",
                 )
             planner.assert_not_called()
@@ -1506,14 +1516,14 @@ class CoordinationControlTests(unittest.TestCase):
                 ]),
             ):
                 proposal = controller._refill_backlog(
-                    "abc123def456", "terra-high", "Continue autonomously", inventory
+                    "abc123def456", "sol-high", "Continue autonomously", inventory
                 )
             saved = controller._generated_backlog()
             self.assertEqual(len(saved["tickets"]), 2)
             self.assertTrue(proposal["summary"].startswith("generated-"))
             self.assertEqual(planner.call_count, 1)
             command = planner.call_args.args[0]
-            self.assertEqual(command[command.index("-m") + 1], "gpt-5.6-terra")
+            self.assertEqual(command[command.index("-m") + 1], "gpt-6-sol")
 
     def test_refill_retries_contract_only_backlog_with_literal_event_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1588,7 +1598,7 @@ class CoordinationControlTests(unittest.TestCase):
                 ]),
             ):
                 proposal = controller._refill_backlog(
-                    "abc123def456", "terra-high", "Continue autonomously", inventory
+                    "abc123def456", "sol-high", "Continue autonomously", inventory
                 )
             self.assertTrue(proposal["summary"].startswith("generated-"))
             self.assertEqual(planner.call_count, 2)
@@ -1630,7 +1640,7 @@ class CoordinationControlTests(unittest.TestCase):
                 )),
             ):
                 with self.assertRaisesRegex(ControlError, "Ticket 1: Generated ticket contract is invalid"):
-                    controller._refill_backlog("abc123def456", "terra-high", "Continue autonomously", inventory)
+                    controller._refill_backlog("abc123def456", "sol-high", "Continue autonomously", inventory)
             self.assertEqual(planner.call_count, 2)
 
     def test_planner_stop_does_not_launch_a_guaranteed_conflicting_refill(self) -> None:
@@ -2276,7 +2286,7 @@ class CoordinationControlTests(unittest.TestCase):
 
     def test_terra_fallback_accepts_low_reasoning_for_fast_fix(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            log = Path(directory) / "terra-light.txt"
+            log = Path(directory) / "sol-light.txt"
             completed = subprocess.CompletedProcess(
                 [], 0, stdout=(
                     "approval: on-request\nsandbox: read-only\ncandidate returned\n"
@@ -2299,7 +2309,7 @@ class CoordinationControlTests(unittest.TestCase):
 
     def test_terra_accepts_codex_auto_review_base_sandbox_header(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            log = Path(directory) / "terra-auto-review.txt"
+            log = Path(directory) / "sol-auto-review.txt"
             completed = subprocess.CompletedProcess(
                 [], 0, stdout=(
                     "approval: on-request\nsandbox: read-only\npatch: completed\n"
@@ -2319,7 +2329,7 @@ class CoordinationControlTests(unittest.TestCase):
 
     def test_terra_write_fallback_rejects_silent_read_only_downgrade(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            log = Path(directory) / "terra-read-only.txt"
+            log = Path(directory) / "sol-read-only.txt"
             completed = subprocess.CompletedProcess(
                 [], 0, stdout="sandbox: read-only\nNo files changed.\n"
             )
@@ -2343,7 +2353,7 @@ class CoordinationControlTests(unittest.TestCase):
 
     def test_terra_write_fallback_requires_sandbox_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            log = Path(directory) / "terra-missing-header.txt"
+            log = Path(directory) / "sol-missing-header.txt"
             completed = subprocess.CompletedProcess([], 0, stdout="No files changed.\n")
             with (
                 mock.patch.object(
@@ -2359,7 +2369,7 @@ class CoordinationControlTests(unittest.TestCase):
 
     def test_windows_codex_refuses_unc_write_workspace_before_launch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            log = Path(directory) / "terra-unc.txt"
+            log = Path(directory) / "sol-unc.txt"
             with (
                 mock.patch.object(
                     ticket_runner,
@@ -2440,7 +2450,7 @@ class CoordinationControlTests(unittest.TestCase):
             runtime = Path(directory) / "runtime"
             policy = model_policy.ModelPolicy(runtime)
             run_sequence = policy.begin_run("NATIVE-WRITE")
-            policy.record_failure("openai/gpt-5.6-terra", run_sequence, "process")
+            policy.record_failure("openai/gpt-6-sol", run_sequence, "process")
             status = mock.Mock()
             log = Path(directory) / "terra.txt"
             with mock.patch.object(
@@ -2458,7 +2468,7 @@ class CoordinationControlTests(unittest.TestCase):
                 )
             self.assertEqual(code, recovery_policy.CODEX_WRITE_SANDBOX_UNAVAILABLE)
             self.assertTrue(
-                policy.before_attempt("openai/gpt-5.6-terra", run_sequence + 4)[0]
+                policy.before_attempt("openai/gpt-6-sol", run_sequence + 4)[0]
             )
 
     def test_launcher_supplied_codex_path_survives_missing_path_entry(self) -> None:
@@ -2589,7 +2599,7 @@ class CoordinationControlTests(unittest.TestCase):
             command = run.call_args.args[0]
             self.assertEqual(code, 0)
             self.assertEqual(output, "VERDICT: PASS\n")
-            self.assertIn("gpt-5.6-luna", command)
+            self.assertIn("gpt-6-luna", command)
             self.assertIn('model_reasoning_effort="medium"', command)
             self.assertEqual(command[command.index("-s") + 1], "read-only")
 
@@ -2935,12 +2945,12 @@ class ModelPolicyTests(unittest.TestCase):
         )
         self.assertNotIn("google/gemini-3.8-flash", model_policy.MODEL_RPM)
         self.assertNotIn("google/gemini-3.6-flash", model_policy.MODEL_RPM)
-        self.assertIsNone(model_policy.MODEL_RPM["openai/gpt-5.6-luna"])
+        self.assertIsNone(model_policy.MODEL_RPM["openai/gpt-6-luna"])
 
     def test_active_worker_model_routes_match_the_cost_policy(self) -> None:
-        self.assertEqual(model_policy.AGENT_MODELS["implementer"], "openai/gpt-5.6-terra")
-        self.assertEqual(model_policy.AGENT_MODELS["fast-fix"], "openai/gpt-5.6-luna-medium")
-        self.assertEqual(model_policy.AGENT_MODELS["tester"], "openai/gpt-5.6-luna-medium")
+        self.assertEqual(model_policy.AGENT_MODELS["implementer"], "openai/gpt-6-sol")
+        self.assertEqual(model_policy.AGENT_MODELS["fast-fix"], "openai/gpt-6-luna-medium")
+        self.assertEqual(model_policy.AGENT_MODELS["tester"], "openai/gpt-6-luna-medium")
         self.assertEqual(
             model_policy.AGENT_MODELS["reviewer"],
             "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b",
@@ -2966,7 +2976,7 @@ class ModelPolicyTests(unittest.TestCase):
             )
             glm = "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash"
             nemotron = "cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b"
-            luna = "openai/gpt-5.6-luna"
+            luna = "openai/gpt-6-luna"
             run = policy.begin_run("DAILY-QUOTA")
             self.assertTrue(policy.before_attempt(glm, run)[0])
             policy.record_failure(
@@ -3111,7 +3121,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         self.assertEqual(result["tester_primary_exit_code"], 1)
         self.assertEqual(result["tester_luna_exit_code"], 0)
         self.assertTrue(result["tester_luna_pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna-light")
+        self.assertEqual(result["tester_used"], "openai/gpt-6-luna-light")
         self.assertEqual(invoked, ["reviewer"])
 
     def test_explicit_primary_tester_failure_does_not_seek_second_opinion(self) -> None:
@@ -3129,7 +3139,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             luna_responses=[(0, "VERDICT: PASS")],
         )
         self.assertTrue(result["pass"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna-medium")
+        self.assertEqual(result["tester_used"], "openai/gpt-6-luna-medium")
         self.assertIsNone(result["tester_luna_exit_code"])
         self.assertEqual(invoked, ["reviewer"])
 
@@ -3139,7 +3149,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             luna_responses=[(0, "VERDICT: PASS"), (0, "VERDICT: APPROVE")],
         )
         self.assertTrue(result["pass"])
-        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["reviewer_used"], "openai/gpt-6-luna")
         self.assertEqual(result["reviewer_luna_exit_code"], 0)
         self.assertEqual(invoked, ["reviewer"])
         self.assertEqual(result["reviewer_fallback_exit_code"], 0)
@@ -3151,7 +3161,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         )
         self.assertFalse(result["pass"])
         self.assertEqual(result["failure"]["class"], "reviewer_change_request")
-        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["reviewer_used"], "openai/gpt-6-luna")
         self.assertEqual(invoked, ["reviewer"])
 
     def test_luna_light_can_review_when_terra_implemented(self) -> None:
@@ -3160,7 +3170,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             luna_responses=[(0, "VERDICT: PASS"), (0, "VERDICT: APPROVE")],
         )
         self.assertTrue(result["pass"])
-        self.assertEqual(result["reviewer_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["reviewer_used"], "openai/gpt-6-luna")
         self.assertEqual(invoked, ["reviewer"])
 
     def test_reviewer_checkpoint_skips_validation_and_tester(self) -> None:
@@ -3169,7 +3179,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
             "result": {
                 "validation": {"pass": True},
                 "tester_exit_code": 0,
-                "tester_used": "openai/gpt-5.6-luna",
+                "tester_used": "openai/gpt-6-luna",
                 "tester_primary_exit_code": 88,
                 "tester_primary_pass": False,
                 "tester_primary_fail": False,
@@ -3184,7 +3194,7 @@ class ReviewerFallbackRoutingTests(unittest.TestCase):
         )
         self.assertTrue(result["pass"])
         self.assertEqual(invoked, ["reviewer"])
-        self.assertEqual(result["tester_used"], "openai/gpt-5.6-luna")
+        self.assertEqual(result["tester_used"], "openai/gpt-6-luna")
 
 
 class StageCheckpointTests(unittest.TestCase):

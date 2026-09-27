@@ -23,43 +23,22 @@ VALID_MODES = {
     "sol-low": {
         "label": "Sol Low",
         "provider": "OpenAI",
-        "model": "GPT-5.6 Sol",
-        "cli_model": "gpt-5.6-sol",
+        "model": "GPT-6 Sol",
+        "cli_model": "gpt-6-sol",
         "effort": "low",
     },
     "sol-medium": {
         "label": "Sol Medium",
         "provider": "OpenAI",
-        "model": "GPT-5.6 Sol",
-        "cli_model": "gpt-5.6-sol",
+        "model": "GPT-6 Sol",
+        "cli_model": "gpt-6-sol",
         "effort": "medium",
     },
     "sol-high": {
         "label": "Sol High",
         "provider": "OpenAI",
-        "model": "GPT-5.6 Sol",
-        "cli_model": "gpt-5.6-sol",
-        "effort": "high",
-    },
-    "terra-low": {
-        "label": "Terra Low",
-        "provider": "OpenAI",
-        "model": "GPT-5.6 Terra",
-        "cli_model": "gpt-5.6-terra",
-        "effort": "low",
-    },
-    "terra-medium": {
-        "label": "Terra Medium",
-        "provider": "OpenAI",
-        "model": "GPT-5.6 Terra",
-        "cli_model": "gpt-5.6-terra",
-        "effort": "medium",
-    },
-    "terra-high": {
-        "label": "Terra High",
-        "provider": "OpenAI",
-        "model": "GPT-5.6 Terra",
-        "cli_model": "gpt-5.6-terra",
+        "model": "GPT-6 Sol",
+        "cli_model": "gpt-6-sol",
         "effort": "high",
     },
 }
@@ -153,7 +132,14 @@ class ControlStore:
     @staticmethod
     def _normalize(value: object) -> dict[str, Any]:
         fallback = default_control_state()
-        if not isinstance(value, dict) or value.get("mode") not in VALID_MODES:
+        if not isinstance(value, dict):
+            return fallback
+        mode = value.get("mode")
+        # Preserve an owner's selected reasoning tier across the Terra-to-Sol
+        # route migration without leaving obsolete choices in the UI.
+        if mode in {"terra-low", "terra-medium", "terra-high"}:
+            mode = "sol-" + mode.split("-", 1)[1]
+        if mode not in VALID_MODES:
             return fallback
         run = value.get("run")
         if not isinstance(run, dict):
@@ -183,7 +169,7 @@ class ControlStore:
         return {
             "schema_version": 1,
             "updated_at": value.get("updated_at") or fallback["updated_at"],
-            "mode": value["mode"],
+            "mode": mode,
             "automation": {
                 "enabled": bool(automation.get("enabled")),
                 "brief": brief,
