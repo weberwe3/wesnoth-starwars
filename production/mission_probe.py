@@ -1,9 +1,9 @@
-"""Exercise one real mission through isolated Wesnoth test-mode fixtures.
+"""Exercise one source mission through isolated Wesnoth test-mode fixtures.
 
-The source scenario is copied without changing its events or units. Only its
-root tag becomes a test tag and each fixture adds an observation/action event.
-Results are capability evidence, not a legal-victory claim unless the fixture
-actually reaches the original objective through legal game actions.
+Every fixture changes the root tag and adds bounded observations/actions.
+Specific cases also change enemy control, dialogue, starting placement, or a
+death handler in the temporary copy; results declare those controls. Engine
+actions and outcomes are evidence only for the exercised fixture conditions.
 """
 
 from __future__ import annotations
@@ -27,6 +27,16 @@ TERMINAL_DIALOGUE = '''        [message]
             speaker=sw_beacon_field_engineer_team
             message= _ "Beacon synchronized. New Republic channels are live again."
         [/message]
+'''
+ENGINEER_DIE_EVENT = '''    [event]
+        name=die
+        [filter]
+            id=sw_beacon_field_engineer_team
+        [/filter]
+        [endlevel]
+            result=defeat
+        [/endlevel]
+    [/event]
 '''
 CASES = {
     "load": r'''
@@ -233,6 +243,63 @@ CASES["commander_start"] = r'''
         {SUCCEED}
     [/event]
 '''
+CASES["timeout_defeat"] = r'''
+    [event]
+        name=side 1 turn refresh
+        first_time_only=no
+        [wml_message]
+            logger=warning
+            message=probe_turn_$turn_number
+        [/wml_message]
+        {ASSERT (
+            [have_unit]
+                id=sw_beacon_commander
+            [/have_unit]
+        )}
+        {ASSERT (
+            [have_unit]
+                id=sw_beacon_field_engineer_team
+            [/have_unit]
+        )}
+        [end_turn]
+        [/end_turn]
+    [/event]
+'''
+CASES["engineer_death_direct"] = r'''
+    [event]
+        name=side 1 turn 1
+        [kill]
+            id=sw_beacon_field_engineer_team
+            fire_event=yes
+        [/kill]
+        {FAIL}
+    [/event]
+'''
+CASES["commander_death_direct"] = r'''
+    [event]
+        name=side 1 turn 1
+        [kill]
+            id=sw_beacon_commander
+            fire_event=yes
+        [/kill]
+        {FAIL}
+    [/event]
+'''
+CASES["engineer_death_handler_removed"] = r'''
+    [event]
+        name=side 1 turn 1
+        [kill]
+            id=sw_beacon_field_engineer_team
+            fire_event=yes
+        [/kill]
+        {ASSERT (
+            [have_unit]
+                id=sw_beacon_commander
+            [/have_unit]
+        )}
+        {SUCCEED}
+    [/event]
+'''
 EXPECTED_VERDICTS = {
     "load": "pass",
     "movement_point": "pass",
@@ -242,6 +309,10 @@ EXPECTED_VERDICTS = {
     "path_to_beacon": "victory",
     "wrong_unit_terminal": "pass",
     "commander_start": "pass",
+    "timeout_defeat": "defeat",
+    "engineer_death_direct": "defeat",
+    "commander_death_direct": "defeat",
+    "engineer_death_handler_removed": "pass",
 }
 EXERCISE_TYPES = {
     "load": "engine_scenario_initial_state",
@@ -252,6 +323,10 @@ EXERCISE_TYPES = {
     "path_to_beacon": "engine_player_move_sequence_to_original_victory",
     "wrong_unit_terminal": "staged_wrong_unit_then_engine_player_move_command",
     "commander_start": "engine_scenario_initial_state",
+    "timeout_defeat": "normal_turn_progression_to_time_limit_defeat",
+    "engineer_death_direct": "direct_death_event_injection",
+    "commander_death_direct": "direct_death_event_injection",
+    "engineer_death_handler_removed": "direct_death_event_injection_mutation_negative",
 }
 
 
@@ -280,6 +355,14 @@ def _render_test(source: str, case: str) -> str:
         if transformed.count(commander_start) != 1:
             raise ValueError("commander start changed; refusing fixture transformation")
         transformed = transformed.replace(commander_start, commander_start.replace("x=1", "x=7").replace("y=3", "y=2"), 1)
+    if case == "timeout_defeat":
+        if transformed.count("controller=ai") != 1:
+            raise ValueError("enemy controller changed; refusing fixture transformation")
+        transformed = transformed.replace("controller=ai", "controller=null", 1)
+    if case == "engineer_death_handler_removed":
+        if transformed.count(ENGINEER_DIE_EVENT) != 1:
+            raise ValueError("engineer death handler changed; refusing mutation fixture")
+        transformed = transformed.replace(ENGINEER_DIE_EVENT, "", 1)
     transformed = transformed.replace("[scenario]", "[test]\n    is_unit_test=yes", 1)
     transformed = transformed.replace("id=" + ORIGINAL_ID, "id=" + test_id, 1)
     transformed = transformed.replace("[/scenario]", CASES[case] + "[/test]", 1)
@@ -354,6 +437,8 @@ def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_move
                     verdict = "invalid_fixture"
                 elif f"PASS TEST (VICTORY) (8): {test_id}" in log:
                     verdict = "victory"
+                elif f"FAIL TEST (DEFEAT) (7): {test_id}" in log:
+                    verdict = "defeat"
                 elif f"PASS TEST (0): {test_id}" in log:
                     verdict = "pass"
                 elif re.search(rf"FAIL TEST .*: {re.escape(test_id)}", log):
@@ -363,8 +448,9 @@ def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_move
                 expected = EXPECTED_VERDICTS[case]
                 meets_expectation = (
                     verdict == expected
-                    and completed.returncode == {"pass": 0, "fail": 1, "victory": 8}[expected]
+                    and completed.returncode == {"pass": 0, "fail": 1, "victory": 8, "defeat": 7}[expected]
                     and (expected != "fail" or "conditional test unexpectedly failed" in log)
+                    and (case != "timeout_defeat" or "probe_turn_10" in log)
                 )
                 results.append({
                     "case": case,
@@ -396,6 +482,8 @@ def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_move
         "terminal_dialogue_suppressed_in_path_fixture": "path_to_beacon" in case_names,
         "enemy_turn_disabled_in_path_fixture": "path_to_beacon" in case_names,
         "commander_start_staged_in_wrong_unit_fixture": "wrong_unit_terminal" in case_names,
+        "enemy_turn_disabled_in_timeout_fixture": "timeout_defeat" in case_names,
+        "engineer_death_handler_removed_in_negative_fixture": "engineer_death_handler_removed" in case_names,
         "temporary_movetype_fix": temporary_movetype_fix,
         "temporary_movetype_replacements": changed_movetypes,
         "results": results,
@@ -409,7 +497,15 @@ def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_move
             if "wrong_unit_terminal" in verified_cases else "unassessed"
         ),
         "mission_transition": "unassessed",
-        "defeat_paths": "unassessed",
+        "defeat_paths": {
+            "turn_limit": "observed_with_enemy_turn_disabled" if "timeout_defeat" in verified_cases else "unassessed",
+            "engineer_death": (
+                "direct_death_event_and_source_handler_causality_observed"
+                if {"engineer_death_direct", "engineer_death_handler_removed"} <= verified_cases
+                else "unassessed"
+            ),
+            "commander_death": "direct_death_defeat_observed" if "commander_death_direct" in verified_cases else "unassessed",
+        },
         "save_reload": "unassessed",
     }
 
@@ -420,7 +516,9 @@ def main() -> int:
     parser.add_argument("--repo-root", default=Path(__file__).resolve().parents[1])
     parser.add_argument("--cases", nargs="+", choices=sorted(CASES), default=[
         "load", "movement_point", "first_move", "first_move_origin",
-        "path_to_beacon", "wrong_unit_terminal",
+        "path_to_beacon", "wrong_unit_terminal", "timeout_defeat",
+        "engineer_death_direct", "engineer_death_handler_removed",
+        "commander_death_direct",
     ])
     parser.add_argument("--temporary-movetype-fix", action="store_true", help="diagnostic only: replace invalid movement type names in the temporary copy")
     parser.add_argument("--output", default=Path(__file__).resolve().parents[1] / "agent/runtime/mission-probe.json")

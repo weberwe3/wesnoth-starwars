@@ -73,5 +73,17 @@ terminal dialogue **only in the temporary fixture**. Those controls make the
 objective test deterministic and avoid a test-mode display stall. The negative
 fixture stages the commander one hex from the terminal and uses a normal
 player move for the final step. The shipped mission content is unchanged by
-this probe. Active-AI win reliability, the terminal dialogue, defeat paths,
+this probe.
+
+`mission_defeat_evidence.json` extends the default run with a normal ten-turn
+timeout. The temporary timeout fixture disables enemy turns, asserts both
+required units remain present, and logs turns 1 through 10 before the engine
+returns its defeat result. Direct `[kill]` actions with `fire_event=yes` show
+defeat after the engineer or commander dies. Removing the engineer's source
+`die` handler only in a negative fixture makes the same injected death no
+longer defeat the player, which identifies that rule as causal. Direct death
+injection does not establish legal combat death; commander defeat may also be
+enforced by the engine's generic leader rule.
+
+Active-AI win reliability, the terminal dialogue, legal-combat death,
 transition/carryover, save/reload, and a player-ready build remain unverified.
