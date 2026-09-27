@@ -1142,7 +1142,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
-      "sha256": "00ca229d315957000831a818addd0f9b4d6854cbd1f2a9a4b2d5998d604144fe"
+      "sha256": "ef9bd9bdf4ecf22444088a1c2d8d25625f2d10d5a23fe16f462360b8c463d6ca"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg",
@@ -1170,7 +1170,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/08_space_breakout.cfg",
-      "sha256": "9646fe7cad85864985aa2ba645f781b1b80084283ff18a6c3d15b4ef9af7396b"
+      "sha256": "c90ee2dee1205f91725b1535454875dc03825de940bc36d4dc781acf6060672f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/09_sensor_array_sabotage.cfg",
@@ -1178,15 +1178,15 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/10_borderland_withdrawal.cfg",
-      "sha256": "17bee12cfa087f62b7972c9882137701f423dce29d2762582725402e78449dbf"
+      "sha256": "6c53fb9a88271a902b72aa1bbe64b44b357437d7b663dc2c0b3916b514e7d0c3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/11_rendezvous_under_fire.cfg",
-      "sha256": "df3ec84a571d6c3f8534e618efea85494a0e65cfaadd844a1449b5eff33bccce"
+      "sha256": "9a3ad762e4d65effb14f1582ee08f5616bb5a5a9f4f39066295f44595856bb1b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/12_breakout_at_the_rendezvous.cfg",
-      "sha256": "5ff53179df3a68d961d8c80709ed30647a512438f3fd9c9f79346faa38702e33"
+      "sha256": "5cbac3a6103f7e7c22289f581d008c59452bc1d7cbcf87ffbdf0078f33b71b95"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/13_dark_force_rising_recon.cfg",
@@ -1254,7 +1254,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json",
-      "sha256": "ff3517c44af44c2f2ba18ccf7ad6cd16d9e5dafbbb6257633ff6f5276f1ba3c7"
+      "sha256": "1085b4f66300dbf84a1c1ea7cb4e22a07003ea93edbd7bd6ce281b30162c2e56"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/heroes.json",
