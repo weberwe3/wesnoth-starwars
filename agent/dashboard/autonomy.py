@@ -36,6 +36,10 @@ from art_import_production import ArtImportProduction, ArtProductionError, publi
 import recovery_policy
 import ticket_runner
 import worktree_paths
+from engine_compatibility import (
+    AREA_SOURCES, PLANNER_SCHEMA as COMPATIBILITY_SCHEMA,
+    touches_game_content, validate_review,
+)
 
 
 PLANNER_TIMEOUT_SECONDS = 300
@@ -169,7 +173,7 @@ TICKET_SCHEMA = {
                         "validation_profile", "validation_root", "resume_branch",
                         "resume_pr_number", "resume_pr_head_sha",
                         "replace_pr_number", "replace_pr_head_sha",
-                        "replace_pr_branch", "acceptance",
+                        "replace_pr_branch", "acceptance", "compatibility_review",
                     ],
                     "properties": {
                         "worker": {
@@ -209,6 +213,7 @@ TICKET_SCHEMA = {
                             "type": ["string", "null"], "maxLength": 200,
                         },
                         "acceptance": ACCEPTANCE_SCHEMA,
+                        "compatibility_review": {"anyOf": [{"type": "null"}, COMPATIBILITY_SCHEMA]},
                     },
                 },
             ]
@@ -233,7 +238,7 @@ BACKLOG_SCHEMA = {
                 "required": [
                     "summary", "impact", "worker", "objective",
                     "allowed_paths", "validation_profile", "validation_root",
-                    "acceptance",
+                    "acceptance", "compatibility_review",
                 ],
                 "properties": {
                     "summary": {"type": "string", "minLength": 1, "maxLength": 500},
@@ -252,6 +257,7 @@ BACKLOG_SCHEMA = {
                     },
                     "validation_root": {"type": ["string", "null"], "maxLength": 240},
                     "acceptance": ACCEPTANCE_SCHEMA,
+                    "compatibility_review": {"anyOf": [{"type": "null"}, COMPATIBILITY_SCHEMA]},
                 },
             },
         },
@@ -1470,7 +1476,8 @@ Existing candidate diff excerpt (facts only; use it to select exact proof text):
         root_arg = self._command_path(self.root, windows_binary)
         schema_arg = self._command_path(schema_path, windows_binary)
         prompt = f"""You are the bounded planning layer for the Wesnoth Star Wars project.
-Read AGENTS.md, docs/PROJECT_CONTINUITY.md, and docs/WORKTREE_LESSONS.md before deciding. AGENTS.md permits the
+Read AGENTS.md, docs/PROJECT_CONTINUITY.md, docs/WORKTREE_LESSONS.md, and
+docs/ENGINE_COMPATIBILITY_PLANNING.md before deciding. AGENTS.md permits the
 coordinator-supplied controlled-reference digest; do not reread full controlled references
 unless a proposed ticket is ambiguous or conflicts with that digest.
 Do not modify files, execute write operations, expose secrets, or propose governance/reference changes.
@@ -1495,6 +1502,7 @@ Python will validate your JSON, create the isolated worktree, invoke workers, ru
 Use narrow allowed_paths. A directory must be written as an explicit descendant pattern ending in /**; use an exact path for a single file. Use wesnoth-addon-static only for add-on work and set its validation_root; otherwise use static-text and null. Every ticket that changes gameplay WML/Lua must update the relevant shard under addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/ with a compact contract for each changed gameplay source; update the gameplay-contracts.json index when adding a shard. Use kind source-id for a unit/scenario identity or event-unit for a scripted event outcome. Python runs historical-retention validation locally and rejects a candidate that breaks one.
 {GAMEPLAY_ACCEPTANCE_RULES}
 Every wesnoth-addon-static ticket MUST include a non-null acceptance contract. It is immutable evidence that the promised feature is absent or different at the ticket base and present in the candidate. Use unit_placement for a promised placed unit (type, instance id, side, x, y), map_cell for a map coordinate (row, column, terrain), event_contains for a named event behavior, or source_text only for a precise non-gameplay WML text change. Every claim object must include every schema field; set fields irrelevant to its kind to null. Never use a note, comment, or generic existing contract as evidence that a new gameplay promise was fulfilled. Set acceptance null only for static-text tickets.
+For a fresh game-content ticket, complete compatibility_review before implementation. Assess every area against its official reference: {json.dumps(AREA_SOURCES, separators=(',', ':'))}. For checked areas, give a concrete documented limit, compatible design, pre-code source or installed-core check, and focused runtime check. For not_affected areas, explain why and leave design/check fields null. Set compatibility_review null for non-game tickets. An experiment outside documented limits needs a separate engine spike and reviewed design decision before automatic dispatch.
 Set ticket.resume_branch to the exact branch from resumable_local_work when continuing remnants.
 For resumable_pull_requests, also copy its exact number and head_sha into
 ticket.resume_pr_number and ticket.resume_pr_head_sha. Published history must only
@@ -1972,6 +1980,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
                     "replace_pr_head_sha": None,
                     "replace_pr_branch": None,
                     "acceptance": source.get("acceptance"),
+                    "compatibility_review": source.get("compatibility_review"),
                 },
                 "_planning_inventory": inventory,
                 "_planned_priority_id": item.get("id"),
@@ -1992,7 +2001,7 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
 
         ticket_fields = (
             "worker", "objective", "allowed_paths", "validation_profile",
-            "validation_root", "acceptance",
+            "validation_root", "acceptance", "compatibility_review",
         )
         for item in inventory.get("planned_priorities") or []:
             if not (
@@ -2081,7 +2090,8 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             "open_prs": inventory.get("open_pull_requests") or [],
         }
         prompt = f"""Plan the next {GENERATED_BACKLOG_SIZE} small ordered implementation tickets for this
-Wesnoth Star Wars project. Read AGENTS.md, docs/PROJECT_CONTINUITY.md, and docs/WORKTREE_LESSONS.md. Output only
+Wesnoth Star Wars project. Read AGENTS.md, docs/PROJECT_CONTINUITY.md,
+docs/WORKTREE_LESSONS.md, and docs/ENGINE_COMPATIBILITY_PLANNING.md. Output only
 the schema JSON. Do not edit files or propose governance, dashboard, security, or
 already completed work. Tickets must be independently reviewable, narrowly scoped,
 safe to run sequentially from protected main, and use exact files or directory/**
@@ -2089,6 +2099,14 @@ patterns. Use wesnoth-addon-static with the add-on root for game WML; otherwise 
 static-text and null. Every wesnoth-addon-static ticket must include a non-null
 baseline-aware acceptance contract using unit_placement, map_cell, event_contains,
 or a narrowly precise source_text claim; set irrelevant claim fields to null.
+For each game-content ticket, complete compatibility_review before coding.
+Assess every design area using its official source:
+{json.dumps(AREA_SOURCES, separators=(',', ':'))}
+For checked areas, state the documented limit, compatible design, pre-code source
+or installed-core check, and focused runtime check. For not_affected areas,
+give a specific reason and null the other fields. Set review null only for
+non-game tickets. An experiment stops automatic dispatch pending a separate
+engine spike and reviewed design decision.
 {GAMEPLAY_ACCEPTANCE_RULES}
 Prefer fast-fix only for unambiguous one- or two-file work.
 If no safe implementation sequence exists, return stop with an empty tickets list.
@@ -2170,6 +2188,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                     "replace_pr_head_sha": None,
                     "replace_pr_branch": None,
                     "acceptance": raw.get("acceptance"),
+                    "compatibility_review": raw.get("compatibility_review"),
                 },
                 "_planning_inventory": inventory,
             }
@@ -2191,6 +2210,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                             "worker", "objective", "allowed_paths",
                             "validation_profile", "validation_root",
                             "acceptance",
+                            "compatibility_review",
                         )
                     },
                 })
@@ -2474,7 +2494,22 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             "replace_pr_head_sha": replace_pr_head_sha if proposal.get("action") == "replace_pr" else None,
             "replace_pr_branch": replace_pr_branch,
             "acceptance": source.get("acceptance"),
+            "compatibility_review": source.get("compatibility_review"),
         }
+        try:
+            ticket["compatibility_review"] = validate_review(
+                ticket["compatibility_review"],
+                required=(
+                    touches_game_content(ticket["allowed_paths"])
+                    and resume_branch is None
+                    and proposal.get("action") != "replace_pr"
+                    and not proposal.get("_post_publish_game_repair")
+                    and not proposal.get("_historical_gameplay_repair")
+                ),
+                paths=ticket["allowed_paths"],
+            )
+        except ValueError as exc:
+            raise ControlError("Generated ticket contract is invalid: " + str(exc)) from exc
         resume_diagnostic = source.get("resume_diagnostic")
         if isinstance(resume_diagnostic, str) and resume_diagnostic:
             ticket["resume_diagnostic"] = resume_diagnostic[:2000]
@@ -2482,6 +2517,8 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             ticket["base_sha"] = base_sha
         if proposal.get("_historical_gameplay_repair") or source.get("historical_repair") is True:
             ticket["historical_repair"] = True
+        if proposal.get("_post_publish_game_repair"):
+            ticket["post_publish_game_repair"] = True
         runtime = self.root / "agent" / "runtime"
         runtime.mkdir(parents=True, exist_ok=True)
         os.chmod(runtime, 0o700)

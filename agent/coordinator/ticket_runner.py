@@ -27,6 +27,7 @@ from art_pipeline import (
 )
 from gameplay_contracts import validate_declared_contracts, validate_historical_retention
 from ticket_acceptance import validate_acceptance_contract, validate_ticket_acceptance
+from engine_compatibility import AREA_SOURCES, touches_game_content, validate_review
 from scenario_launch_selftest import find_wesnoth_executable
 import worktree_paths
 
@@ -48,6 +49,18 @@ WRITE_WORKER_COMMAND_POLICY = (
 VALID_WORKERS = {"implementer", "fast-fix"}
 VALID_PROFILES = {"static-text", "wesnoth-addon-static"}
 ACTIVE_STATUS: RuntimeStatus | None = None
+
+
+def compatibility_context(ticket: dict) -> str:
+    review = ticket.get("compatibility_review")
+    if review is None:
+        return "No new game-design review is required for this contract."
+    sources = {
+        area: AREA_SOURCES[area]
+        for area, entry in review["areas"].items()
+        if entry["disposition"] == "checked"
+    }
+    return json.dumps({"review": review, "official_sources": sources}, separators=(",", ":"))
 RECOVERY_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -604,7 +617,9 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
         "replace_pr_head_sha",
         "replace_pr_branch",
         "historical_repair",
+        "post_publish_game_repair",
         "acceptance",
+        "compatibility_review",
         "base_sha",
         "resume_diagnostic",
     }
@@ -617,6 +632,8 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
 
     if "historical_repair" in ticket and type(ticket["historical_repair"]) is not bool:
         raise SystemExit("ERROR: historical_repair must be a boolean.")
+    if "post_publish_game_repair" in ticket and type(ticket["post_publish_game_repair"]) is not bool:
+        raise SystemExit("ERROR: post_publish_game_repair must be a boolean.")
     if "base_sha" in ticket and (
         not isinstance(ticket["base_sha"], str)
         or not re.fullmatch(r"[0-9a-f]{40}", ticket["base_sha"])
@@ -667,6 +684,21 @@ def load_ticket(path: Path, *, allow_protected_evidence: bool = False) -> dict:
             raise SystemExit(
                 f"ERROR: allowed_paths may not target a protected path: {pattern!r}"
             )
+
+    try:
+        ticket["compatibility_review"] = validate_review(
+            ticket.get("compatibility_review"),
+            required=(
+                touches_game_content(allowed_paths)
+                and ticket.get("resume_branch") is None
+                and ticket.get("replace_pr_number") is None
+                and not ticket.get("historical_repair")
+                and not ticket.get("post_publish_game_repair")
+            ),
+            paths=allowed_paths,
+        )
+    except ValueError as exc:
+        raise SystemExit("ERROR: " + str(exc)) from exc
 
     profile = ticket.get("validation_profile")
     if profile not in VALID_PROFILES:
@@ -1715,6 +1747,10 @@ def evaluate_candidate(
 OBJECTIVE:
 {ticket['objective']}
 
+PRE-CODE ENGINE COMPATIBILITY REVIEW:
+{compatibility_context(ticket)}
+Check the documented claims against the changed behavior and flag omitted areas.
+
 ALLOWED PATHS:
 {json.dumps(ticket['allowed_paths'], separators=(',', ':'))}
 
@@ -1845,6 +1881,11 @@ Return your normal report beginning with VERDICT: PASS or VERDICT: FAIL.
 
 OBJECTIVE:
 {ticket['objective']}
+
+PRE-CODE ENGINE COMPATIBILITY REVIEW:
+{compatibility_context(ticket)}
+Verify checked rules and exclusions against the change. A planning record is
+not proof that Wesnoth executes the behavior correctly.
 
 ALLOWED PATHS:
 {json.dumps(ticket['allowed_paths'], separators=(',', ':'))}
@@ -2184,6 +2225,11 @@ OBJECTIVE:
 IMMUTABLE ACCEPTANCE CONTRACT:
 {json.dumps(ticket.get("acceptance"), indent=2)}
 
+PRE-CODE ENGINE COMPATIBILITY REVIEW:
+{compatibility_context(ticket)}
+Treat checked constraints as implementation requirements. Do not expand a
+documented exception into code; return blocked if the plan is invalidated.
+
 The deterministic gate compares this worktree to its original base revision.
 Implement every acceptance claim as written. A note, comment, or unrelated
 change cannot substitute for a promised unit, map, or event behavior. Do not
@@ -2493,6 +2539,9 @@ Do not commit, merge, or push.
 
 ORIGINAL OBJECTIVE:
 {ticket['objective']}
+
+PRE-CODE ENGINE COMPATIBILITY REVIEW:
+{compatibility_context(ticket)}
 
 ALLOWED PATHS:
 {json.dumps(ticket['allowed_paths'], indent=2)}

@@ -23,6 +23,7 @@ from coordination_control import ControlStore, VALID_MODES, default_control_stat
 import recovery_policy  # noqa: E402
 import model_policy  # noqa: E402
 import ticket_runner  # noqa: E402
+from engine_compatibility import AREA_SOURCES, TARGET_ENGINE  # noqa: E402
 import ticket_acceptance  # noqa: E402
 import worktree_paths  # noqa: E402
 import coordinator  # noqa: E402
@@ -748,6 +749,48 @@ class CoordinationControlTests(unittest.TestCase):
                     "abc123def456", proposal, "Start a fresh ticket",
                     fresh_start_authorized=True,
                 )
+
+    def test_fresh_game_ticket_requires_compatibility_review_before_dispatch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            controller = AutonomyController(
+                root,
+                ControlStore(runtime / "control.json"),
+                ApprovalQueue(root, runtime / "approval-queue.json"),
+            )
+            proposal = {
+                "action": "run_ticket",
+                "ticket": {
+                    "worker": "implementer",
+                    "objective": "Change a scenario objective",
+                    "allowed_paths": ["addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg"],
+                    "validation_profile": "static-text",
+                    "validation_root": None,
+                    "resume_branch": None,
+                    "acceptance": None,
+                },
+            }
+            with self.assertRaisesRegex(ControlError, "pre-code engine compatibility"):
+                controller._build_ticket("abc123def456", proposal, fresh_start_authorized=True)
+            areas = {
+                area: {"disposition": "not_affected", "constraint": "No change to this engine area.",
+                       "design": None, "precode_check": None, "runtime_check": None}
+                for area in AREA_SOURCES
+            }
+            areas["scenario_objectives"] = {
+                "disposition": "checked",
+                "constraint": "An objective display does not implement the victory event.",
+                "design": "Keep objective text and victory action in their proper contexts.",
+                "precode_check": "Inspect the source event and scenario objective before editing.",
+                "runtime_check": "Run legal terminal and nonterminal moves in test mode.",
+            }
+            proposal["ticket"]["compatibility_review"] = {
+                "schema_version": 1, "target_engine": TARGET_ENGINE, "areas": areas,
+            }
+            ticket = controller._build_ticket("abc123def456", proposal, fresh_start_authorized=True)
+            self.assertEqual(ticket["compatibility_review"]["areas"], areas)
 
     def test_planner_retries_once_after_a_rejected_ticket_contract(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
