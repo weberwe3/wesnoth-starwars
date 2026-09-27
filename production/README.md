@@ -37,3 +37,20 @@ negative assertion detection for the recorded engine binary. It does not
 execute a project mission. Legal objective victory, wrong-unit rejection,
 defeat paths, transitions, carryover, and save/reload remain pending engine
 tests before any playable-delivery claim.
+
+## Restore the Beacon movement probe
+
+`mission_probe.py` copies the existing mission and add-on into isolated
+userdata. It changes the copy's root tag to Wesnoth's test tag and adds bounded
+observation events; the source mission stays untouched. Its load, movement
+point, first legal move, and deliberately wrong origin assertions distinguish
+an actual move from a fixture that merely exits successfully. Run with
+`--temporary-movetype-fix` only as a diagnosis of a possible repair; that mode
+replaces movement type names in the temporary copy and is never evidence that
+the shipped source was corrected.
+
+The current baseline is recorded in `mission_capability_baseline.json`. The
+original mission fails the first legal move and lets the wrong-origin fixture
+pass. The temporary movement type repair reverses both outcomes. This is a
+confirmed source defect to repair in a separate bounded change. The probe does
+not prove beacon victory, defeat handling, transitions, or save/reload.

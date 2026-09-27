@@ -1251,3 +1251,13 @@ test-mode action-injection route, not legal victory in a project mission.
 The next capability contract must exercise an actual mission objective, a
 negative objective case, defeat, transition, and save/reload without allowing
 direct handler calls to stand in for legal play.
+
+An instrumented copy of Restore the Beacon now loads its original units and
+events under Wesnoth test mode. The engineer begins at the expected hex with
+one movement point, but a normal first move command leaves it at the origin.
+The installed core defines `smallfoot` and `mounted`, whereas 18 project unit
+declarations use `foot` or `mount`. Replacing those names only in an isolated
+copy makes the same first-move fixture pass and the deliberately wrong-origin
+fixture fail. The exact source, engine, core catalog, and probe hashes are in
+`production/mission_capability_baseline.json`. The source repair is pending;
+this diagnostic does not establish objective victory or save/load behavior.
