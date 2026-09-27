@@ -1334,3 +1334,14 @@ so the historical-retention test must run under WSL. Readiness consumer wiring
 and transitive requirement dependencies remain open. Next, connect accepted
 evidence to requirement status with a protected-runner origin gate and exact
 dependency registration; do not promote old ticket records by inference.
+
+U1 now has a bounded charter admission core, but no active reviewed charter.
+The validator binds the exact current controlled references and production
+design files, an external reviewed digest, live continuous-publication identity,
+separate local-promotion approval, expiry/revocation, scoped actions/paths,
+approved asset sources, session and decision fields, and hard resource limits.
+Eight selftest cases pass, including stale identity, missing approval, changed
+authorization, revocation, expiry, unsafe path, and reserve failures. This
+schema does not grant authority or start work by itself. Next, add a durable
+budget/authorization adapter and prepare a concrete selected-milestone charter
+for owner review before U2 promotion or U6 operation.

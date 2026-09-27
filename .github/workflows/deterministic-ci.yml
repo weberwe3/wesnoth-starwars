@@ -93,6 +93,9 @@ jobs:
           python3 production/contract_store_selftest.py
           python3 production/inventory.py --check
 
+      - name: Test unattended charter admission
+        run: python3 production/charter_selftest.py
+
       - name: Test ticket acceptance contracts
         run: python3 agent/coordinator/ticket_acceptance_selftest.py
 

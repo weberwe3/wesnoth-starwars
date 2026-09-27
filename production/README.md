@@ -131,3 +131,17 @@ the relevant shard; add a new sorted index entry only for a new shard. Run
 `python agent/dashboard/test_dashboard.py`, and
 `python production/inventory.py --check` after contract changes. The protected
 evidence-to-readiness consumer remains separate package-4 work.
+
+## Unattended charter admission core
+
+`charter.py` validates a bounded proposed run definition against the current
+controlled scope/orchestration manifest and production design bytes. It also
+requires an independently accepted digest, a live matching continuous
+publication authorization ID for governed publication, and a separate live
+promotion approval ID before local build promotion can be admitted. Expired,
+revoked, malformed, over-budget, and widened drafts fail closed. Only prepared
+original assets are accepted by this initial schema. The module does not create
+an approval or start automation; there is no active reviewed charter yet.
+Run `python production/charter_selftest.py` for admission and rejection cases.
+Budget persistence, authorization adapter, and selected-milestone charter review
+remain U1 work.
