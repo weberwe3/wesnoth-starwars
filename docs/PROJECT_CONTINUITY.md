@@ -1564,3 +1564,30 @@ not a claim of runtime compatibility or a substitute for installed-engine
 tests. Five focused gate tests and 197 dashboard tests passed locally on the
 worktree branch before integration. Next action: merge exact-head CI and then
 apply this pre-code review to the next fresh game design ticket.
+
+September 27 GUI capability follow-up: the integrated candidate and baseline
+above remain unverified. In an active RDP session, a visible Wesnoth 1.19.27
+launch of the staged isolated first scenario reached the actual mission map.
+The player advanced the pre-mission dialogue, and the engine log then emitted
+`sw_campaign_startup_probe: game context reached` at 11:09:26. The ignored
+local evidence is under `agent/runtime/rdp-gui-capability/visible-gui-brx20fts/`.
+This proves that a visible, attended session can reach Game context; it does
+not satisfy the unattended package gate. Hidden active-session and disconnected
+session probes (15 seconds), and hidden 120- and 180-second probes, still had
+no Game marker. A Sky screenshot of the 180-second run showed Wesnoth's
+first-run `No Other Version Found` settings-import modal blocking startup in
+the fresh isolated userdata directory. Adding a minimal `preferences` file did
+not suppress it. That prompt occurs before the startup plugin can run; merely
+extending the timeout cannot repair the probe. The visible run also logged
+`Unknown next scenario 'sw_02_space_interception'`, because the isolated
+fixture stages only scenario 1, and two missing report-image errors. The
+ordinary full campaign transition and display therefore remain unverified.
+The visible and hidden diagnostic processes were stopped; no sign-in or lock
+setting was changed. Local diagnostics are in
+`agent/runtime/rdp-gui-capability/{active,disconnected,extended,primed}.json`.
+Next action: find an engine-supported way to preinitialize a fresh isolated
+Wesnoth profile so the migration modal cannot block startup, then repeat a
+bounded hidden Game-context probe. Keep the package unverified until the full
+exact-candidate validator passes, including a valid scenario-transition
+fixture and normal GUI checks. This follow-up stopped at the project's 20%
+Codex usage reserve.
