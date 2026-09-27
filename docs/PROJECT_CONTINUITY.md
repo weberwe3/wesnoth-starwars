@@ -1486,3 +1486,17 @@ package, engine, validator, harness, and raw-artifact identities. These checks
 still do not establish full objective routes, actual transitions, carryover,
 save/load, or an offline player launch. Next, obtain a supported way to enter
 the real campaign `Game` context and observe a complete three-mission route.
+
+A bounded hidden-GUI control isolated this startup limitation further. With
+Wesnoth 1.19.27 launched in a hidden window against isolated userdata, the
+Star Wars candidate remained alive for 60 seconds without an observed plugin
+`Game` marker; the log recorded its selected campaign, difficulty, and first
+scenario, followed by an audio-device initialization error and display-mode
+selection. The installed, bundled `Heir 2 The Throne` campaign behaved the same
+way in a 30-second hidden-window control: its IDs were selected and the process
+remained alive, but no plugin context marker appeared. This control weakens a
+Star Wars-specific WML explanation for the stalled GUI probe; it does not prove
+the exact cause or qualify either campaign. A supported visible, unlocked
+desktop session or another positively validated Game-context automation is
+needed before the package can pass its GUI gate. Do not extend the hidden
+timeout and treat process survival as success.
