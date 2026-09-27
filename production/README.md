@@ -145,3 +145,15 @@ an approval or start automation; there is no active reviewed charter yet.
 Run `python production/charter_selftest.py` for admission and rejection cases.
 Budget persistence, authorization adapter, and selected-milestone charter review
 remain U1 work.
+
+`budget_ledger.py` adds an atomic, single-controller resource ledger keyed to
+the accepted charter digest. It persists each action's reservation before work,
+records actual usage once, and preserves unsettled reservations across restart.
+Expansion closes at the charter's completion cutoff while integration and
+delivery can use the reserve. A measured overrun is recorded and blocks further
+reservations. Reopening a missing or corrupt ledger fails closed; only explicit
+first activation may create one. The ledger does not release an unsettled
+reservation automatically, because the external action may have occurred before
+interruption. Cross-process ownership, action reconciliation, and control-state
+admission are still required before unattended scheduling. Run
+`python production/budget_ledger_selftest.py` for eight restart/exhaustion cases.
