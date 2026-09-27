@@ -1142,19 +1142,19 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
-      "sha256": "ba94fcc1ac688b1bc9f2c26b8e75f7710c40e3b1e5c8839ee26d5a86a596326f"
+      "sha256": "00ca229d315957000831a818addd0f9b4d6854cbd1f2a9a4b2d5998d604144fe"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg",
-      "sha256": "d2bf94ae2379439f77f1545c96347dcc8b5c32360ff7b2ac8f5f51822d90d587"
+      "sha256": "6c2469918efcf385b4b5df27a409a0a2f63a40b81f5fe34a9a92b71b34eb2499"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/03_ground_extraction.cfg",
-      "sha256": "5b9c16003b6bf09b79decf76fbe2adffd34ac09aae99fc2ce9c4b1f558c20c19"
+      "sha256": "6dd5c62a0160caaa3a1b9d3c7ddb6c3e2356a91c1e5669c75e3f7f0cbf43e6db"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/04_defensive_hold.cfg",
-      "sha256": "63715faf316f039e9890d2538f357e6f47620f0d52e7111df0e94342a0c0a12a"
+      "sha256": "ad6df7a3e6b8165553006e079bc860b8a315fa9df8d06dd54227b05b6e49a6b5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/05_relay_raid.cfg",
@@ -1254,7 +1254,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/first-battle.json",
-      "sha256": "1221439f652eed4d2037ea3b056c011ab48212a54312e1c730b028b4b42c7b88"
+      "sha256": "ff3517c44af44c2f2ba18ccf7ad6cd16d9e5dafbbb6257633ff6f5276f1ba3c7"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/heroes.json",
@@ -1266,7 +1266,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/space-interception.json",
-      "sha256": "2dcbae9c0146bd6bf09ac7d7604e7922de59626b0943e88c3da28ec8af3a1ce3"
+      "sha256": "15938e6df7c16563b2ab332fad72ae917258e445beab2f32779ed7c53389bcd8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-recon-squad.png",

@@ -465,8 +465,10 @@ def _event_block(text: str, event_id: str) -> str | None:
 
 
 def _matches_value(text: str, key: str, expected: str) -> bool:
+    # Allow optional quotes around the value (WML requires quotes for
+    # values containing spaces, e.g. name="turn 5").
     return bool(re.search(
-        rf"(?m)^\s*{re.escape(key)}\s*=\s*{re.escape(expected)}\s*$", text
+        rf'(?m)^\s*{re.escape(key)}\s*=\s*"?{re.escape(expected)}"?\s*$', text
     ))
 
 

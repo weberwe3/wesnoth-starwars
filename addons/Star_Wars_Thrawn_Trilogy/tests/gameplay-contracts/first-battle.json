@@ -82,8 +82,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_first_battle_forward_observer_counterattack",
       "expected": {
-        "name": "turn",
-        "turn": "5",
+        "name": "turn 5",
         "first_time_only": "yes",
         "unit_id": "sw_first_battle_observer_counterattack",
         "side": "2",
@@ -136,8 +135,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_first_battle_archive_delivery_warning",
       "expected": {
-        "name": "turn",
-        "turn": "12",
+        "name": "turn 12",
         "first_time_only": "yes"
       }
     },
@@ -162,8 +160,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_first_battle_archive_return_interdiction",
       "expected": {
-        "name": "turn",
-        "turn": "10",
+        "name": "turn 10",
         "first_time_only": "yes",
         "unit_id": "sw_first_battle_archive_return_interdiction",
         "side": "2",
@@ -178,8 +175,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_first_battle_archive_delivery_interception",
       "expected": {
-        "name": "turn",
-        "turn": "14",
+        "name": "turn 14",
         "first_time_only": "yes",
         "unit_id": "sw_first_battle_archive_delivery_interception",
         "side": "2",
@@ -267,8 +263,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_first_battle_relay_response",
       "expected": {
-        "name": "turn",
-        "turn": "8",
+        "name": "turn 8",
         "first_time_only": "yes",
         "unit_id": "sw_first_battle_relay_response",
         "side": "2",
@@ -289,8 +284,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_imperial_remnant_reinforcements",
       "expected": {
-        "name": "turn",
-        "turn": "4",
+        "name": "turn 4",
         "first_time_only": "yes",
         "unit_id": "sw_im_reinforcement_stormtrooper",
         "side": "2",
@@ -305,8 +299,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_first_battle_delayed_search_patrol",
       "expected": {
-        "name": "turn",
-        "turn": "7",
+        "name": "turn 7",
         "first_time_only": "yes",
         "unit_id": "sw_first_battle_delayed_search_patrol",
         "side": "2",
@@ -366,8 +359,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
       "event_id": "sw_first_battle_signal_jammer_deployment",
       "expected": {
-        "name": "turn",
-        "turn": "2",
+        "name": "turn 2",
         "first_time_only": "yes",
         "unit_id": "sw_first_battle_signal_jammer_team",
         "side": "2",
