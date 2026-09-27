@@ -237,3 +237,17 @@ the engine SHA-256 is
 `120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae`;
 the probe SHA-256 is
 `d2c3bc2e11060a1353cb24ed49125ffd8a7ab7dbe8641becb90284b431649030`.
+
+The next engine check exposed an invalid early victory: separate
+`[filter_location]` blocks in `moveto` events did not constrain the moving
+unit, and Ground Extraction won when its hero first moved to (4,2). Space
+Interception used the same pattern for its escort victory and two enemy
+breakthrough defeats. Those destinations now live inside each moving-unit
+`[filter]`. Ground Extraction's hero starts on a castle route instead of being
+boxed in by allied units; its map has a grass approach to extraction, and the
+turn-five reinforcement no longer occupies the destination. The reproducible
+probe now requires legal first moves, exact positions, initialized variables,
+and no early victory or conditional-test warning for both missions. This is
+first-move evidence only. The earlier integrated load record above is a
+historical result for the earlier source/probe hashes; it must not be reused
+for the changed sources. A clean integrated rerun is still required.

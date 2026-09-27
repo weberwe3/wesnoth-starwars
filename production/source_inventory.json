@@ -1146,11 +1146,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg",
-      "sha256": "37696886b38ffa2d18eb4d15c718cba617649c74c763ddb9a8ca433d54b71f8f"
+      "sha256": "d2bf94ae2379439f77f1545c96347dcc8b5c32360ff7b2ac8f5f51822d90d587"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/03_ground_extraction.cfg",
-      "sha256": "a74040edde3b8222f7a1b0a24fabda6386c8fe9d90ade65f96a7632d04f646e3"
+      "sha256": "5b6890697a1a8b86131efab21bced3c4db4ddc3c977c82ffa336c5a4206e4521"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/04_defensive_hold.cfg",
