@@ -213,3 +213,18 @@ the ignored envelope SHA-256 was
 `b30b9ad5bd792fa4a2afb0a643244ee0a277775ed8b5fca405c014caa6a824a9`.
 This is a test-mode objective observation, not a normal-AI playthrough, GUI
 campaign-entry result, save/load result, or player-build promotion.
+
+## First-sequence engine load diagnostics
+
+`sequence_load_probe.py` transforms each source body for Space Interception
+and Ground Extraction into an isolated Wesnoth `[test]`. The added assertion
+checks a required unit and the initialized turn-limit variable. Installed
+Wesnoth 1.19.27 passed both checks after replacing Ground Extraction's
+unsupported `Cc` tiles with core `Ch` castle, giving its commander and hero
+distinct start hexes, and replacing unsupported `[command][variable]` event
+actions with `[set_variable]`. The Ground Extraction terminal action is now
+directly in its `moveto` event. The probe saves source, fixture, engine, and
+probe hashes in ignored runtime output. Its isolated loader omits successor
+scenarios, so successor warnings in its logs are fixture limitations. Initial
+state success does not verify victory routes, actual transitions, carryover,
+defeat, save/load, or package launch.
