@@ -92,6 +92,20 @@ stop, not a provider failure or an eligible code-recovery attempt.
 
 ## Wesnoth WML construction and engine-validation rules
 
+Before choosing a WML/Lua implementation pattern, consult the official
+[WML reference](https://wiki.wesnoth.org/ReferenceWML) and the relevant
+[terrain-code](https://wiki.wesnoth.org/TerrainCodesWML),
+[unit/movetype](https://wiki.wesnoth.org/UnitsWML),
+[event](https://wiki.wesnoth.org/EventWML), and
+[test-mode](https://wiki.wesnoth.org/TestWML) pages. Check behavior against the
+installed target engine's `data/core/terrain.cfg`, `data/core/units.cfg`, and
+test macros when version-specific details matter. For a planned route, compare
+each required hex's terrain alias and movement cost with the unit's movement
+budget before writing or running a route fixture. Record the relevant documented
+rule or installed-core definition in the ticket or code comment. Use a focused
+engine check for dynamic events, AI, and actual play outcomes that static
+documentation cannot establish; avoid repeated speculative probe variants.
+
 For tickets that create or modify campaign/scenario WML, apply these rules unless a task deliberately requires a different engine pattern:
 
 - Keep `[campaign]` focused on campaign metadata. Define scenarios as top-level `[scenario]` content loaded separately rather than nesting `[scenario]` inside `[campaign]`.

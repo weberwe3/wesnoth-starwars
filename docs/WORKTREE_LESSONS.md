@@ -445,3 +445,19 @@ deliberate negative assertion fixture. Focused tests and the installed-engine
 Restore the Beacon cases pass under the new rule.
 **Prevention:** Treat a pass/victory marker and exit code as insufficient for
 WML evidence; scan assertion and command diagnostics before accepting it.
+
+### 2026-09-27 — documented movement cost blocked the extraction corridor
+
+**Symptom:** Ground Extraction's hero legally moved from (3,2) to (5,2) over
+two turns, then could not enter the empty (6,2) hex with one movement point.
+**Confirmed cause:** The engine resolved (6,2) as `Gg^Fp` pine forest. The hero
+uses core `smallfoot` movement with one point; installed Wesnoth 1.19.27 defines
+forest cost two in `data/core/units.cfg` and `^Fp` as a forest overlay in
+`data/core/terrain.cfg`.
+**Resolution:** Change that one corridor hex to flat `Gg`. The same source
+body with test-only move events then completes the six-step legal route and
+reaches victory at (8,1), exit 8; both existing first-move fixtures still pass.
+**Prevention:** Before designing or changing an objective route, check the
+official Terrain Codes and Units WML references, the installed core terrain
+aliases and movetype costs, and every required destination against the unit's
+movement budget. Then run one focused engine route check for dynamic behavior.

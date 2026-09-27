@@ -1500,3 +1500,31 @@ the exact cause or qualify either campaign. A supported visible, unlocked
 desktop session or another positively validated Game-context automation is
 needed before the package can pass its GUI gate. Do not extend the hidden
 timeout and treat process survival as success.
+
+A documentation-first review and engine terrain inspection found the Ground
+Extraction route defect behind the earlier third-move failure. Installed
+Wesnoth 1.19.27 defines the hero's `smallfoot` forest movement cost as two in
+`data/core/units.cfg`; the hero has one movement point. The map resolved
+(6,2) to `Gg^Fp`, a pine forest overlay from `data/core/terrain.cfg`. A direct
+source-preserving test fixture confirmed the target was empty, no enemy was
+nearby, the hero had one point, and the move failed. Replacing that one corridor
+hex with flat `Gg` let six successive legal player moves reach the objective
+at (8,1), with victory assertion passing and engine exit 8. The existing
+mission 2 and 3 first-move fixtures remain passing. A persistent
+`production/extraction_route_probe.py` now runs this scoped route and the exact
+package validator gates on it before the GUI probe. The local route artifact
+SHA-256 is `0fdad6abb88c762774556987765636121deb44ae789c83fdaa5d681e61d60161`;
+the local first-move artifact SHA-256 is
+`6ff92f9f7777143c4927c125e30871a81f1f087224bbb11d912d10c9916ee7ff`.
+As a negative control, the new package validator rechecked the preceding
+immutable candidate from `2528cb6be18fc5b6b60b9978e0888b4f2e8efb93`.
+Its package integrity, preprocessing, and first moves passed; the new route
+failed with exit 1, and the GUI probe was correctly withheld. Ignored negative
+raw JSON SHA-256:
+`33beac052e0b58200fe13a798c26189b288aea7cf01d54a027732da37dd50b4f`.
+These local branch observations require a clean integrated rerun before they
+are current evidence for a staged player candidate. The existing package
+baseline predates this source/probe change. No normal GUI play, mission
+transition, save/load, or verified player build is established. Project rules
+now direct route designers to the official WML references and the installed
+engine's terrain and movetype definitions before constructing route tests.
