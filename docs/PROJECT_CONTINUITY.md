@@ -1415,3 +1415,10 @@ warnings arise because the fixture omits successors; it does not prove
 transitions, objectives, save/load, or player-build eligibility. Re-run the
 probe on the integrated commit and then exercise legal victory, defeat, and
 actual mission-to-mission transition under a supported Game context.
+
+The integrated rerun on `7e34d4455b72629921e68cf38c51289ff7d37e12`
+passed both mission 2 and 3 load/state assertions under Wesnoth 1.19.27.
+Ignored raw SHA-256:
+`1126a8800b49f198f52ad59e0a41c2a6214305c421f5f33c7475d8af33119b57`.
+The probe is explicitly a test-mode initial-state check, not a transition or
+save/load observation.

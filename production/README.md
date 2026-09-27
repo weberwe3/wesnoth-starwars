@@ -228,3 +228,12 @@ probe hashes in ignored runtime output. Its isolated loader omits successor
 scenarios, so successor warnings in its logs are fixture limitations. Initial
 state success does not verify victory routes, actual transitions, carryover,
 defeat, save/load, or package launch.
+
+The clean integrated run on commit
+`7e34d4455b72629921e68cf38c51289ff7d37e12` passed both checks with
+Wesnoth 1.19.27 (exit 0 each). Its ignored raw JSON SHA-256 is
+`1126a8800b49f198f52ad59e0a41c2a6214305c421f5f33c7475d8af33119b57`;
+the engine SHA-256 is
+`120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae`;
+the probe SHA-256 is
+`d2c3bc2e11060a1353cb24ed49125ffd8a7ab7dbe8641becb90284b431649030`.
