@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 from build_store import ADDON_ID, BuildStoreError, verify_candidate
+from sequence_load_probe import probe as probe_sequence_load
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agent" / "coordinator"))
 from scenario_launch_selftest import (  # noqa: E402
@@ -59,9 +60,12 @@ def validate_packaged_candidate(repo_root: Path, candidate: Path, engine: Path) 
         "package_sha256": manifest["package_sha256"],
         "engine_sha256": None,
         "harness_sha256": _digest(Path(__file__).resolve().parents[1] / "agent/coordinator/scenario_launch_selftest.py"),
+        "sequence_harness_sha256": _digest(Path(__file__).resolve().parent / "sequence_load_probe.py"),
         "scenario_ids": [SCENARIO_ID],
+        "sequence_scenario_ids": ["sw_02_space_interception", "sw_03_ground_extraction"],
         "package_copy_matches": False, "candidate_still_matches": False,
-        "preprocess": None, "runtime": None, "pass": False,
+        "preprocess": None, "sequence_first_moves": None, "runtime": None,
+        "pass": False,
     }
     if not engine.is_absolute() or engine.is_symlink() or not engine.is_file():
         result["diagnostic"] = "Installed engine binary is missing or symlinked"
@@ -83,7 +87,9 @@ def validate_packaged_candidate(repo_root: Path, candidate: Path, engine: Path) 
             return result
         result["preprocess"] = validate_engine_002(root, executable=engine)
         if result["preprocess"].get("pass") is True:
-            result["runtime"] = runtime_scenario_probes(root, engine, {SCENARIO_ID})
+            result["sequence_first_moves"] = probe_sequence_load(root, engine)
+            if result["sequence_first_moves"].get("pass") is True:
+                result["runtime"] = runtime_scenario_probes(root, engine, {SCENARIO_ID})
         result["package_copy_matches"] = _copy_matches(manifest, addon)
     try:
         result["candidate_still_matches"] = verify_candidate(candidate)["package_sha256"] == manifest["package_sha256"]
@@ -92,10 +98,12 @@ def validate_packaged_candidate(repo_root: Path, candidate: Path, engine: Path) 
     result["pass"] = (
         result["package_copy_matches"] and result["candidate_still_matches"]
         and result["preprocess"].get("pass") is True
+        and isinstance(result["sequence_first_moves"], dict)
+        and result["sequence_first_moves"].get("pass") is True
         and isinstance(result["runtime"], dict) and result["runtime"].get("pass") is True
     )
     if not result["pass"]:
-        result["diagnostic"] = "Exact package failed preprocessing, GUI startup, or integrity recheck"
+        result["diagnostic"] = "Exact package failed preprocessing, sequence first moves, GUI startup, or integrity recheck"
     return result
 
 

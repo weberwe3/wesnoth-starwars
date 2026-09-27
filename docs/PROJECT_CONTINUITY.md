@@ -1469,3 +1469,20 @@ envelope SHA-256 is
 `e17cccd96b145b7cbc41bb1585ea416cab3eeb0173acf69f145e9dbc3d5ea169`.
 The result remains a controlled objective fixture and does not resolve the
 three-mission route, GUI package gate, save/load, or offline verified launch.
+
+The package validator now runs the mission 2 and 3 isolated legal first-move
+checks against copied immutable candidate bytes between preprocessing and the
+mission 1 GUI probe. Four wrapper fixtures pass. A local validation of the
+108-file candidate from source commit `2528cb6be18fc5b6b60b9978e0888b4f2e8efb93`
+(tree `9ddf1e9d1ba3acd82fec0771d255b628715448db`) used package SHA-256
+`ad2fa5e09c165d78be3b1dc010515950199d66dc5a4a160012bc609af5fc8792`
+and installed Wesnoth 1.19.27. Package/copy integrity and preprocessing passed;
+both first-move fixtures exited 0. The bounded GUI probe started and survived
+but did not reach `Game`, so the combined result failed and the candidate remains
+unverified. Ignored raw JSON SHA-256:
+`2f94dcbc1b711a9261bb426a78ac54dd8da9fb92a7e4e59c96f6ab25b1118a21`.
+The tracked `production/package_engine_baseline.json` carries the source,
+package, engine, validator, harness, and raw-artifact identities. These checks
+still do not establish full objective routes, actual transitions, carryover,
+save/load, or an offline player launch. Next, obtain a supported way to enter
+the real campaign `Game` context and observe a complete three-mission route.
