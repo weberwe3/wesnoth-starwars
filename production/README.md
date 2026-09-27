@@ -187,3 +187,18 @@ for the 108-file candidate: preprocessing exited 0, but no `Game` context was
 observed during the GUI probe. The package is not loadability-qualified or
 promotable. Earlier process-survival evidence was invalidated after discovering
 that `--skip-story` was unsupported and a title screen could remain alive.
+
+## Direct scoped requirement observation
+
+`requirements/restore_beacon_objective.json` defines only the controlled
+Restore the Beacon test-mode objective fixture. `requirement_runner.py` calls
+the installed-engine probe itself for the engineer route and staged wrong-unit
+negative case, checks both exact verdicts, and binds the raw artifact to a v1
+evidence envelope. Dependencies conservatively include every hashed add-on
+inventory input plus the requirement, inventory, runner, and freshness code;
+an invalid source inventory blocks the run. The outcome may be called a scoped
+observation only during that direct protected invocation. Reopening an envelope
+later gives freshness information, not proof of runner origin or mission
+readiness. Five focused tests cover matching outcomes, negative failure, engine
+identity, changed source, and unsupported requirement cases. A real run from a
+clean integrated commit remains the next validation step.

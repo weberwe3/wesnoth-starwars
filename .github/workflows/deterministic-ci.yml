@@ -103,6 +103,9 @@ jobs:
           python3 production/build_store_selftest.py
           python3 production/validate_package_selftest.py
 
+      - name: Test direct scoped requirement observation
+        run: python3 production/requirement_runner_selftest.py
+
       - name: Test ticket acceptance contracts
         run: python3 agent/coordinator/ticket_acceptance_selftest.py
 
