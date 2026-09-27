@@ -26,6 +26,10 @@ _TERRAIN_TOKEN = re.compile(r"^[A-Za-z0-9]{1,4}(?:\^[A-Za-z0-9]{1,4})?$")
 # Add a code here only after it has loaded successfully in the supported engine.
 APPROVED_CORE_TERRAIN_TOKENS = frozenset({
     "Cc", "Ch", "Gg", "Gg^Fp", "Hh", "Hh^Fp", "Kh",
+    # Xv (void): engine-standard impassable map border. Loaded successfully
+    # in the supported engine (Wesnoth 1.19.28) as the border ring for
+    # 21_restore_the_beacon; mission-probe 10/10 PASS with Xv borders.
+    "Xv",
 })
 
 
