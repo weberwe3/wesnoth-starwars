@@ -176,3 +176,14 @@ A real main-ancestor snapshot was staged locally with 108 game files and
 installed-engine package validation, promotion journal, current-build pointer,
 offline player launcher, save compatibility, or rollback policy is provided by
 this module. Those are subsequent U2 contracts.
+
+`validate_package.py` takes one candidate, verifies it, copies its exact game
+files into isolated temporary userdata, then calls the existing installed-engine
+preprocessor and first-scenario GUI startup probe. It rechecks both the staged
+copy and immutable candidate after the run and writes a bounded raw result under
+ignored runtime storage. The tracked `package_engine_baseline.json` records the
+real local result and hashes for a 108-file candidate: preprocessing exited 0,
+and `01_First_Battle` started and survived the GUI probe without fatal log
+diagnostics. Three deterministic wrapper fixtures pass in CI. The baseline
+proves package loadability for that scenario only; it is not objective, save,
+transition, full campaign, or build-promotion evidence.

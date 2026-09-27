@@ -99,7 +99,9 @@ jobs:
           python3 production/budget_ledger_selftest.py
 
       - name: Test immutable player-build candidate storage
-        run: python3 production/build_store_selftest.py
+        run: |
+          python3 production/build_store_selftest.py
+          python3 production/validate_package_selftest.py
 
       - name: Test ticket acceptance contracts
         run: python3 agent/coordinator/ticket_acceptance_selftest.py
