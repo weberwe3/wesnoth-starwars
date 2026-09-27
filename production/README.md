@@ -87,3 +87,25 @@ enforced by the engine's generic leader rule.
 
 Active-AI win reliability, the terminal dialogue, legal-combat death,
 transition/carryover, save/reload, and a player-ready build remain unverified.
+
+## Evidence identity core
+
+`evidence.py` and `schemas/evidence_envelope.schema.json` define a bounded
+versioned record for one accepted requirement and engine observation. The
+record includes the candidate commit/tree, requirement revision, scenario,
+probe, exercise type, difficulty/seed, exact engine binary, named source and
+harness dependencies, the ignored raw artifact digest, exit code, and bounded
+observations. Runtime artifacts stay under ignored `agent/runtime/`.
+
+`assess_freshness` compares the envelope with an accepted requirement snapshot
+and current bytes. Changed shared rules, harness, engine, requirement identity,
+or artifact make it stale; a missing artifact or unknown dependency is not
+reused. Unrelated documentation leaves an otherwise current record current.
+The result is a freshness check, **not a readiness decision**: the protected
+coordinator must still prove the run came from its authorized validation path
+and that the observed behavior satisfies the requirement. Existing historical
+ticket evidence is not migrated or reinterpreted by this module. Consumer
+wiring, transitive dependency registration, and contract-index migration remain
+separate package-4 work.
+
+Run `python production/evidence_selftest.py` for the focused freshness controls.
