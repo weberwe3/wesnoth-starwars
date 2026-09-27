@@ -25,11 +25,14 @@ _TERRAIN_TOKEN = re.compile(r"^[A-Za-z0-9]{1,4}(?:\^[A-Za-z0-9]{1,4})?$")
 # still be unknown to the engine (for example, Gg^Ff on Wesnoth 1.19.27).
 # Add a code here only after it has loaded successfully in the supported engine.
 APPROVED_CORE_TERRAIN_TOKENS = frozenset({
-    "Cc", "Ch", "Gg", "Gg^Fp", "Hh", "Hh^Fp", "Kh",
+    "Ce", "Ch", "Gg", "Gg^Fp", "Hh", "Hh^Fp", "Kh",
     # Xv (void): engine-standard impassable map border. Loaded successfully
     # in the supported engine (Wesnoth 1.19.28) as the border ring for
     # 21_restore_the_beacon; mission-probe 10/10 PASS with Xv borders.
     "Xv",
+    # Ce (encampment): replaces invalid Cc in 05_relay_raid and
+    # 06_listening_post_infiltration. Loaded successfully in Wesnoth 1.19.28;
+    # defeat probes for both scenarios pass (exit 7).
 })
 
 

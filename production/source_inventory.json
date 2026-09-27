@@ -1154,15 +1154,15 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/04_defensive_hold.cfg",
-      "sha256": "ad6df7a3e6b8165553006e079bc860b8a315fa9df8d06dd54227b05b6e49a6b5"
+      "sha256": "8c845cfd538af43400cf5faa9e4b35f7fdbab51f438edf32425a3f591143e709"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/05_relay_raid.cfg",
-      "sha256": "1a2c3a04a04bfc3e442cb4e82828d0483f6d09d58c3443fe03f3acfb8f88d8b2"
+      "sha256": "dbbf8fc5e633f2309d3bdeee10498392a3c8160b1666b0b12f764ef65b0b14ec"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/06_listening_post_infiltration.cfg",
-      "sha256": "768b4b796e4b9a128c130ae73c8ec7669c304481d5b1237782086b448b729796"
+      "sha256": "f7d2bd08f2050862feae06b6f9c55a0122a40be990e1fefe20052068d3ffb446"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/07_convoy_escape.cfg",
@@ -1194,7 +1194,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/14_relay_station_infiltration.cfg",
-      "sha256": "de9c55ccd77473a43c95fe0bafc228a0dadd3ee6bd25ae05d90b69ca1da1fdde"
+      "sha256": "b87298424b88176aa293fd9b7a3873c0b3caf759052053c6a267eda96b31372c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/15_crossfire_extraction.cfg",
