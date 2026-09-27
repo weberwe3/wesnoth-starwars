@@ -1,15 +1,16 @@
 {
   "schema_id": "wesnoth-starwars.production.package-engine-baseline",
   "schema_version": 1,
-  "source_commit": "2528cb6be18fc5b6b60b9978e0888b4f2e8efb93",
-  "source_tree": "9ddf1e9d1ba3acd82fec0771d255b628715448db",
-  "package_sha256": "ad2fa5e09c165d78be3b1dc010515950199d66dc5a4a160012bc609af5fc8792",
+  "source_commit": "8fe5f506fad1aadba3dda9edcf72e98d7a85af8a",
+  "source_tree": "a4008363f3fe7b40241f502f3d741c48660235e1",
+  "package_sha256": "bec1abfe15d80f811eb541a39fd242351ed47688bcc096b7389fd3b493295b46",
   "engine_sha256": "120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae",
-  "validator_sha256": "d64c997600ba16ae74a3984d20b6bf68d979271f29fa23bcd04d00967bbd9a88",
+  "validator_sha256": "f568606bc39611c85681c7fb21d5eb450ddfbd47f6f95fc7ba3812d4715ca351",
   "harness_sha256": "57adb61a9abb83cb99a4fc6e7bda8c9d83a1055ac7c61593f0fe5571ae72ceb5",
   "sequence_harness_sha256": "79c37b41c7b8dc2c1ad82f4a39cd891e1d3d8627fa011d7b358aaf68b2241519",
-  "raw_artifact_sha256": "2f94dcbc1b711a9261bb426a78ac54dd8da9fb92a7e4e59c96f6ab25b1118a21",
-  "raw_artifact_path": "agent/runtime/package-sequence-validation.json",
+  "route_harness_sha256": "55f920df92c362e6943b74e2b2175fcef70be0e58112acc4b902933ce44371b6",
+  "raw_artifact_sha256": "74c44ee38debc9a121b45faae6e3d25718e749b68aca47e8a805f0521bd40cdb",
+  "raw_artifact_path": "agent/runtime/package-extraction-validation.json",
   "observed": {
     "package_copy_matches": true,
     "preprocess_exit_code": 0,
@@ -19,6 +20,8 @@
       "sw_02_space_interception": 0,
       "sw_03_ground_extraction": 0
     },
+    "extraction_objective_route_pass": true,
+    "extraction_objective_route_exit_code": 8,
     "runtime_scenario_id": "01_First_Battle",
     "runtime_started": true,
     "runtime_survived_probe": true,
@@ -26,7 +29,7 @@
     "runtime_fatal_diagnostics": false,
     "candidate_still_matches": true
   },
-  "qualification": "preprocessing and isolated first moves only; GUI campaign entry unverified",
+  "qualification": "preprocessing, isolated first moves, and isolated extraction route only; GUI campaign entry unverified",
   "pass": false,
   "build_eligibility": "candidate_unverified"
 }
