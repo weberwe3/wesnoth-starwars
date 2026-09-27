@@ -1370,15 +1370,19 @@ has occurred. Next, exercise packaged bytes with the installed engine and
 implement the single-owner promotion journal/pointer before migrating the
 normal player launcher.
 
-The next U2 package test reused the existing installed-engine harness against
-the immutable candidate's copied bytes. For source commit
+The next U2 package test reused the installed-engine harness against immutable
+candidate bytes. Its first run reported a passing GUI probe for source commit
 `7a2262bf8aa188f3cdddde7bb4c3307853244370` and package digest
-`c75f2eb471be524987d07ff99a66a3aee9555fbeab8e23ba46301fa2b778fb68`,
-the installed Wesnoth binary (SHA-256
-`120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae`)
-returned preprocessing exit 0; `01_First_Battle` started, survived the GUI
-probe, and logged no fatal diagnostic. Copy and candidate integrity rechecks
-passed. The ignored raw artifact and harness/validator hashes are summarized
-in `production/package_engine_baseline.json`; three wrapper fixture tests pass.
-This remains a `candidate_unverified` build. Mission play, transition,
-save/load, requirement acceptance, promotion, and offline launch remain open.
+`c75f2eb471be524987d07ff99a66a3aee9555fbeab8e23ba46301fa2b778fb68`.
+That result is **withdrawn**: an independent real-campaign probe found the
+installed Wesnoth 1.19.27 binary rejects `--skip-story`, while the old harness
+counted process survival at the title screen as startup success. The harness
+now omits that option, refreshes process state, captures command-line errors,
+and requires a plugin marker from the actual `Game` context. In the corrected
+run, preprocessing still exited 0 and package/copy integrity passed, but the
+GUI probe did not reach `Game` within its bounded window; therefore the package
+test fails. `production/package_engine_baseline.json` records the corrected
+source/package/engine/harness/validator/raw-artifact hashes and failure. The
+candidate remains unverified. Next, establish a supported campaign-entry
+automation or a controlled interactive GUI check before any build promotion;
+mission play, transition, save/load, and offline launch remain open.

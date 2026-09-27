@@ -65,6 +65,7 @@ SCENARIO_RUNTIME_PROBE_SECONDS = 15
 MAX_DIAGNOSTIC_CHARS = 6000
 PLAYER_LAUNCHER_TIMEOUT_SECONDS = 90
 PLAYER_LAUNCHER_MANIFEST_PREFIX = "WESNOTH_LAUNCH_MANIFEST="
+GAME_CONTEXT_MARKER = "sw_campaign_startup_probe: game context reached"
 
 
 def find_wesnoth_executable() -> Path | None:
@@ -319,20 +320,35 @@ def run_campaign_startup_probe(
     """
 
     if executable.suffix.casefold() != ".exe":
-        return {"started": False, "survived_probe": False, "exit_code": None, "diagnostic": "Campaign startup probe requires the installed Windows engine."}
+        return {"started": False, "survived_probe": False, "game_context_reached": False,
+                "exit_code": None, "diagnostic": "Campaign startup probe requires the installed Windows engine."}
+    userdata.mkdir(parents=True, exist_ok=True)
+    plugin = userdata / "sw-campaign-startup-plugin.lua"
+    plugin.write_text(
+        "local function plugin()\n"
+        "  wesnoth.plugin.wait_until('Game')\n"
+        f"  wesnoth.log('warning', '{GAME_CONTEXT_MARKER}')\n"
+        "end\nreturn plugin\n", encoding="utf-8",
+    )
+    stdout_path = userdata / "startup.stdout.log"
+    stderr_path = userdata / "startup.stderr.log"
     arguments = subprocess.list2cmdline([
         "--log-to-file",
         "--userdata-dir", windows_path(userdata),
         "--campaign", campaign_id,
         "--campaign-difficulty", "1",
         "--campaign-scenario", scenario_id,
-        "--skip-story",
+        "--plugin", windows_path(plugin),
     ])
     script = (
         "$ErrorActionPreference='Stop';"
         "$process=Start-Process -FilePath " + _powershell_literal(windows_path(executable))
-        + " -ArgumentList " + _powershell_literal(arguments) + " -PassThru -WindowStyle Hidden;"
+        + " -ArgumentList " + _powershell_literal(arguments)
+        + " -RedirectStandardOutput " + _powershell_literal(windows_path(stdout_path))
+        + " -RedirectStandardError " + _powershell_literal(windows_path(stderr_path))
+        + " -PassThru -WindowStyle Hidden;"
         + f"Start-Sleep -Seconds {timeout};"
+        + "$process.Refresh();"
         + "$alive=-not $process.HasExited;"
         + "if($alive){Stop-Process -Id $process.Id -Force;$process.WaitForExit()};"
         + "[Console]::Out.WriteLine((@{started=$true;survived_probe=$alive;exit_code=$process.ExitCode}|ConvertTo-Json -Compress))"
@@ -351,14 +367,25 @@ def run_campaign_startup_probe(
         output = json.loads(payload)
     except json.JSONDecodeError:
         return {
-            "started": False, "survived_probe": False, "exit_code": completed.returncode,
+            "started": False, "survived_probe": False, "game_context_reached": False,
+            "exit_code": completed.returncode,
             "diagnostic": _bounded_diagnostic(completed.stdout),
         }
+    child_output = "\n".join(
+        path.read_text(encoding="utf-8", errors="replace")
+        for path in (stdout_path, stderr_path) if path.is_file()
+    )
+    command_error = bool(re.search(r"Error in command line:|unrecognised option", child_output, re.I))
+    game_context = GAME_CONTEXT_MARKER in campaign_log_text(userdata)
     return {
         "started": output.get("started") is True,
-        "survived_probe": output.get("survived_probe") is True,
+        "survived_probe": output.get("survived_probe") is True and not command_error,
+        "game_context_reached": game_context,
         "exit_code": output.get("exit_code") if isinstance(output.get("exit_code"), int) else None,
-        "diagnostic": "",
+        "diagnostic": _bounded_diagnostic(
+            child_output if command_error else "",
+            "Installed engine did not enter Game context during startup probe" if not game_context else "",
+        ),
     }
 
 
@@ -554,9 +581,10 @@ def runtime_scenario_probes(root: Path, executable: Path, selected: set[str]) ->
             results.append({
                 "scenario_id": scenario_id,
                 "path": source.relative_to(root).as_posix(),
-                "pass": probe["survived_probe"] and not failures,
+                "pass": probe["survived_probe"] and probe["game_context_reached"] and not failures,
                 "started": probe["started"],
                 "survived_probe": probe["survived_probe"],
+                "game_context_reached": probe["game_context_reached"],
                 "diagnostic": _bounded_diagnostic(probe.get("diagnostic"), "\n".join(failures)),
             })
         except (OSError, subprocess.SubprocessError, ValueError) as exc:
@@ -566,6 +594,7 @@ def runtime_scenario_probes(root: Path, executable: Path, selected: set[str]) ->
                 "pass": False,
                 "started": False,
                 "survived_probe": False,
+                "game_context_reached": False,
                 "diagnostic": f"Runtime probe infrastructure failed: {exc.__class__.__name__}",
             })
         finally:
@@ -612,9 +641,12 @@ def validate_post_publish_game(
         evidence["campaign_probe"] = {
             "started": probe["started"],
             "survived_probe": probe["survived_probe"],
+            "game_context_reached": probe["game_context_reached"],
             "exit_code": probe["exit_code"],
         }
-        evidence["checks"]["campaign_startup_survived_probe"] = probe["survived_probe"] and not failures
+        evidence["checks"]["campaign_startup_survived_probe"] = (
+            probe["survived_probe"] and probe["game_context_reached"] and not failures
+        )
         evidence["diagnostic"] = diagnostic
         evidence["diagnostic_paths"] = diagnostic_paths(diagnostic)
         if not evidence["checks"]["campaign_startup_survived_probe"]:
@@ -928,7 +960,7 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         self.assertEqual(len(lines), 1)
         self.assertIn("Gg^Ff", lines[0])
 
-    def test_campaign_probe_targets_exact_scenario_and_skips_story(self) -> None:
+    def test_campaign_probe_requires_actual_game_context(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             userdata = Path(directory) / "userdata"
             executable = Path(directory) / "wesnoth.exe"
@@ -940,7 +972,9 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
                 "scenario_launch_selftest.windows_path", side_effect=lambda path: str(path)
             ), mock.patch(
                 "scenario_launch_selftest.subprocess.run", return_value=completed
-            ) as runner:
+            ) as runner, mock.patch(
+                __name__ + ".campaign_log_text", return_value=GAME_CONTEXT_MARKER
+            ):
                 result = run_campaign_startup_probe(
                     executable, userdata, cwd=Path(directory),
                     campaign_id="sw_probe", scenario_id="sw_scenario", timeout=1,
@@ -948,10 +982,57 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             encoded = runner.call_args.args[0][-1]
             script = base64.b64decode(encoded).decode("utf-16le")
             self.assertTrue(result["survived_probe"])
+            self.assertTrue(result["game_context_reached"])
             self.assertIn("--campaign-scenario sw_scenario", script)
             self.assertIn("--campaign-difficulty 1", script)
-            self.assertIn("--skip-story", script)
+            self.assertNotIn("--skip-story", script)
+            self.assertIn("--plugin", script)
+            self.assertIn("$process.Refresh()", script)
             self.assertIn("--log-to-file", script)
+
+    def test_campaign_probe_rejects_process_survival_without_game_context(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            userdata = Path(directory) / "userdata"
+            executable = Path(directory) / "wesnoth.exe"
+            executable.write_text("fixture\n", encoding="utf-8")
+            completed = subprocess.CompletedProcess(
+                [], 0, '{"started":true,"survived_probe":true,"exit_code":-1}\n', ""
+            )
+            with mock.patch(
+                "scenario_launch_selftest.windows_path", side_effect=lambda path: str(path)
+            ), mock.patch(
+                "scenario_launch_selftest.subprocess.run", return_value=completed
+            ), mock.patch(
+                __name__ + ".campaign_log_text", return_value=""
+            ):
+                result = run_campaign_startup_probe(executable, userdata, cwd=Path(directory), timeout=1)
+            self.assertTrue(result["survived_probe"])
+            self.assertFalse(result["game_context_reached"])
+            self.assertIn("did not enter Game context", result["diagnostic"])
+
+    def test_campaign_probe_rejects_command_line_error_even_if_process_survived(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            userdata = Path(directory) / "userdata"
+            userdata.mkdir()
+            (userdata / "startup.stdout.log").write_text(
+                "Error in command line: unrecognised option '--bad'", encoding="utf-8"
+            )
+            executable = Path(directory) / "wesnoth.exe"
+            executable.write_text("fixture\n", encoding="utf-8")
+            completed = subprocess.CompletedProcess(
+                [], 0, '{"started":true,"survived_probe":true,"exit_code":-1}\n', ""
+            )
+            with mock.patch(
+                "scenario_launch_selftest.windows_path", side_effect=lambda path: str(path)
+            ), mock.patch(
+                "scenario_launch_selftest.subprocess.run", return_value=completed
+            ), mock.patch(
+                __name__ + ".campaign_log_text", return_value=GAME_CONTEXT_MARKER
+            ):
+                result = run_campaign_startup_probe(executable, userdata, cwd=Path(directory), timeout=1)
+            self.assertFalse(result["survived_probe"])
+            self.assertTrue(result["game_context_reached"])
+            self.assertIn("unrecognised option", result["diagnostic"])
 
     def test_campaign_loader_requires_active_units_container_before_scenarios(self) -> None:
         sources = {
