@@ -49,8 +49,10 @@ an actual move from a fixture that merely exits successfully. Run with
 replaces movement type names in the temporary copy and is never evidence that
 the shipped source was corrected.
 
-The current baseline is recorded in `mission_capability_baseline.json`. The
-original mission fails the first legal move and lets the wrong-origin fixture
-pass. The temporary movement type repair reverses both outcomes. This is a
-confirmed source defect to repair in a separate bounded change. The probe does
-not prove beacon victory, defeat handling, transitions, or save/reload.
+The original defect baseline is recorded in `mission_capability_baseline.json`:
+the mission failed the first legal move and let the wrong-origin fixture pass.
+The temporary movement type repair reversed both outcomes. The follow-up
+source change replaced all invalid project movement type names with registered
+installed-core names; `movement_repair_evidence.json` records the passing
+real-source move and failing wrong-origin fixture. These checks do not prove
+beacon victory, defeat handling, transitions, or save/reload.

@@ -357,3 +357,19 @@ to be an ancestor of the reconciled worktree head, revalidate scope and reconcil
 and pass the normal bounded recovery effort to explicit recodes.
 **Prevention:** Test both a non-descendant rejection and an accepted reconciled
 descendant. Never accept an unrelated head or skip the existing scope and safety gates.
+
+### 2026-09-27 — movement points did not make custom units mobile
+
+**Symptom:** In the installed-engine Restore the Beacon test, the field engineer
+started with one movement point but a normal one-hex move left it at the origin.
+The deliberately wrong-origin fixture passed.
+**Confirmed cause:** Eighteen project unit declarations used `movement_type=foot`
+or `movement_type=mount`. The installed Wesnoth 1.19.27 core defines
+`smallfoot` and `mounted`, but neither `foot` nor `mount`.
+**Resolution:** Change the sixteen foot declarations to `smallfoot` and the two
+mount declarations to `mounted`. The real-source first-move fixture then passes,
+and the wrong-origin negative fixture fails with the engine's test diagnostic.
+**Prevention:** Check custom movement type names against the installed core
+catalog and run an engine action fixture that proves a representative unit
+actually changes hex. A declared movement point or successful parser run alone
+does not prove mobility.

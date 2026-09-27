@@ -1261,3 +1261,11 @@ copy makes the same first-move fixture pass and the deliberately wrong-origin
 fixture fail. The exact source, engine, core catalog, and probe hashes are in
 `production/mission_capability_baseline.json`. The source repair is pending;
 this diagnostic does not establish objective victory or save/load behavior.
+
+The follow-up unit repair replaced all sixteen `foot` and two `mount`
+declarations with the installed core's registered names. Against the changed
+source, the mission-load, movement-point, and first-move fixtures pass; the
+wrong-origin fixture fails as intended. Campaign I preprocessing and the
+Restore the Beacon GUI startup probe also pass. The source inventory was
+regenerated to bind the changed unit hashes. These checks still do not prove
+beacon objective victory, save/load, or campaign transitions.
