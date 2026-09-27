@@ -53,7 +53,7 @@ no credential is forwarded to the dashboard process.
 The **Coordination authority** control offers four modes:
 
 - **Python** keeps the existing manual Python/Bash workflow.
-- **Sol Low**, **Sol Medium**, and **Sol High** use GPT-5.6 Sol at the selected
+- **Sol Low**, **Sol Medium**, and **Sol High** use GPT-6 Sol at the selected
   reasoning effort to propose one bounded ticket from the supplied brief.
 
 Selecting a Sol mode does not begin work. Enter an optional brief, or load an
@@ -72,14 +72,14 @@ dashboard polling, includes pending static and coordinator-generated tickets,
 and omits completed tickets. This local structured-state refresh consumes no
 model tokens.
 
-The Implementer uses GPT-5.6 Terra at medium reasoning through the signed-in
-Codex application. Fast-Fix and Tester use GPT-5.6 Luna at medium reasoning;
+The Implementer uses GPT-6 Sol at medium reasoning through the signed-in
+Codex application. Fast-Fix and Tester use GPT-6 Luna at medium reasoning;
 the Reviewer uses Cloudflare Workers AI Nemotron 3 120B. If any of those model
 workers is unavailable or non-decisive, the runner makes exactly one stage-local
-GPT-5.6 Luna Light fallback. A substantive `FAIL` or `REQUEST_CHANGES` remains
+GPT-6 Luna Light fallback. A substantive `FAIL` or `REQUEST_CHANGES` remains
 authoritative and is never overridden by a fallback.
 
-Write-capable Terra and Luna calls use the same audited Codex auto-review path
+Write-capable Sol and Luna calls use the same audited Codex auto-review path
 in the exact isolated worktree. The fallback inherits the original objective,
 allowed paths, and stage evidence and remains subject to every deterministic
 gate; it cannot test, commit, publish, merge, delete, or expand the ticket.

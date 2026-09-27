@@ -47,7 +47,7 @@ ROLE_ASSIGNMENTS = {
     "reviewer-fallback": {
         "label": "Reviewer-Fallback",
         "provider": "OpenAI",
-        "model": "GPT-5.6 Luna · Light",
+        "model": "GPT-6 Luna · Light",
     },
 }
 

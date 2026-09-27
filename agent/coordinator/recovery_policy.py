@@ -195,7 +195,7 @@ def classify_validation(
             return implementation_failure
         return _failure(
             "implementer_fallback_failure",
-            "Both the Terra Medium Implementer and its single Luna Light fallback failed.",
+            "Both the Sol Medium Implementer and its single Luna Light fallback failed.",
             "Check Codex availability before starting another ticket.",
             eligible=False,
         )

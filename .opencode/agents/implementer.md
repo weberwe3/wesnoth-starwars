@@ -1,7 +1,7 @@
 ---
 description: Implements substantive bounded coding tickets without shell access
 mode: all
-model: openai/gpt-5.6-terra
+model: openai/gpt-6-sol
 permission:
   "*": deny
   read:

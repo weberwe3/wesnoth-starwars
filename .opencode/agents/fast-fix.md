@@ -1,7 +1,7 @@
 ---
 description: Performs small mechanical and tightly bounded low-risk edits without shell access
 mode: all
-model: openai/gpt-5.6-luna
+model: openai/gpt-6-luna
 permission:
   "*": deny
   read:

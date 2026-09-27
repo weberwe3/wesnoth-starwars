@@ -360,7 +360,7 @@ Intended system roles:
 - **free/low-cost hosted worker LLMs** — bounded implementation work in isolated branches/worktrees;
 - **tester LLM** — independent inspection after deterministic gates;
 - **reviewer LLM** — final independent model review;
-- **reviewer fallback** — GPT-5.6 Luna Light only when the primary Nemotron reviewer is unavailable/non-decisive for infrastructure reasons.
+- **reviewer fallback** — GPT-6 Luna Light only when the primary Nemotron reviewer is unavailable/non-decisive for infrastructure reasons.
 
 Workers do not control `main`.
 
@@ -396,11 +396,11 @@ The deterministic coordinator, not the worker LLM, executes tests and records ac
 
 Current worker routing:
 
-- implementer: Codex `openai/gpt-5.6-terra` at medium reasoning
-- fast-fix: Codex `openai/gpt-5.6-luna` at medium reasoning
-- tester: Codex `openai/gpt-5.6-luna` at medium reasoning
+- implementer: Codex `openai/gpt-6-sol` at medium reasoning
+- fast-fix: Codex `openai/gpt-6-luna` at medium reasoning
+- tester: Codex `openai/gpt-6-luna` at medium reasoning
 - primary reviewer: `cloudflare-workers-ai/@cf/nvidia/nemotron-3-120b-a12b`
-- every model-worker fallback: Codex `openai/gpt-5.6-luna` at low reasoning
+- every model-worker fallback: Codex `openai/gpt-6-luna` at low reasoning
 
 Observed behavior:
 
@@ -813,7 +813,7 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 - OpenCode Web is a session UI, not the deterministic project dashboard.
 - DASH-001 covers live ticket status, gates, routing, role/model assignments,
   and recent activity. DASH-002 added a narrowly scoped execution control:
-  Python/manual coordination or a GPT-5.6 Sol low/medium/high planning pass may
+  Python/manual coordination or a GPT-6 Sol low/medium/high planning pass may
   initiate exactly one schema-validated deterministic ticket. A dedicated
   governance change is now being prepared for an optional continuous scheduler,
   validated-local-commit approval queue, exact-commit publication action, and a
@@ -1046,7 +1046,7 @@ When updating this file:
 | 2026-09-04 | Continuous automation governance / PR #17 | Defined FIFO local-commit queue, exact-commit publication approval, activity/error presentation, and fail-closed deletion approval requirements |
 | 2026-09-04 | DASH-004 / PR #18 | Autonomous scheduling toggle, planned-ticket picker, local approval queue, exact-commit publication pipeline, and deletion manifest gate merged |
 | 2026-09-04 | Bounded error-recovery governance (proposed) | Permit no more than two scoped coordinator repair attempts for eligible implementation/gate errors; retain immediate hard stops for security, approval, repository hygiene, and publication failures |
-| 2026-09-04 | Implementer provider fallback (proposed) | Keep GPT-OSS 120B primary and permit exactly one sandboxed GPT-5.6 Terra medium fallback after primary Implementer failure; failure of both providers hard-stops without consuming code-recovery attempts |
+| 2026-09-04 | Implementer provider fallback (proposed) | Keep GPT-OSS 120B primary and permit exactly one sandboxed GPT-6 Sol medium fallback after primary Implementer failure; failure of both providers hard-stops without consuming code-recovery attempts |
 | 2026-09-04 | DASH-005 / PR #19 | Merged structured failure diagnostics, one Terra Medium Implementer fallback, open-work planning context, and a strict two-attempt Sol-planned/Fast-Fix recovery loop |
 | 2026-09-04 | DASH-006 / PR #20 | Merged stale-dashboard restart, visible no-safe-ticket diagnostics, resume-first nonterminal worktrees, paired full-control private-LAN access, and safe-state dashboard/associated-console shutdown |
 | 2026-09-04 | DASH-007 / PR #21 | Merged exact-head, contract-backed open-PR resumption with append-only main reconciliation, a fail-closed same-contract replacement path that preserves retired branches, and Gemini 3.8 Flash between Gemini 3.6 Flash and Nemotron in the reviewer fallback chain |
@@ -1079,7 +1079,7 @@ At this snapshot, resume-state hardening is merged through PR #30. The subsequen
 
 A fresh Codex instance should not need historical chat transcripts to continue. The controlled references plus this ledger, current GitHub issues/PRs, and repository state should be sufficient to reconstruct the project's intent, operating model, completed work, constraints, and immediate next actions.
 
-The current reviewer route is Nemotron followed immediately by a read-only GPT-5.6 Luna Light fallback. Gemini 3.6 Flash repeatedly exhausted the project's 20-request daily free allowance, while Gemini 3.8 Flash also produced protocol and timeout failures; neither Google model remains in unattended reviewer routing. Provider-only Tester or Reviewer failures now record the candidate-content digest and the first failed stage. A later resume may reuse earlier gate evidence only when that digest is unchanged; any candidate-content change invalidates the checkpoint and restores full validation.
+The current reviewer route is Nemotron followed immediately by a read-only GPT-6 Luna Light fallback. Gemini 3.6 Flash repeatedly exhausted the project's 20-request daily free allowance, while Gemini 3.8 Flash also produced protocol and timeout failures; neither Google model remains in unattended reviewer routing. Provider-only Tester or Reviewer failures now record the candidate-content digest and the first failed stage. A later resume may reuse earlier gate evidence only when that digest is unchanged; any candidate-content change invalidates the checkpoint and restores full validation.
 
 The failed-ticket Recode control is an exact-record operation, not a general planning request. Its queue ID and commit are revalidated, its current worktree HEAD must still equal that commit, its original recorded contract and changed-path scope must remain safe, and reconciliation with current `main` must be provably non-destructive. Sol no longer selects a branch during recode; the selected worktree's Implementer performs the repair after Python has deterministically reconstructed the ticket. Open-PR recodes additionally require the PR to remain open at the exact recorded head.
 
@@ -1223,3 +1223,15 @@ commit, and original objective preserved. The existing **Recode with AI** path
 then performs one bounded read-only Sol contract-drafting pass before it can
 dispatch a worker. This migration prevents a pre-upgrade record from reaching
 the former publication route while retaining its useful worktree remnants.
+
+### 2026-09-26 — GPT-6 Codex workflow routing
+
+The current Codex routes use GPT-6 Sol for planning and the substantive
+Implementer, and GPT-6 Luna for Fast-Fix, Tester, and their single low-reasoning
+fallbacks. Nemotron 3 120B remains the independent primary Reviewer. The
+dashboard exposes only Python and GPT-6 Sol planning choices. A saved Terra
+planning selection is mapped to the equivalent Sol reasoning tier when read,
+so an existing dashboard choice is preserved without retaining an obsolete
+model option. The controlled orchestration specification and DOCX archive were
+synchronized with these routes; older historical Terra entries in this ledger
+describe past behavior.
