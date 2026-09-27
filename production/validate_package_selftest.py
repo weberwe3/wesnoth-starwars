@@ -35,6 +35,7 @@ class PackageValidationTests(unittest.TestCase):
               mock.patch("validate_package.probe_sequence_load", return_value={"pass": True}) as sequence,
               mock.patch("validate_package.probe_extraction_route", return_value={"pass": True}) as route,
               mock.patch("validate_package.probe_interception_route", return_value={"pass": True}) as interception,
+              mock.patch("validate_package.probe_convoy_route", return_value={"pass": True}) as convoy,
               mock.patch("validate_package.runtime_scenario_probes", return_value={"pass": True}) as runtime):
             result = validate_packaged_candidate(self.root, self.candidate, self.engine)
         self.assertTrue(result["pass"])
