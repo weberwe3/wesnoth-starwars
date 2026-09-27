@@ -1,0 +1,1569 @@
+{
+  "schema_id": "wesnoth-starwars.production.source-inventory",
+  "schema_version": 1,
+  "status": {
+    "structural": "observed",
+    "runtime": "unassessed",
+    "play": "unassessed"
+  },
+  "campaigns": [
+    {
+      "id": "Star_Wars_Thrawn_Trilogy",
+      "define": "CAMPAIGN_STAR_WARS_THRAWN_TRILOGY",
+      "first_scenario": "01_First_Battle",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "define": "CAMPAIGN_STAR_WARS_DARK_FORCE_RISING",
+      "first_scenario": "sw_13_dark_force_rising_recon",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "01_First_Battle",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "next_scenarios": [
+        "sw_02_space_interception"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_02_space_interception",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg",
+      "next_scenarios": [
+        "sw_03_ground_extraction"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_03_ground_extraction",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/03_ground_extraction.cfg",
+      "next_scenarios": [
+        "sw_04_defensive_hold"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_04_defensive_hold",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/04_defensive_hold.cfg",
+      "next_scenarios": [
+        "sw_05_relay_raid"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_05_relay_raid",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/05_relay_raid.cfg",
+      "next_scenarios": [
+        "sw_06_listening_post_infiltration"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_06_listening_post_infiltration",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/06_listening_post_infiltration.cfg",
+      "next_scenarios": [
+        "sw_07_convoy_escape"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_07_convoy_escape",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/07_convoy_escape.cfg",
+      "next_scenarios": [
+        "sw_08_space_breakout"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_08_space_breakout",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/08_space_breakout.cfg",
+      "next_scenarios": [
+        "sw_09_sensor_array_sabotage"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_09_sensor_array_sabotage",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/09_sensor_array_sabotage.cfg",
+      "next_scenarios": [
+        "sw_10_borderland_withdrawal"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_10_borderland_withdrawal",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/10_borderland_withdrawal.cfg",
+      "next_scenarios": [
+        "sw_11_rendezvous_under_fire"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_11_rendezvous_under_fire",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/11_rendezvous_under_fire.cfg",
+      "next_scenarios": [
+        "sw_12_breakout_at_the_rendezvous"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_12_breakout_at_the_rendezvous",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/12_breakout_at_the_rendezvous.cfg",
+      "next_scenarios": [],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_13_dark_force_rising_recon",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/13_dark_force_rising_recon.cfg",
+      "next_scenarios": [
+        "sw_14_relay_station_infiltration"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_14_relay_station_infiltration",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/14_relay_station_infiltration.cfg",
+      "next_scenarios": [
+        "sw_15_crossfire_extraction"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_15_crossfire_extraction",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/15_crossfire_extraction.cfg",
+      "next_scenarios": [
+        "sw_16_signal_interdiction"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_16_signal_interdiction",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/16_signal_interdiction.cfg",
+      "next_scenarios": [
+        "sw_17_hold_at_the_transmission_point"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_17_hold_at_the_transmission_point",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/17_hold_at_the_transmission_point.cfg",
+      "next_scenarios": [
+        "sw_18_extraction_through_the_narrows"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_18_extraction_through_the_narrows",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/18_extraction_through_the_narrows.cfg",
+      "next_scenarios": [
+        "sw_19_break_the_blockade"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_19_break_the_blockade",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/19_break_the_blockade.cfg",
+      "next_scenarios": [
+        "sw_20_flight_through_the_ravine"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_20_flight_through_the_ravine",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/20_flight_through_the_ravine.cfg",
+      "next_scenarios": [
+        "sw_21_restore_the_beacon"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_21_restore_the_beacon",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/21_restore_the_beacon.cfg",
+      "next_scenarios": [],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    }
+  ],
+  "transition_edges": [
+    {
+      "from": "01_First_Battle",
+      "to": "sw_02_space_interception",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"
+    },
+    {
+      "from": "01_First_Battle",
+      "to": "sw_02_space_interception",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"
+    },
+    {
+      "from": "sw_02_space_interception",
+      "to": "sw_03_ground_extraction",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg"
+    },
+    {
+      "from": "sw_02_space_interception",
+      "to": "sw_03_ground_extraction",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg"
+    },
+    {
+      "from": "sw_03_ground_extraction",
+      "to": "sw_04_defensive_hold",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/03_ground_extraction.cfg"
+    },
+    {
+      "from": "sw_04_defensive_hold",
+      "to": "sw_05_relay_raid",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/04_defensive_hold.cfg"
+    },
+    {
+      "from": "sw_05_relay_raid",
+      "to": "sw_06_listening_post_infiltration",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/05_relay_raid.cfg"
+    },
+    {
+      "from": "sw_06_listening_post_infiltration",
+      "to": "sw_07_convoy_escape",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/06_listening_post_infiltration.cfg"
+    },
+    {
+      "from": "sw_07_convoy_escape",
+      "to": "sw_08_space_breakout",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/07_convoy_escape.cfg"
+    },
+    {
+      "from": "sw_08_space_breakout",
+      "to": "sw_09_sensor_array_sabotage",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/08_space_breakout.cfg"
+    },
+    {
+      "from": "sw_08_space_breakout",
+      "to": "sw_09_sensor_array_sabotage",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/08_space_breakout.cfg"
+    },
+    {
+      "from": "sw_09_sensor_array_sabotage",
+      "to": "sw_10_borderland_withdrawal",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/09_sensor_array_sabotage.cfg"
+    },
+    {
+      "from": "sw_10_borderland_withdrawal",
+      "to": "sw_11_rendezvous_under_fire",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/10_borderland_withdrawal.cfg"
+    },
+    {
+      "from": "sw_11_rendezvous_under_fire",
+      "to": "sw_12_breakout_at_the_rendezvous",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/11_rendezvous_under_fire.cfg"
+    },
+    {
+      "from": "sw_13_dark_force_rising_recon",
+      "to": "sw_14_relay_station_infiltration",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/13_dark_force_rising_recon.cfg"
+    },
+    {
+      "from": "sw_14_relay_station_infiltration",
+      "to": "sw_15_crossfire_extraction",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/14_relay_station_infiltration.cfg"
+    },
+    {
+      "from": "sw_15_crossfire_extraction",
+      "to": "sw_16_signal_interdiction",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/15_crossfire_extraction.cfg"
+    },
+    {
+      "from": "sw_16_signal_interdiction",
+      "to": "sw_17_hold_at_the_transmission_point",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/16_signal_interdiction.cfg"
+    },
+    {
+      "from": "sw_17_hold_at_the_transmission_point",
+      "to": "sw_18_extraction_through_the_narrows",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/17_hold_at_the_transmission_point.cfg"
+    },
+    {
+      "from": "sw_18_extraction_through_the_narrows",
+      "to": "sw_19_break_the_blockade",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/18_extraction_through_the_narrows.cfg"
+    },
+    {
+      "from": "sw_19_break_the_blockade",
+      "to": "sw_20_flight_through_the_ravine",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/19_break_the_blockade.cfg"
+    },
+    {
+      "from": "sw_20_flight_through_the_ravine",
+      "to": "sw_21_restore_the_beacon",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/20_flight_through_the_ravine.cfg"
+    }
+  ],
+  "unit_type_ids": [
+    {
+      "id": "Thrawn_Phalanx",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_im_blockade_walker",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg"
+    },
+    {
+      "id": "sw_unit_im_patrol_speeder",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg"
+    },
+    {
+      "id": "sw_unit_im_pursuit_speeder",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg"
+    },
+    {
+      "id": "sw_unit_im_recon_squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_im_rem_stormtrooper",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_im_signal_jammer_team",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_im_torpedo_bomber_squadron",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg"
+    },
+    {
+      "id": "sw_unit_im_venator_interceptor",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg"
+    },
+    {
+      "id": "sw_unit_irm_ground_assault_vehicle",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg"
+    },
+    {
+      "id": "sw_unit_nr_engineer_squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_nr_evacuation_transport",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg"
+    },
+    {
+      "id": "sw_unit_nr_field_engineer_team",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_nr_heavy_weapons_squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_nr_hero_commander",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+    },
+    {
+      "id": "sw_unit_nr_pathfinder_squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_nr_perimeter_guard_squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_nr_recon_squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_nr_rifle_squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_nr_slicer_team",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_nr_starwing_escape",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg"
+    }
+  ],
+  "asset_references": [
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-recon-squad.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-signal-jammer-team.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-engineer-squad.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-heavy-weapons-squad.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-hero-commander.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-slicer-team.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/01_first_battle.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"
+      ]
+    }
+  ],
+  "external_asset_references": [
+    {
+      "path": "portraits/humans/peasant.webp",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+        "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg",
+        "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg"
+      ]
+    },
+    {
+      "path": "units/human-peasants/peasant.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    }
+  ],
+  "gameplay_contract_ids": [
+    {
+      "id": "sw-first-battle-air-support-jammer-gate",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-air-support-relay-objective",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-air-support-sortie",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-alarm-reserve-deployment",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-delivery-interception",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-delivery-objective-refresh",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-delivery-warning",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-pursuit-deployment",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-records-acquisition-event",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-records-delivery-event",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-records-objective-refresh",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-return-interdiction",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-return-roadblock",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-archive-security-squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-command-guard",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-delayed-search-patrol",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-delivery-relief",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-eastern-observation-air-support",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-eastern-observation-event",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-eastern-observation-location",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-field-engineer-placement",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-field-relay-restoration",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-forward-observer",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-forward-observer-counterattack",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-heavy-weapons-placement",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-hero-roster",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-infantry-roster",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-jammer-carryover",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-mission-briefing-event",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-obroa-skai-map-setup",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-pathfinder-squad-placement",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-recon-squad-loss-event",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-relay-response-turn-eight",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-rifle-cover-position",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-rifle-range-guidance",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-scenario-identity",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-first-battle-time-over-event",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-imperial-reinforcement-turn-four",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-new-republic-field-engineer-team",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-new-republic-rifle-squad",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-rifle-squad-cover-defense-poc",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-rifle-squad-ranged-combat-poc",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-signal-jammer-deployment-turn-two",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-signal-jammer-destruction-event",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-space-interception-jammer-readiness",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-space-interception-torpedo-bomber-deployment-turn-four",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    },
+    {
+      "id": "sw-thrawn-campaign-registration",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+      "sha256": "a8f4202c835a00e9ea3558afe9210f33eb9b7d282946bffdfe822caba59148eb"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg",
+      "sha256": "ba94fcc1ac688b1bc9f2c26b8e75f7710c40e3b1e5c8839ee26d5a86a596326f"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg",
+      "sha256": "6b174094c802eddadd0e47ad30b62a4622f40b7a9f72ae4b3ab4e3f56f6337d1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/03_ground_extraction.cfg",
+      "sha256": "56f05bb19f1fca388bfa8eff1305628b292d0c5d81c4f67955af3edebc25f838"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/04_defensive_hold.cfg",
+      "sha256": "63715faf316f039e9890d2538f357e6f47620f0d52e7111df0e94342a0c0a12a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/05_relay_raid.cfg",
+      "sha256": "1a2c3a04a04bfc3e442cb4e82828d0483f6d09d58c3443fe03f3acfb8f88d8b2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/06_listening_post_infiltration.cfg",
+      "sha256": "768b4b796e4b9a128c130ae73c8ec7669c304481d5b1237782086b448b729796"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/07_convoy_escape.cfg",
+      "sha256": "92c5f9060610beb8cadae2a7dab1f73386ce1bb52ab6f0da9183303ea892da7c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/08_space_breakout.cfg",
+      "sha256": "9646fe7cad85864985aa2ba645f781b1b80084283ff18a6c3d15b4ef9af7396b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/09_sensor_array_sabotage.cfg",
+      "sha256": "f85040e6613146a9d7dfbd7808f45a9409162c00fb359d7f6eb873f01388423c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/10_borderland_withdrawal.cfg",
+      "sha256": "17bee12cfa087f62b7972c9882137701f423dce29d2762582725402e78449dbf"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/11_rendezvous_under_fire.cfg",
+      "sha256": "df3ec84a571d6c3f8534e618efea85494a0e65cfaadd844a1449b5eff33bccce"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/12_breakout_at_the_rendezvous.cfg",
+      "sha256": "5ff53179df3a68d961d8c80709ed30647a512438f3fd9c9f79346faa38702e33"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/13_dark_force_rising_recon.cfg",
+      "sha256": "fd6de6083211080d5e6d6f40f35c9d2f0cc4af48ffdd1317de6278a506e82c3a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/14_relay_station_infiltration.cfg",
+      "sha256": "de9c55ccd77473a43c95fe0bafc228a0dadd3ee6bd25ae05d90b69ca1da1fdde"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/15_crossfire_extraction.cfg",
+      "sha256": "3c60b8fe355dbb19f0c6ddc903c35fca7a9f1342e96248dc3e701ae3b8006229"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/16_signal_interdiction.cfg",
+      "sha256": "6eb04b6632bd9642377f2fe88d68ac64950fd77455c5fb5bf0fa8ea91f7ea18f"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/17_hold_at_the_transmission_point.cfg",
+      "sha256": "03cb91932c9f1eb4228b0e9bfed180445c65e81eb8b47b7da26f55ebac4f27a5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/18_extraction_through_the_narrows.cfg",
+      "sha256": "39e012935e7d717e004158ce7dd15bbc3f38ece8306d1d4bbfa8b01be34759d1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/19_break_the_blockade.cfg",
+      "sha256": "295ec5b779b5c2b95a7b0f96a6bd4b8436dbbac77232b09c5e8309ab06c892b6"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/20_flight_through_the_ravine.cfg",
+      "sha256": "463709af121a715404bc4c1a07a0bba4e481dd922f969ee1c9f48f61411a71cc"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/21_restore_the_beacon.cfg",
+      "sha256": "871b5b12c3629b915d9e660a73ca9acd57a791fe273304a59e7da6924fbe79e1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
+      "sha256": "2118ddce56b9dc884785df97f9dd64d740bad860c8231c18ea49b7960f596653"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+      "sha256": "7d1c8efc1d17cc5480d32feb445ab5ee3b99c15d54058b7e51af1dda200d3b98"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg",
+      "sha256": "7aac6ec85f0c2be3549506d7b864fcc9e8d571520190b8b17506a1c2cacb920b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
+      "sha256": "e037a531bd51a8fdcc5c73da257bf0b3560f4c9a5cb4f74d82e2497cccea0d5c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg",
+      "sha256": "79805fd529c7a43c22ef4869a24bf42824d691ec97484aa25b3d39f6ed00928e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
+      "sha256": "b974a14a34e12c21897324abd9a7111654d55e8b1152497979fa646f6b89299e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-recon-squad.png",
+      "sha256": "a005990b5b4133ca30be7d8e789bbefcf681c035142f47870dbf660777c59107"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-signal-jammer-team.png",
+      "sha256": "11ed40b32e0aa622e02530d64648d8c7e03e6802f42c0a583e3d8b6b7d1cee90"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-engineer-squad.png",
+      "sha256": "eb58249e4c934b01c927221a5313171fcce61a4917086c0ed358efd530d69151"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-heavy-weapons-squad.png",
+      "sha256": "f2d92efc03d47716b46760336c742cf62e4ca9dc5dbaba174ab80695148626ec"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-hero-commander.png",
+      "sha256": "87146b88c1ff2bea39cd0e11aa58efa25cfc16ce8390320d11168a2125ef2936"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-slicer-team.png",
+      "sha256": "fc01ada733530bbd3f30f1a5beeddfdd2e6f2f872cf836a9d17cba9e9f7ca159"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/death-1.png",
+      "sha256": "0e54e54809843b9ba4b579cce297da9f162e9f16ad8e1c8d059f4204ee5a67c5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/death-2.png",
+      "sha256": "0e54e54809843b9ba4b579cce297da9f162e9f16ad8e1c8d059f4204ee5a67c5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/defend.png",
+      "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/idle-1.png",
+      "sha256": "851b7e2376e1e7fcdfb0d944fcc8827e88af295685d9ca9a8764d1ef39f439a2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/idle-2.png",
+      "sha256": "9a217795d22df4bd0d9e60a4900df89e0bd5a1e658447496a85de9fe966b33c3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/melee-1.png",
+      "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/melee-2.png",
+      "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/move-1.png",
+      "sha256": "7bebb1e0a03daef7f9a39c1dafcf5f3398e51956e90684eda3b6bd2ea5292d93"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/move-2.png",
+      "sha256": "7bebb1e0a03daef7f9a39c1dafcf5f3398e51956e90684eda3b6bd2ea5292d93"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/ranged-1.png",
+      "sha256": "c43b25828187a613f69658a59ec83c6c9e1af5927467daa463372e289c9ccd24"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/ranged-2.png",
+      "sha256": "c43b25828187a613f69658a59ec83c6c9e1af5927467daa463372e289c9ccd24"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/standing.png",
+      "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/death-1.png",
+      "sha256": "051b0b6699b60697039e44f80d83b941ce3ad56af38e874700391e65e4f4331d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/death-2.png",
+      "sha256": "b1e3d01a38393cb372b7db7adb399dd2ff158bfdb20ccbdd2b31810c31c6d7e7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/defend.png",
+      "sha256": "11cdbd775b519302a1520afb32ea4b283930dca4b8bdf2acae05fd0bd3435235"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/idle-1.png",
+      "sha256": "ca0860efc3a97d7788220e596c7d57adf2db040ded514b170114e80cc9ec80da"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/idle-2.png",
+      "sha256": "e02f18741556ef1efd5de2eee52cc99abc7ff6803058a3852f861c3d295e78cc"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/melee-1.png",
+      "sha256": "de37ba306860712efd04c45a6de0f60d0eddfe35672d41499f8e94abc8bd78fa"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/melee-2.png",
+      "sha256": "20b6a15a217a3c72590ffa52b8ab1538b20a3d2059a29aa7e9e690790b8e8644"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/move-1.png",
+      "sha256": "e82d4fe2f259f81792c65f9a712f8f9cd954cfe171e5781a190499beebe41c69"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/move-2.png",
+      "sha256": "10a634052fdcf9e7af7cb2b3808b4b6b25577390d27dc373293c79d715594084"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/ranged-1.png",
+      "sha256": "49107a9c93a980de25a06c4a71eb310a8281a80a24118a1ef0e461cef379e671"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/ranged-2.png",
+      "sha256": "099e5654d0e1660480159f61c42bf940b7217ebc646146b81fb44da6eba620a9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/standing.png",
+      "sha256": "dad57d1c83826f5006b90f1eef96898d044695470849fe0363d38648eff86ce6"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/death-1.png",
+      "sha256": "a8fdd14c0b181622410b35b02f51d0e4f70d2d6cf2c678fd42c6b456ff18a93a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/death-2.png",
+      "sha256": "beb06fd95d6312f93e11cd24f54c055334c1d2b25c28ae5c29afb83f95923b4e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/defend.png",
+      "sha256": "302a00ef131df5e6bdcd466c0e86fe0badab4c0b1abb5b15183aea00228d4219"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/idle-1.png",
+      "sha256": "7efda86f8f5364c31d21d1d11dbbcaed6c6f7872084192f955140809161ca69e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/idle-2.png",
+      "sha256": "db48cb00a5494d684e4258ebc21143bc8a824cb1118da96a61aa20184080cf99"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/melee-1.png",
+      "sha256": "e5b44129070a3940b0777c13c90fbe0c1a02c357b2b10eb69818ca8477cb56a9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/melee-2.png",
+      "sha256": "d86fe07d4b1d11575481864c3a19be818704b74dfc40a1a5a52b786806cdb978"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/move-1.png",
+      "sha256": "52a56dad63aae1574df17f7d2ef4a9b87b0554efb590371c6621e21163b28e26"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/move-2.png",
+      "sha256": "4748df23d85f9dc9cd35c12d89ec98d5a015241a58ab0bf378315f4c28a634c4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/ranged-1.png",
+      "sha256": "59831f35b0a599e01b89497ce1c9823c6cb183f783f12af36952cebc52082aa9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/ranged-2.png",
+      "sha256": "0979128081bfe72cb68113e0e0a16560b32b7d0956659ebb5d0e6a5451416881"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/standing.png",
+      "sha256": "d4957c54ca94a97a5d1cbc3f5bdd8837a1521998d23c627fa2ed28ec0c983b14"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/death-1.png",
+      "sha256": "05c1ea55026e7251d496482510b05fefda8fc9f8f12d0aa571adbba7ae1d57b7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/death-2.png",
+      "sha256": "87980f529e5fe988787392a093f5ef2786e6604a461f597df2644e579be71aa7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/defend.png",
+      "sha256": "c1aa4faebfef59b1ac6dc4a59c8363110af3c82c299bb78e98dc85c615808c32"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/idle-1.png",
+      "sha256": "40608b4c301ffa56e6ea0f87c710cb88aa12dafa597d909fcd73d2144c253dc3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/idle-2.png",
+      "sha256": "7b231f7183a24b4b2f34c5ba72d65f956b2d65b24964a5094ab52928cd046a9f"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/melee-1.png",
+      "sha256": "d9b8f3b8c766dbdd3a1407859164472f00d1c8672a0b86dea87c69d6461d864d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/melee-2.png",
+      "sha256": "a309785323e8b7aa1dcc0df73ea7ab8604d0cbfefa6b6b6999fd6820bd2519cc"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/move-1.png",
+      "sha256": "bd541a3fac67ac596325e5961f28a2bfbc5417ccab021436eb3e600b4a05a630"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/move-2.png",
+      "sha256": "6084ba695934ed522877304ef608652709f494ff903f5c75337ffd476fc4f3fe"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/ranged-1.png",
+      "sha256": "531706ccde81e1977db972a128dd9c0d8557fc480dad6fefb1faad5d60211d68"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/ranged-2.png",
+      "sha256": "07ced363cd903d4d6752a2c618e64cc80f9b8d3b4672841cd06aabec14397b1c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/standing.png",
+      "sha256": "d5b04a05aae76d0dd53c238070180aec54c93a05fd6f7c59304bc6ea153ac8f5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/death-1.png",
+      "sha256": "7d764eea72605085cc1b25fdcbb43dc36a55955ce4d388685cfba0ab0cba6722"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/death-2.png",
+      "sha256": "2a4599b60686a0885ed0f7f5405cc75141652830593edbc68511d07f0fb3651a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/defend.png",
+      "sha256": "67b2028ce53c666c756c32c5ab2953f303c6aec84cb01b3023c872f97b992fb2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/idle-1.png",
+      "sha256": "856d0125414c0a6be3cddabc008abd0512d1b2388e99009d180b32c565758fee"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/idle-2.png",
+      "sha256": "41833fc4ba16391e6ca55641eee013589a88c953e9c9a833eed9e06cbaeee281"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/melee-1.png",
+      "sha256": "9d9fbc7c952bfa9dbb6c62677c7c1e8d142a77218af5f4b0abaea2fc7642b0c2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/melee-2.png",
+      "sha256": "d31ab2b8e495bcd054682cea381844442a85ae738bdb1e551af89b931b421251"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/move-1.png",
+      "sha256": "b4f544826659296e7034b59b225c6ae14a61ffe9bb8ca0454879f24946014c6d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/move-2.png",
+      "sha256": "022b88a4d21cd2ac9291d1c9dba9ee7b9229c629f7b0ae38e126d81e837f0411"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/ranged-1.png",
+      "sha256": "69ab52fcc6597fa02732746b65632f08f54d44dba8e2f1a10bd89e7a00750146"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/ranged-2.png",
+      "sha256": "79ebc39da4fe7d55b4b0dbd830467063e3598aac9120ef5045e7371791319378"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/standing.png",
+      "sha256": "f7035ee06190796c739835098e2c5e7bd0d049d2ccba360f670953a6b7f08c6c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/death-1.png",
+      "sha256": "6eaba364b2bdc37ab0da4dfc7e693644952aa902207763cf9574b00b82cea94b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/death-2.png",
+      "sha256": "70322b415c41ca2ac859a242a6ee48e5fe9c4450febe64cbec70a9519531c91e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/defend.png",
+      "sha256": "3f8ab271e7f79cd0201e31a7865f251f1eed05bc516d4fa7c1d055ee225ce747"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/idle-1.png",
+      "sha256": "eecec877daf6b94fc8d09cce9fcf9b61ad218e502686b2f9fd0915820ad2f1a4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/idle-2.png",
+      "sha256": "fabca0d1cbfa1c52ad9942a2ae43d98d4afa67e2f19ae070732f2c8fb950a7f7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/melee-1.png",
+      "sha256": "fd5825dc7dc357b7be9f298b0f937a47776c9d91d1bbfcf3425ffc985532f70e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/melee-2.png",
+      "sha256": "402cd28a9bfadd4c3de8dba80e7e7fbe7c3f6ed03228a72458902e06c9d118d4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/move-1.png",
+      "sha256": "bc488f9a7de4c3a7c8496f89f07db961e599a129402bcab2e1eeb6eb99d37801"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/move-2.png",
+      "sha256": "f655bc8017be26d992bce51af9409cc065a517aab359a0067c50bde6c389a93d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/ranged-1.png",
+      "sha256": "424db7679166bbc3942712643f2718e5be49a92816b53c6707f2680aca084f83"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/ranged-2.png",
+      "sha256": "1a55e72f4de64a4825585282b537df142df3fa3c51d219f9ea7c8577f3ae408c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/standing.png",
+      "sha256": "d27d833e8ba94fb1e1d8f1f8bc12f1e2801b6875ac8a36ffb7025fdd426ea7f2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/01_first_battle.map",
+      "sha256": "a653375f7578ef4c9f828f0764e46d1e33e4fdfb4e4dcfa1cc30701037a58e2a"
+    }
+  ],
+  "production_dependencies": []
+}

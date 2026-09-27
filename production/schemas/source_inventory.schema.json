@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wesnoth-starwars.production.source-inventory",
+  "title": "Wesnoth Star Wars structural source inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_id", "schema_version", "status", "campaigns", "scenarios", "transition_edges", "unit_type_ids", "asset_references", "external_asset_references", "gameplay_contract_ids", "source_files", "production_dependencies"],
+  "properties": {
+    "schema_id": {"const": "wesnoth-starwars.production.source-inventory"},
+    "schema_version": {"const": 1},
+    "status": {"type": "object", "required": ["structural", "runtime", "play"], "additionalProperties": false, "properties": {"structural": {"const": "observed"}, "runtime": {"const": "unassessed"}, "play": {"const": "unassessed"}}},
+    "campaigns": {"type": "array", "maxItems": 64, "items": {"$ref": "#/$defs/campaign"}},
+    "scenarios": {"type": "array", "maxItems": 512, "items": {"$ref": "#/$defs/scenario"}},
+    "transition_edges": {"type": "array", "maxItems": 10000, "items": {"$ref": "#/$defs/edge"}},
+    "unit_type_ids": {"type": "array", "maxItems": 10000, "items": {"$ref": "#/$defs/idRecord"}},
+    "asset_references": {"type": "array", "maxItems": 10000, "items": {"$ref": "#/$defs/assets"}},
+    "external_asset_references": {"type": "array", "maxItems": 10000, "items": {"$ref": "#/$defs/assets"}},
+    "gameplay_contract_ids": {"type": "array", "maxItems": 10000, "items": {"$ref": "#/$defs/idRecord"}},
+    "source_files": {"type": "array", "maxItems": 512, "items": {"$ref": "#/$defs/sourceFile"}},
+    "production_dependencies": {"type": "array", "maxItems": 10000, "items": {"$ref": "#/$defs/edgeNoPath"}}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "maxLength": 512},
+    "idRecord": {"type": "object", "required": ["id", "source_path"], "additionalProperties": false, "properties": {"id": {"$ref": "#/$defs/text"}, "source_path": {"$ref": "#/$defs/text"}}},
+    "campaign": {"type": "object", "required": ["id", "define", "first_scenario", "source_path", "structural_status", "runtime_readiness", "play_readiness"], "additionalProperties": false, "properties": {"id": {"$ref": "#/$defs/text"}, "define": {"$ref": "#/$defs/text"}, "first_scenario": {"$ref": "#/$defs/text"}, "source_path": {"$ref": "#/$defs/text"}, "structural_status": {"const": "observed"}, "runtime_readiness": {"const": "unknown"}, "play_readiness": {"const": "unknown"}}},
+    "scenario": {"type": "object", "required": ["id", "campaign_id", "source_path", "next_scenarios", "structural_status", "runtime_readiness", "play_readiness"], "additionalProperties": false, "properties": {"id": {"$ref": "#/$defs/text"}, "campaign_id": {"$ref": "#/$defs/text"}, "source_path": {"$ref": "#/$defs/text"}, "next_scenarios": {"type": "array", "maxItems": 100, "items": {"$ref": "#/$defs/text"}}, "structural_status": {"const": "observed"}, "runtime_readiness": {"const": "unknown"}, "play_readiness": {"const": "unknown"}}},
+    "edge": {"type": "object", "required": ["from", "to", "source_path"], "additionalProperties": false, "properties": {"from": {"$ref": "#/$defs/text"}, "to": {"$ref": "#/$defs/text"}, "source_path": {"$ref": "#/$defs/text"}}},
+    "edgeNoPath": {"type": "object", "required": ["from", "to"], "additionalProperties": false, "properties": {"from": {"$ref": "#/$defs/text"}, "to": {"$ref": "#/$defs/text"}}},
+    "assets": {"type": "object", "required": ["path", "source_paths"], "additionalProperties": false, "properties": {"path": {"$ref": "#/$defs/text"}, "source_paths": {"type": "array", "maxItems": 512, "items": {"$ref": "#/$defs/text"}}}},
+    "sourceFile": {"type": "object", "required": ["path", "sha256"], "additionalProperties": false, "properties": {"path": {"$ref": "#/$defs/text"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}
+  }
+}
