@@ -1437,3 +1437,16 @@ integrated load record above and the Restore the Beacon envelope are stale
 after these source changes because their dependency hashes changed. Re-run
 scoped tests from the next integrated commit; the main remaining play gates
 are full legal victory/defeat, transition, carryover, and save/load.
+
+On integrated commit `10d6fbcdc2a0afde4511e08cea5ded0e4c9ae5c0`,
+Wesnoth 1.19.27 passed the strengthened first-move probe for missions 2 and 3
+(exit 0 each; raw SHA-256
+`dd743f9a3ff316cd5009f8cc698e5dcd6cebc307c2eb6901a399b05cbac0bcd1`).
+The scoped Restore the Beacon requirement was rerun on the same clean commit
+and returned current/pass (raw SHA-256
+`e3e7f2096b80554a61cc6202d85834c779072b775d4a1ee1e18f62284490cf1b`,
+envelope SHA-256
+`7eabd0803f7538ea21581f449e758dff6256ac7a65022b5a9cb2a925798cbc8e`).
+These observations replace the stale source-dependent run for current source
+identity. Next, prove a complete legal objective route and actual sequence
+transition; do not infer them from early-move or isolated handler evidence.

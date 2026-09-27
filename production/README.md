@@ -251,3 +251,24 @@ and no early victory or conditional-test warning for both missions. This is
 first-move evidence only. The earlier integrated load record above is a
 historical result for the earlier source/probe hashes; it must not be reused
 for the changed sources. A clean integrated rerun is still required.
+
+That rerun used integrated commit
+`10d6fbcdc2a0afde4511e08cea5ded0e4c9ae5c0` and Wesnoth 1.19.27.
+Both first-move fixtures exited 0 with no failed assertion or premature
+victory. Ignored raw JSON SHA-256:
+`dd743f9a3ff316cd5009f8cc698e5dcd6cebc307c2eb6901a399b05cbac0bcd1`;
+probe SHA-256:
+`79c37b41c7b8dc2c1ad82f4a39cd891e1d3d8627fa011d7b358aaf68b2241519`;
+mission 2 source SHA-256:
+`d2bf94ae2379439f77f1545c96347dcc8b5c32360ff7b2ac8f5f51822d90d587`;
+mission 3 source SHA-256:
+`5b6890697a1a8b86131efab21bced3c4db4ddc3c977c82ffa336c5a4206e4521`.
+The installed engine SHA-256 remains
+`120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae`.
+
+The same clean commit re-ran the protected Restore the Beacon objective
+fixture: current/pass, raw SHA-256
+`e3e7f2096b80554a61cc6202d85834c779072b775d4a1ee1e18f62284490cf1b`,
+envelope SHA-256
+`7eabd0803f7538ea21581f449e758dff6256ac7a65022b5a9cb2a925798cbc8e`.
+That controlled fixture remains narrower than ordinary mission play.
