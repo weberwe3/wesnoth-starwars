@@ -1404,3 +1404,14 @@ envelope SHA-256:
 The controlled fixture still does not establish normal-AI play, GUI campaign
 entry, save/load, or a verified player build. Next, resolve actual Game-context
 entry capability and broaden requirement coverage to the selected sequence.
+
+First-sequence engine-load work found that Ground Extraction could not start:
+installed Wesnoth 1.19.27 rejected `Cc` map tiles. Space Interception loaded
+but logged unsupported `[command][variable]` actions. The bounded repair uses
+core `Ch` castle, supported `[set_variable]` event actions, and distinct
+commander/hero start hexes. A reproducible isolated engine test now passes
+mission 2 and 3 initial-unit and turn-limit assertions. Its next-scenario
+warnings arise because the fixture omits successors; it does not prove
+transitions, objectives, save/load, or player-build eligibility. Re-run the
+probe on the integrated commit and then exercise legal victory, defeat, and
+actual mission-to-mission transition under a supported Game context.
