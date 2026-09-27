@@ -1285,3 +1285,17 @@ dialogue, defeat paths, transition/carryover, save/reload, and player-ready
 package remain unverified. Next, test the source mission's defeat and
 transition behavior with bounded engine fixtures, then qualify actual campaign
 play and packaging.
+
+The subsequent default mission probe added turn-limit and required-unit death
+checks. With enemy turns disabled in the temporary timeout fixture, both
+required units remained present through logged turns 1-10 and Wesnoth returned
+the defeat result. Direct death-event injection for the engineer and commander
+also returned defeat. Removing only the engineer's source `die` handler in a
+negative fixture caused the same injection to finish without defeat, isolating
+that source rule. All ten default cases passed; `production/mission_defeat_evidence.json`
+binds the exact fixture, script, source, inventory, and engine identities.
+Direct injection does not prove combat death, and generic leader defeat may
+also explain the commander result. Transition/carryover and save/reload remain
+unverified. The next engine contract should capture a real pre-objective save
+and reload or establish the exact missing automation capability, then test the
+connected campaign transition before delivery is claimed.

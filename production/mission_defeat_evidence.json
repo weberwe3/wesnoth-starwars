@@ -1,0 +1,123 @@
+{
+  "schema_id": "wesnoth-starwars.production.mission-defeat-evidence",
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-27T05:05:04.178562+00:00",
+  "scenario_id": "sw_21_restore_the_beacon",
+  "scenario_source_sha256": "871b5b12c3629b915d9e660a73ca9acd57a791fe273304a59e7da6924fbe79e1",
+  "unit_source_sha256": {
+    "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg": "c0a28a5afbe93d67a86ddec5685508a8dd7e05c35b18d8f91538d5efac3c242d",
+    "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg": "06801d4c7b0bd9145b65d647067251b789f29416909f5fceacc7853b93f604b3",
+    "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg": "7aac6ec85f0c2be3549506d7b864fcc9e8d571520190b8b17506a1c2cacb920b",
+    "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg": "266bfd9065092b623db41666d0eb595e214c1c5e87e6d3a58bc4006d1ddd9a3e"
+  },
+  "source_inventory_sha256": "235b8002d30351b5cf43e5133b36d0c30b00e4fccdb1b15c3818a3cccd109d04",
+  "probe_script_sha256": "940d8b2330573035e44b7f2338e29dfa748994983dcd01a2b324b8f089a86e33",
+  "local_raw_run_sha256": "c92368bc07f903a55f4e6a756c3cbbf62d247360ccffcf9f56b8ee78db340a9f",
+  "engine_version": "1.19.27",
+  "engine_binary_sha256": "120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae",
+  "pass": true,
+  "results": [
+    {
+      "case": "load",
+      "fixture_sha256": "af49b647c41e20aaf5ed23b76db06144923efddb0767c5bfdbfe6e38cb933b23",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "movement_point",
+      "fixture_sha256": "6efe625a7831a7f7577f8ba9214b60272750314c1070f8e481c28a480c7871d8",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "first_move",
+      "fixture_sha256": "e02401b7e936b6bbe4013b69ebcbad2eb43b29371d06ba06919b4dceaf3ddd96",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "first_move_origin",
+      "fixture_sha256": "6e42f8fa029497523ac5d5763c57eb59ad65542a47d64d0536398e24d0f97b3b",
+      "exit_code": 1,
+      "log_verdict": "fail",
+      "meets_expectation": true
+    },
+    {
+      "case": "path_to_beacon",
+      "fixture_sha256": "1de13a97419128c81f244c2c8d83d53569e2c31543a96cf42a8d8aca8dea990d",
+      "exit_code": 8,
+      "log_verdict": "victory",
+      "meets_expectation": true
+    },
+    {
+      "case": "wrong_unit_terminal",
+      "fixture_sha256": "9b23ddd4f49616421a9d7ddc1391cb4e90f129bc737db43297e579df8f39516c",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "timeout_defeat",
+      "fixture_sha256": "17555c47c3ba3b815517c9b2fdcd279eb4d0553d69435166b3db91acfa569900",
+      "exit_code": 7,
+      "log_verdict": "defeat",
+      "meets_expectation": true
+    },
+    {
+      "case": "engineer_death_direct",
+      "fixture_sha256": "ac2039bfef8fae1a85274d9b73c015b921f689f66f946c224cb0196ec4ca4ba9",
+      "exit_code": 7,
+      "log_verdict": "defeat",
+      "meets_expectation": true
+    },
+    {
+      "case": "engineer_death_handler_removed",
+      "fixture_sha256": "9cde660eb3b4773dc606105644374b64ae101141527a653bf93b7c80cffa4fa2",
+      "exit_code": 0,
+      "log_verdict": "pass",
+      "meets_expectation": true
+    },
+    {
+      "case": "commander_death_direct",
+      "fixture_sha256": "9e0f86c0048a37abb45edc8f1d98f544275ef35905149d4411d9ae4af7bb6740",
+      "exit_code": 7,
+      "log_verdict": "defeat",
+      "meets_expectation": true
+    }
+  ],
+  "timeout_turns_observed": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "fixture_controls": {
+    "timeout_defeat": "Enemy side controller set to null only in the fixture; normal end-turn progression reaches the source 10-turn limit with both required units present.",
+    "engineer_death_direct": "WML kill with fire_event=yes directly injects a death event; it is not a legal combat action.",
+    "engineer_death_handler_removed": "Same direct kill, with only the engineer die handler removed from the temporary fixture; PASS without defeat is the causal negative.",
+    "commander_death_direct": "WML kill with fire_event=yes directly injects a death event; source handler versus generic leader-defeat attribution is unassessed.",
+    "path_to_beacon": "Enemy turns and terminal dialogue suppressed in the temporary fixture; source objective filter and endlevel retained.",
+    "wrong_unit_terminal": "Commander initial location staged one hex from terminal, followed by a normal player move."
+  },
+  "observed": {
+    "objective_victory": "observed_with_enemy_turn_disabled_and_terminal_dialogue_suppressed",
+    "wrong_unit_rejection": "observed_with_commander_start_staged",
+    "defeat_paths": {
+      "turn_limit": "observed_with_enemy_turn_disabled",
+      "engineer_death": "direct_death_event_and_source_handler_causality_observed",
+      "commander_death": "direct_death_defeat_observed"
+    },
+    "mission_transition": "unassessed",
+    "save_reload": "unassessed"
+  },
+  "limits": "This records test-mode turn-limit defeat and direct death-event behavior. Legal combat death, terminal dialogue, active-AI reliability, campaign transition, save/reload, and distributable build remain unverified. No shipped mission or unit source changes in this package."
+}
