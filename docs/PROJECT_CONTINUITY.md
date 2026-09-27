@@ -1355,3 +1355,17 @@ does not silently create a fresh budget. Eight focused tests pass. The module
 assumes one controller process; U3 ownership and interrupted-action
 reconciliation remain prerequisites for unattended operation. No charter is
 active and no real run has consumed this ledger.
+
+The first U2 build-storage contract stages exact committed add-on files from
+an ancestor of published main into an ignored immutable candidate directory.
+It excludes development/test files, records a bounded per-file and package
+digest manifest, atomically renames a complete candidate, and detects changed
+or extra bytes. Four Git fixture tests passed. Against current main
+`7a2262bf8aa188f3cdddde7bb4c3307853244370`, the real staging path
+produced 108 game files with package SHA-256
+`c75f2eb471be524987d07ff99a66a3aee9555fbeab8e23ba46301fa2b778fb68`.
+That candidate is explicitly `candidate_unverified`. No player pointer or
+launcher changed, and no exact-package engine validation or build promotion
+has occurred. Next, exercise packaged bytes with the installed engine and
+implement the single-owner promotion journal/pointer before migrating the
+normal player launcher.

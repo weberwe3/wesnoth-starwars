@@ -157,3 +157,22 @@ reservation automatically, because the external action may have occurred before
 interruption. Cross-process ownership, action reconciliation, and control-state
 admission are still required before unattended scheduling. Run
 `python production/budget_ledger_selftest.py` for eight restart/exhaustion cases.
+
+## Immutable player-build candidates
+
+`build_store.py` stages the exact add-on files from a named committed ancestor
+of `origin/main` into an ignored, immutable candidate directory. Its allowlist
+includes WML, maps, scripts, images, translations, and audio; it excludes tests,
+controller files, raw logs, and development art prompts. A bounded manifest
+records the source commit/tree, every file hash and length, and an aggregate
+package digest. Staging completes in a temporary directory before an atomic
+same-filesystem directory rename. Reopening a candidate verifies its complete
+file set; changed or extra bytes, symlinks, unsupported manifests, and
+unpublished commits fail closed. `python production/build_store_selftest.py`
+covers those cases with four Git fixtures.
+
+A real main-ancestor snapshot was staged locally with 108 game files and
+`candidate_unverified` eligibility. This is a packaging mechanism only: no
+installed-engine package validation, promotion journal, current-build pointer,
+offline player launcher, save compatibility, or rollback policy is provided by
+this module. Those are subsequent U2 contracts.
