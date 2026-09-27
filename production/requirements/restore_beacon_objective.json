@@ -1,0 +1,13 @@
+{
+  "schema_id": "wesnoth-starwars.production.scoped-engine-requirement",
+  "schema_version": 1,
+  "id": "sw-restore-beacon-objective-fixture",
+  "scenario_id": "sw_21_restore_the_beacon",
+  "positive_case": "path_to_beacon",
+  "negative_case": "wrong_unit_terminal",
+  "exercise_type": "engine_player_move_sequence_to_original_victory",
+  "difficulty": "test-mode-controlled-enemy",
+  "seed": "not-applicable",
+  "expected_exit_code": 8,
+  "limitation": "Enemy turns and terminal dialogue are disabled only in the positive temporary fixture; commander start is staged in the negative fixture. This verifies objective wiring, not an ordinary playthrough."
+}

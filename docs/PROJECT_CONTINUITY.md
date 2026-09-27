@@ -1386,3 +1386,14 @@ source/package/engine/harness/validator/raw-artifact hashes and failure. The
 candidate remains unverified. Next, establish a supported campaign-entry
 automation or a controlled interactive GUI check before any build promotion;
 mission play, transition, save/load, and offline launch remain open.
+
+A package-4 direct requirement runner now defines one narrow Restore the Beacon
+objective test contract. It runs the engineer route and staged wrong-unit
+negative through the installed engine, checks both exact outcomes, and writes a
+versioned evidence envelope with conservative source-inventory, harness,
+requirement, engine, and raw-artifact hashes. Five deterministic tests pass.
+This module has no persisted readiness promotion: after restart the envelope
+can be assessed for freshness, but protected runner origin still needs a
+durable reconciliation gate. Run it on a clean integrated commit next, then
+record its exact engine result without claiming normal-AI play or a verified
+player build.
