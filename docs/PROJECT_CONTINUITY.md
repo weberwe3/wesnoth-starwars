@@ -4,10 +4,23 @@
 **Repository:** `weberwe3/wesnoth-starwars`<br>
 **Repository visibility at this snapshot:** public<br>
 **Primary branch:** `main`<br>
-**Last continuity refresh:** 2026-09-07 during installed-Wesnoth map-launch recovery<br>
-**Main before this snapshot:** `2fd57f8`<br>
-**Active governance ticket:** fail-closed Codex workspace-write fallback enforcement<br>
-**Next intended game-development ticket:** coordinator-generated after the documented prototype catalog is exhausted
+**Historical header snapshot:** 2026-09-07 installed-Wesnoth map-launch recovery at `2fd57f8`<br>
+**Production adoption baseline inspected:** local `d356dab1bf61b749669502ec2776fd580640781d` on 2026-09-26; remote and engine state were not refreshed<br>
+**Current direction:** controlled adoption of `TARGET_ARCHITECTURE.md` and `AUTONOMOUS_PRODUCTION_PLAN.md`
+
+The 2026-09-27 unattended-delivery refinement is described in
+[UNATTENDED_DELIVERY_SPEC.md](UNATTENDED_DELIVERY_SPEC.md). A fresh implementing
+coordinator should start at
+[UNATTENDED_DEVELOPMENT_HANDOFF.md](UNATTENDED_DEVELOPMENT_HANDOFF.md), which records
+the pending local adoption state and the first three-mission delivery checkpoint.
+These are implementation requirements, not evidence that unattended execution or
+verified player-build delivery already works.
+
+Sections describing ENGINE-002 as pending, the early dashboard roadmap, and the
+2026-09-07 handoff are historical snapshots. The chronological ledger remains
+useful history. For mutable completion or the next executable ticket, inspect
+Git, the live coordinator inventory, exact-head CI, installed-engine evidence,
+and current product records. Do not infer readiness from this prose.
 
 ---
 
@@ -58,9 +71,12 @@ The project has:
 
 ### What should happen next
 
-Scenario validation is complete. The next bounded game ticket should advance the playable scenario skeleton while retaining static and installed-engine checks appropriate to its scope.
-
-Do not reopen the infrastructure/reference design unless a concrete defect or new requirement justifies it. The project is now ready to prioritize actual game development.
+Adopt the controlled autonomous production references first. Then inventory the
+existing game and prove engine-observed behavior in a small current mission.
+Use those results to select a coherent 3-5 mission production proof. Preserve
+the existing bounded executor, protected publication, and asset handoff while
+production graph, evidence, and scheduler changes are implemented in separate
+reviewed tickets. The sequenced plan gives their acceptance criteria.
 
 ### Installed play-launch consistency
 
@@ -789,7 +805,7 @@ The concise, prompt-injected version of these lessons is maintained in `docs/WOR
 
 ---
 
-## 12. Known current limitations / deferred infrastructure
+## 12. Historical 2026-09-07 limitations and deferred infrastructure
 
 These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 
@@ -810,7 +826,7 @@ These are not blockers for ENGINE-002 unless the specific ticket exposes them.
 
 ---
 
-## 13. Current development status
+## 13. Historical 2026-09-07 development status
 
 ### Infrastructure
 
@@ -871,7 +887,7 @@ logic. The new batch entry point composes with that launcher instead.
 
 ---
 
-## 14. Planned backlog / forward roadmap
+## 14. Historical 2026-09-07 backlog and roadmap
 
 ### 14.1 Immediate confirmed next work
 
@@ -1057,7 +1073,7 @@ When updating this file:
 
 ---
 
-## 18. Current handoff statement
+## 18. Historical handoff statement and later addenda
 
 At this snapshot, resume-state hardening is merged through PR #30. The subsequent scenario-validation attempt exposed three independent issues: GPT-OSS exceeded Groq's 8K request limit after requesting oversized source reads; the secure launcher did not expose the installed Codex executable to Terra; and the inherited ticket contract targeted protected coordinator paths that autonomous workers may never modify. DASH-017 addressed those infrastructure defects without weakening protection, but a real secure-run regression showed that launcher forwarding alone was not reliable across the nested Windows-to-WSL process boundary. DASH-018 makes Sol planning and Terra use the same hardened resolver and adds a bounded fallback lookup for the verified current user's Codex installation even when the secure process has an intentionally stripped PATH. DASH-019 adds free-tier-aware model launch pacing, a persistent two-worktree-run circuit for provider/process/timeout/non-decisive failures, and a final independent Terra Medium reviewer after Nemotron, Gemini 3.8 Flash, and Gemini 3.6 Flash. DASH-020 safely resumes disjoint dirty work and adds a three-run per-worktree failure ceiling. The next real failure showed GLM-4.7 Flash being correctly skipped by its provider circuit with code 88, but the tester stage had no independent fallback and exhausted the worktree limit without evaluating the candidate. DASH-021 adds one read-only Terra Medium tester fallback for unavailable or non-decisive GLM runs. A substantive GLM `FAIL` remains authoritative, Terra cannot test its own implementation, and a Terra tester cannot later act as the independent Terra reviewer. Security, scope, repository, reconciliation, deletion-approval, and publication boundaries still stop immediately. Exact-commit publication remains a manual boundary when automation is off; file-deletion approval always remains an explicit owner boundary.
 

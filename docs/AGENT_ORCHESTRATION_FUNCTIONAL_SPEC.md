@@ -448,7 +448,11 @@ Tester must not modify files or compensate for deterministic failures.
 
 ### Stage 6 - Reviewer
 
-Nemotron runs as the independent primary reviewer. Gemini 3.8 Flash is used only when Nemotron is unavailable or non-decisive due to infrastructure conditions such as timeout, quota failure, or malformed output. Gemini 3.6 Flash follows only when both earlier reviewers are unavailable or non-decisive. Terra Medium is the final reviewer fallback only when all three earlier reviewers are unavailable or non-decisive and Terra did not implement or test the candidate; a model must never review its own implementation or prior testing.
+Nemotron 3 120B runs as the independent primary reviewer. Luna Light is used
+only when Nemotron is unavailable or non-decisive due to an infrastructure
+condition such as timeout, quota failure, or malformed output. This is the
+single reviewer fallback configured in section 5. A model must never review
+its own implementation or prior testing.
 
 **No reviewer shopping:** if any reviewer substantively requests changes, the result is not sent to a later fallback solely to seek approval.
 
@@ -1077,3 +1081,144 @@ These documents are living specifications. They should be updated when any of th
 - copyright/content constraints.
 
 Updates must be committed and reviewed so subsequent agents consume the new canonical version.
+
+## 21. Autonomous production architecture
+
+The approved product direction and sequenced adoption are recorded in
+`docs/TARGET_ARCHITECTURE.md` and `docs/AUTONOMOUS_PRODUCTION_PLAN.md`.
+Those design documents refine how the existing system chooses and verifies work;
+they do not independently authorize a worker, model, or dashboard to change
+credentials, provider routing, protected paths, test requirements, publication,
+merges, or public distribution. Changes to those controls require their own
+reviewed governance or coordinator tickets.
+
+### 21.1 Versioned product graph
+
+Keep intended content and requirements in a versioned `production/` tree outside
+the shipped add-on. Each node has a stable ID, kind, design revision, milestone,
+source paths, requirement IDs, required assets, production dependencies, and
+impact relationships. Validate IDs, links, bounded inputs, safe paths, and an
+acyclic production dependency graph before a node can guide work. Campaign
+transitions are separate edges and may contain replay loops. WML remains the
+single executable game source; production records are design and validation
+inputs, not a second gameplay runtime.
+
+Milestone exit gates and accepted creative direction are controlled planning
+inputs. Ordinary implementation workers cannot mark them satisfied or weaken
+accepted requirements. A mission-authoring ticket may edit only its assigned
+bounded design paths under independent review. Product records describe intent;
+runtime attempts, logs, and process state remain in ignored `agent/runtime/`.
+
+### 21.2 Evidence and readiness
+
+For each required mission or system, derive design, implementation, runtime
+behavior, campaign integration, presentation, play quality, and release
+readiness separately. Each dimension is `missing`, `in_progress`, `blocked`,
+`verified`, or `stale`. A milestone is complete only when all required nodes and
+exit gates are verified on applicable evidence. A ticket publication, structural
+source assertion, or model verdict cannot by itself verify gameplay or quality.
+
+Accepted evidence binds requirement revision and dependencies to the candidate
+tree or commit, engine build, harness revision, scenario, difficulty, seed,
+probe identity, actual exit status, bounded observations, and retained artifact
+digest. Missing or stale evidence cannot satisfy a requirement. Shared gameplay
+changes invalidate affected consumers; unknown dependencies require the broader
+applicable suite. Reuse records the prior identity and why relevant inputs still
+match. Claims advance through structure, launch, behavior, sequence, play
+quality, and exact player-build release gates. No gate may infer PASS merely
+because a process remains alive or source text is retained.
+
+### 21.3 Scheduling and authority
+
+The deterministic coordinator first reconciles trusted Git and runtime state,
+resumes eligible work, and preserves global pauses and recovery limits. It then
+selects an unmet requirement in the current approved milestone, subject to
+dependency, path, asset, budget, and validation capability constraints. Stable
+priority is release-blocking regressions, prerequisites for the playable slice,
+slice quality, then expansion, with explicit milestone priority and node ID as
+tie-breakers. Reuse a valid bounded contract before asking a planning model.
+Planning proposals cannot replace a failed objective or declare their own PASS.
+
+Start with one write worker and one publication lane. The existing isolated
+executor, independent tester and reviewer, installed-engine checks, exact-head
+CI, protected merge, asset handoff, and owner decision boundaries remain in
+force. Product-gap scheduling starts in read-only shadow mode until its schema,
+evidence, and precedence are independently validated. A global safety pause
+cannot be bypassed by choosing unrelated work. Public add-on-server release
+requires separate owner authorization after release-candidate qualification.
+
+### 21.4 Unattended operating charter
+
+An unattended run requires a reviewed, versioned charter bound to the exact
+controlled-reference package and production design revisions. Before dispatch,
+the deterministic controller validates the milestone, delivery profile, required
+nodes, allowed ticket classes and paths, available engine and desktop
+capabilities, routine decision defaults, resource limits, completion reserve,
+expiry, revocation, and recorded authority for each consequential action. A
+charter cannot authorize itself. Missing limits, stale identities, or unresolved
+critical prerequisites block the affected work. Actual and reserved usage,
+retries, and action identities survive restart; exhaustion cannot waive a gate.
+
+The existing approval queue remains the publication authority. Continuous
+publication applies only while its recorded authorization is live and only to
+the exact qualifying non-deleting ticket under its existing stop rules. Local
+verified-build promotion requires an explicit charter permission and complete
+delivery evidence. File deletion, changes to credentials or model routing, host
+security or startup settings, and public add-on-server distribution retain their
+separate governing decisions. Workers cannot edit the charter, accepted outcomes,
+or protected inputs to make a candidate eligible. A required decision identifies
+its exact action and preserves unrelated eligible work only where current policy
+permits it.
+
+### 21.5 Verified player builds and delivery profiles
+
+The first player delivery is a connected three-mission prototype selected from
+existing content. Its reviewed playable-prototype profile requires installed-
+engine legal objective completion, negative and defeat cases, actual transitions,
+carryover, save/load, and package/launcher/rollback evidence on declared engine
+versions, difficulties, and seeds. Direct handler probes and structural checks
+remain separately labeled and cannot substitute for legal play. Approved original
+temporary media may satisfy only the prototype profile while retaining every
+applicable technical and full-state asset gate. Final presentation and human play
+quality remain unverified until their own reviews. The later production-proof and
+release-candidate profiles have distinct, stronger exit requirements; workers
+cannot downgrade a fixed profile after a failure.
+
+Build only from an exact reviewed, integrated revision. Package an allowlisted
+add-on without controller state, credentials, test instrumentation, development
+tools, or logs, then test those exact bytes in isolated clean userdata. An
+immutable manifest binds source, package and file digests, engine and harness,
+requirements and evidence, tested coverage, profile, assets, entry points,
+limitations, save compatibility, and predecessor. A single authorized owner
+records promotion intent and atomically changes a validated current-build pointer
+on the same filesystem. Restart reconciles pointer, intent, manifest, and bytes.
+The normal player launcher resolves and pins one eligible immutable build without
+the development controller or network; an explicit developer launcher may stage
+experimental work separately. Saves live outside build directories and are never
+overwritten by promotion or rollback. Retain an eligible predecessor and preserve
+incompatible saves. A missing or revoked eligible build is reported honestly,
+never replaced with an untested checkout.
+
+### 21.6 Supervision, recovery, and qualification
+
+One OS-locked state writer uses monotonic revisions, atomic checkpoints, stable
+action identities, and process creation identity. Intent precedes external
+actions; after interruption, the controller reconciles actual Git, PR, engine,
+asset, and build state before retrying. It may supervise only verified owned
+processes within the reviewed charter. Preflight engine, storage, repository,
+authentication availability, budgets, assets, and required desktop/session
+conditions without exposing secrets or silently changing power, login, or
+security settings. A missing GUI or locked-session capability blocks its required
+gate. Reboot recovery is claimed only if approved automatic startup is configured.
+
+Retain the existing two-attempt repair and three-consecutive-worktree-failure
+limits, global pauses, provider circuits, deletion approval, and exact-head
+publication checks. Bounded retries, quota waits, no-progress detection, and the
+completion cutoff cannot reset counters or skip verification. Before claiming
+unattended delivery, run isolated interruption and fault fixtures plus an approved
+bounded real trial on the supported host and session. Success requires at least
+one newly verified requirement in a promoted, offline-launchable player build
+while its predecessor and saves remain safe. A preserved safe stop reports its
+precise blocker but is not itself successful unattended delivery. The owner view
+shows the selected eligible build, playable coverage, unverified dimensions,
+budget use, and one needed action without exposing credentials or raw logs.

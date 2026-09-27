@@ -36,6 +36,12 @@ Indicative production milestones:
 
 ## 4. Current Implemented Foundation
 
+Sections 4.1 and 4.2 record the initial 2026-09-03 foundation. They are
+historical implementation evidence, not a live inventory or a limit on later
+work. The inspected 2026-09-26 baseline is summarized in section 4.3. Mutable
+completion status must be derived from source and verified evidence, not from
+this prose snapshot.
+
 ### 4.1 Repository and agent-development foundation
 
 The repository has a deterministic multi-agent development pipeline with isolated Git worktrees and ticket branches. LLM workers do not directly control `main`.
@@ -87,6 +93,17 @@ The foundation passed:
 - tester review;
 - independent reviewer approval; and
 - preprocessing by the installed Battle for Wesnoth 1.19.27 executable with exit code 0.
+
+### 4.3 Later inspected baseline
+
+At local revision `d356dab1bf61b749669502ec2776fd580640781d`, `_main.cfg`
+registers two campaigns, `scenarios/` contains 21 scenario CFG files, and
+`tests/gameplay-contracts.json` contains 47 structural contracts. Campaign III
+is not registered at that revision. These counts describe repository structure;
+they do not establish mission completion, runtime behavior, play quality, or
+release readiness. The remote and installed engine were not freshly checked for
+this snapshot. The versioned production inventory and evidence described in
+the autonomous production architecture will supply later current-state views.
 
 ## 5. Gameplay Feature Set
 
@@ -310,14 +327,33 @@ Direct routine pushes to `main` should be eliminated once branch protection is e
 
 ## 13. Development Priorities
 
-Near-term priorities:
+The previous infrastructure-first list described the initial 2026-09-03 phase.
+The current production order is:
 
-1. Complete GitHub integration and branch-protection workflow.
-2. Make the project references mandatory for all LLM agents.
-3. Add automatic local Wesnoth preprocessing as a deterministic engine gate.
-4. Create `ENGINE-002`: minimal campaign and first launchable scenario registration.
-5. Establish scenario launch validation.
-6. Build the first vertical slice systems incrementally rather than attempting the entire trilogy at once.
+1. Adopt the reviewed autonomous production architecture through the controlled
+   reference process without changing runtime authority or credential handling.
+2. Inventory existing campaigns, missions, units, assets, transitions, and
+   contract evidence in versioned production records. Keep unknown readiness
+   explicit.
+3. Prove installed-engine behavior and campaign-sequence acceptance on a small
+   existing mission before claiming gameplay readiness from source assertions.
+4. Add evidence identities and bounded, scalable contract coverage; then use
+   verified product gaps to guide the existing deterministic ticket workflow.
+5. Finish a coherent 3-5 mission production proof, expand it to a 6-8 mission
+   vertical slice, complete Campaign I, and then complete and qualify the trilogy.
+
+The first delivery checkpoint within that progression is a connected
+three-mission playable prototype. It requires engine-observed sequence behavior,
+an exact verified player package, a stable offline launcher, and retained
+rollback. A reviewed bounded operating charter and unattended qualification are
+separate requirements before claiming that the owner can leave development
+running without intervention. Prototype delivery does not establish final art,
+human play quality, the full production proof, or release readiness. The
+unattended delivery specification defines these profile-specific gates.
+
+The detailed sequence and exit criteria are in
+`docs/AUTONOMOUS_PRODUCTION_PLAN.md`. A scenario file, published ticket, or
+structural contract alone cannot satisfy a playable milestone.
 
 ## 14. Definition of Project Success
 
