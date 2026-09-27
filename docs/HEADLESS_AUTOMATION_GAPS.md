@@ -35,7 +35,7 @@
 
 When `[endlevel] result=victory next_scenario=X` fires in campaign mode:
 1. Engine shows victory dialog with scenario results
-2. User must click "End Scenario" 
+2. User must click "End Scenario"
 3. Engine loads next scenario
 
 With `SDL_VIDEODRIVER=dummy`, the dialog appears but cannot be dismissed.
