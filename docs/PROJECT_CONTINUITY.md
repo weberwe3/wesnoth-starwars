@@ -1345,3 +1345,13 @@ authorization, revocation, expiry, unsafe path, and reserve failures. This
 schema does not grant authority or start work by itself. Next, add a durable
 budget/authorization adapter and prepare a concrete selected-milestone charter
 for owner review before U2 promotion or U6 operation.
+
+The following U1 ledger core durably reserves model calls, elapsed time, engine
+runs, repair attempts, and disk allocation against one accepted charter digest.
+It retains in-flight reservations after restart, is idempotent for repeated
+action IDs, closes expansion at the completion cutoff, and records actual
+overruns before blocking new work. Opening a missing or corrupt prior ledger
+does not silently create a fresh budget. Eight focused tests pass. The module
+assumes one controller process; U3 ownership and interrupted-action
+reconciliation remain prerequisites for unattended operation. No charter is
+active and no real run has consumed this ledger.
