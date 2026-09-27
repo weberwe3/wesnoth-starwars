@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 from build_store import ADDON_ID, BuildStoreError, verify_candidate
+from extraction_route_probe import probe as probe_extraction_route
 from sequence_load_probe import probe as probe_sequence_load
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agent" / "coordinator"))
@@ -61,10 +62,13 @@ def validate_packaged_candidate(repo_root: Path, candidate: Path, engine: Path) 
         "engine_sha256": None,
         "harness_sha256": _digest(Path(__file__).resolve().parents[1] / "agent/coordinator/scenario_launch_selftest.py"),
         "sequence_harness_sha256": _digest(Path(__file__).resolve().parent / "sequence_load_probe.py"),
+        "route_harness_sha256": _digest(Path(__file__).resolve().parent / "extraction_route_probe.py"),
         "scenario_ids": [SCENARIO_ID],
         "sequence_scenario_ids": ["sw_02_space_interception", "sw_03_ground_extraction"],
+        "route_scenario_id": "sw_03_ground_extraction",
         "package_copy_matches": False, "candidate_still_matches": False,
-        "preprocess": None, "sequence_first_moves": None, "runtime": None,
+        "preprocess": None, "sequence_first_moves": None,
+        "extraction_objective_route": None, "runtime": None,
         "pass": False,
     }
     if not engine.is_absolute() or engine.is_symlink() or not engine.is_file():
@@ -89,7 +93,9 @@ def validate_packaged_candidate(repo_root: Path, candidate: Path, engine: Path) 
         if result["preprocess"].get("pass") is True:
             result["sequence_first_moves"] = probe_sequence_load(root, engine)
             if result["sequence_first_moves"].get("pass") is True:
-                result["runtime"] = runtime_scenario_probes(root, engine, {SCENARIO_ID})
+                result["extraction_objective_route"] = probe_extraction_route(root, engine)
+                if result["extraction_objective_route"].get("pass") is True:
+                    result["runtime"] = runtime_scenario_probes(root, engine, {SCENARIO_ID})
         result["package_copy_matches"] = _copy_matches(manifest, addon)
     try:
         result["candidate_still_matches"] = verify_candidate(candidate)["package_sha256"] == manifest["package_sha256"]
@@ -100,10 +106,12 @@ def validate_packaged_candidate(repo_root: Path, candidate: Path, engine: Path) 
         and result["preprocess"].get("pass") is True
         and isinstance(result["sequence_first_moves"], dict)
         and result["sequence_first_moves"].get("pass") is True
+        and isinstance(result["extraction_objective_route"], dict)
+        and result["extraction_objective_route"].get("pass") is True
         and isinstance(result["runtime"], dict) and result["runtime"].get("pass") is True
     )
     if not result["pass"]:
-        result["diagnostic"] = "Exact package failed preprocessing, sequence first moves, GUI startup, or integrity recheck"
+        result["diagnostic"] = "Exact package failed preprocessing, sequence first moves, extraction route, GUI startup, or integrity recheck"
     return result
 
 
