@@ -1545,3 +1545,22 @@ its source tree and all relevant tool hashes are in
 carryover, ordinary GUI play, save/load, offline verified launch, and a player
 build remain unverified. Next action: establish a supported visible Game-context
 probe, then validate the exact staged package through the three-mission route.
+
+The owner clarified that documentation-first design must cover all game systems
+and happen before implementation. The coordinator's fresh game-content ticket
+path now requires a structured Wesnoth 1.19/1.20 compatibility review before
+worker dispatch. It assesses campaign flow, scenario objectives, maps/terrain,
+units/movement, combat/abilities, events/state, AI/recruitment, Lua/macros,
+presentation/assets, save/transition, multiplayer synchronization, and other
+engine rules against
+an official-reference catalog. Python requires every area to be accounted for,
+checks path-relevant areas, rejects missing plans and out-of-documentation
+experiments, and carries the record to worker, tester, and reviewer. The
+single-ticket planner, generated backlog, stored-ticket selection, and runner
+loader share the gate. Existing immutable resume/replacement contracts and
+diagnostic-driven legacy repairs remain eligible. The method and its limits are
+documented in `docs/ENGINE_COMPATIBILITY_PLANNING.md`; it is a planning control,
+not a claim of runtime compatibility or a substitute for installed-engine
+tests. Five focused gate tests and 197 dashboard tests passed locally on the
+worktree branch before integration. Next action: merge exact-head CI and then
+apply this pre-code review to the next fresh game design ticket.

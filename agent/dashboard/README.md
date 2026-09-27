@@ -67,6 +67,14 @@ ID and allowlisted recovery effort, derives all paths itself, and publishes a
 numeric result plus a bounded secret-free failure diagnostic. The resulting work occurs in the normal isolated worktree and passes
 through deterministic validation, tester, and reviewer gates.
 
+Fresh game-content tickets also require a complete pre-code engine compatibility
+review before the worktree is created. The planner checks campaign flow,
+scenarios, terrain, units, combat, events, AI, Lua, assets, saves, and
+multiplayer applicability against [the documented compatibility catalog](../../docs/ENGINE_COMPATIBILITY_PLANNING.md).
+Python rejects missing areas and proposed undocumented experiments; the worker,
+tester, and reviewer receive the accepted plan. This planning record does not
+replace installed-engine behavior checks.
+
 The planned-ticket menu is a live rolling backlog. It refreshes with normal
 dashboard polling, includes pending static and coordinator-generated tickets,
 and omits completed tickets. This local structured-state refresh consumes no

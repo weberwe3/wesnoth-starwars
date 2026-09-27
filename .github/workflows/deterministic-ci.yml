@@ -110,7 +110,9 @@ jobs:
         run: python3 production/mission_probe_selftest.py
 
       - name: Test ticket acceptance contracts
-        run: python3 agent/coordinator/ticket_acceptance_selftest.py
+        run: |
+          python3 agent/coordinator/ticket_acceptance_selftest.py
+          python3 agent/coordinator/engine_compatibility_selftest.py
 
       - name: Verify coordinator reference enforcement
         env:
