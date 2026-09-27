@@ -46,7 +46,7 @@
         "name": "moveto",
         "first_time_only": "yes",
         "unit_id": "sw_nr_recon_squad",
-        "x": "15",
+        "x": "14",
         "y": "2"
       }
     },
@@ -59,7 +59,7 @@
         "name": "moveto",
         "first_time_only": "yes",
         "unit_id": "sw_nr_recon_squad",
-        "x": "15",
+        "x": "14",
         "y": "2"
       }
     },
@@ -106,7 +106,7 @@
         "name": "moveto",
         "first_time_only": "yes",
         "unit_id": "sw_nr_recon_squad",
-        "x": "15",
+        "x": "14",
         "y": "4"
       }
     },
