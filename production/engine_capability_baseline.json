@@ -1,0 +1,28 @@
+{
+  "schema_id": "wesnoth-starwars.production.engine-capability-baseline",
+  "schema_version": 1,
+  "observed_at_utc": "2026-09-27T03:27:03+00:00",
+  "engine_version": "1.19.27",
+  "engine_binary_sha256": "120dfe63c701de2229e0c4665349ea116ed79ee1772d5275f04b1a7bc32feaae",
+  "fixture_sha256": "93486c441d5636064ae3b40ec347e0e6f7812346de64baf60bc550fe8732f3d5",
+  "probe_script_sha256": "89d9759d8130aade54db13ca6c7d2663efcdda01b0ac3b2baa1e033ae8b52955",
+  "exercise_type": "engine_unit_test_action_injection",
+  "positive_fixture": {
+    "id": "sw_capability_move_positive",
+    "exit_code": 0,
+    "log_verdict": "PASS TEST (0)"
+  },
+  "broken_expectation_fixture": {
+    "id": "sw_capability_move_broken_expectation",
+    "exit_code": 1,
+    "log_verdict": "conditional test unexpectedly failed; FAIL TEST"
+  },
+  "capabilities": {
+    "custom_test_loaded_and_move_executed": true,
+    "broken_expectation_rejected": true,
+    "mission_legal_play": "unassessed",
+    "mission_transition": "unassessed",
+    "save_reload": "unassessed"
+  },
+  "readiness_statement": "WML test-mode action injection and negative assertion detection observed; mission legal play, transitions, defeat paths, and save/reload remain unassessed."
+}
