@@ -1299,3 +1299,21 @@ also explain the commander result. Transition/carryover and save/reload remain
 unverified. The next engine contract should capture a real pre-objective save
 and reload or establish the exact missing automation capability, then test the
 connected campaign transition before delivery is claimed.
+
+An exploratory save capability check found no save files in isolated userdata
+after a two-turn `-u` fixture. A Wesnoth plugin reached the game context and
+requested a save during the unit test, but no save artifact appeared. An
+interactive `-t` attempt reached only startup within its 20-second bounded
+run and also produced no save. These observations do not prove save/reload is
+unsupported; they leave its automation mechanism unresolved. The exploratory
+plugin and raw logs remain under ignored runtime storage. No save/load PASS is
+recorded.
+
+The first package-4 evidence core adds a strict versioned envelope and a pure
+freshness check. It compares the accepted requirement revision, exact named
+file dependencies, ignored raw artifact, and engine binary; a changed or
+missing input becomes stale while an unrelated document does not. It does not
+award readiness or migrate historical ticket evidence. The protected runner
+must still establish run origin, register complete transitive dependencies,
+and connect accepted observations to requirement status before this layer can
+drive production selection or build promotion.
