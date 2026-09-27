@@ -1394,6 +1394,13 @@ versioned evidence envelope with conservative source-inventory, harness,
 requirement, engine, and raw-artifact hashes. Five deterministic tests pass.
 This module has no persisted readiness promotion: after restart the envelope
 can be assessed for freshness, but protected runner origin still needs a
-durable reconciliation gate. Run it on a clean integrated commit next, then
-record its exact engine result without claiming normal-AI play or a verified
-player build.
+durable reconciliation gate. Its first clean integrated run on
+`664213f8a797db5ce5238af1660bcb1b94f2a05e` with Wesnoth 1.19.27
+returned current/pass: the engineer route won (exit 8) and the staged
+wrong-unit case was rejected (exit 0). Raw SHA-256:
+`11a03f295a05fbc87732fcf5bd9a33ff629ba2860a980cbfc39bbd2477d18235`;
+envelope SHA-256:
+`b30b9ad5bd792fa4a2afb0a643244ee0a277775ed8b5fca405c014caa6a824a9`.
+The controlled fixture still does not establish normal-AI play, GUI campaign
+entry, save/load, or a verified player build. Next, resolve actual Game-context
+entry capability and broaden requirement coverage to the selected sequence.

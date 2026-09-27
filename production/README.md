@@ -200,5 +200,16 @@ an invalid source inventory blocks the run. The outcome may be called a scoped
 observation only during that direct protected invocation. Reopening an envelope
 later gives freshness information, not proof of runner origin or mission
 readiness. Five focused tests cover matching outcomes, negative failure, engine
-identity, changed source, and unsupported requirement cases. A real run from a
-clean integrated commit remains the next validation step.
+identity, changed source, and unsupported requirement cases.
+
+The first clean integrated run used commit
+`664213f8a797db5ce5238af1660bcb1b94f2a05e`, tree
+`de701e61eb25fd3a394a03db16a09f67eaed3649`, and installed Wesnoth
+1.19.27. The controlled engineer route reported victory/exit 8 and the staged
+wrong-unit case reported pass/exit 0. The direct runner returned current/pass.
+The ignored raw artifact SHA-256 was
+`11a03f295a05fbc87732fcf5bd9a33ff629ba2860a980cbfc39bbd2477d18235`;
+the ignored envelope SHA-256 was
+`b30b9ad5bd792fa4a2afb0a643244ee0a277775ed8b5fca405c014caa6a824a9`.
+This is a test-mode objective observation, not a normal-AI playthrough, GUI
+campaign-entry result, save/load result, or player-build promotion.
