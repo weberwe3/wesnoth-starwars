@@ -272,3 +272,11 @@ fixture: current/pass, raw SHA-256
 envelope SHA-256
 `7eabd0803f7538ea21581f449e758dff6256ac7a65022b5a9cb2a925798cbc8e`.
 That controlled fixture remains narrower than ordinary mission play.
+
+The mission probe now rejects positive pass/victory/defeat markers whenever
+the same engine log reports a failed WML assertion. An isolated longer-route
+diagnostic exposed this case: the engine printed a victory test marker although
+its victory-event position assertion had failed. Intentional negative fixtures
+still require their failed assertion. A player-command error also rejects the
+result. This harness change stales previous requirement envelopes until a
+new direct run binds the revised probe hash.

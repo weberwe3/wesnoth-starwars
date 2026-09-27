@@ -1450,3 +1450,14 @@ envelope SHA-256
 These observations replace the stale source-dependent run for current source
 identity. Next, prove a complete legal objective route and actual sequence
 transition; do not infer them from early-move or isolated handler evidence.
+
+A longer Ground Extraction test-mode route remains unverified. Its diagnostic
+fixture reached the hero's second move, then could not move from (5,2) to
+(6,2) despite one available movement point and an empty destination; the
+fixture changed enemy control/placement and is not normal play evidence. More
+critically, Wesnoth's test runner printed a victory marker after a failed
+victory-event WML assertion in an earlier diagnostic. The shared mission probe
+now rejects that combination for every positive case, preserves the intentional
+negative-assertion case, and rejects player-command errors. This changes the
+protected requirement harness hash, so the prior Restore the Beacon envelope
+must be rerun from a clean integrated commit before it is current again.

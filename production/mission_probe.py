@@ -379,6 +379,18 @@ def _latest_log(userdata: Path) -> str:
     return paths[-1].read_text(encoding="utf-8", errors="replace")[-12000:]
 
 
+def _meets_expectation(case: str, verdict: str, exit_code: int, log: str) -> bool:
+    expected = EXPECTED_VERDICTS[case]
+    return bool(
+        verdict == expected
+        and exit_code == {"pass": 0, "fail": 1, "victory": 8, "defeat": 7}[expected]
+        and (expected == "fail" or "conditional test unexpectedly failed" not in log)
+        and (expected != "fail" or "conditional test unexpectedly failed" in log)
+        and "Error via [do_command]" not in log
+        and (case != "timeout_defeat" or "probe_turn_10" in log)
+    )
+
+
 def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_movetype_fix: bool = False) -> dict:
     root = root.resolve(strict=True)
     engine = engine.resolve(strict=True)
@@ -446,12 +458,7 @@ def run_probe(root: Path, engine: Path, case_names: list[str], *, temporary_move
                 else:
                     verdict = "unknown"
                 expected = EXPECTED_VERDICTS[case]
-                meets_expectation = (
-                    verdict == expected
-                    and completed.returncode == {"pass": 0, "fail": 1, "victory": 8, "defeat": 7}[expected]
-                    and (expected != "fail" or "conditional test unexpectedly failed" in log)
-                    and (case != "timeout_defeat" or "probe_turn_10" in log)
-                )
+                meets_expectation = _meets_expectation(case, verdict, completed.returncode, log)
                 results.append({
                     "case": case,
                     "test_id": test_id,
