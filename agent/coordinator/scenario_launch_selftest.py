@@ -944,6 +944,18 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         })
         self.assertTrue(good["pass"], good["diagnostic"])
 
+    def test_map_data_rejects_concatenated_terrain_codes(self) -> None:
+        # INFRA-004 regression: ENGINE-002-FINAL generated map_data with
+        # concatenated terrain codes (GgGgGg) that preprocessed cleanly but
+        # failed at GUI launch ("terrain string longer than 4 characters").
+        bad = validate_map_data(Path("."), {
+            "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
+                '[scenario]\nmap_data="GgGgGg,Gg"\n[/scenario]\n'
+            ),
+        })
+        self.assertFalse(bad["pass"])
+        self.assertIn("GgGgGg", bad["diagnostic"])
+
     def test_map_data_rejects_unknown_but_well_shaped_terrain_codes(self) -> None:
         bad = validate_map_data(Path("."), {
             "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
