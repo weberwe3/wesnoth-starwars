@@ -93,10 +93,30 @@ h1{font-size:18px;margin:0 0 4px}
   <div class="panel"><h2>Model assignments</h2><div id="models">No activity yet.</div></div>
 </div>
 <div class="panel" style="margin-top:12px"><h2>Run history</h2><div id="history">No completed runs yet.</div></div>
-<div class="panel" style="margin-top:12px"><h2>Activity / error feed</h2><ul id="feed"></ul></div>
+<div class="panel" style="margin-top:12px"><h2>Activity / error feed <select id="rolefilter" style="font-size:12px;margin-left:8px"><option value="">All roles</option></select></h2><ul id="feed"></ul></div>
 <script>
 const FLOW=[["coordinator","\\u2699","Coordinator"],["implementer","\\uD83D\\uDD27","Implementer"],["fast-fix","\\u26a1","Fast-Fix"],["deterministic-validation","\\u2714","Deterministic Validation"],["tester","\\uD83E\\uDDEA","Tester"],["reviewer","\\uD83D\\uDD0D","Reviewer"],["reviewer-fallback","\\uD83D\\uDD04","Reviewer Fallback"]];
 const flowEl=document.getElementById("flow");
+const roleFilter=document.getElementById("rolefilter");
+FLOW.forEach(([role,,label])=>{const o=document.createElement("option");o.value=role;o.textContent=label;roleFilter.appendChild(o);});
+let lastFeed=[];
+function renderFeed(items){
+  const feed=document.getElementById("feed");
+  feed.innerHTML=items.map(e=>{
+    const cls=e.type==="error"?"err":(e.payload&&e.payload.state==="warning"?"warn":"");
+    return '<li class="'+cls+'"><span class="ts">'+esc(e.ts)+'</span><b>'+esc(e.role)+
+      "</b> "+esc(e.type)+" "+esc(JSON.stringify(e.payload).slice(0,160))+"</li>";
+  }).join("");
+}
+async function refreshFeed(){
+  const role=roleFilter.value;
+  if(!role){renderFeed(lastFeed);return;}
+  try{
+    const r=await fetch("/api/events?role="+encodeURIComponent(role)+"&limit=50");
+    if(r.ok)renderFeed((await r.json()).slice().reverse());
+  }catch(e){}
+}
+roleFilter.addEventListener("change",refreshFeed);
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function render(state){
   document.getElementById("count").textContent=state.event_count;
@@ -127,12 +147,8 @@ function render(state){
   document.getElementById("models").innerHTML=Object.keys(m).length?
     Object.entries(m).map(([r,v])=>"<div><b>"+esc(r)+"</b>: "+esc(v)+"</div>").join(""):
     "No activity yet.";
-  const feed=document.getElementById("feed");
-  feed.innerHTML=state.feed.map(e=>{
-    const cls=e.type==="error"?"err":(e.payload&&e.payload.state==="warning"?"warn":"");
-    return '<li class="'+cls+'"><span class="ts">'+esc(e.ts)+'</span><b>'+esc(e.role)+
-      "</b> "+esc(e.type)+" "+esc(JSON.stringify(e.payload).slice(0,160))+"</li>";
-  }).join("");
+  lastFeed=state.feed;
+  refreshFeed();
   const h=state.history||{};
   document.getElementById("history").innerHTML=Object.keys(h).length?
     '<table style="font-size:12px;border-collapse:collapse">'+
