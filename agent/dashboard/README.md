@@ -11,7 +11,7 @@ Start it from WSL:
 bash ./agent/dashboard/start-dashboard.sh
 ```
 
-Open `http://127.0.0.1:8765`.
+Open `http://127.0.0.1:8766`.
 
 The Windows launcher also starts a private-subnet proxy and shows the detected
 LAN address under **System health**. Use **Copy secure device link** on the local
@@ -19,7 +19,7 @@ dashboard to pair another trusted computer on the same network. The link carries
 a random dashboard access token in its URL fragment; the browser stores it
 locally and removes it from the visible address. Unpaired LAN API requests are
 rejected. A one-time Windows UAC prompt may appear to install an inbound firewall
-rule limited to the selected private IPv4 address, TCP port 8765, the Private
+rule limited to the selected private IPv4 address, TCP port 8766, the Private
 profile, and `LocalSubnet` sources. Provider credentials and environment values
 are never exposed.
 

@@ -1564,3 +1564,11 @@ not a claim of runtime compatibility or a substitute for installed-engine
 tests. Five focused gate tests and 197 dashboard tests passed locally on the
 worktree branch before integration. Next action: merge exact-head CI and then
 apply this pre-code review to the next fresh game design ticket.
+
+The Windows startup dashboard port was changed from 8765 to 8766 after 8765
+was found occupied by the separate NFL Parlay Engine in WSL. The Windows
+launcher now passes one port to the WSL listener, private-LAN proxy, firewall
+configuration, advertised LAN URL, and opened localhost URL. The dashboard
+defaults and controlled architecture reference use the same port. This is a
+dashboard routing change only; it does not qualify the campaign package or
+change the pending GUI Game-context and player-build gates.
