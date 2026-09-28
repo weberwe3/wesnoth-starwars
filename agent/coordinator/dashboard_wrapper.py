@@ -58,21 +58,28 @@ def _wrap_invoke_agent(original: Callable) -> Callable:
     @functools.wraps(original)
     def instrumented(*, agent: str, **kwargs: Any) -> Any:
         role = _role_for(agent)
+        model, provider = telemetry.model_for_agent(agent)
         telemetry.handoff("coordinator", role, ticket_id=_current_ticket_id)
-        telemetry.role_state(role, "active", task=_current_ticket_id)
+        telemetry.role_state(
+            role, "active", task=_current_ticket_id,
+            model=model, provider=provider,
+        )
         start = time.monotonic()
         try:
             rc, output = original(agent=agent, **kwargs)
         except Exception:
             telemetry.role_state(
                 role, "error", task=_current_ticket_id,
+                model=model, provider=provider,
                 elapsed_s=time.monotonic() - start, detail="exception",
             )
             raise
         elapsed = time.monotonic() - start
         state = "idle" if rc == 0 else "error"
         telemetry.role_state(
-            role, state, task=_current_ticket_id, elapsed_s=elapsed,
+            role, state, task=_current_ticket_id,
+            model=model, provider=provider,
+            elapsed_s=elapsed,
             detail="" if rc == 0 else f"exit {rc}",
         )
         return rc, output
@@ -226,6 +233,9 @@ def _selftest() -> int:
             assert impl[0]["payload"]["state"] == "active", impl[0]
             assert impl[1]["payload"]["state"] == "idle", impl[1]
             assert impl[1]["payload"]["elapsed_s"] >= 0, impl[1]
+            # exact model/provider per role (DASH-001 acceptance)
+            assert impl[0]["payload"]["model"] == "openai/gpt-6-sol", impl[0]
+            assert impl[0]["payload"]["provider"] == "openai", impl[0]
             # non-zero exit maps to error state
             tester = [e for e in events
                       if e["type"] == "role_state" and e["role"] == "tester"]
