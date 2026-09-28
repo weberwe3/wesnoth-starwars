@@ -69,6 +69,8 @@ h1{font-size:18px;margin:0 0 4px}
 .role.warning .dot{background:var(--amber)}
 .role.error .dot{background:var(--red)}
 .arrow{align-self:center;color:var(--dim);font-size:18px}
+.arrow.hot{color:var(--accent);animation:hpulse 1s ease-in-out infinite}
+@keyframes hpulse{50%{opacity:.25;transform:scale(1.3)}}
 .panels{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:800px){.panels{grid-template-columns:1fr}}
 .panel{background:var(--card);border:1px solid #2a3240;border-radius:10px;padding:12px}
@@ -138,6 +140,14 @@ function render(state){
     flowEl.appendChild(d);
     if(i<FLOW.length-1){const a=document.createElement("div");a.className="arrow";a.textContent="→";flowEl.appendChild(a);}
   });
+  const lh=state.last_handoff;
+  if(lh&&lh.age_s!=null&&lh.age_s<10){
+    const fi=FLOW.findIndex(([role])=>role===lh.from);
+    if(fi>=0&&fi<FLOW.length-1){
+      const arrowEl=flowEl.children[2*fi+1];
+      if(arrowEl&&arrowEl.classList.contains("arrow"))arrowEl.classList.add("hot");
+    }
+  }
   const t=state.ticket;
   document.getElementById("ticket").innerHTML=t?
     '<span class="tid">'+esc(t.ticket_id)+'</span> — '+esc(t.status)+
@@ -257,12 +267,23 @@ def build_state() -> dict:
                 "payload": payload,
             })
     stale_s = None
+    last_handoff = None
     if events:
         try:
             import datetime as dt
 
             last = dt.datetime.fromisoformat(events[-1]["ts"])
-            stale_s = int((dt.datetime.now(dt.timezone.utc) - last).total_seconds())
+            now = dt.datetime.now(dt.timezone.utc)
+            stale_s = int((now - last).total_seconds())
+            for event in reversed(events):
+                if event.get("type") == "handoff":
+                    hts = dt.datetime.fromisoformat(event["ts"])
+                    last_handoff = {
+                        "from": event.get("role", ""),
+                        "to": event.get("payload", {}).get("receiver", ""),
+                        "age_s": int((now - hts).total_seconds()),
+                    }
+                    break
         except (ValueError, KeyError):
             pass
     return {
@@ -272,6 +293,7 @@ def build_state() -> dict:
         "feed": feed[-50:][::-1],
         "event_count": len(events),
         "stale_s": stale_s,
+        "last_handoff": last_handoff,
         "history": compute_history(events),
     }
 
