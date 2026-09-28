@@ -54,13 +54,22 @@ def _config_files(root: Path) -> dict[str, str]:
     return result
 
 
-def validate_map_data(root: Path, sources: dict[str, str]) -> dict[str, Any]:
+def validate_map_data(
+    root: Path,
+    sources: dict[str, str],
+    expected_dims: dict[str, tuple[int, int]] | None = None,
+) -> dict[str, Any]:
     """Reject malformed map cells before the installed engine sees them.
 
     Wesnoth terrain cells are short terrain/overlay identifiers (for example
     ``Gg`` or ``Gg^Fp``).  A prose label such as ``center`` is not a terrain
     identifier; the engine reports it only after the player tries to launch a
     scenario, so keep this check in the deterministic gate as well.
+
+    When ``expected_dims`` maps a source path to ``(rows, columns)``, any
+    ``map_data`` block in that source whose row count or column count differs
+    is a failure.  This supports INFRA-004 ticket-specified dimension checks
+    without relying on LLM inspection.
     """
     failures: list[dict[str, Any]] = []
     for source_path, text in sources.items():
@@ -92,7 +101,23 @@ def validate_map_data(root: Path, sources: dict[str, str]) -> dict[str, Any]:
                         "detail": f"{path}: referenced map_data file is missing or unreadable",
                     })
                     continue
-            for row_number, row in enumerate(value.splitlines(), start=1):
+            rows = value.splitlines()
+            if expected_dims and source_path in expected_dims:
+                want_rows, want_cols = expected_dims[source_path]
+                got_rows = len(rows)
+                got_cols = max((len(r.split(",")) for r in rows), default=0)
+                if got_rows != want_rows or got_cols != want_cols:
+                    failures.append({
+                        "path": path,
+                        "row": 1,
+                        "column": 1,
+                        "token": f"{got_rows}x{got_cols}"[:80],
+                        "detail": (
+                            f"{path}: map_data dimensions {got_rows}x{got_cols} "
+                            f"do not match expected {want_rows}x{want_cols}"
+                        ),
+                    })
+            for row_number, row in enumerate(rows, start=1):
                 if row.lstrip().startswith("#"):
                     # External .map files are terrain data, not WML. Wesnoth
                     # does not ignore hash-prefixed prose here; it attempts to
