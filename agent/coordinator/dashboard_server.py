@@ -95,7 +95,7 @@ h1{font-size:18px;margin:0 0 4px}
 <div class="panel" style="margin-top:12px"><h2>Run history</h2><div id="history">No completed runs yet.</div></div>
 <div class="panel" style="margin-top:12px"><h2>Activity / error feed <select id="rolefilter" style="font-size:12px;margin-left:8px"><option value="">All roles</option></select></h2><ul id="feed"></ul></div>
 <script>
-const FLOW=[["coordinator","\\u2699","Coordinator"],["implementer","\\uD83D\\uDD27","Implementer"],["fast-fix","\\u26a1","Fast-Fix"],["deterministic-validation","\\u2714","Deterministic Validation"],["tester","\\uD83E\\uDDEA","Tester"],["reviewer","\\uD83D\\uDD0D","Reviewer"],["reviewer-fallback","\\uD83D\\uDD04","Reviewer Fallback"]];
+const FLOW=[["coordinator","\\u2699","Coordinator"],["implementer","\\uD83D\\uDD27","Implementer"],["fast-fix","\\u26a1","Fast-Fix"],["deterministic-validation","\\u2714","Deterministic Validation"],["tester","\\uD83E\\uDDEA","Tester"],["reviewer","\\uD83D\\uDD0D","Reviewer"],["reviewer-fallback","\\uD83D\\uDD04","Reviewer Fallback"],["reviewer-intermediate","\\uD83D\\uDD0E","Reviewer Intermediate"]];
 const flowEl=document.getElementById("flow");
 const roleFilter=document.getElementById("rolefilter");
 FLOW.forEach(([role,,label])=>{const o=document.createElement("option");o.value=role;o.textContent=label;roleFilter.appendChild(o);});
