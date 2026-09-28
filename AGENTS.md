@@ -111,6 +111,10 @@ For tickets that create or modify campaign/scenario WML, apply these rules unles
 - Keep `[campaign]` focused on campaign metadata. Define scenarios as top-level `[scenario]` content loaded separately rather than nesting `[scenario]` inside `[campaign]`.
 - Use a campaign `define` and a matching guarded scenario include when loading campaign scenario files, for example `#ifdef <CAMPAIGN_DEFINE>` around the `{~add-ons/<addon_id>/scenarios}` include.
 - A multiline `map_data` value must be a quoted WML string. Do not place bare terrain rows after `map_data=`.
+- Every `map_data` row must contain comma-separated terrain codes (for example `Gg,Kh,Gg^Fp`). Concatenated terrain codes such as `GgGgGg` are invalid and fail at engine load even when preprocessing succeeds.
+- When a ticket specifies exact map dimensions or content, workers and reviewers must verify the exact row count, column count, and terrain tokens against the ticket; use the deterministic `validate_map_data` dimension check (`expected_dims`) rather than relying on LLM inspection.
+- When a ticket requires a quoted multiline WML string, do not substitute another string form such as `<<< >>>`.
+- Testers and reviewers must check every explicit `MUST`, `MUST NOT`, `DO NOT`, and exact-syntax constraint stated in the ticket. Any mismatch is a failing verdict even if deterministic static checks pass.
 - When leader-defeat behavior is intended, declare an actual leader correctly, such as directly in `[side]` or with `[leader]`, and use `canrecruit=yes`. Do not assume an arbitrary nested `[unit]` acts as the side leader.
 - Displayed objectives belong in an appropriate runtime event such as `prestart` or `start`. Objective text describes goals; it does not by itself implement victory or defeat logic.
 - Treat deterministic Python/static validation as necessary but insufficient for declaring WML launchable.
