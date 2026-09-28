@@ -92,6 +92,7 @@ h1{font-size:18px;margin:0 0 4px}
   <div class="panel"><h2>Current ticket</h2><div id="ticket">No ticket activity yet.</div></div>
   <div class="panel"><h2>Model assignments</h2><div id="models">No activity yet.</div></div>
 </div>
+<div class="panel" style="margin-top:12px"><h2>Run history</h2><div id="history">No completed runs yet.</div></div>
 <div class="panel" style="margin-top:12px"><h2>Activity / error feed</h2><ul id="feed"></ul></div>
 <script>
 const FLOW=[["coordinator","\\u2699","Coordinator"],["implementer","\\uD83D\\uDD27","Implementer"],["fast-fix","\\u26a1","Fast-Fix"],["deterministic-validation","\\u2714","Deterministic Validation"],["tester","\\uD83E\\uDDEA","Tester"],["reviewer","\\uD83D\\uDD0D","Reviewer"],["reviewer-fallback","\\uD83D\\uDD04","Reviewer Fallback"]];
@@ -132,6 +133,12 @@ function render(state){
     return '<li class="'+cls+'"><span class="ts">'+esc(e.ts)+'</span><b>'+esc(e.role)+
       "</b> "+esc(e.type)+" "+esc(JSON.stringify(e.payload).slice(0,160))+"</li>";
   }).join("");
+  const h=state.history||{};
+  document.getElementById("history").innerHTML=Object.keys(h).length?
+    '<table style="font-size:12px;border-collapse:collapse">'+
+    "<tr><th style='text-align:left;padding:4px 8px'>role</th><th style='padding:4px 8px'>runs</th><th style='padding:4px 8px'>errors</th><th style='padding:4px 8px'>avg s</th><th style='padding:4px 8px'>max s</th></tr>"+
+    Object.entries(h).map(([r,v])=>"<tr><td style='padding:4px 8px'><b>"+esc(r)+"</b></td><td style='padding:4px 8px'>"+v.runs+"</td><td style='padding:4px 8px'>"+v.errors+"</td><td style='padding:4px 8px'>"+v.avg_s+"</td><td style='padding:4px 8px'>"+v.max_s+"</td></tr>").join("")+
+    "</table>":"No completed runs yet.";
 }
 async function poll(){
   try{const r=await fetch("/api/state");if(r.ok)render(await r.json());}
@@ -143,6 +150,41 @@ poll();
 </body>
 </html>
 """
+
+
+def compute_history(events: list[dict]) -> dict[str, dict]:
+    """Per-role run statistics from role_state telemetry (DASH-001 history).
+
+    A "run" is a role_state event with state idle|warning|error carrying
+    elapsed_s > 0. Returns {role: {runs, errors, avg_s, max_s}}.
+    """
+    stats: dict[str, dict] = {}
+    for event in events:
+        if event.get("type") != "role_state":
+            continue
+        payload = event.get("payload", {})
+        state = payload.get("state")
+        elapsed = payload.get("elapsed_s", 0) or 0
+        if state not in ("idle", "warning", "error") or elapsed <= 0:
+            continue
+        role = event.get("role", "")
+        entry = stats.setdefault(
+            role, {"runs": 0, "errors": 0, "total_s": 0.0, "max_s": 0.0}
+        )
+        entry["runs"] += 1
+        entry["total_s"] += elapsed
+        entry["max_s"] = max(entry["max_s"], elapsed)
+        if state == "error":
+            entry["errors"] += 1
+    return {
+        role: {
+            "runs": entry["runs"],
+            "errors": entry["errors"],
+            "avg_s": round(entry["total_s"] / entry["runs"], 1),
+            "max_s": round(entry["max_s"], 1),
+        }
+        for role, entry in stats.items()
+    }
 
 
 def build_state() -> dict:
@@ -200,6 +242,7 @@ def build_state() -> dict:
         "feed": feed[-50:][::-1],
         "event_count": len(events),
         "stale_s": stale_s,
+        "history": compute_history(events),
     }
 
 
