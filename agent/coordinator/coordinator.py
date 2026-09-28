@@ -6,6 +6,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import time
 from pathlib import Path
 import re
 import shutil
@@ -15,6 +16,14 @@ import worktree_paths
 from typing import Optional
 
 from runtime_status import RuntimeStatus, runtime_status_path
+
+# DASH-001 direct coordinator telemetry integration. Best-effort: telemetry
+# must never change coordinator behavior, so the import is guarded and every
+# emit() is already no-raise by contract (dashboard_telemetry.emit).
+try:
+    import dashboard_telemetry as _telemetry
+except Exception:  # pragma: no cover - telemetry unavailable, run unaffected
+    _telemetry = None
 
 
 AGENT_TIMEOUT_SECONDS = 240
@@ -212,12 +221,26 @@ def invoke_agent(
         prompt,
     ]
 
+    if _telemetry is not None:
+        _telemetry.handoff("coordinator", agent)
+        _telemetry.role_state(agent, "active")
+
+    start = time.monotonic()
     rc, output = run_process(
         command,
         cwd=worktree,
         timeout=AGENT_TIMEOUT_SECONDS,
         env=dict(os.environ),
     )
+    elapsed = time.monotonic() - start
+
+    if _telemetry is not None:
+        _telemetry.role_state(
+            agent,
+            "idle" if rc == 0 else "error",
+            elapsed_s=elapsed,
+            detail="" if rc == 0 else f"exit {rc}",
+        )
 
     log_file.write_text(output)
 
@@ -727,16 +750,25 @@ VERDICT: REQUEST_CHANGES
 
 
 def run_smoke(root: Path) -> int:
+    if _telemetry is not None:
+        _telemetry.role_state("coordinator", "active")
     try:
-        return _run_smoke(root)
+        rc = _run_smoke(root)
     except SystemExit:
         if ACTIVE_STATUS is not None:
             ACTIVE_STATUS.fail_system("Coordinator stopped before completion")
+        if _telemetry is not None:
+            _telemetry.role_state("coordinator", "error", detail="SystemExit")
         raise
     except Exception:
         if ACTIVE_STATUS is not None:
             ACTIVE_STATUS.fail_system("Unexpected coordinator failure")
+        if _telemetry is not None:
+            _telemetry.role_state("coordinator", "error", detail="exception")
         raise
+    if _telemetry is not None:
+        _telemetry.role_state("coordinator", "idle" if rc == 0 else "error")
+    return rc
 
 
 def main() -> int:
