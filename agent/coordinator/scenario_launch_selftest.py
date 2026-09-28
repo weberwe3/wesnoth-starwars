@@ -956,6 +956,24 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
         self.assertFalse(bad["pass"])
         self.assertIn("GgGgGg", bad["diagnostic"])
 
+    def test_map_data_dimension_check_accepts_matching(self) -> None:
+        good = validate_map_data(
+            Path("."),
+            {"scenarios/fixture.cfg": '[scenario]\nmap_data="Gg,Gg\nGg,Kh"\n[/scenario]\n'},
+            expected_dims={"scenarios/fixture.cfg": (2, 2)},
+        )
+        self.assertTrue(good["pass"], good["diagnostic"])
+
+    def test_map_data_dimension_check_rejects_mismatch(self) -> None:
+        bad = validate_map_data(
+            Path("."),
+            {"scenarios/fixture.cfg": '[scenario]\nmap_data="Gg,Gg\nGg,Kh"\n[/scenario]\n'},
+            expected_dims={"scenarios/fixture.cfg": (3, 2)},
+        )
+        self.assertFalse(bad["pass"])
+        self.assertIn("2x2", bad["diagnostic"])
+        self.assertIn("3x2", bad["diagnostic"])
+
     def test_map_data_rejects_unknown_but_well_shaped_terrain_codes(self) -> None:
         bad = validate_map_data(Path("."), {
             "addons/Star_Wars_Thrawn_Trilogy/scenarios/fixture.cfg": (
