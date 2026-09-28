@@ -221,9 +221,11 @@ def invoke_agent(
         prompt,
     ]
 
+    model, provider = "", ""
     if _telemetry is not None:
         _telemetry.handoff("coordinator", agent)
-        _telemetry.role_state(agent, "active")
+        model, provider = _telemetry.model_for_agent(agent)
+        _telemetry.role_state(agent, "active", model=model, provider=provider)
 
     start = time.monotonic()
     rc, output = run_process(
@@ -238,6 +240,8 @@ def invoke_agent(
         _telemetry.role_state(
             agent,
             "idle" if rc == 0 else "error",
+            model=model,
+            provider=provider,
             elapsed_s=elapsed,
             detail="" if rc == 0 else f"exit {rc}",
         )

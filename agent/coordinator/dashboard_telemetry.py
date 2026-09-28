@@ -104,6 +104,23 @@ def _trim() -> None:
             pass
 
 
+def model_for_agent(agent: str) -> tuple[str, str]:
+    """Best-effort (model, provider) for a coordinator agent name.
+
+    Reads the model assignment from model_policy.AGENT_MODELS; the provider
+    is the model string's leading path segment (e.g. "openai" from
+    "openai/gpt-6-sol"). Returns ("", "") when the mapping is unavailable —
+    telemetry must never break the caller.
+    """
+    try:
+        from model_policy import AGENT_MODELS
+    except Exception:
+        return "", ""
+    model = AGENT_MODELS.get(agent, "")
+    provider = model.split("/")[0] if "/" in model else ""
+    return model, provider
+
+
 def role_state(
     role: str,
     state: str,
@@ -206,6 +223,14 @@ def _selftest() -> int:
             TELEMETRY_DIR = Path("/proc/definitely-not-writable-xyz")
             TELEMETRY_FILE = TELEMETRY_DIR / "dashboard_telemetry.jsonl"
             assert emit("role_state", "tester", {}) is False
+
+            # 4. model_for_agent resolves the exact model/provider assignment.
+            model, provider = model_for_agent("implementer")
+            assert model == "openai/gpt-6-sol", model
+            assert provider == "openai", provider
+            model, provider = model_for_agent("reviewer")
+            assert provider == "cloudflare-workers-ai", provider
+            assert model_for_agent("no-such-agent") == ("", "")
     except AssertionError as exc:
         failures.append(str(exc))
     finally:
