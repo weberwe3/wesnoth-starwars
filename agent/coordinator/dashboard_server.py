@@ -24,7 +24,7 @@ import argparse
 import html
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 import dashboard_telemetry as telemetry
 
@@ -152,6 +152,20 @@ poll();
 """
 
 
+def filter_events(
+    events: list[dict],
+    role: str | None = None,
+    etype: str | None = None,
+) -> list[dict]:
+    """Filter telemetry events by role and/or type (DASH-001 history filtering)."""
+    result = events
+    if role:
+        result = [e for e in result if e.get("role") == role]
+    if etype:
+        result = [e for e in result if e.get("type") == etype]
+    return result
+
+
 def compute_history(events: list[dict]) -> dict[str, dict]:
     """Per-role run statistics from role_state telemetry (DASH-001 history).
 
@@ -261,11 +275,22 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self) -> None:
-        path = urlparse(self.path).path
+        parsed = urlparse(self.path)
+        path = parsed.path
         if path == "/":
             self._send(PAGE.encode("utf-8"), "text/html; charset=utf-8")
         elif path == "/api/events":
-            body = json.dumps(telemetry.read_events()).encode()
+            query = parse_qs(parsed.query)
+            try:
+                limit = int(query.get("limit", ["200"])[0])
+            except (TypeError, ValueError):
+                limit = 200
+            events = filter_events(
+                telemetry.read_events(limit=max(1, min(limit, 1000))),
+                role=query.get("role", [None])[0],
+                etype=query.get("type", [None])[0],
+            )
+            body = json.dumps(events).encode()
             self._send(body, "application/json")
         elif path == "/api/state":
             body = json.dumps(build_state()).encode()
