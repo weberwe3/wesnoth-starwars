@@ -335,7 +335,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Wesnoth Agent Manager dashboard")
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--port", type=int, default=8766)
     parser.add_argument("--lan-url", default="")
     parser.add_argument("--lan-token-file", type=Path)
     parser.add_argument("--session-id", default="")

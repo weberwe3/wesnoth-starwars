@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$ListenAddress,
-    [int]$ListenPort = 8765,
-    [int]$UpstreamPort = 8765
+    [int]$ListenPort = 8766,
+    [int]$UpstreamPort = 8766
 )
 
 $ErrorActionPreference = "Stop"

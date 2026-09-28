@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)][string]$ListenAddress,
-    [int]$ListenPort = 8765,
+    [int]$ListenPort = 8766,
     [switch]$Elevated
 )
 

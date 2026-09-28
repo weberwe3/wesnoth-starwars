@@ -2849,7 +2849,7 @@ class CoordinationControlTests(unittest.TestCase):
     def test_paired_lan_client_receives_full_governed_control(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
-            lan_url = "http://192.168.4.88:8765"
+            lan_url = "http://192.168.4.88:8766"
             lan_token = "a" * 43
             server = create_server(
                 0, base / "state.json", base / "control.json",

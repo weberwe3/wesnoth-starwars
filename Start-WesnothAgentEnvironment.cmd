@@ -10,6 +10,7 @@ set "SESSION_WATCHER=\\wsl.localhost\%DISTRO%\home\willj\projects\wesnoth-starwa
 set "CODEX_HOME=%USERPROFILE%\.codex"
 set "WESNOTH_AGENT_WORKTREE_WINDOWS=%USERPROFILE%\Documents\Codex\WesnothAgentWorktrees"
 set "WESNOTH_AGENT_WORKTREE_ROOT=/mnt/c/Users/%USERNAME%/Documents/Codex/WesnothAgentWorktrees"
+set "WESNOTH_DASHBOARD_PORT=8766"
 
 if not exist "%WESNOTH_AGENT_WORKTREE_WINDOWS%" mkdir "%WESNOTH_AGENT_WORKTREE_WINDOWS%"
 if not exist "%WESNOTH_AGENT_WORKTREE_WINDOWS%" (
@@ -32,12 +33,12 @@ if not defined LAN_IP (
   exit /b 1
 )
 for /f "usebackq delims=" %%I in (`powershell.exe -NoLogo -NoProfile -Command "[guid]::NewGuid().ToString('N')"`) do set "DASHBOARD_SESSION=%%I"
-set "WESNOTH_DASHBOARD_LAN_URL=http://%LAN_IP%:8765"
+set "WESNOTH_DASHBOARD_LAN_URL=http://%LAN_IP%:%WESNOTH_DASHBOARD_PORT%"
 set "WESNOTH_DASHBOARD_SESSION_ID=%DASHBOARD_SESSION%"
 if defined WSLENV (
-  set "WSLENV=%WSLENV%:CODEX_HOME/p:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
+  set "WSLENV=%WSLENV%:CODEX_HOME/p:WESNOTH_DASHBOARD_PORT/u:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
 ) else (
-  set "WSLENV=CODEX_HOME/p:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
+  set "WSLENV=CODEX_HOME/p:WESNOTH_DASHBOARD_PORT/u:WESNOTH_DASHBOARD_LAN_URL/u:WESNOTH_DASHBOARD_SESSION_ID/u:WESNOTH_AGENT_WORKTREE_ROOT/u"
 )
 
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
@@ -47,14 +48,14 @@ if errorlevel 1 exit /b %errorlevel%
 wsl.exe -d "%DISTRO%" --cd "%PROJECT%" -e /bin/bash ./agent/dashboard/start-dashboard.sh
 if errorlevel 1 exit /b %errorlevel%
 
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%LAN_FIREWALL%" -ListenAddress "%LAN_IP%" -ListenPort 8765
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%LAN_FIREWALL%" -ListenAddress "%LAN_IP%" -ListenPort %WESNOTH_DASHBOARD_PORT%
 if errorlevel 1 (
   echo Private-LAN firewall access was not configured. The dashboard remains available on localhost.
 )
-start "" /b powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%LAN_PROXY%" -ListenAddress "%LAN_IP%" -ListenPort 8765 -UpstreamPort 8765 ^>nul 2^>^&1
+start "" /b powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%LAN_PROXY%" -ListenAddress "%LAN_IP%" -ListenPort %WESNOTH_DASHBOARD_PORT% -UpstreamPort %WESNOTH_DASHBOARD_PORT% ^>nul 2^>^&1
 start "" /b powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%SESSION_WATCHER%" -SessionId "%DASHBOARD_SESSION%" ^>nul 2^>^&1
 
-start "" "http://127.0.0.1:8765"
-echo LAN dashboard: http://%LAN_IP%:8765
+start "" "http://127.0.0.1:%WESNOTH_DASHBOARD_PORT%"
+echo LAN dashboard: http://%LAN_IP%:%WESNOTH_DASHBOARD_PORT%
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%SECURE_LAUNCHER%"
 exit /b %errorlevel%

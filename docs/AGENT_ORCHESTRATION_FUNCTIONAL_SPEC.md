@@ -702,7 +702,7 @@ approval through the queue.
 
 The Python dashboard server remains bound to `127.0.0.1`. The repository-owned
 Windows launcher may expose it to other devices through a narrow user-space
-proxy bound to one detected private IPv4 address and TCP port 8765. The Windows
+proxy bound to one detected private IPv4 address and TCP port 8766. The Windows
 firewall rule must be limited to the Private profile, that local address, and
 `LocalSubnet` sources. The dashboard must display the LAN address under system
 health.
