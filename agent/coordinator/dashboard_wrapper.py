@@ -14,7 +14,12 @@ Instrumented lifecycle:
 - run_validation: deterministic-validation active/idle.
 
 Usage:
-    python3 dashboard_wrapper.py <ticket.json> [--recovery-effort low|medium|high]
+    python3 dashboard_wrapper.py <ticket.json> [--recovery-effort low|medium|high] [--dashboard]
+
+With --dashboard, the DASH-001 dashboard server starts in a background thread
+for the duration of the run (automatic startup integration for the secure
+launcher / batch flow: point the launcher at the wrapper instead of
+ticket_runner.py and the dashboard comes up with the ticket).
 
 Telemetry is best-effort and never changes runner behavior: if telemetry
 fails, the run continues unaffected.
@@ -133,9 +138,43 @@ def install() -> None:
     ticket_runner.run_ticket = _wrap_run_ticket(ticket_runner.run_ticket)
 
 
+def _start_dashboard() -> Callable[[], None]:
+    """Start the dashboard server in a background thread (127.0.0.1 only).
+
+    Returns a stop function with a ``url`` attribute pointing at the server.
+    Mirrors dashboard_server's security posture: loopback binding is asserted
+    inside dashboard_server.run().
+    """
+    import threading
+    import dashboard_server
+
+    server = dashboard_server.run(0)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    url = f"http://127.0.0.1:{server.server_address[1]}/"
+    print(f"Dashboard: {url}", flush=True)
+
+    def stop() -> None:
+        server.shutdown()
+        thread.join(timeout=5)
+
+    stop.url = url  # type: ignore[attr-defined]
+    return stop
+
+
 def main() -> int:
+    argv = sys.argv[1:]
+    stop_dashboard: Callable[[], None] | None = None
+    if "--dashboard" in argv:
+        argv = [a for a in argv if a != "--dashboard"]
+        stop_dashboard = _start_dashboard()
+    sys.argv = [sys.argv[0]] + argv
     install()
-    return ticket_runner.main()
+    try:
+        return ticket_runner.main()
+    finally:
+        if stop_dashboard is not None:
+            stop_dashboard()
 
 
 def _selftest() -> int:
@@ -207,6 +246,23 @@ def _selftest() -> int:
             ), by_type
             # no secrets in telemetry
             assert "sk-" not in json_dump(events), "secret leak"
+
+            # --dashboard startup integration: server binds loopback, serves state
+            stop = _start_dashboard()
+            try:
+                import json as _json
+                import time as _time
+                import urllib.request as _request
+
+                _time.sleep(0.3)
+                assert stop.url.startswith("http://127.0.0.1:"), stop.url
+                with _request.urlopen(
+                    stop.url + "api/state", timeout=5
+                ) as resp:
+                    state = _json.loads(resp.read())
+                assert "roles" in state and "history" in state, state.keys()
+            finally:
+                stop()
     except AssertionError as exc:
         failures.append(f"{exc}")
     finally:
