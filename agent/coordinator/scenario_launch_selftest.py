@@ -328,7 +328,24 @@ def run_campaign_startup_probe(
     plugin = userdata / "sw-campaign-startup-plugin.lua"
     plugin.write_text(
         "local function plugin()\n"
-        "  wesnoth.plugin.wait_until('Game')\n"
+        "  local _, context, info = wesnoth.plugin.wait_until('titlescreen')\n"
+        "  for attempt = 1, 100 do\n"
+        "    context.play_campaign({})\n"
+        "    _, context, info = wesnoth.plugin.next_slice()\n"
+        "    if info.name ~= 'titlescreen' then break end\n"
+        "  end\n"
+        "  if info.name == 'titlescreen' then return end\n"
+        "  _, context, info = wesnoth.plugin.wait_until('Campaign Selection')\n"
+        f"  local campaign = info.find_level{{id={json.dumps(campaign_id)}}}\n"
+        "  if campaign.index < 0 then return end\n"
+        "  context.select_level{index=campaign.index}\n"
+        "  _, context, info = wesnoth.plugin.next_slice()\n"
+        "  context.create{}\n"
+        "  _, context, info = wesnoth.plugin.wait_until_any({'Game', 'Campaign Configure'})\n"
+        "  if info.name == 'Campaign Configure' then\n"
+        "    context.launch{}\n"
+        "    _, context, info = wesnoth.plugin.wait_until('Game')\n"
+        "  end\n"
         f"  wesnoth.log('warning', '{GAME_CONTEXT_MARKER}')\n"
         "end\nreturn plugin\n", encoding="utf-8",
     )
@@ -1020,6 +1037,12 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             self.assertIn("--campaign-difficulty 1", script)
             self.assertIn("--campaign-skip-story", script)
             self.assertTrue((userdata / "logs").is_dir())
+            plugin_text = (userdata / "sw-campaign-startup-plugin.lua").read_text(encoding="utf-8")
+            self.assertIn('info.find_level{id="sw_probe"}', plugin_text)
+            self.assertIn("context.play_campaign({})", plugin_text)
+            self.assertIn("context.select_level{index=campaign.index}", plugin_text)
+            self.assertIn("context.create{}", plugin_text)
+            self.assertIn("context.launch{}", plugin_text)
             self.assertIn("--plugin", script)
             self.assertIn("$process.Refresh()", script)
             self.assertIn("--log-to-file", script)

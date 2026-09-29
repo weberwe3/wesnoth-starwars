@@ -1591,3 +1591,16 @@ the game or resolve hidden/disconnected GUI execution. Next action: verify
 the exact probe in a supported active desktop session, then rerun historical
 validation before enabling automation. Do not alter login, lock, power, or
 credential settings to obtain a passing result.
+
+An unqualified follow-up candidate adapts the installed Wesnoth
+`data/test/plugin/start-campaign.lua` sequence: from `titlescreen`, the plugin
+requests campaign play, selects the intended campaign, creates the game, and
+waits for `Game`. The preceding plugin only waited at `titlescreen`. In a
+disconnected RDP session, context tracing confirmed that the candidate reaches
+`titlescreen` and loads campaign units after the play request, but it receives
+no subsequent campaign-selection or `Game` context within the bounded probe.
+A per-process SDL dummy-video hint was requested, with unchanged behavior;
+whether the hint reached the Windows engine was not independently confirmed.
+These are diagnostics, not a passing GUI check. Keep this candidate out of the integrated
+validator until it reaches the required marker in a supported active desktop
+session; retain the prior exact package as unverified and automation off.
