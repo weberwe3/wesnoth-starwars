@@ -323,6 +323,8 @@ def run_campaign_startup_probe(
         return {"started": False, "survived_probe": False, "game_context_reached": False,
                 "exit_code": None, "diagnostic": "Campaign startup probe requires the installed Windows engine."}
     userdata.mkdir(parents=True, exist_ok=True)
+    # Wesnoth 1.19.27 opens its first-run migration dialog when logs/ is absent.
+    (userdata / "logs").mkdir(exist_ok=True)
     plugin = userdata / "sw-campaign-startup-plugin.lua"
     plugin.write_text(
         "local function plugin()\n"
@@ -338,6 +340,7 @@ def run_campaign_startup_probe(
         "--campaign", campaign_id,
         "--campaign-difficulty", "1",
         "--campaign-scenario", scenario_id,
+        "--campaign-skip-story",
         "--plugin", windows_path(plugin),
     ])
     script = (
@@ -1015,7 +1018,8 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             self.assertTrue(result["game_context_reached"])
             self.assertIn("--campaign-scenario sw_scenario", script)
             self.assertIn("--campaign-difficulty 1", script)
-            self.assertNotIn("--skip-story", script)
+            self.assertIn("--campaign-skip-story", script)
+            self.assertTrue((userdata / "logs").is_dir())
             self.assertIn("--plugin", script)
             self.assertIn("$process.Refresh()", script)
             self.assertIn("--log-to-file", script)

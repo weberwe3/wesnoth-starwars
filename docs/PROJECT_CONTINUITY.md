@@ -1572,3 +1572,22 @@ configuration, advertised LAN URL, and opened localhost URL. The dashboard
 defaults and controlled architecture reference use the same port. This is a
 dashboard routing change only; it does not qualify the campaign package or
 change the pending GUI Game-context and player-build gates.
+
+On September 29, the owner requested a governed automation run. The Codex
+allowance had reset, the dashboard was restarted with its Windows secure bridge
+online, and GPT-6 Sol Medium automation began planning. It stopped before a
+ticket was created because the mandatory historical game validation still
+reported `engine_infrastructure`: the installed engine did not reach an
+observed `Game` context. The dashboard disabled automation as designed.
+Wesnoth 1.19.27 source shows that an isolated userdata directory without
+`logs/` triggers its first-run migration dialog, and documents
+`--campaign-skip-story` for scripted campaign startup. A scoped harness change
+now creates `logs/` and selects that option while retaining the required
+`Game` marker. A 45-second hidden probe in the disconnected RDP session loaded
+the startup plugin with no fatal WML errors but still did not emit the marker.
+Ignored raw evidence is under `agent/runtime/gui-initialized-ye_mlblm/` in
+the managed worktree. The change narrows one known blocker; it does not qualify
+the game or resolve hidden/disconnected GUI execution. Next action: verify
+the exact probe in a supported active desktop session, then rerun historical
+validation before enabling automation. Do not alter login, lock, power, or
+credential settings to obtain a passing result.
