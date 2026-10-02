@@ -40,6 +40,11 @@ QUOTA = re.compile(r"usage limit|rate limit|quota|too many requests|429", re.IGN
 JOB_ID = re.compile(r"art-[a-z0-9-]{1,100}")
 
 
+# Images already taken by this process, so an image can never be reused for
+# a second job even if its timestamp falls in a later window.
+_HARVESTED: set[str] = set()
+
+
 def harvest_generated(codex_home: Path | None, started: float, finished: float) -> list[Path]:
     """Images Codex generated during one run, oldest first.
 
@@ -58,11 +63,15 @@ def harvest_generated(codex_home: Path | None, started: float, finished: float) 
         return []
     for session in sessions:
         try:
-            if session.stat().st_mtime < started - 5:
+            if session.stat().st_mtime < started - 1:
                 continue
             for image in session.glob("*.png"):
                 modified = image.stat().st_mtime
-                if started - 5 <= modified <= finished + 5 and not image.is_symlink():
+                # Inside this call's window (one second of tolerance for coarse
+                # file timestamps). Images already taken are never reused, so a
+                # previous job's late image cannot be picked up again.
+                if started - 1 < modified <= finished + 5 and not image.is_symlink() \
+                        and str(image) not in _HARVESTED:
                     found.append((modified, image))
         except OSError:
             continue
@@ -139,9 +148,18 @@ def _windows_path(path: Path) -> str:
 
 
 def _valid_png(path: Path) -> bool:
+    """A complete PNG: signature, plausible size, and the IEND trailer.
+
+    A file Codex is still writing has the signature but no trailer yet.
+    """
     try:
+        if path.stat().st_size <= 2_000:
+            return False
         with path.open("rb") as stream:
-            return stream.read(8) == b"\x89PNG\r\n\x1a\n" and path.stat().st_size > 2_000
+            head = stream.read(8)
+            stream.seek(-12, 2)
+            tail = stream.read(12)
+        return head == b"\x89PNG\r\n\x1a\n" and tail[4:8] == b"IEND"
     except OSError:
         return False
 
@@ -164,8 +182,15 @@ def _codex_image(executable: str, environment: dict[str, str], workspace: Path, 
         output = ""
     if not _valid_png(target):
         codex_home = Path(environment["CODEX_HOME"]) if environment.get("CODEX_HOME") else None
-        made = [path for path in harvest_generated(codex_home, started, time.time()) if _valid_png(path)]
+        deadline = time.time() + 20
+        made: list[Path] = []
+        while time.time() < deadline:
+            made = [path for path in harvest_generated(codex_home, started, time.time()) if _valid_png(path)]
+            if made:
+                break
+            time.sleep(2)
         if made:
+            _HARVESTED.add(str(made[-1]))
             target.write_bytes(made[-1].read_bytes())
     return _valid_png(target), output
 
