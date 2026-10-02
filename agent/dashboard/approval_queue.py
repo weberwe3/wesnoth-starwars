@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
 import threading
 from typing import Any, Callable
@@ -603,6 +604,7 @@ class ApprovalQueue:
         return request
 
     def _commit(self, record: dict[str, Any], worktree: Path) -> str:
+        self._refresh_production_inventory(worktree)
         _run(["git", "add", "--all"], worktree)
         staged = subprocess.run(
             ["git", "diff", "--cached", "--quiet"],
@@ -623,6 +625,24 @@ class ApprovalQueue:
         if not HEX_SHA.fullmatch(commit_sha):
             raise QueueError("Created commit identity is invalid")
         return commit_sha
+
+    @staticmethod
+    def _refresh_production_inventory(worktree: Path) -> None:
+        """Regenerate the indexed source inventory before the candidate commit.
+
+        CI rejects a commit whose production/source_inventory.json is stale, so
+        every changed source would fail exact-head CI. The inventory is a
+        deterministic coordinator artifact, never worker-authored content.
+        """
+        tool = worktree / "production" / "inventory.py"
+        if not tool.is_file():
+            return
+        completed = subprocess.run(
+            [sys.executable, str(tool), "--repo-root", str(worktree)],
+            cwd=worktree, capture_output=True, text=True, timeout=600, check=False,
+        )
+        if completed.returncode != 0:
+            raise QueueError("Production inventory could not be regenerated for the ticket commit")
 
     def process_deletion_decisions(self) -> bool:
         changed = False

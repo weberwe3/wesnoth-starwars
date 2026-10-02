@@ -3428,6 +3428,23 @@ class ApprovalQueueTests(unittest.TestCase):
         )
         return completed.stdout.strip()
 
+    def test_ticket_commit_regenerates_the_production_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            worktree = Path(directory)
+            tool = worktree / "production" / "inventory.py"
+            tool.parent.mkdir()
+            tool.write_text(
+                "import pathlib, sys\n"
+                "root = pathlib.Path(sys.argv[sys.argv.index('--repo-root') + 1])\n"
+                "(root / 'production' / 'source_inventory.json').write_text('{}')\n",
+                encoding="utf-8",
+            )
+            ApprovalQueue._refresh_production_inventory(worktree)
+            self.assertTrue((worktree / "production" / "source_inventory.json").is_file())
+            tool.write_text("raise SystemExit(2)\n", encoding="utf-8")
+            with self.assertRaisesRegex(QueueError, "inventory"):
+                ApprovalQueue._refresh_production_inventory(worktree)
+
     def test_deletion_pauses_before_commit_and_binds_exact_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
