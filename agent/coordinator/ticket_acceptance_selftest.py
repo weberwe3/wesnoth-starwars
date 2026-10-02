@@ -54,6 +54,34 @@ class TicketAcceptanceTests(unittest.TestCase):
             "acceptance": {"schema_version": 1, "claims": [claim]},
         }
 
+    def _png_ticket(self, png: str) -> dict:
+        return {
+            "validation_profile": "wesnoth-addon-static",
+            "allowed_paths": ["addons/Star_Wars_Thrawn_Trilogy/images/**"],
+            "base_sha": self.base_sha,
+            "acceptance": {"schema_version": 1, "claims": [
+                {"kind": "asset_changed", "path": png, "base": "different"}]},
+        }
+
+    def test_replaced_image_bytes_satisfy_asset_changed(self) -> None:
+        png = "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-x/standing.png"
+        path = self.root / png
+        path.parent.mkdir(parents=True)
+        path.write_bytes(b"\x89PNG\r\n\x1a\nold")
+        _run(self.root, "add", ".")
+        _run(self.root, "-c", "user.name=t", "-c", "user.email=t@example.invalid", "commit", "-m", "old art")
+        self.base_sha = _output(self.root, "rev-parse", "HEAD")
+        unchanged = validate_ticket_acceptance(self.root, self._png_ticket(png))
+        self.assertFalse(unchanged["pass"])
+        path.write_bytes(b"\x89PNG\r\n\x1a\nnew art")
+        changed = validate_ticket_acceptance(self.root, self._png_ticket(png))
+        self.assertTrue(changed["pass"], changed)
+
+    def test_asset_changed_only_accepts_addon_pngs(self) -> None:
+        result = validate_acceptance_contract({"schema_version": 1, "claims": [
+            {"kind": "asset_changed", "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg", "base": "different"}]})
+        self.assertFalse(result["pass"])
+
     def test_unit_claim_requires_the_promised_placement_not_a_note(self) -> None:
         Path(self.root / SCENARIO).write_text(
             "[scenario]\n    id=sw_first_battle\n    [note]\n        description=Only a note\n    [/note]\n[/scenario]\n",

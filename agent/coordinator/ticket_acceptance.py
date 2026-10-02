@@ -52,7 +52,8 @@ def validate_acceptance_contract(value: object) -> dict[str, Any]:
         kind = claim.get("kind")
         path = _safe_path(claim.get("path"))
         baseline = claim.get("base", "absent")
-        if kind not in {"source_text", "unit_placement", "event_contains", "map_cell", "installed_game_repair"}:
+        if kind not in {"source_text", "unit_placement", "event_contains", "map_cell", "installed_game_repair",
+                        "asset_changed"}:
             return {"pass": False, "diagnostic": f"Acceptance claim {index} has an unsupported kind."}
         if path is None:
             return {"pass": False, "diagnostic": f"Acceptance claim {index} has an unsafe project path."}
@@ -65,6 +66,13 @@ def validate_acceptance_contract(value: object) -> dict[str, Any]:
             # It remains explicitly deferred and is only certified by the
             # exact post-merge installed-game run in approval_queue.py.
             item["deferred_to_installed_game"] = True
+        elif kind == "asset_changed":
+            # Proof for replacing an already-wired image: the file's bytes
+            # must differ from the ticket base. Only add-on PNGs qualify.
+            if not (path.startswith("addons/Star_Wars_Thrawn_Trilogy/images/") and path.endswith(".png")):
+                return {"pass": False, "diagnostic": f"Acceptance asset_changed claim {index} must name an add-on PNG."}
+            if baseline != "different":
+                return {"pass": False, "diagnostic": f"Acceptance asset_changed claim {index} must use base=different."}
         elif kind == "source_text":
             contains = claim.get("contains")
             if not isinstance(contains, str) or not 1 <= len(contains) <= MAX_TEXT:
@@ -123,6 +131,14 @@ def _git_text(worktree: Path, sha: str, path: str) -> str:
         timeout=30, check=False,
     )
     return completed.stdout if completed.returncode == 0 else ""
+
+
+def _git_bytes(worktree: Path, sha: str, path: str) -> bytes:
+    completed = subprocess.run(
+        ["git", "show", f"{sha}:{path}"], cwd=worktree,
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=30, check=False,
+    )
+    return completed.stdout if completed.returncode == 0 else b""
 
 
 def _base_sha(worktree: Path) -> str | None:
@@ -265,6 +281,22 @@ def validate_ticket_acceptance(
     for index, claim in enumerate(contract_result["contract"]["claims"], start=1):
         path = claim["path"]
         target = worktree / path
+        if claim["kind"] == "asset_changed":
+            try:
+                candidate_bytes = target.read_bytes() if target.is_file() and not target.is_symlink() else b""
+            except OSError:
+                candidate_bytes = b""
+            base_bytes = _git_bytes(worktree, base, path)
+            in_scope = any(_path_matches(path, pattern) for pattern in allowed_paths if isinstance(pattern, str))
+            present = candidate_bytes.startswith(b"\x89PNG\r\n\x1a\n")
+            changed = present and candidate_bytes != base_bytes
+            checks.append({
+                "index": index, "kind": "asset_changed", "path": path, "pass": in_scope and changed,
+                "candidate_present": present, "base_present": False,
+                "path_changed_from_base": changed, "path_within_ticket_scope": in_scope,
+                "claim_changed_from_base": changed, "deferred_to_installed_game": False,
+            })
+            continue
         try:
             candidate = target.read_text(encoding="utf-8") if target.is_file() and not target.is_symlink() else ""
         except OSError:
