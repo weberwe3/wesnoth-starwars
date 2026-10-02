@@ -2896,7 +2896,7 @@
       "unit_id": "sw_unit_nr_xwing",
       "unit_name": "sw unit nr xwing",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-xwing.md",
       "assets": [
@@ -2972,7 +2972,7 @@
       "unit_id": "sw_unit_nr_awing",
       "unit_name": "sw unit nr awing",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-awing.md",
       "assets": [
@@ -3048,7 +3048,7 @@
       "unit_id": "sw_unit_nr_ywing",
       "unit_name": "sw unit nr ywing",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-ywing.md",
       "assets": [
@@ -3124,7 +3124,7 @@
       "unit_id": "sw_unit_nr_docked_warship",
       "unit_name": "sw unit nr docked warship",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-docked-warship.md",
       "assets": [
@@ -3200,7 +3200,7 @@
       "unit_id": "sw_unit_im_tie_fighter",
       "unit_name": "sw unit im tie fighter",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-tie-fighter.md",
       "assets": [
@@ -3276,7 +3276,7 @@
       "unit_id": "sw_unit_im_tie_interceptor",
       "unit_name": "sw unit im tie interceptor",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-tie-interceptor.md",
       "assets": [
@@ -3352,7 +3352,7 @@
       "unit_id": "sw_unit_im_tie_bomber",
       "unit_name": "sw unit im tie bomber",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-tie-bomber.md",
       "assets": [
@@ -3428,7 +3428,7 @@
       "unit_id": "sw_unit_im_mole_miner",
       "unit_name": "sw unit im mole miner",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-mole-miner.md",
       "assets": [
@@ -3504,7 +3504,7 @@
       "unit_id": "sw_unit_im_star_destroyer",
       "unit_name": "sw unit im star destroyer",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-star-destroyer.md",
       "assets": [
