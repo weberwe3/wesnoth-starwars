@@ -228,4 +228,3 @@ def _run_tool(root: Path, tool: str, *arguments: str) -> str:
     if completed.returncode:
         raise CodexArtError(f"{Path(tool).name} failed: {(completed.stderr or completed.stdout)[-300:]}")
     return completed.stdout.strip().splitlines()[-1] if completed.stdout.strip() else "{}"
-
