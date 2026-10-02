@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-02 21:43 UTC\n"
+"POT-Creation-Date: 2026-10-02 21:47 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,8 +24,8 @@ msgstr ""
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_Dark_Force_Rising
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_The_Last_Command
 #: _main.cfg:24
-#: _main.cfg:57
-#: _main.cfg:122
+#: _main.cfg:69
+#: _main.cfg:146
 msgid "9 ABY"
 msgstr ""
 
@@ -43,65 +43,93 @@ msgstr ""
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_Dark_Force_Rising
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_The_Last_Command
 #: _main.cfg:29
-#: _main.cfg:60
-#: _main.cfg:125
+#: _main.cfg:72
+#: _main.cfg:149
 msgid "(Intermediate level, 10 scenarios.)"
 msgstr ""
 
 #. [difficulty]
 #: _main.cfg:32
-#: _main.cfg:63
-#: _main.cfg:128
+#: _main.cfg:75
+#: _main.cfg:152
 msgid "Cadet"
 msgstr ""
 
 #. [difficulty]
 #: _main.cfg:33
-#: _main.cfg:64
-#: _main.cfg:129
+#: _main.cfg:76
+#: _main.cfg:153
 msgid "Easy"
 msgstr ""
 
 #. [difficulty]
 #: _main.cfg:37
-#: _main.cfg:68
-#: _main.cfg:133
+#: _main.cfg:80
+#: _main.cfg:157
 msgid "Officer"
 msgstr ""
 
 #. [difficulty]
 #: _main.cfg:38
-#: _main.cfg:69
-#: _main.cfg:134
+#: _main.cfg:81
+#: _main.cfg:158
 msgid "Normal"
 msgstr ""
 
 #. [difficulty]
 #: _main.cfg:43
-#: _main.cfg:74
-#: _main.cfg:139
+#: _main.cfg:86
+#: _main.cfg:163
 msgid "Veteran"
 msgstr ""
 
 #. [difficulty]
 #: _main.cfg:44
-#: _main.cfg:75
-#: _main.cfg:140
+#: _main.cfg:87
+#: _main.cfg:164
 msgid "Hard"
 msgstr ""
 
+#. [about]
+#: _main.cfg:47
+#: _main.cfg:90
+#: _main.cfg:167
+msgid "Design, writing and code"
+msgstr ""
+
+#. [entry]
+#: _main.cfg:49
+#: _main.cfg:92
+#: _main.cfg:169
+msgid "weberwe3 (project owner), with AI-assisted development"
+msgstr ""
+
+#. [about]
+#: _main.cfg:53
+#: _main.cfg:96
+#: _main.cfg:173
+msgid "Art, sound and music"
+msgstr ""
+
+#. [entry]
+#: _main.cfg:55
+#: _main.cfg:98
+#: _main.cfg:175
+msgid "Original unit art generated and reviewed for this add-on; terrain, icons, projectiles, sound effects and music drawn and synthesized from code"
+msgstr ""
+
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_Dark_Force_Rising
-#: _main.cfg:50
+#: _main.cfg:62
 msgid "Star Wars: Dark Force Rising"
 msgstr ""
 
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_Dark_Force_Rising
-#: _main.cfg:51
+#: _main.cfg:63
 msgid "DFR"
 msgstr ""
 
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_Dark_Force_Rising
-#: _main.cfg:58
+#: _main.cfg:70
 msgid ""
 "Leia seeks the truth about the Noghri on their ruined homeworld. Luke meets the unstable Jedi Master Joruus C'baoth. Han and Lando search for a lost fleet of two hundred Dreadnaughts, and so does Grand Admiral Thrawn.\n"
 "\n"
@@ -109,17 +137,17 @@ msgid ""
 msgstr ""
 
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_The_Last_Command
-#: _main.cfg:115
+#: _main.cfg:139
 msgid "Star Wars: The Last Command"
 msgstr ""
 
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_The_Last_Command
-#: _main.cfg:116
+#: _main.cfg:140
 msgid "TLC"
 msgstr ""
 
 #. [campaign]: id=Star_Wars_Thrawn_Trilogy_The_Last_Command
-#: _main.cfg:123
+#: _main.cfg:147
 msgid ""
 "Thrawn besieges Coruscant with invisible asteroids. Karrde rallies the smugglers. Luke and Mara Jade descend on Wayland, where the Emperor's storehouse hides the Grand Admiral's cloning vats and the mad Jedi C'baoth waits with a clone of Luke.\n"
 "\n"
