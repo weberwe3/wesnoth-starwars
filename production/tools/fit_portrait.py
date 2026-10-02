@@ -19,6 +19,26 @@ from PIL import Image
 from derive_unit_frames import PORTRAIT, degenerate_reason, fit, remove_flat_background
 
 
+def head_and_shoulders(img: Image.Image) -> Image.Image:
+    """Crop a full-body figure to its head and shoulders.
+
+    Codex sometimes returns a full-length figure even when asked for a bust.
+    A figure much taller than wide is cropped to its top part (about 1.15x
+    its width), which frames the head and shoulders for dialogue.
+    """
+    bbox = img.split()[3].point(lambda a: 255 if a > 24 else 0).getbbox()
+    if not bbox:
+        return img
+    left, top, right, bottom = bbox
+    width, height = right - left, bottom - top
+    if height <= 1.45 * width:
+        return img
+    # The figure's own width is inflated by arms and weapons; frame a little
+    # wider than the shoulders and centre on the upper body.
+    crop_h = int(width * 1.15)
+    return img.crop((left, top, right, top + crop_h))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--portrait", type=Path, required=True)
@@ -27,7 +47,8 @@ def main() -> int:
     args = parser.parse_args()
     if not args.slug.replace("-", "").isalnum():
         raise SystemExit("invalid slug")
-    portrait = fit(remove_flat_background(Image.open(args.portrait)), PORTRAIT, margin=6, anchor_bottom=True)
+    source = remove_flat_background(Image.open(args.portrait))
+    portrait = fit(head_and_shoulders(source), PORTRAIT, margin=6, anchor_bottom=True)
     reason = degenerate_reason(portrait.resize((72, 72)))
     if reason:
         raise SystemExit(f"degenerate portrait rejected: {reason}")
