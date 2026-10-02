@@ -1559,6 +1559,14 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             self.assertFalse(unchanged["pass"])
             self.assertIn("unchanged", unchanged["message"])
 
+    def test_custom_terrain_codes_accept_mainline_overlay_form(self) -> None:
+        import gameplay_contracts
+        token = gameplay_contracts._TERRAIN_TOKEN
+        for valid in ("Qsp", "Gg^Fds", "^Vsd", "^Fsw"):
+            self.assertTrue(token.fullmatch(valid), valid)
+        for invalid in ("^", "Gg^", "Toolong", "Q s"):
+            self.assertFalse(token.fullmatch(invalid), invalid)
+
     def test_runtime_probe_reuses_the_owning_campaign_define(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             staged = Path(directory) / "_main.cfg"
