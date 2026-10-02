@@ -525,7 +525,7 @@ official Terrain Codes and Units WML references, the installed core terrain
 aliases and movetype costs, and every required destination against the unit's
 movement budget. Then run one focused engine route check for dynamic behavior.
 
-### Dashboard Codex art run never published its batches
+### 2026-10-02 — the dashboard Codex art run never published its batches
 
 **Symptom:** A 54-unit `generate_all_art` run would have generated every unit
 before its first import, then imported only the first unit file's batch. A
