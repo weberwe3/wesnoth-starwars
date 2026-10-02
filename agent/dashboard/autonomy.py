@@ -2017,6 +2017,14 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         )
         return True
 
+    def _historical_validation_passed(self, head: str) -> bool:
+        path = self.root / "agent" / "runtime" / HISTORICAL_GAMEPLAY_VALIDATION_FILE
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return False
+        return record.get("state") == "passed" and record.get("main_head") == head
+
     def _resolved_historical_worktree(self, branch: str, head: str) -> bool:
         path = self.root / "agent" / "runtime" / HISTORICAL_GAMEPLAY_VALIDATION_FILE
         try:
@@ -3013,6 +3021,16 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
                     "reason": (
                         "The repository priority catalog marks this ticket objective complete; "
                         "its preserved worktree is historical evidence, not resumable work."
+                    ),
+                })
+                continue
+            if evidence.get("historical_repair") and self._historical_validation_passed(main_head):
+                retired_branches.append({
+                    "name": name,
+                    "previous_task_id": evidence["task_id"],
+                    "reason": (
+                        "Historical gameplay validation passes on current main, so this repair "
+                        "has nothing left to fix; its worktree is preserved for audit."
                     ),
                 })
                 continue
