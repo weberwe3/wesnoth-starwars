@@ -66,15 +66,8 @@
     "sw_unit_ob_cloning_cylinder": "A tall glass cloning cylinder filled with pale green fluid and a vague human shape, on a metal base with cables and pipes.",
     "sw_unit_ob_shipyard_platform": "A large orbital shipyard platform: a skeletal gray framework with work lights, cranes, and a half-built hull inside."
   },
-  "portrait_from_sprite": [
-    "sw_hero_luke",
-    "sw_hero_leia",
-    "sw_hero_han",
-    "sw_hero_lando",
-    "sw_hero_wedge",
-    "sw_hero_chewbacca"
-  ],
-  "portrait_policy": "Characters portrayed by film actors use a portrait framed from their sprite, not a close-up face, so no real person's likeness is shown.",
+  "portrait_from_sprite": [],
+  "portrait_policy": "Every speaking character gets a head-and-shoulders portrait for dialogue. Faces are original designs that must not resemble any real actor or person; identity comes from the lore-described costume, hair and equipment. A pilot hero whose unit is a starfighter uses the portrait subject below, not the craft. If the image service refuses a character, the code-painted master supplies the portrait (production/tools/paint_hero_masters.py).",
   "sprite_only": [
     "sw_hero_xwing_luke",
     "sw_unit_im_at_st",
@@ -96,5 +89,9 @@
     "sw_unit_ob_dreadnaught",
     "sw_unit_ob_shield_generator",
     "sw_unit_ob_shipyard_platform"
-  ]
+  ],
+  "portrait_subjects": {
+    "sw_hero_wedge": "A veteran starfighter ace in his late twenties with short dark-brown hair and an easy, confident look, wearing an orange flight suit with a white chest vest and harness, a white-and-gray pilot helmet with orange markings tucked under one arm.",
+    "sw_hero_xwing_luke": "Same character as sw_hero_luke."
+  }
 }
