@@ -17,6 +17,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import time
 from typing import Any, Callable
 
@@ -33,6 +34,7 @@ import worktree_paths
 
 
 RUNTIME_FILE = "art-import-production.json"
+INVENTORY_PATH = "production/source_inventory.json"
 JOB_ID = re.compile(r"art-[a-z0-9-]{1,100}")
 HEX_SHA = re.compile(r"[0-9a-f]{40}")
 MAX_ERROR_CHARS = 1_200
@@ -175,6 +177,7 @@ class ArtImportProduction:
             completed = confirm_art_import_batch(worktree, job_ids)
             if not completed.get("pass"):
                 raise ArtProductionError(_safe_text(completed.get("message"), "Candidate art verification failed."))
+            self._refresh_inventory(worktree)
             validation, changed_paths = self._validate_candidate(worktree, batch, allowed_paths)
             commit_sha = self._commit_candidate(worktree, batch, changed_paths)
             self._update_batch(
@@ -293,13 +296,23 @@ class ArtImportProduction:
             raise ArtProductionError("Art job source path is invalid")
         if not isinstance(assets, list):
             raise ArtProductionError("Art job asset contract is invalid")
-        paths = [f"{ADDON_ROOT}/{ART_MANIFEST}", source_path]
+        # The production inventory hashes every referenced image, so new art
+        # must ship with a regenerated inventory or CI's --check fails.
+        paths = [f"{ADDON_ROOT}/{ART_MANIFEST}", source_path, INVENTORY_PATH]
         for asset in assets:
             relative = asset.get("path") if isinstance(asset, dict) else None
             if not isinstance(relative, str) or relative.startswith("/") or ".." in Path(relative).parts:
                 raise ArtProductionError("Art job contains an unsafe asset path")
             paths.append(f"{ADDON_ROOT}/{relative}")
         return sorted(set(paths))
+
+    def _refresh_inventory(self, worktree: Path) -> None:
+        completed = subprocess.run(
+            [sys.executable, "production/inventory.py", "--repo-root", str(worktree)],
+            cwd=worktree, text=True, capture_output=True, timeout=600, check=False,
+        )
+        if completed.returncode:
+            raise ArtProductionError("Production inventory could not be regenerated for the art import")
 
     def _source_status(self) -> list[str]:
         raw = _run(
