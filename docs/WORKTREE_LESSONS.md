@@ -572,3 +572,18 @@ run then logs no image errors, and all three campaign sequences pass.
 **Prevention:** Any image a `[campaign]` tag references needs a binary path
 that is active at the title screen. Grep engine logs for `could not open
 image` after menu-facing changes.
+### 2026-10-02 — an art run kept generating after its import failed
+
+**Symptom:** A retried hero art import stopped with "Local main has
+unrelated uncommitted changes". A stormtrooper set generated after the
+earlier failed hero import was still uncommitted in the working tree.
+**Confirmed cause:** `_publish_generated_art` waited for the import thread
+but never checked its result, so the run moved on to the next unit file. The
+importer deliberately refuses to publish while unrelated changes exist, so
+every later batch would have failed too.
+**Resolution:** After the import thread ends, the run reads the job's
+production state and stops unless it is `published`. The existing state was
+recovered once by setting the extra set aside, publishing the hero batch, and
+restoring the set before resuming.
+**Prevention:** A long pipeline step must check the final state of every
+asynchronous step it waits on, not just whether the step started.
