@@ -2668,7 +2668,7 @@
       "unit_id": "sw_unit_sm_smuggler",
       "unit_name": "sw unit sm smuggler",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-sm-smuggler.md",
       "assets": [
@@ -2744,7 +2744,7 @@
       "unit_id": "sw_unit_sm_veteran",
       "unit_name": "sw unit sm veteran",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-sm-veteran.md",
       "assets": [
@@ -2820,7 +2820,7 @@
       "unit_id": "sw_unit_wl_vornskr",
       "unit_name": "sw unit wl vornskr",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-wl-vornskr.md",
       "assets": [
