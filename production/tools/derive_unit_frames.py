@@ -118,6 +118,29 @@ def hit_tint(img: Image.Image) -> Image.Image:
     return out
 
 
+# A hand-painted sprite has hundreds of distinct colors; a flat shape (for
+# example a solid disc returned instead of a character) has a handful.
+MIN_SPRITE_COLORS = 40
+MAX_DOMINANT_SHARE = 0.6
+
+
+def degenerate_reason(img: Image.Image) -> str | None:
+    """Why a derived sprite is not a usable unit image, or None if it is."""
+    rgba = img.convert("RGBA")
+    opaque = [pixel[:3] for pixel in rgba.getdata() if pixel[3] > 200]
+    if len(opaque) < 150:
+        return "almost no visible pixels"
+    counts: dict[tuple[int, int, int], int] = {}
+    for pixel in opaque:
+        key = (pixel[0] >> 3, pixel[1] >> 3, pixel[2] >> 3)
+        counts[key] = counts.get(key, 0) + 1
+    if len(counts) < MIN_SPRITE_COLORS:
+        return f"only {len(counts)} distinct colors (flat shape, not a painted unit)"
+    if max(counts.values()) / len(opaque) > MAX_DOMINANT_SHARE:
+        return "one flat color covers most of the sprite"
+    return None
+
+
 def derive(base: Image.Image) -> dict[str, Image.Image]:
     brighter = ImageEnhance.Brightness(base).enhance(1.06)
     return {
@@ -147,6 +170,9 @@ def main() -> int:
         raise SystemExit("invalid slug")
     master = remove_flat_background(Image.open(args.sprite))
     base = fit(master, SPRITE, margin=2, anchor_bottom=True)
+    reason = degenerate_reason(base)
+    if reason:
+        raise SystemExit(f"degenerate sprite rejected: {reason}")
     unit_dir = args.addon / "images/units" / args.slug
     unit_dir.mkdir(parents=True, exist_ok=True)
     written = []

@@ -661,3 +661,19 @@ sleeps and retries instead of exiting, and the failure-report and cleanup
 calls can no longer escape their handlers.
 **Prevention:** A long-lived supervisor loop must survive transient I/O
 failures. Keep only deliberate exits (shutdown marker, mutex) able to end it.
+
+### 2026-10-02 — a flat blue disc was published as a unit sprite
+
+**Symptom:** After the smuggler art batch (#302) merged, the
+`sw-unit-sm-veteran` sprites were a solid blue circle. The Wookiee warrior
+(#301) was drawn with a canine snout and pointed ears.
+**Confirmed cause:** Codex returned a non-character image for the veteran.
+The art gates check PNG completeness and dimensions, not content, so the
+3-color disc passed. The Wookiee art direction ("tall furry forest warrior")
+never said ape-like or primate-faced.
+**Resolution:** `derive_unit_frames.py` rejects sprites with fewer than 40
+distinct colors or one dominant flat color. The Wookiee and veteran art
+direction now spells out lore-accurate anatomy. Both jobs are back to
+`pending_codex_imagegen` for regeneration.
+**Prevention:** Review a contact sheet of every published art batch, and spell
+out species anatomy in art direction rather than leaving it to inference.
