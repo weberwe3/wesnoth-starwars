@@ -124,6 +124,65 @@ local WIN = {
   sw_tlc_10_the_last_command = function() fire("sw_tlc10_the_end") end,
 }
 
+-- Legal-route checks: unit id -> target hexes it must be able to reach over
+-- legal terrain (ignoring other units) within the scenario's turn limit.
+-- Turns are counted with the unit's own movement costs, so terrain mistakes
+-- (a forest hex a one-move hero cannot enter, a lake with no crossing) fail.
+-- Flat strings because the engine cannot serialize nested tables into the
+-- game kernel: "unit_id:x,y;x,y|unit_id:x,y".
+local ROUTE_SPECS = {
+  sw_hte_01_ysalamiri_harvest = "sw_hero_pellaeon:12,4;21,5;17,13;23,15",
+  sw_hte_02_ambush_at_bpfassh = "sw_hero_leia:25,2",
+  sw_hte_05_prisoner_of_myrkr = "sw_hero_luke:6,5;17,9",
+  sw_hte_06_raid_on_karrdes_base = "sw_hero_han:27,8|sw_hero_karrde:27,11",
+  sw_hte_07_the_forest_crossing = "sw_hero_luke:28,10|sw_hero_mara:28,10",
+  sw_hte_08_nomad_city = "sw_hero_lando:4,9",
+  sw_dfr_02_honoghr = "sw_hero_leia:26,9",
+  sw_dfr_03_jomark = "sw_hero_luke:23,4",
+  sw_dfr_04_the_senators_men = "sw_hero_han:25,2",
+  sw_dfr_06_the_mad_jedi = "sw_hero_luke:26,9",
+  sw_dfr_08_aboard_the_katana = "sw_hero_luke:23,9",
+  sw_dfr_09_battle_for_the_fleet = "sw_dfr09_katana:29,11",
+  sw_tlc_04_landfall_on_wayland = "sw_hero_luke:25,10|sw_hero_mara:26,10",
+  sw_tlc_05_the_natives_of_wayland = "sw_hero_luke:21,10",
+  sw_tlc_06_the_gates_of_tantiss = "sw_hero_han:23,10",
+  sw_tlc_08_the_throne_room = "sw_hero_luke:16,8",
+}
+
+-- Turns a unit needs to walk a path, honoring per-turn movement points.
+local function turns_for_path(u, path)
+  local turns, left = 1, u.max_moves
+  for i = 2, #path do
+    local cost = wesnoth.units.movement_on(u, wesnoth.current.map[path[i]])
+    if cost > u.max_moves then return nil end
+    if cost > left then turns, left = turns + 1, u.max_moves end
+    left = left - cost
+  end
+  return turns
+end
+
+local function check_routes(route_spec)
+  for unit_part in string.gmatch(route_spec, "[^|]+") do
+    local unit_id, hex_list = string.match(unit_part, "([^:]+):(.+)")
+    local targets = {}
+    for x, y in string.gmatch(hex_list, "(%d+),(%d+)") do table.insert(targets, {tonumber(x), tonumber(y)}) end
+    local spec = {unit_id, targets}
+    local u = wesnoth.units.get(spec[1])
+    if not u then
+      std_print("SW_SEQ: route " .. spec[1] .. " missing_unit")
+    else
+      local from = {u.x, u.y}
+      for _, target in ipairs(spec[2]) do
+        local path = wesnoth.paths.find_path(u, target[1], target[2], {ignore_units = true, ignore_teleport = true})
+        local turns = (path and #path > 0) and turns_for_path(u, path) or nil
+        std_print("SW_SEQ: route " .. spec[1] .. " " .. from[1] .. "," .. from[2] .. "->" .. target[1] .. "," .. target[2]
+          .. " turns=" .. tostring(turns) .. " limit=" .. tostring(wesnoth.scenario.turns))
+        if path and #path > 0 then from = target end
+      end
+    end
+  end
+end
+
 local HEROES = {
   "sw_hero_luke", "sw_hero_leia", "sw_hero_han", "sw_hero_chewbacca", "sw_hero_lando",
   "sw_hero_mara", "sw_hero_karrde", "sw_hero_wedge", "sw_hero_pellaeon",
@@ -199,10 +258,15 @@ local function plugin(events, context, info)
     out("saved " .. tostring(scenario))
     local win = WIN[scenario]
     if not win then out("fatal no win script for " .. tostring(scenario)); break end
-    wesnoth.plugin.execute(context, function()
+    local route_spec = ROUTE_SPECS[scenario] or ""
+    local exec_ok, exec_err = wesnoth.plugin.execute(context, function()
+      -- Legal-route check first, on the untouched opening position.
+      local routes_ok, routes_err = pcall(check_routes, route_spec)
+      if not routes_ok then std_print("SW_SEQ: route_error " .. tostring(routes_err)) end
       local ok, err = pcall(win)
       if not ok then std_print("SW_SEQ: win_script_error " .. tostring(err)) end
     end)
+    if exec_ok == false then out("win_script_error execute refused: " .. tostring(exec_err)) end
     out("win script ran " .. scenario)
     -- Wait for the game to leave this scenario.
     local waited = 0

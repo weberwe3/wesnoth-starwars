@@ -157,6 +157,8 @@ def parse(log_text: str) -> dict:
             current["won"] = True
         elif current is not None and body.startswith("left "):
             current["left"] = body
+        elif current is not None and body.startswith("route "):
+            current.setdefault("routes", []).append(body[len("route "):])
         else:
             notes.append(body)
     return {"scenarios": scenarios, "notes": notes}
@@ -179,8 +181,19 @@ def evaluate(parsed: dict, log_text: str, expected: list[str] | None = None) -> 
             failures.append(f"{s['id']}: in-game save not confirmed")
         if not s["won"]:
             failures.append(f"{s['id']}: win script did not run")
+    for s in parsed["scenarios"]:
+        for route in s.get("routes", []):
+            match = re.search(r"turns=(\S+) limit=(\S+)", route)
+            if "missing_unit" in route or not match or match.group(1) == "nil":
+                failures.append(f"{s['id']}: objective unreachable by legal moves: {route}")
+                continue
+            turns, limit = int(match.group(1)), int(match.group(2))
+            # The objective must fit comfortably: at most 80% of the turn
+            # limit with no enemies in the way.
+            if limit > 0 and turns > limit * 0.8:
+                failures.append(f"{s['id']}: objective route needs {turns} of {limit} turns: {route}")
     for note in parsed["notes"]:
-        if note.startswith(("fatal", "win_script_error")):
+        if note.startswith(("fatal", "win_script_error", "route_error")):
             failures.append(note)
     if "done" not in parsed["notes"]:
         failures.append("probe did not finish")
