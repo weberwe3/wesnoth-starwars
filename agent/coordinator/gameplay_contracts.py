@@ -19,7 +19,9 @@ from production.contract_store import ContractStoreError, load_contracts
 ADDON_ROOT = "addons/Star_Wars_Thrawn_Trilogy"
 MAX_DIAGNOSTIC_CHARS = 6000
 MAX_HISTORICAL_TICKETS = 200
-_TERRAIN_TOKEN = re.compile(r"^[A-Za-z0-9]{1,4}(?:\^[A-Za-z0-9]{1,4})?$")
+# A base code, a base^overlay pair, or an overlay-only code (mainline defines
+# overlays such as villages and forests as string=^Vhc).
+_TERRAIN_TOKEN = re.compile(r"^(?:[A-Za-z0-9]{1,4}(?:\^[A-Za-z0-9]{1,4})?|\^[A-Za-z0-9]{1,4})$")
 # Fail closed against the exact core terrain codes exercised by this add-on on
 # its supported Wesnoth runtime. A token can satisfy the map-file grammar and
 # still be unknown to the engine (for example, Gg^Ff on Wesnoth 1.19.27).
