@@ -133,6 +133,10 @@ MOVETYPES: dict[str, dict] = {
 }
 
 RACES = {
+    "sw_myneyrshi": ("Myneyrshi", "Myneyrshi",
+                     "Four-armed natives of Wayland's forests who hunt with spears and bows and distrust every outsider."),
+    "sw_psadan": ("Psadan", "Psadans",
+                  "Stocky Wayland natives with armored, plate-like skin, slow to anger and slower to forgive."),
     "sw_wookiee": ("Wookiee", "Wookiees",
                    "Tall, fur-covered natives of the forest world Kashyyyk, renowned for their strength, loyalty, and life debts."),
     "sw_noghri": ("Noghri", "Noghri",
@@ -230,6 +234,17 @@ def noghri_stealth() -> str:
     )
 
 
+def cloaked() -> str:
+    return (
+        "[hides]\n"
+        "    id=sw_ability_cloaked\n"
+        "    name= _ \"cloaked\"\n"
+        "    description= _ \"This object is shrouded by a stealth field and cannot be seen until something runs into it.\"\n"
+        "    affect_self=yes\n"
+        "[/hides]"
+    )
+
+
 def tactical_genius() -> str:
     return (
         "[dummy]\n"
@@ -250,6 +265,7 @@ ABILITY_BUILDERS = {
     "keen_senses": keen_senses,
     "noghri_stealth": noghri_stealth,
     "tactical_genius": tactical_genius,
+    "cloaked": cloaked,
 }
 
 # Weapon specials. Values are WML snippets placed in [specials].
@@ -530,6 +546,53 @@ ROSTER = [
       file="dfr_units", level=1, hp=44, mp=6, xp=40, cost=20, mt="sw_starfighter", race="mechanical",
       attacks=[LASERS(6, 2)]),
 
+    # Campaign III (The Last Command) -------------------------------------
+    U("sw_hero_luuke", "Dark Clone",
+      "Luuke, a clone grown from Luke Skywalker's hand and raised by Joruus C'baoth as the apprentice Luke refused to be. His Force abilities fail inside a ysalamiri bubble.",
+      file="tlc_units", level=4, hp=56, mp=6, xp=200, cost=80, mt="sw_jedi", hero=True, gender="male",
+      attacks=[attack("lightsaber", "lightsaber", "arcane", "melee", 11, 4),
+               attack("force_lightning", "Force lightning", "fire", "ranged", 10, 3, specials=["magical"])],
+      abilities=["force_agility"]),
+    U("sw_unit_wy_myneyrshi", "Myneyrshi Warrior",
+      "Four-armed Wayland hunters who fight with long spears and short bows at once.",
+      file="tlc_units", level=1, hp=38, mp=6, xp=42, cost=15, mt="sw_wookiee", race="sw_myneyrshi",
+      attacks=[attack("spear", "spear", "pierce", "melee", 7, 3, specials=["firststrike"]),
+               attack("bow", "bow", "pierce", "ranged", 6, 3)]),
+    U("sw_unit_wy_psadan", "Psadan Elder",
+      "Slow, armored Psadans who wade into a fight and do not leave it.",
+      file="tlc_units", level=1, hp=52, mp=4, xp=44, cost=17, mt="sw_armored_trooper", race="sw_psadan",
+      attacks=[attack("war_club", "war club", "impact", "melee", 11, 2)]),
+    U("sw_unit_im_royal_guard", "Imperial Guard",
+      "Crimson-robed elite guards who once served the Emperor and still hold his storehouse at Mount Tantiss.",
+      file="tlc_units", level=2, hp=46, mp=5, xp=90, cost=30, mt="sw_infantry",
+      attacks=[attack("force_pike", "force pike", "blade", "melee", 10, 3, specials=["firststrike"]),
+               PISTOL(6, 2)]),
+    U("sw_unit_im_infiltrator", "Imperial Infiltrator",
+      "Commandos trained to move unseen through cities and palaces.",
+      file="tlc_units", level=1, hp=32, mp=6, xp=40, cost=18, mt="sw_noghri",
+      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 7, 3, specials=["backstab"]), PISTOL(6, 2)],
+      abilities=["ambush"]),
+    U("sw_unit_im_minelayer", "Imperial Minelayer",
+      "A converted bulk freighter that releases cloaked asteroids into planetary orbit.",
+      file="tlc_units", level=2, hp=90, mp=4, xp=90, cost=0, mt="sw_capital", race="mechanical",
+      attacks=[LASERS(8, 2)]),
+    U("sw_unit_ob_cloaked_asteroid", "Cloaked Asteroid",
+      "A rock in orbit, hidden by a stealth field. Ships that stray next to one are damaged.",
+      file="tlc_units", level=0, hp=30, mp=0, xp=20, cost=0, mt="sw_capital", race="mechanical",
+      attacks=[], abilities=["cloaked"], zoc="no"),
+    U("sw_unit_ob_shield_generator", "Shield Generator",
+      "A planetary shield generator protecting the mountain's entrance.",
+      file="tlc_units", level=1, hp=80, mp=0, xp=40, cost=0, mt="sw_capital", race="mechanical",
+      attacks=[], zoc="no"),
+    U("sw_unit_ob_cloning_cylinder", "Cloning Cylinder",
+      "One of the Emperor's Spaarti cloning cylinders, now growing soldiers for the Grand Admiral.",
+      file="tlc_units", level=0, hp=30, mp=0, xp=20, cost=0, mt="sw_capital", race="mechanical",
+      attacks=[], zoc="no"),
+    U("sw_unit_ob_shipyard_platform", "Shipyard Platform",
+      "An orbital construction platform at the Bilbringi shipyards.",
+      file="tlc_units", level=2, hp=110, mp=0, xp=90, cost=0, mt="sw_capital", race="mechanical",
+      attacks=[attack("point_defense", "point-defense lasers", "fire", "ranged", 8, 2)], zoc="no"),
+
     # Smugglers and wildlife ----------------------------------------------
     U("sw_unit_sm_smuggler", "Smuggler",
       "Members of Talon Karrde's organization: pilots, slicers, and gunhands, loyal to Karrde before any government.",
@@ -555,6 +618,7 @@ FILES = {
     "hte_imperial": "Imperial Remnant ground forces for Campaign I.",
     "hte_smugglers": "Karrde's smugglers and Myrkr wildlife for Campaign I.",
     "dfr_units": "Characters, forces, and craft introduced in Campaign II (Dark Force Rising).",
+    "tlc_units": "Characters, natives, forces, and structures introduced in Campaign III (The Last Command).",
 }
 
 
