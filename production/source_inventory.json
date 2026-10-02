@@ -6529,7 +6529,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
-      "sha256": "413c3a1e270f1fa03aed345957dc5fb55c87a619eb35b302201c218079c37e1e"
+      "sha256": "79e2e66ea146b617c0e0a68b4b5deb6206108481e6e218b1ce53e18d2436cc97"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg",
@@ -9813,7 +9813,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_04_the_senators_men.map",
-      "sha256": "bdb36e8aa71a358fc6589d1354763e41b4ffec837851bb73446087f833926f4b"
+      "sha256": "31597d380c564d33ce57b5a5ebb1fa948e016a00c06f06666caf7cd0df753afe"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_05_peregrines_nest.map",
@@ -9845,7 +9845,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_02_ambush_at_bpfassh.map",
-      "sha256": "07ab122a36096f73d304825771915b8851d30cf86da0ca170936fc7992148a55"
+      "sha256": "b184ffa87509adce95decb178eb22b2ce2972eb14804ec1698770b728c4b5a0c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_03_adrift.map",
@@ -9861,11 +9861,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_06_raid_on_karrdes_base.map",
-      "sha256": "f7f6b14eb5458fd06375b9eade5b107527ec2ca24ba4cb7d895e3d3979d40a12"
+      "sha256": "636540bc82c03e8507d737840ea68a1499494726acc67b4f1780e2f280b508d9"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_07_the_forest_crossing.map",
-      "sha256": "7c23671c1011f2a9673e5be8c544211ba858d89302172fa6b1d5cf6c1d4c5b92"
+      "sha256": "cfb9602a85be50b9606d4e5718eba1bc060fa166055c362a4509f7ceea663cb4"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_08_nomad_city.map",
