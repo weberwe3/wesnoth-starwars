@@ -4720,7 +4720,7 @@
       "unit_id": "sw_unit_im_royal_guard",
       "unit_name": "sw unit im royal guard",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-royal-guard.md",
       "assets": [

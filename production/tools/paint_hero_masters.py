@@ -14,6 +14,9 @@ Designs (no actor likeness; costume and equipment carry the identity):
                      green lightsaber raised in a ready guard.
   sw_hero_chewbacca  Wookiee: shaggy brown fur, silver-and-brown cartridge
                      bandolier over the left shoulder, bowcaster held ready.
+  sw_unit_im_royal_guard  The Emperor's Royal Guard: floor-length crimson robe
+                     and cloak, smooth crimson helmet with a narrow black
+                     visor slit, crimson gloves, a tall force pike.
 
 Usage:
   paint_hero_masters.py --out DIR [--unit sw_hero_luke ...]
@@ -294,7 +297,53 @@ def paint_chewbacca() -> Image.Image:
     return c
 
 
-PAINTERS = {"sw_hero_luke": paint_luke, "sw_hero_chewbacca": paint_chewbacca}
+# --- Imperial Royal Guard ---------------------------------------------------------
+
+def paint_royal_guard() -> Image.Image:
+    c = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+    crimson = (150, 18, 24)
+    deep = (104, 10, 16)
+
+    # Force pike first: a tall dark staff with a pale vibro-blade head, held upright.
+    staff = mask_of(lambda d: d.line([(330, 40), (318, 488)], fill=255, width=9))
+    layer(c, staff, (40, 38, 44), light=0.4, depth=3)
+    head = mask_of(lambda d: d.polygon([(322, 6), (340, 6), (346, 48), (316, 48)], fill=255))
+    layer(c, head, (176, 178, 186), light=0.6, depth=3)
+
+    # Long cloak behind the body, flaring to the floor.
+    cloak = mask_of(lambda d: d.polygon([(206, 120), (306, 120), (338, 470), (348, 492), (164, 492),
+                                         (176, 470)], fill=255))
+    layer(c, cloak, deep, light=0.25, shadow=0.55, depth=16)
+    # Robe in front, with long vertical folds.
+    robe = mask_of(lambda d: d.polygon([(214, 130), (298, 130), (316, 488), (196, 488)], fill=255))
+    layer(c, robe, crimson, light=0.3, shadow=0.5, depth=12)
+    folds = Image.new("RGBA", c.size, (0, 0, 0, 0))
+    fd = ImageDraw.Draw(folds)
+    for x0, x1 in ((236, 228), (256, 256), (276, 286)):
+        fd.line([(x0, 170), (x1, 486)], fill=(70, 6, 12, 150), width=4)
+        fd.line([(x0 + 6, 170), (x1 + 6, 486)], fill=(200, 60, 64, 70), width=3)
+    c.alpha_composite(folds.filter(ImageFilter.GaussianBlur(1.5)))
+
+    # Helmet: smooth rounded crimson dome with a flared neck guard and black visor slit.
+    neck = mask_of(lambda d: d.polygon([(214, 118), (298, 118), (314, 150), (198, 150)], fill=255))
+    layer(c, neck, crimson, light=0.35, depth=8)
+    helmet = mask_of(lambda d: d.ellipse((216, 36, 296, 136), fill=255))
+    layer(c, helmet, crimson, light=0.45, shadow=0.45, depth=10)
+    visor = mask_of(lambda d: d.rounded_rectangle((244, 74, 282, 84), 4, fill=255))
+    layer(c, visor, (12, 10, 12), light=0.2, depth=2, outline=False)
+
+    # Crimson-gloved hand gripping the pike.
+    hand = mask_of(lambda d: d.ellipse((304, 236, 336, 268), fill=255))
+    layer(c, hand, deep, light=0.35, depth=5)
+    arm = mask_of(lambda d: d.polygon([(286, 150), (308, 160), (322, 244), (300, 252), (282, 200)], fill=255))
+    layer(c, arm, crimson, light=0.3, depth=8)
+
+    rim(c, ImageChops.lighter(robe, helmet), (255, 120, 110), dx=4, dy=-1)
+    return c
+
+
+PAINTERS = {"sw_hero_luke": paint_luke, "sw_hero_chewbacca": paint_chewbacca,
+            "sw_unit_im_royal_guard": paint_royal_guard}
 
 
 def portrait_from_master(master: Image.Image) -> Image.Image:
