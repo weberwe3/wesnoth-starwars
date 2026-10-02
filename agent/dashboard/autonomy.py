@@ -1535,7 +1535,14 @@ Existing candidate diff excerpt (facts only; use it to select exact proof text):
         runtime = self.root / "agent" / "runtime"
         guidance = self._planning_guidance()
         inventory = self._planning_inventory(queue_exclude_id=queue_exclude_id)
+        historical_record = runtime / HISTORICAL_GAMEPLAY_VALIDATION_FILE
+        recorded_before = self._file_signature(historical_record)
         historical_repair = self._historical_gameplay_repair_proposal(inventory)
+        if historical_repair is None and self._file_signature(historical_record) != recorded_before:
+            # Validation just ran for a new main head. The inventory was built
+            # from the previous record, so repairs it has now made obsolete
+            # would still look resumable; rebuild it from the fresh record.
+            inventory = self._planning_inventory(queue_exclude_id=queue_exclude_id)
         if historical_repair is not None:
             self.queue.event(
                 "Historical gameplay validation selected before new work",
@@ -2016,6 +2023,14 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
             detail="Current main passed installed-game and historical-retention checks. The exact empty worktree is preserved; no candidate was published or marked PASS.",
         )
         return True
+
+    @staticmethod
+    def _file_signature(path: Path) -> tuple[int, int] | None:
+        try:
+            stat = path.stat()
+        except OSError:
+            return None
+        return stat.st_mtime_ns, stat.st_size
 
     def _historical_validation_passed(self, head: str) -> bool:
         path = self.root / "agent" / "runtime" / HISTORICAL_GAMEPLAY_VALIDATION_FILE

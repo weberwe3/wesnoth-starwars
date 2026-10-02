@@ -619,3 +619,16 @@ contract once the historical validation record is `passed` at the current
 `main` head. The worktree stays preserved for audit.
 **Prevention:** Resumable work must still have a target. When a gate that
 created repair work passes, retire the repair tickets it spawned.
+
+### 2026-10-02 — planning used a historical record from before it was refreshed
+
+**Symptom:** After #295, the first dispatch after `main` moved still resumed
+the obsolete historical-repair ticket.
+**Confirmed cause:** `_plan` builds the planning inventory and only then runs
+historical validation, which records `passed` for the new head. The inventory
+had already been computed from the previous record, so the repair still
+looked resumable.
+**Resolution:** When the validation rewrites its record during planning,
+`_plan` rebuilds the inventory before choosing work.
+**Prevention:** Derived planning state must be computed after every gate that
+can change the state it depends on.
