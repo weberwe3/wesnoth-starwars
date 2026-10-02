@@ -8,7 +8,7 @@
       "unit_id": "sw_hero_khabarakh",
       "unit_name": "sw hero khabarakh",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-khabarakh.md",
       "assets": [
@@ -84,7 +84,7 @@
       "unit_id": "sw_hero_cbaoth",
       "unit_name": "sw hero cbaoth",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-cbaoth.md",
       "assets": [
@@ -160,7 +160,7 @@
       "unit_id": "sw_hero_bel_iblis",
       "unit_name": "sw hero bel iblis",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-bel-iblis.md",
       "assets": [
@@ -236,7 +236,7 @@
       "unit_id": "sw_unit_bi_commando",
       "unit_name": "sw unit bi commando",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-bi-commando.md",
       "assets": [
@@ -312,7 +312,7 @@
       "unit_id": "sw_unit_im_clone_trooper",
       "unit_name": "sw unit im clone trooper",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-clone-trooper.md",
       "assets": [
@@ -388,7 +388,7 @@
       "unit_id": "sw_unit_im_decon_droid",
       "unit_name": "sw unit im decon droid",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-decon-droid.md",
       "assets": [
@@ -464,7 +464,7 @@
       "unit_id": "sw_unit_ob_dreadnaught",
       "unit_name": "sw unit ob dreadnaught",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-ob-dreadnaught.md",
       "assets": [
@@ -540,7 +540,7 @@
       "unit_id": "sw_unit_nr_boarding_shuttle",
       "unit_name": "sw unit nr boarding shuttle",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-boarding-shuttle.md",
       "assets": [
@@ -616,7 +616,7 @@
       "unit_id": "sw_unit_im_boarding_shuttle",
       "unit_name": "sw unit im boarding shuttle",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-boarding-shuttle.md",
       "assets": [
