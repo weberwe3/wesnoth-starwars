@@ -763,8 +763,10 @@ ICONS = {
     "war_club": "club",
 }
 # Luke's lightsaber is green (the blade he built himself). The novels do not
-# fix C'baoth's or the clone Luuke's colour, so they keep the classic Jedi blue.
-UNIT_ICONS = {("sw_hero_luke", "lightsaber"): "sw-lightsaber-green"}
+# fix C'baoth's colour, so his keeps the classic Jedi blue; the clone Luuke's
+# published art shows a green blade, and the icon matches the art.
+UNIT_ICONS = {("sw_hero_luke", "lightsaber"): "sw-lightsaber-green",
+              ("sw_hero_luuke", "lightsaber"): "sw-lightsaber-green"}
 
 
 def attack_wml(a: dict, unit_slug: str, unit_id: str = "") -> str:
