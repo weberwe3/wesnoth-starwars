@@ -39,6 +39,8 @@ def main() -> int:
         print(completed.stdout[-2000:], completed.stderr[-2000:], file=sys.stderr)
         return completed.returncode
     pot = out / f"{DOMAIN}.pot"
+    # wmlxgettext ends the file with a blank line, which the whitespace gate rejects.
+    pot.write_text(pot.read_text(encoding="utf-8").rstrip("\n") + "\n", encoding="utf-8")
     print(f"wrote {pot.relative_to(ROOT)}: {pot.read_text(encoding='utf-8').count('msgid ') - 1} strings")
     return 0
 
