@@ -677,3 +677,20 @@ direction now spells out lore-accurate anatomy. Both jobs are back to
 `pending_codex_imagegen` for regeneration.
 **Prevention:** Review a contact sheet of every published art batch, and spell
 out species anatomy in art direction rather than leaving it to inference.
+
+### 2026-10-02 — the ysalamiri frame badge vanished from carriers (#303)
+
+**Symptom:** In HTE 1, the owner saw the "carrying a ysalamiri frame" badge
+disappear from several carriers at once after some turns, with no combat,
+level-up, reload or delivery.
+**Confirmed cause (data side):** None in the game data. An engine probe showed
+the overlay stayed in `unit.overlays` through 14 turns, a level-up and a
+nearby spawn. Overlays are drawn in the unit-bar pass (`units/drawer.cpp`,
+with the health bars), which is skipped whenever a unit's animation has bars
+off. A visual capture was not possible headlessly, so the exact draw trigger
+is unconfirmed.
+**Resolution:** The badge is now an `image_mod` `BLIT` composited into the
+unit's own sprite in every frame. The engine probe shows it persists through
+turns and advancement, and the delivery `[remove_object]` still clears it.
+**Prevention:** Draw state indicators that must always be visible into the
+sprite (`image_mod`), not as `overlay`. Confirm in a GUI playtest.
