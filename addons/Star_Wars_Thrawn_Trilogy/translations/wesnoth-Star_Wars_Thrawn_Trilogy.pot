@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-02 21:47 UTC\n"
+"POT-Creation-Date: 2026-10-02 22:10 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -333,7 +333,7 @@ msgstr ""
 #. [message]: speaker=narrator
 #: scenarios/dark_force_rising/02_honoghr.cfg:154
 #: scenarios/dark_force_rising/02_honoghr.cfg:164
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:188
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:191
 msgid "Maitrakh of Clan Kihm'bar"
 msgstr ""
 
@@ -558,43 +558,48 @@ msgstr ""
 msgid "Death of Han or Lando"
 msgstr ""
 
+#. [note]
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:125
+msgid "Senator Bel Iblis's commandos arrive at the north edge on turn 4 and fight on your side."
+msgstr ""
+
 #. [message]: speaker=sw_hero_lando
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:133
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:136
 msgid "Stormtroopers at both ends of the street, Han. I think our informant sold us twice."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:137
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:140
 msgid "Then we go through the middle. The Falcon's at the north pad. Stay low."
 msgstr ""
 
 #. [unit]: id=sw_dfr04_irenez, type=sw_unit_bi_commando
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:147
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:150
 msgid "Captain Irenez"
 msgstr ""
 
 #. [message]: speaker=sw_dfr04_irenez
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:170
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:173
 msgid "Captain Solo, the Senator sends his regards. We'll hold the north street. Get to your ship."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:174
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:177
 msgid "Senator? Which senator?"
 msgstr ""
 
 #. [message]: speaker=sw_dfr04_irenez
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:178
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:181
 msgid "One you used to know. He'll explain, if you live long enough to meet him."
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:190
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:193
 msgid "Those commandos are signaling. They want us to follow them out-system."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:194
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:197
 msgid "Then we follow. Carefully."
 msgstr ""
 
@@ -941,28 +946,33 @@ msgstr ""
 msgid "Death of Luke, Han, Lando, or Chewbacca"
 msgstr ""
 
+#. [note]
+#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:125
+msgid "Clone trooper reinforcements board the Katana on turns 5 and 9."
+msgstr ""
+
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:133
+#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:136
 msgid "Imperials got here first. How many of them are there?"
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:137
+#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:140
 msgid "Han, I can barely feel them. It's like they're all the same person."
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:141
+#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:144
 msgid "Clones. That's how he's been filling all those new ships so fast. We need that bridge."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:168
+#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:171
 msgid "Bridge secured. Slaving the fleet controls to this console now."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:172
+#: scenarios/dark_force_rising/08_aboard_the_katana.cfg:175
 msgid "Good, because the scopes just lit up. Two Star Destroyers, coming in fast. Guess who."
 msgstr ""
 
@@ -1102,43 +1112,48 @@ msgstr ""
 msgid "Defeat Commander Sorrell"
 msgstr ""
 
+#. [note]
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:125
+msgid "A second Imperial shuttle lands east of the village on turn 4. On turn 6 the Noghri clans give their answer and join your side."
+msgstr ""
+
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:131
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:134
 msgid "The clans are still debating, my lady. They will not move until they have decided. We must hold the dukha until then."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:135
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:138
 msgid "Then we hold it. Chewie, the west door."
 msgstr ""
 
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:160
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:163
 msgid "A second shuttle, east of the village!"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:190
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:193
 msgid "The clans have spoken. We served the Empire for a generation because it told us we owed it our lives. It lied. The Lady Vader is under our protection."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:194
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:197
 msgid "Thank you. You don't owe me anything. But I'll be glad of the help."
 msgstr ""
 
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:219
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:222
 msgid "The Empire will learn of this. And every Noghri who guards the Grand Admiral will learn of it too."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:223
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:226
 msgid "Then he's about to discover what it's like to be watched by his own bodyguards."
 msgstr ""
 
 #. [event]
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:225
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:228
 msgid "The Noghri have broken with us? ... Interesting. Then it is time to finish this war quickly, before they learn how much they know."
 msgstr ""
 
@@ -2467,18 +2482,23 @@ msgstr ""
 msgid "Luke and Mara both reach the river crossing"
 msgstr ""
 
+#. [note]
+#: scenarios/the_last_command/04_landfall_on_wayland.cfg:120
+msgid "Garrison patrols arrive from the north and south edges on turns 5 and 9."
+msgstr ""
+
 #. [message]: speaker=sw_hero_mara
-#: scenarios/the_last_command/04_landfall_on_wayland.cfg:128
+#: scenarios/the_last_command/04_landfall_on_wayland.cfg:131
 msgid "Well, we're on Wayland. The mountain's east, past the river. The garrison will have seen us come down."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/the_last_command/04_landfall_on_wayland.cfg:132
+#: scenarios/the_last_command/04_landfall_on_wayland.cfg:135
 msgid "Then we don't wait for them. Mara, I can sense C'baoth from here. He knows we're coming."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/the_last_command/04_landfall_on_wayland.cfg:176
+#: scenarios/the_last_command/04_landfall_on_wayland.cfg:179
 msgid "Across. There are natives in these hills, and they don't like the garrison any more than we do."
 msgstr ""
 
@@ -2517,33 +2537,38 @@ msgstr ""
 msgid "Defeat Captain Brasck at the garrison outpost"
 msgstr ""
 
+#. [note]
+#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:108
+msgid "On turn 4 Wayland's natives, the Myneyrshi and the Psadans, join the fight against the garrison."
+msgstr ""
+
 #. [message]: speaker=sw_hero_mara
-#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:116
+#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:119
 msgid "The outpost is east. The villages around it pay the garrison in food and labor, or they burn."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:120
+#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:123
 msgid "Then we start there. The villagers are watching us. Let's give them something worth seeing."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:144
+#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:147
 msgid "Myneyrshi War Leader"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:145
+#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:148
 msgid "Outsiders who fight the mountain's soldiers. Strange. The Psadans have come too. Strange again. We will fight beside you, today."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:156
+#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:159
 msgid "The outpost is ours. Mara, I've reached Han. He's bringing Leia, Lando, Chewie, and a shipload of Noghri."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:160
+#: scenarios/the_last_command/05_the_natives_of_wayland.cfg:163
 msgid "Good. The natives know a way to the mountain's main gate. We'll need every one of them."
 msgstr ""
 
