@@ -156,6 +156,72 @@ class ArtImportProductionTests(unittest.TestCase):
             self.assertEqual(started, [True])
             self.assertEqual(controller.art_generation_status()["state"], "running")
 
+    def _art_controller(self, root: Path) -> AutonomyController:
+        runtime = root / "agent" / "runtime"
+        runtime.mkdir(parents=True)
+        return AutonomyController(
+            root, ControlStore(runtime / "control.json"), ApprovalQueue(root, runtime / "queue.json"),
+        )
+
+    def test_codex_art_generation_resumes_sets_already_in_the_working_tree(self) -> None:
+        jobs = [{"id": f"art-sw-unit-fixture-{index}", "unit_id": f"sw_unit_fixture_{index}",
+                 "state": "pending_codex_imagegen"} for index in range(3)]
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self._art_controller(Path(directory))
+            controller._write_art_generation_status(state="running", results=[
+                {"unit_id": "sw_unit_fixture_0", "state": "generated"},
+                {"unit_id": "sw_unit_fixture_1", "state": "failed"},
+            ])
+            with mock.patch("autonomy.validate_art_queue", return_value={"jobs": jobs}), \
+                    mock.patch("codex_art.art_python", return_value=Path("/bin/true")), \
+                    mock.patch("autonomy.threading.Thread") as thread:
+                controller.generate_art(None)
+            resumed = thread.call_args.kwargs["args"][1]
+            self.assertEqual([item["unit_id"] for item in resumed], ["sw_unit_fixture_0"])
+            self.assertEqual(controller.art_generation_status()["done"], 1)
+
+    def test_codex_art_generation_publishes_per_source_file_and_skips_resumed_sets(self) -> None:
+        jobs = [{"id": f"art-sw-unit-fixture-{index}", "unit_id": f"sw_unit_fixture_{index}",
+                 "state": "pending_codex_imagegen"} for index in range(4)]
+        sources = {"art-sw-unit-fixture-0": "a.cfg", "art-sw-unit-fixture-1": "b.cfg",
+                   "art-sw-unit-fixture-2": "a.cfg", "art-sw-unit-fixture-3": "b.cfg"}
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self._art_controller(Path(directory))
+            generated, published = [], []
+            with mock.patch("autonomy.art_import_contract",
+                            side_effect=lambda root, job_id: {"source_path": sources[job_id]}), \
+                    mock.patch("codex_art.generate_unit_art",
+                               side_effect=lambda root, job: generated.append(job["unit_id"]) or
+                               {"unit_id": job["unit_id"], "state": "generated"}), \
+                    mock.patch.object(controller, "_publish_generated_art",
+                                      side_effect=lambda job_id, source: published.append(source)):
+                controller._run_art_generation(jobs, [{"unit_id": "sw_unit_fixture_0", "state": "generated"}])
+            self.assertEqual(generated, ["sw_unit_fixture_2", "sw_unit_fixture_1", "sw_unit_fixture_3"])
+            self.assertEqual(published, ["a.cfg", "b.cfg"])
+            self.assertEqual(controller.art_generation_status()["state"], "complete")
+
+    def test_finished_art_batch_waits_for_an_active_ticket_instead_of_failing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            controller = self._art_controller(Path(directory))
+            attempts = []
+
+            def confirm(job_id: str) -> dict:
+                attempts.append(job_id)
+                if len(attempts) == 1:
+                    raise ControlError("Wait for the active governed operation to finish")
+                return {"pass": True}
+
+            with mock.patch.object(controller, "confirm_art_import", side_effect=confirm), \
+                    mock.patch.object(controller, "_pipeline_active", return_value=True), \
+                    mock.patch("autonomy.time.sleep"):
+                controller._publish_generated_art("art-sw-unit-fixture-0", "a.cfg")
+            self.assertEqual(len(attempts), 2)
+            with mock.patch.object(controller, "confirm_art_import",
+                                   side_effect=ControlError("Art set is not ready")), \
+                    mock.patch.object(controller, "_pipeline_active", return_value=False):
+                with self.assertRaises(ControlError):
+                    controller._publish_generated_art("art-sw-unit-fixture-0", "a.cfg")
+
     def test_pending_art_is_not_reported_as_a_publication_failure(self) -> None:
         source = (ROOT / "agent" / "dashboard" / "static" / "app.js").read_text(encoding="utf-8")
         self.assertIn("Awaiting all 13 original generated PNGs", source)

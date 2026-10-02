@@ -31,7 +31,7 @@ from game_validation_state import (
 )
 from gameplay_contracts import ContractStoreError, load_contracts, validate_historical_retention
 from scenario_launch_selftest import validate_post_publish_game
-from art_pipeline import public_art_queue, validate_art_queue
+from art_pipeline import art_import_contract, public_art_queue, validate_art_queue
 from art_import_production import ArtImportProduction, ArtProductionError, public_status
 import recovery_policy
 import ticket_runner
@@ -264,6 +264,12 @@ BACKLOG_SCHEMA = {
     },
 }
 
+
+
+# Codex art states whose files are already in the working tree awaiting import.
+RESUMABLE_ART_STATES = {"generated", "coded_fallback"}
+# How long a finished art batch waits for an active ticket before giving up.
+ART_IMPORT_WAIT_SECONDS = 3 * 3600
 
 class ControlError(RuntimeError):
     """A safe, user-displayable control-plane error."""
@@ -590,24 +596,42 @@ class AutonomyController:
                 codex_art.art_python()
             except codex_art.CodexArtError as exc:
                 raise ControlError(str(exc)) from exc
-            self._write_art_generation_status(state="running", total=len(jobs), done=0, results=[], error=None)
+            # Resume an interrupted run: sets it already generated are still in
+            # the working tree awaiting import, so they are not paid for twice.
+            previous = self.art_generation_status()
+            resumed = []
+            if previous.get("state") != "complete":
+                pending = {job.get("unit_id") for job in jobs}
+                resumed = [item for item in previous.get("results", [])
+                           if isinstance(item, dict) and item.get("unit_id") in pending
+                           and item.get("state") in RESUMABLE_ART_STATES]
+            self._write_art_generation_status(
+                state="running", total=len(jobs), done=len(resumed), results=resumed, error=None)
             self._art_generator = threading.Thread(
-                target=self._run_art_generation, args=(jobs,), name="codex-art-generation", daemon=True,
+                target=self._run_art_generation, args=(jobs, resumed),
+                name="codex-art-generation", daemon=True,
             )
             self._art_generator.start()
         self.queue.event("Codex art generation started", detail=f"{len(jobs)} unit art jobs queued.")
         return {"pass": True, "state": "running", "jobs": len(jobs)}
 
-    def _run_art_generation(self, jobs: list[dict]) -> None:
+    def _run_art_generation(self, jobs: list[dict], resumed: list[dict] | None = None) -> None:
         import codex_art
 
+        # The import batches complete sets per WML unit source file, so the run
+        # generates and publishes one source file at a time. Queue jobs do not
+        # carry the source path; the import contract does.
         groups: dict[str, list[dict]] = {}
         for job in jobs:
-            groups.setdefault(str(job.get("source_path")), []).append(job)
-        results: list[dict] = []
+            source = art_import_contract(self.root, str(job.get("id"))).get("source_path")
+            groups.setdefault(str(source or job.get("id")), []).append(job)
+        results: list[dict] = list(resumed or [])
+        finished = {item.get("unit_id") for item in results}
         try:
             for source, members in groups.items():
                 for job in members:
+                    if job.get("unit_id") in finished:
+                        continue
                     try:
                         outcome = codex_art.generate_unit_art(self.root, job)
                     except (codex_art.CodexArtError, OSError, ValueError) as exc:
@@ -620,17 +644,32 @@ class AutonomyController:
                         self._write_art_generation_status(state="quota_paused", error=outcome["reason"])
                         self.queue.event("Codex art generation paused", level="warning", detail=outcome["reason"])
                         return
-                # Publish this source file's finished sets as one governed batch.
-                published = self.confirm_art_import(members[0]["id"])
-                if not published.get("pass"):
-                    raise ControlError(published.get("message") or f"Art import for {source} was not accepted")
-                while self._art_importer is not None and self._art_importer.is_alive():
-                    time.sleep(5)
+                self._publish_generated_art(members[0]["id"], source)
             self._write_art_generation_status(state="complete")
             self.queue.event("Codex art generation finished", detail=f"{len(results)} unit art sets processed.")
         except (codex_art.CodexArtError, ControlError, QueueError, OSError, ValueError) as exc:
             self._write_art_generation_status(state="failed", error=str(exc)[:600])
             self.queue.event("Codex art generation stopped safely", level="error", detail=str(exc)[:1200])
+
+    def _publish_generated_art(self, job_id: str, source: str) -> None:
+        """Publish one source file's sets once no other governed operation is active.
+
+        A ticket worker or publication may be running when a batch finishes;
+        the batch waits for it instead of failing the whole run.
+        """
+        deadline = time.monotonic() + ART_IMPORT_WAIT_SECONDS
+        while True:
+            try:
+                published = self.confirm_art_import(job_id)
+                break
+            except ControlError:
+                if not self._pipeline_active() or time.monotonic() > deadline:
+                    raise
+            time.sleep(15)
+        if not published.get("pass"):
+            raise ControlError(published.get("message") or f"Art import for {source} was not accepted")
+        while self._art_importer is not None and self._art_importer.is_alive():
+            time.sleep(5)
 
     def _retry_published_art_validation(self, job_id: str) -> None:
         try:
