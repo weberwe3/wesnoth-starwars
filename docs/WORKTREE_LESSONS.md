@@ -694,3 +694,46 @@ unit's own sprite in every frame. The engine probe shows it persists through
 turns and advancement, and the delivery `[remove_object]` still clears it.
 **Prevention:** Draw state indicators that must always be visible into the
 sprite (`image_mod`), not as `overlay`. Confirm in a GUI playtest.
+
+### 2026-10-02 — Force Speed's extra moves vanished when an indicator changed
+
+**Symptom:** In the systems test, a unit given +2 moves by Force Speed lost
+them as soon as its Force Point indicator updated.
+**Confirmed cause:** `unit:remove_modifications` rebuilds the unit from its
+type and modifications, which resets current movement. The indicator code
+removed the old overlay object before adding the new one.
+**Resolution:** `sw_core.set_overlay` only adds `apply_to=overlay` objects
+(`remove=` old, `add=` new), as core `[unit_overlay]` does. The objects are
+compacted at `prestart`, while units are at full moves.
+**Prevention:** Never remove modifications mid-turn from a unit that may hold
+transient state (moves, attacks, status). Remove only at mission start or
+turn refresh.
+
+### 2026-10-02 — Plugin test steps stopped after combat animations
+
+**Symptom:** Headless plugin tests silently skipped every check after the
+first `[harm_unit]` or attack animation in one `wesnoth.plugin.execute` call.
+**Confirmed cause:** Animated actions end the current plugin execute slice.
+**Resolution:** `systems_test_plugin.lua` runs named steps, one execute call
+each, and checks results in the next step.
+**Prevention:** Split engine tests at every animated action. Assert that the
+expected number of checks ran, not only that none failed.
+
+### 2026-10-02 — Save/load test could not find or load its save
+
+**Symptom:** The load phase found no save and `--load` failed.
+**Confirmed cause:** Wesnoth 1.19 writes saves to `<userdata>/sync/saves/`,
+and `--load` takes a name relative to that folder, not a path.
+**Resolution:** The runner finds the save with `rglob` and passes its bare name.
+**Prevention:** Locate saves by searching the userdata tree, and pass only
+the file name to `--load`.
+
+### 2026-10-02 — The ysalamiri null field was empty after loading a save
+
+**Symptom:** After a reload, Force users inside a field could use powers.
+**Confirmed cause:** The field lookup was a Lua table filled during play.
+Lua state is not saved; only WML variables are.
+**Resolution:** The cache rebuilds lazily from the saved WML array
+`sw_ysalamiri_zone`.
+**Prevention:** Treat Lua tables as caches derived from WML or unit
+variables, and cover every system with a save/load phase in its engine test.

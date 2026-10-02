@@ -255,6 +255,76 @@ def tactical_genius() -> str:
     )
 
 
+# --- Force and overwatch configuration (lua/sw_force.lua, lua/sw_overwatch.lua)
+# Force profiles: Force Points, regeneration per turn and known powers.
+# Lore: Luke is a trained Jedi Knight; Mara (the Emperor's Hand) has Force
+# skills but fights with a vibroblade here; Leia is still in training;
+# C'baoth and his clone Luuke draw on the dark side.
+FORCE_PROFILES = {
+    "sw_hero_luke": (8, 2, "push,pull,speed,sense,mind_trick,deflection"),
+    "sw_hero_xwing_luke": (6, 2, "sense"),
+    "sw_hero_mara": (5, 1, "speed,sense,push"),
+    "sw_hero_leia": (4, 1, "sense,push"),
+    "sw_hero_cbaoth": (10, 3, "push,pull,choke,sense,mind_trick,deflection"),
+    "sw_hero_luuke": (6, 2, "push,choke,speed,deflection"),
+}
+POWER_NAMES = {
+    "push": "Force Push", "pull": "Force Pull", "speed": "Force Speed", "sense": "Force Sense",
+    "mind_trick": "Mind Trick", "choke": "Force Choke", "deflection": "Blaster Deflection",
+}
+# Overwatch by weapon, in priority order: (range in hexes, reactions per
+# turn, accuracy modifier). Torpedoes, bombs, ion cannons and Force
+# lightning are not reaction weapons.
+OVERWATCH_WEAPONS = {
+    "eweb_repeater": (3, 2, 0), "twin_blaster_cannon": (2, 2, -10), "turbolasers": (3, 2, -20),
+    "point_defense": (1, 2, 0), "blaster_rifle": (2, 1, -10), "sw_blaster_rifle": (2, 1, -10),
+    "blaster_carbine": (2, 1, -10), "bike_blaster": (2, 1, -10), "laser_cannons": (2, 1, -10),
+    "bowcaster": (2, 1, -10), "heavy_blaster_pistol": (1, 1, -10), "blaster_pistol": (1, 1, -10),
+    "hold_out_blaster": (1, 1, -10), "stun_blaster": (1, 1, -10), "suppressed_blaster": (2, 1, -10),
+}
+
+
+def force_ability(unit_id: str) -> str | None:
+    profile = FORCE_PROFILES.get(unit_id)
+    if not profile:
+        return None
+    fp_max, regen, powers = profile
+    names = ", ".join(POWER_NAMES[p] for p in powers.split(","))
+    return (
+        "[dummy]\n"
+        "    id=sw_ability_force\n"
+        f"    fp_max={fp_max}\n"
+        f"    fp_regen={regen}\n"
+        f"    powers={powers}\n"
+        f"    name= _ \"the Force\"\n"
+        f"    description= _ \"Force Points: {fp_max}, regaining {regen} each turn. Powers: {names}. "
+        "Use them from the right-click menu (The Force…). Inside a ysalamiri field the Force is blocked: "
+        "no powers, no deflection, no regeneration.\"\n"
+        "[/dummy]"
+    )
+
+
+def overwatch_ability(attacks: list[dict]) -> str | None:
+    names = [a["name"] for a in attacks if a["range"] == "ranged"]
+    for weapon, (rng, reactions, accuracy) in OVERWATCH_WEAPONS.items():
+        if weapon in names:
+            return (
+                "[dummy]\n"
+                "    id=sw_ability_overwatch\n"
+                f"    weapons={weapon}\n"
+                f"    range={rng}\n"
+                f"    reactions={reactions}\n"
+                f"    accuracy={accuracy}\n"
+                "    damage=100\n"
+                "    name= _ \"overwatch\"\n"
+                f"    description= _ \"Can hold overwatch (right-click menu), committing this turn's attack. Until its next "
+                f"turn, it fires {reactions} reaction volley(s) at enemies that move within {rng} hex(es) in sight. "
+                "Hidden units cannot be targeted; a moving unit that is fired on stops but keeps its remaining moves.\"\n"
+                "[/dummy]"
+            )
+    return None
+
+
 ABILITY_BUILDERS = {
     "leadership": lambda: "{ABILITY_LEADERSHIP}",
     "heals4": lambda: "{ABILITY_HEALS}",
@@ -944,10 +1014,13 @@ def unit_wml(u: dict) -> str:
         lines.append("    # Named character: scenarios place the single instance and keep")
         lines.append("    # it out of recruit lists.")
         lines.append("    do_not_list=yes")
-    if u["abilities"]:
+    system_abilities = [x for x in (force_ability(u["id"]), overwatch_ability(u["attacks"])) if x]
+    if u["abilities"] or system_abilities:
         lines.append("    [abilities]")
         for ab in u["abilities"]:
             lines.append(indent(ABILITY_BUILDERS[ab](), 8))
+        for block in system_abilities:
+            lines.append(indent(block, 8))
         lines.append("    [/abilities]")
     for a in u["attacks"]:
         lines.append(indent(attack_wml(a, s, u["id"]), 4))
