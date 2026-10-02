@@ -26,14 +26,23 @@ difficulty.
 - Noghri commandos hide in forest and at night; Wookiee lookouts reveal them.
 - Named heroes carry their experience between missions; who is present
   depends on the story.
+- Blaster bolts show who is firing: red for the Imperial Remnant, blue or
+  green for the New Republic and its allies, orange for independent
+  smugglers. Lore colours win where they are fixed: TIE fighters and Star
+  Destroyers fire green, X-wings red.
+- Battlefields drawn for the setting: durasteel decks and bulkheads,
+  duracrete command bunkers, shuttle landing pads, and duracrete roads.
+- Original synthesized weapon sounds and original music for every mission.
+- A **Field Manual** in the right-click menu of every mission explains the
+  Force and ysalamiri, blaster colours, space battles, bases, heroes, and
+  stealth.
 
 ## Originality
 
-All code, maps, story text, dialogue, and art in this add-on were made for
-it. Names and broad story concepts come from the Legends continuity; no
-prose, film or game dialogue, copyrighted art, music, or game assets are
-copied. Some unit art is still simple code-drawn placeholder art while
-painted art is produced.
+All code, maps, story text, dialogue, art, sound effects, and music in this
+add-on were made for it. The sounds and music are synthesized from code. Names
+and broad story concepts come from the Legends continuity; no prose, film or
+game dialogue, copyrighted art, music, sound, or game assets are copied.
 
 ## Credits and license
 
