@@ -103,20 +103,42 @@ class CodexArtTests(unittest.TestCase):
         self.assertIn(b"sprite..", (self.workspace / "sprite.png").read_bytes())
         self.assertIn(b"portrait", (self.workspace / "portrait.png").read_bytes())
 
-    def test_film_characters_get_sprite_framed_portraits(self) -> None:
+    def test_every_speaking_character_gets_a_dialogue_portrait(self) -> None:
         job = {"id": "art-sw-hero-han", "unit_id": "sw_hero_han", "unit_name": "Smuggler General"}
         calls = []
 
         def runner(command, **kwargs):
+            kind = "sprite" if "sprite.png" in kwargs["input"] else "portrait"
             calls.append(kwargs["input"])
-            (self.workspace / "sprite.png").write_bytes(PNG)
+            (self.workspace / f"{kind}.png").write_bytes(PNG)
             return subprocess.CompletedProcess(command, 0, "", "")
 
         with mock.patch.object(codex_art, "_run_tool", return_value=json.dumps({"written": []})):
             codex_art.generate_unit_art(ROOT, job, runner=runner)
-        # No close-up portrait is ever requested for a film-portrayed character.
-        self.assertEqual(len(calls), 1)
-        self.assertEqual((self.workspace / "portrait.png").read_bytes(), PNG)
+        # Film-portrayed heroes get a real head-and-shoulders portrait; the
+        # art rules keep the face original and unlike any actor.
+        self.assertEqual(len(calls), 2)
+        self.assertIn("head-and-shoulders portrait", calls[1])
+        self.assertIn("must not resemble any real actor", calls[1])
+
+    def test_pilot_heroes_get_a_pilot_portrait_not_the_craft(self) -> None:
+        direction = codex_art.load_direction(ROOT)
+        prompt = codex_art.build_prompt(direction, "sw_hero_wedge", "Wedge Antilles", "portrait")
+        self.assertIn("flight suit", prompt)
+        self.assertNotIn("four-winged starfighter", prompt)
+        sprite = codex_art.build_prompt(direction, "sw_hero_wedge", "Wedge Antilles", "sprite")
+        self.assertIn("four-winged starfighter", sprite)
+
+    def test_portrait_only_generation_fits_the_portrait_and_keeps_sprites(self) -> None:
+        def runner(command, **kwargs):
+            (self.workspace / "portrait.png").write_bytes(PNG)
+            return subprocess.CompletedProcess(command, 0, "portrait.png", "")
+
+        with mock.patch.object(codex_art, "_run_tool", return_value="{}") as tool:
+            result = codex_art.generate_portrait(ROOT, "sw_hero_pellaeon", "Captain Pellaeon", runner=runner)
+        self.assertEqual(result["state"], "generated")
+        self.assertEqual(tool.call_args.args[1], codex_art.PORTRAIT_TOOL)
+        self.assertIn("sw-hero-pellaeon", tool.call_args.args)
 
     def test_old_sessions_are_never_harvested(self) -> None:
         home = Path(self.temp.name) / "codex-home"
