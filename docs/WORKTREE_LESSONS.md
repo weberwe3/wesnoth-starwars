@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-10-02 — art that replaced already-wired images failed acceptance
+
+- **Symptom:** The governed art import for nine Campaign II units failed "Deterministic art-import validation".
+- **Cause:** Its acceptance contract required each unit's `image=` wiring to be new relative to base. Generated unit files already wire all 13 frames (interim code-drawn art), so the claim "was already satisfied by the ticket base".
+- **Resolution:** A new `asset_changed` acceptance claim proves that an add-on PNG's bytes differ from base. The art import uses it whenever the wiring already exists, and `source_text` otherwise.
+- **Prevention:** Regression tests cover the replaced image and reject `asset_changed` for non-PNG paths. Before publishing an art batch, rerun its validation on the preserved candidate.
+
 ### 2026-10-02 — a gap in side numbers silently dropped a scenario's side
 
 - **Symptom:** Campaign II mission 7 loaded without its derelict fleet; the engine logged "found invalid side=4 in definition of side number 3" and boarding never triggered.
