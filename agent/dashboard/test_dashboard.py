@@ -1898,6 +1898,15 @@ class CoordinationControlTests(unittest.TestCase):
             record.write_text(json.dumps({"state": "pending_repair", "main_head": "a" * 40}), encoding="utf-8")
             self.assertFalse(controller._historical_validation_passed("a" * 40))
 
+    def test_file_signature_tracks_rewrites(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "record.json"
+            self.assertIsNone(AutonomyController._file_signature(path))
+            path.write_text("{}", encoding="utf-8")
+            first = AutonomyController._file_signature(path)
+            path.write_text('{"state": "passed"}', encoding="utf-8")
+            self.assertNotEqual(AutonomyController._file_signature(path), first)
+
     def test_resume_restores_original_ticket_contract(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
