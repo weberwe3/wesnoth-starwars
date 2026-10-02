@@ -649,12 +649,12 @@ def animations(u: dict) -> str:
         + indent(frame(f"{base}/melee-1.png", 150), 4) + "\n"
         + indent(frame(f"{base}/melee-2.png", 200), 4) + "\n[/attack_anim]"
     )
-    blocks.append(
-        "[attack_anim]\n    [filter_attack]\n        range=ranged\n    [/filter_attack]\n"
-        "    missile_start=-150\n"
-        + indent(frame(f"{base}/ranged-1.png", 150), 4) + "\n"
-        + indent(frame(f"{base}/ranged-2.png", 150), 4) + "\n[/attack_anim]"
-    )
+    ranged = [a for a in u["attacks"] if a["range"] == "ranged"]
+    # One animation per ranged attack, each firing its own projectile. A unit
+    # without a ranged attack keeps one plain ranged block so its art set is
+    # still fully referenced.
+    for a in ranged or [None]:
+        blocks.append(ranged_anim(base, u["id"], a))
     del has_melee, has_ranged
     blocks.append("[defend]\n" + indent(frame(f"{base}/defend.png", 250), 4) + "\n[/defend]")
     blocks.append(
@@ -662,6 +662,85 @@ def animations(u: dict) -> str:
         + indent(frame(f"{base}/death-2.png", 400), 4) + "\n[/death]"
     )
     return "\n".join(blocks)
+
+
+# --- projectiles ---------------------------------------------------------------
+# Owner rule (2026-10-02): Imperial or evil units fire red, New Republic units
+# green or blue, neutral units orange or green -- unless film or Legends lore
+# fixes the colour. Lore overrides used here:
+#   * TIE starfighters and Imperial Star Destroyer turbolasers fire green.
+#   * X-wing, Y-wing and A-wing laser cannons fire red.
+#   * Han Solo's heavy blaster pistol (DL-44) fires red.
+#   * Luke's deflected bolts are the Imperial red bolts he turns back.
+#   * Stun settings fire blue rings; ion cannons a pale blue discharge.
+IMPERIAL_HEROES = {"sw_hero_thrawn", "sw_hero_pellaeon", "sw_hero_cbaoth", "sw_hero_luuke"}
+NEUTRAL_HEROES = {"sw_hero_karrde", "sw_hero_mara"}
+IMPERIAL_OBJECTIVES = {"sw_unit_ob_shipyard_platform", "sw_unit_ob_dreadnaught"}
+NO_PROJECTILE = {"sprayer", "jamming_equipment"}
+HEAVY_WEAPONS = {"turbolasers", "turbo_laser", "twin_blaster_cannon", "blaster_cannon", "eweb_repeater",
+                 "heavy_laser_cannons", "heavy_blaster", "point_defense", "dual_laser_cannons"}
+LORE_COLORS = {
+    ("sw_hero_han", "heavy_blaster_pistol"): "red",
+    ("sw_hero_luke", "deflection"): "red",
+    ("sw_unit_im_star_destroyer", "turbolasers"): "green",
+}
+REPUBLIC_STARFIGHTERS = {"sw_unit_nr_xwing", "sw_unit_nr_ywing", "sw_unit_nr_awing", "sw_hero_xwing_luke",
+                         "sw_hero_wedge"}
+
+
+def faction_color(unit_id: str) -> str:
+    if (unit_id.startswith(("sw_unit_im_", "sw_unit_irm_")) or unit_id in IMPERIAL_HEROES
+            or unit_id in IMPERIAL_OBJECTIVES):
+        return "red"
+    if unit_id.startswith("sw_unit_sm_") or unit_id in NEUTRAL_HEROES:
+        return "orange"
+    if unit_id.startswith("sw_unit_wk_") or unit_id == "sw_hero_chewbacca":
+        return "green"  # Wookiee bowcasters: allied to the New Republic
+    return "blue"
+
+
+def projectile(unit_id: str, attack_name: str) -> tuple[str, str | None] | None:
+    """(image, diagonal image) fired by one ranged attack, or None."""
+    if attack_name in NO_PROJECTILE:
+        return None
+    if attack_name == "bow":
+        return "projectiles/missile-n.png", "projectiles/missile-ne.png"
+    if attack_name.startswith("ion_"):
+        return "projectiles/sw-ion-n.png", "projectiles/sw-ion-ne.png"
+    if attack_name.startswith("proton_torpedo"):
+        return "projectiles/sw-torpedo.png", None
+    if attack_name.startswith("concussion_"):
+        return "projectiles/sw-bomb-n.png", "projectiles/sw-bomb-ne.png"
+    if attack_name == "force_lightning":
+        return "projectiles/sw-force-lightning-n.png", "projectiles/sw-force-lightning-ne.png"
+    if attack_name == "stun_blaster":
+        return "projectiles/sw-stun-n.png", "projectiles/sw-stun-ne.png"
+    color = LORE_COLORS.get((unit_id, attack_name))
+    if color is None and attack_name.endswith("laser_cannons"):
+        if unit_id.startswith("sw_unit_im_tie_"):
+            color = "green"
+        elif unit_id in REPUBLIC_STARFIGHTERS:
+            color = "red"
+    color = color or faction_color(unit_id)
+    kind = "sw-heavy-bolt" if attack_name in HEAVY_WEAPONS else "sw-bolt"
+    return f"projectiles/{kind}-{color}-n.png", f"projectiles/{kind}-{color}-ne.png"
+
+
+def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
+    """Aim (ranged-1), then fire (ranged-2) as the projectile leaves; it lands at time 0."""
+    filter_lines = "        range=ranged\n" if attack is None else f"        name={attack['name']}\n"
+    lines = ["[attack_anim]", "    [filter_attack]", filter_lines.rstrip("\n"), "    [/filter_attack]",
+             "    start_time=-300"]
+    missile = projectile(unit_id, attack["name"]) if attack else None
+    if missile:
+        image, diagonal = missile
+        lines += ["    missile_start_time=-150", "    [missile_frame]", "        duration=150",
+                  f"        image={image}"]
+        if diagonal:
+            lines.append(f"        image_diagonal={diagonal}")
+        lines.append("    [/missile_frame]")
+    return ("\n".join(lines) + "\n" + indent(frame(f"{base}/ranged-1.png", 150), 4) + "\n"
+            + indent(frame(f"{base}/ranged-2.png", 150), 4) + "\n[/attack_anim]")
 
 
 # Mainline attack icons until original icons are produced.
