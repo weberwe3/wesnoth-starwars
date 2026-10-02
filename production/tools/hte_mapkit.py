@@ -59,6 +59,20 @@ def neighbors(x: int, y: int) -> list[tuple[int, int]]:
     return [from_cube(q + dq, r + dr) for dq, dr in ((1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1))]
 
 
+# Generators place mainline codes for their meaning (keep, castle, wall,
+# floor); the written maps use the add-on's lore terrains, which alias the same
+# mainline types (utils/hte_terrain.cfg), so movement and defense are unchanged.
+LORE_RESKIN = {
+    "Isr": "Qid", "Xos": "Qib", "Urc": "Qit",
+    "Kh": "Qkb", "Ch": "Qcb", "Ke": "Qkp", "Ce": "Qcp",
+}
+
+
+def reskin(code: str) -> str:
+    base, sep, overlay = code.partition("^")
+    return LORE_RESKIN.get(base, base) + sep + overlay
+
+
 class HexMap:
     def __init__(self, width: int, height: int, fill: str, seed: int = 1):
         self.w, self.h = width, height
@@ -112,12 +126,13 @@ class HexMap:
         self.starts[side] = (x, y)
 
     def tokens(self) -> list[list[str]]:
+        """Map rows as written: semantic codes reskinned to the add-on's lore terrains."""
         rows = []
         for y in range(0, self.h + 2):
             row = []
             for x in range(0, self.w + 2):
                 cx, cy = min(max(x, 1), self.w), min(max(y, 1), self.h)
-                code = self.cells[(cx, cy)]
+                code = reskin(self.cells[(cx, cy)])
                 if (x, y) == (cx, cy):
                     for side, pos in self.starts.items():
                         if pos == (x, y):
@@ -144,7 +159,8 @@ class HexMap:
 
 PREVIEW_COLORS = [
     ("Qsp", (8, 10, 22)), ("Qsa", (95, 85, 70)), ("Qsd", (110, 115, 125)), ("Qsk", (170, 140, 50)),
-    ("Qsc", (140, 145, 160)), ("^Fet", (20, 70, 30)), ("^Ftr", (30, 90, 40)), ("^F", (45, 110, 50)),
+    ("Qsc", (140, 145, 160)), ("Qid", (125, 125, 130)), ("Qib", (60, 60, 60)), ("Qit", (40, 38, 44)),
+    ("Qkb", (200, 190, 150)), ("Qcb", (170, 160, 130)), ("Qkp", (200, 190, 150)), ("Qcp", (170, 160, 130)), ("^Fet", (20, 70, 30)), ("^Ftr", (30, 90, 40)), ("^F", (45, 110, 50)),
     ("^V", (200, 60, 60)), ("^E", None), ("^Dr", (120, 110, 100)), ("K", (220, 200, 80)), ("C", (190, 170, 90)),
     ("Xos", (60, 60, 60)), ("Xu", (40, 35, 30)), ("Mm^Xm", (70, 60, 55)), ("Mm", (130, 115, 100)),
     ("Hh", (150, 140, 90)), ("Hhd", (170, 150, 100)), ("Hd", (210, 190, 120)), ("Ww", (70, 120, 190)),
