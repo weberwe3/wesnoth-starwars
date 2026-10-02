@@ -1604,7 +1604,7 @@
       "unit_id": "sw_unit_im_stormtrooper",
       "unit_name": "sw unit im stormtrooper",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-stormtrooper.md",
       "assets": [
@@ -1680,7 +1680,7 @@
       "unit_id": "sw_unit_im_stormtrooper_sergeant",
       "unit_name": "sw unit im stormtrooper sergeant",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-stormtrooper-sergeant.md",
       "assets": [
@@ -1756,7 +1756,7 @@
       "unit_id": "sw_unit_im_scout_trooper",
       "unit_name": "sw unit im scout trooper",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-scout-trooper.md",
       "assets": [
@@ -1832,7 +1832,7 @@
       "unit_id": "sw_unit_im_officer",
       "unit_name": "sw unit im officer",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-officer.md",
       "assets": [
@@ -1908,7 +1908,7 @@
       "unit_id": "sw_unit_im_at_st",
       "unit_name": "sw unit im at st",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-at-st.md",
       "assets": [
@@ -1984,7 +1984,7 @@
       "unit_id": "sw_unit_im_noghri",
       "unit_name": "sw unit im noghri",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-noghri.md",
       "assets": [
