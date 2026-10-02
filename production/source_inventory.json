@@ -4428,7 +4428,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-pellaeon.png",
-      "sha256": "1d665af3147b9e9d00680b7c76a6ebd4d945b7a5a96f9707245cee8295647975"
+      "sha256": "a818a00d606609ec8576e2bbfc7582d8670e4c954ba27de14185d9efcf1dec42"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-thrawn.png",
@@ -4908,51 +4908,51 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/death-1.png",
-      "sha256": "b330d96836a77b3403507496edfe6bd22f48485e67c772e2ea3368261ad3cc3c"
+      "sha256": "a4cb32248a4ff28269361602319002d457243a8485479553e2ce59a1f61aad22"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/death-2.png",
-      "sha256": "088c0a48f6d7aacccfaea2cdeecbcf557d6ad0da2497e3e6b7fa73fa6a1849bf"
+      "sha256": "911db58f693481dfd5430524f8b5d22300064a35985287578cb5b3eff101418d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/defend.png",
-      "sha256": "8cd4ee4e0d1a2a36f2739cb68e841039878b9d3a0d7ddac33706a56416bf5e7f"
+      "sha256": "acaf5fde39b4a6f014741b48eadedbaa049f0ea450298db2f586bfa9b9374331"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/idle-1.png",
-      "sha256": "d137c5dcecfde71377d0f4a0a880d0ed5e609a772429bc121e692f7fd4be3bae"
+      "sha256": "34293256c62f198c2d1fa49624d942ae04f084fc32ccdcdd37e2873fdcc7e241"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/idle-2.png",
-      "sha256": "5627d2e10883ac9790dcddeac8205c4433a815ca63c96ae809cb0c6400510a0c"
+      "sha256": "1978585531a4877d07e28978af56501f9929fbf3b64c6c8d7fe1e957b14cb07c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/melee-1.png",
-      "sha256": "21bda8eb7e4da98fb774911e9b62c4c039d8408f0b8c4d6bcdcd1a49a847deb2"
+      "sha256": "835f6fde91549e055f6e64c900bf5ad97026596c161ef65387bd6380f7cf2f45"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/melee-2.png",
-      "sha256": "f6c1ebc03867fca3e57406f358e75da12020e6f32c4671c787df7187c84b5039"
+      "sha256": "ad52d44d5b2aca859548744442a7cf62e5c5eba6ca51ce0e7b4a6e4720a1fe5b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/move-1.png",
-      "sha256": "49df3176d6b7e9919e13c1aaf0150a79806c3c1f8d7ff7680277f9cf880317ef"
+      "sha256": "d4ab44a6f472079877224e8d28312547d3af12da43bc1c2862b369d0974c016f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/move-2.png",
-      "sha256": "7eba6ef131653a873531bcc2bb7e6997e04f5a34811108b06064798069d02c81"
+      "sha256": "5a59a6bb02c63d8c57601b6e7e9fc178b43278405d5cb319c3e1d8a3a64746b1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/ranged-1.png",
-      "sha256": "aecb3a79b64c571d20ef7e33b6c41e23abbe9d022ea68e26e62fc233e5edb276"
+      "sha256": "8a8ecbea6162d2a987e16ed6ec8e5238c412a77cde06ca5652315cdde48eb282"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/ranged-2.png",
-      "sha256": "8d67e631862fde708d90b163afa7fa4b4fda12dfd8c6163be227d9b370b8e194"
+      "sha256": "cbad04ae12e7dd2ba4022d02c12d490901a99482349c7e6952e7b1c294aff91f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-pellaeon/standing.png",
-      "sha256": "2ed03a50f46f7fe92a1b43733c073e4f769ee0c5cd3f65fcb22143c28601e115"
+      "sha256": "8a8ecbea6162d2a987e16ed6ec8e5238c412a77cde06ca5652315cdde48eb282"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/death-1.png",

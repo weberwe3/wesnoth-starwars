@@ -37,10 +37,11 @@ class CodexArtTests(unittest.TestCase):
 
     def test_prompt_uses_art_direction_and_excludes_artist_names(self) -> None:
         direction = codex_art.load_direction(ROOT)
-        prompt = codex_art.build_prompt(direction, "sw_hero_thrawn", "Grand Admiral")
+        prompt = codex_art.build_prompt(direction, "sw_hero_thrawn", "Grand Admiral", "sprite")
         self.assertIn("blue skin", prompt)
         self.assertIn("No text", prompt)
-        self.assertIn("same design", prompt)
+        self.assertIn("exactly ONE", prompt)
+        self.assertIn("sprite.png", prompt)
         for name in ("Dorman", "McQuarrie", "Alex Ross", "Granov"):
             self.assertNotIn(name, prompt)
 
@@ -54,18 +55,78 @@ class CodexArtTests(unittest.TestCase):
         self.assertEqual(sorted(units - set(direction["units"])), [])
 
     def test_generated_images_are_derived_into_the_state_set(self) -> None:
+        calls = []
+
         def runner(command, **kwargs):
             self.assertEqual(command[-1], "-")
-            self.assertIn("sprite.png", kwargs["input"])
-            (self.workspace / "sprite.png").write_bytes(PNG)
-            (self.workspace / "portrait.png").write_bytes(PNG)
-            return subprocess.CompletedProcess(command, 0, "sprite.png\nportrait.png\n", "")
+            kind = "sprite" if "sprite.png" in kwargs["input"] else "portrait"
+            calls.append(kind)
+            (self.workspace / f"{kind}.png").write_bytes(PNG + kind.encode())
+            return subprocess.CompletedProcess(command, 0, f"{kind}.png\n", "")
 
         with mock.patch.object(codex_art, "_run_tool", return_value=json.dumps({"written": ["a"] * 13})) as tool:
             result = codex_art.generate_unit_art(ROOT, self.job, runner=runner)
+        self.assertEqual(calls, ["sprite", "portrait"])
         self.assertEqual(result["state"], "generated")
         self.assertEqual(result["written"], 13)
         self.assertEqual(tool.call_args.args[1], codex_art.DERIVE_TOOL)
+
+    def test_vehicles_need_only_one_image(self) -> None:
+        job = {"id": "art-sw-unit-im-tie-fighter", "unit_id": "sw_unit_im_tie_fighter", "unit_name": "TIE Fighter"}
+        calls = []
+
+        def runner(command, **kwargs):
+            calls.append(kwargs["input"])
+            (self.workspace / "sprite.png").write_bytes(PNG)
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        with mock.patch.object(codex_art, "_run_tool", return_value=json.dumps({"written": []})):
+            result = codex_art.generate_unit_art(ROOT, job, runner=runner)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(result["state"], "generated")
+
+    def test_images_left_in_the_codex_session_are_harvested(self) -> None:
+        home = Path(self.temp.name) / "codex-home"
+        session = home / "generated_images" / "session-1"
+        session.mkdir(parents=True)
+        made = iter([PNG + b"sprite", PNG + b"portrait"])
+
+        def runner(command, **kwargs):
+            (session / f"exec-{len(list(session.iterdir()))}.png").write_bytes(next(made))
+            return subprocess.CompletedProcess(command, 0, "done", "")
+
+        with mock.patch.object(codex_art.ticket_runner, "require_codex_chatgpt_quota",
+                               return_value={"CODEX_HOME": str(home)}), \
+                mock.patch.object(codex_art, "_run_tool", return_value=json.dumps({"written": ["a"] * 13})):
+            result = codex_art.generate_unit_art(ROOT, self.job, runner=runner)
+        self.assertEqual(result["state"], "generated")
+        self.assertEqual((self.workspace / "sprite.png").read_bytes(), PNG + b"sprite")
+        self.assertEqual((self.workspace / "portrait.png").read_bytes(), PNG + b"portrait")
+
+    def test_film_characters_get_sprite_framed_portraits(self) -> None:
+        job = {"id": "art-sw-hero-han", "unit_id": "sw_hero_han", "unit_name": "Smuggler General"}
+        calls = []
+
+        def runner(command, **kwargs):
+            calls.append(kwargs["input"])
+            (self.workspace / "sprite.png").write_bytes(PNG)
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        with mock.patch.object(codex_art, "_run_tool", return_value=json.dumps({"written": []})):
+            codex_art.generate_unit_art(ROOT, job, runner=runner)
+        # No close-up portrait is ever requested for a film-portrayed character.
+        self.assertEqual(len(calls), 1)
+        self.assertEqual((self.workspace / "portrait.png").read_bytes(), PNG)
+
+    def test_old_sessions_are_never_harvested(self) -> None:
+        home = Path(self.temp.name) / "codex-home"
+        old = home / "generated_images" / "old"
+        old.mkdir(parents=True)
+        (old / "x.png").write_bytes(PNG)
+        import os
+        os.utime(old / "x.png", (1000, 1000))
+        os.utime(old, (1000, 1000))
+        self.assertEqual(codex_art.harvest_generated(home, 5000.0, 6000.0), [])
 
     def test_refused_design_keeps_code_drawn_art(self) -> None:
         refusal = 'error=image generation failed: "code": "moderation_blocked"'

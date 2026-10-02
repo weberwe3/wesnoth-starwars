@@ -40,6 +40,35 @@ QUOTA = re.compile(r"usage limit|rate limit|quota|too many requests|429", re.IGN
 JOB_ID = re.compile(r"art-[a-z0-9-]{1,100}")
 
 
+def harvest_generated(codex_home: Path | None, started: float, finished: float) -> list[Path]:
+    """Images Codex generated during one run, oldest first.
+
+    Codex keeps every generated image under ``CODEX_HOME/generated_images/<session>/``
+    but does not always copy it into the working directory. Only folders and
+    files created inside this run's time window are used, so another session's
+    images are never picked up (art generation runs one job at a time).
+    """
+    if codex_home is None:
+        return []
+    root = codex_home / "generated_images"
+    found: list[tuple[float, Path]] = []
+    try:
+        sessions = [entry for entry in root.iterdir() if entry.is_dir() and not entry.is_symlink()]
+    except OSError:
+        return []
+    for session in sessions:
+        try:
+            if session.stat().st_mtime < started - 5:
+                continue
+            for image in session.glob("*.png"):
+                modified = image.stat().st_mtime
+                if started - 5 <= modified <= finished + 5 and not image.is_symlink():
+                    found.append((modified, image))
+        except OSError:
+            continue
+    return [path for _, path in sorted(found)]
+
+
 class CodexArtError(RuntimeError):
     """Raised for an art-generation infrastructure problem (not a refusal)."""
 
@@ -59,15 +88,24 @@ def load_direction(root: Path) -> dict[str, Any]:
     return data
 
 
-def build_prompt(direction: dict[str, Any], unit_id: str, unit_name: str) -> str:
+def build_prompt(direction: dict[str, Any], unit_id: str, unit_name: str, kind: str) -> str:
+    """Prompt for ONE image. ``kind`` is ``sprite`` or ``portrait``.
+
+    One image per Codex call: earlier two-image prompts sometimes produced a
+    single composite picture, and Codex does not always copy its output into
+    the working directory, so each call must be unambiguous on its own.
+    """
     subject = direction["units"].get(unit_id)
     if not isinstance(subject, str) or not subject.strip():
         raise CodexArtError(f"No art direction for {unit_id}")
     rules = "\n".join(f"- {rule}" for rule in direction.get("rules", []))
-    return f"""Use your image generation tool to create exactly TWO original images and save them in the current working directory. Do not create any other files and do not run other commands.
-
-1. sprite.png: a full-body game unit for a turn-based tactics game, seen in three-quarter view facing right, standing in a ready stance. The whole subject is centered with an empty margin, on a TRANSPARENT background.
-2. portrait.png: a head-and-shoulders portrait of the same character (for vehicles and ships, a dramatic close three-quarter view of the same craft), TRANSPARENT background.
+    if kind == "sprite":
+        framing = ("a full-body game unit for a turn-based tactics game, seen in three-quarter view facing "
+                   "right in a ready stance, the whole subject centered with an empty margin")
+    else:
+        framing = ("a head-and-shoulders portrait of the character (for a vehicle or ship, a dramatic close "
+                   "three-quarter view of the craft)")
+    return f"""Use your image generation tool to create exactly ONE original image: {framing}, on a TRANSPARENT background. Show a single subject only; do not combine several views in one image. Save it as {kind}.png in the current working directory. Do not create any other files.
 
 Subject ({unit_name}): {subject}
 
@@ -76,8 +114,7 @@ Style: {direction.get("style", "")}
 Rules:
 {rules}
 
-The sprite and portrait must show the same design with identical clothing, colors, and equipment.
-After saving both files, reply with only the two file names."""
+After saving, reply with only the file name."""
 
 
 def _managed_directory(slug: str) -> Path:
@@ -109,24 +146,9 @@ def _valid_png(path: Path) -> bool:
         return False
 
 
-def generate_unit_art(
-    root: Path, job: dict[str, Any], *,
-    runner: Callable[..., subprocess.CompletedProcess] = subprocess.run,
-    model: str = "gpt-6-luna",
-) -> dict[str, Any]:
-    """Generate one unit's art set into ``root``'s add-on image tree.
-
-    Returns ``{"state": "generated" | "coded_fallback" | "failed", ...}``.
-    """
-    job_id, unit_id = job.get("id"), job.get("unit_id")
-    if not isinstance(job_id, str) or not JOB_ID.fullmatch(job_id) or not isinstance(unit_id, str):
-        raise CodexArtError("Invalid art job")
-    slug = job_id.removeprefix("art-")
-    direction = load_direction(root)
-    prompt = build_prompt(direction, unit_id, str(job.get("unit_name") or unit_id))
-    executable = ticket_runner.resolve_codex_executable()
-    environment = ticket_runner.require_codex_chatgpt_quota(executable or "")
-    workspace = _managed_directory(slug)
+def _codex_image(executable: str, environment: dict[str, str], workspace: Path, prompt: str, target: Path,
+                 runner: Callable[..., subprocess.CompletedProcess], model: str) -> tuple[bool, str]:
+    """Run one Codex image generation; return (image saved, transcript)."""
     command = [
         executable, "exec", "--skip-git-repo-check", "-C", _windows_path(workspace),
         "-m", model, "-c", 'model_reasoning_effort="low"', "-c", 'web_search="disabled"',
@@ -140,18 +162,60 @@ def generate_unit_art(
         output = completed.stdout or ""
     except subprocess.TimeoutExpired:
         output = ""
+    if not _valid_png(target):
+        codex_home = Path(environment["CODEX_HOME"]) if environment.get("CODEX_HOME") else None
+        made = [path for path in harvest_generated(codex_home, started, time.time()) if _valid_png(path)]
+        if made:
+            target.write_bytes(made[-1].read_bytes())
+    return _valid_png(target), output
+
+
+def generate_unit_art(
+    root: Path, job: dict[str, Any], *,
+    runner: Callable[..., subprocess.CompletedProcess] = subprocess.run,
+    model: str = "gpt-6-luna",
+) -> dict[str, Any]:
+    """Generate one unit's art set into ``root``'s add-on image tree.
+
+    Returns ``{"state": "generated" | "coded_fallback" | "failed" | "quota_paused", ...}``.
+    """
+    job_id, unit_id = job.get("id"), job.get("unit_id")
+    if not isinstance(job_id, str) or not JOB_ID.fullmatch(job_id) or not isinstance(unit_id, str):
+        raise CodexArtError("Invalid art job")
+    slug = job_id.removeprefix("art-")
+    direction = load_direction(root)
+    name = str(job.get("unit_name") or unit_id)
+    executable = ticket_runner.resolve_codex_executable()
+    environment = ticket_runner.require_codex_chatgpt_quota(executable or "")
+    workspace = _managed_directory(slug)
     sprite, portrait = workspace / "sprite.png", workspace / "portrait.png"
-    result: dict[str, Any] = {"job_id": job_id, "unit_id": unit_id, "seconds": round(time.time() - started),
-                              "workspace": workspace.name}
-    if not (_valid_png(sprite) and _valid_png(portrait)):
-        if QUOTA.search(output) and not MODERATION.search(output):
+    started = time.time()
+    result: dict[str, Any] = {"job_id": job_id, "unit_id": unit_id, "workspace": workspace.name}
+    transcripts: list[str] = []
+    ok, output = _codex_image(executable or "", environment, workspace, build_prompt(direction, unit_id, name, "sprite"),
+                              sprite, runner, model)
+    transcripts.append(output)
+    sprite_only = unit_id in direction.get("portrait_from_sprite", []) or unit_id in direction.get("sprite_only", [])
+    if ok and not sprite_only:
+        _, output = _codex_image(executable or "", environment, workspace,
+                                 build_prompt(direction, unit_id, name, "portrait"), portrait, runner, model)
+        transcripts.append(output)
+    transcript = "\n".join(transcripts)
+    (workspace / "codex-output.txt").write_text(transcript[-20000:], encoding="utf-8")
+    result["seconds"] = round(time.time() - started)
+    if not _valid_png(sprite):
+        if QUOTA.search(transcript) and not MODERATION.search(transcript):
             result.update(state="quota_paused", reason="Codex usage limit reached; art generation paused")
             return result
-        refused = bool(MODERATION.search(output))
+        refused = bool(MODERATION.search(transcript))
         _run_tool(root, CODED_TOOL, "--only", unit_id)
         result.update(state="coded_fallback" if refused else "failed",
-                      reason="image service refused the design" if refused else "Codex did not produce both images")
+                      reason="image service refused the design" if refused else "Codex did not produce an image")
         return result
+    if not _valid_png(portrait):
+        # Film-portrayed characters (no actor likeness), vehicles, or a refused
+        # portrait: frame the portrait from the sprite so the set is complete.
+        portrait.write_bytes(sprite.read_bytes())
     derived = _run_tool(root, DERIVE_TOOL, "--sprite", str(sprite), "--portrait", str(portrait),
                         "--addon", str(root / ADDON_ROOT), "--slug", slug)
     result.update(state="generated", written=len(json.loads(derived).get("written", [])))
