@@ -587,3 +587,20 @@ recovered once by setting the extra set aside, publishing the hero batch, and
 restoring the set before resuming.
 **Prevention:** A long pipeline step must check the final state of every
 asynchronous step it waits on, not just whether the step started.
+
+### 2026-10-02 — a resolved historical repair kept being resumed
+
+**Symptom:** After `main` passed historical validation, Sol still resumed the
+cancelled "Repair the first failed retained gameplay contract" ticket instead
+of planning the owner's fresh brief.
+**Confirmed cause:** `_resolve_empty_historical_repair` retires an empty
+repair only when the root checkout's `git status` (untracked included) is
+empty. The owner's required untracked `docs/AI_HANDOFF_REFERENCE.md` is always
+present, so no repair could ever be retired as resolved.
+**Resolution:** Filter the root status through
+`worktree_paths.unexpected_main_status_entries`, which already exempts that
+file elsewhere.
+**Prevention:** Every root-checkout cleanliness check must use the shared
+exemption helper. Also note that planning refuses while the root checkout has
+tracked changes, so Codex art awaiting import and ticket planning cannot
+overlap; run them in sequence.
