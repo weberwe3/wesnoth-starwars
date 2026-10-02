@@ -524,3 +524,21 @@ reaches victory at (8,1), exit 8; both existing first-move fixtures still pass.
 official Terrain Codes and Units WML references, the installed core terrain
 aliases and movetype costs, and every required destination against the unit's
 movement budget. Then run one focused engine route check for dynamic behavior.
+
+### 2026-10-02 — the dashboard Codex art run never published its batches
+
+**Symptom:** A 54-unit `generate_all_art` run would have generated every unit
+before its first import, then imported only the first unit file's batch. A
+ticket handoff during the run would also have made that import fail the run.
+**Confirmed cause:** The run grouped jobs by `source_path`, but
+`validate_art_queue` jobs do not carry that field, so every job fell into one
+group. The batch import (`art_import_batch_contract`) publishes per WML source
+file, so only the first file's sets would be imported. `confirm_art_import`
+also refuses while another governed operation is active.
+**Resolution:** Group by `art_import_contract(...)["source_path"]`, publish
+each source file as soon as its sets finish, wait for any active ticket or
+publication before importing, and resume sets an interrupted run already left
+in the working tree instead of regenerating them.
+**Prevention:** When a loop groups on a field, assert that the field exists in
+the producer's output. Long dashboard runs must wait for, not collide with,
+other governed operations.
