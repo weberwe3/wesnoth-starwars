@@ -558,3 +558,32 @@ set Codex actually produced. Luke and Chewbacca received detailed painted
 masters (`production/tools/paint_hero_masters.py`) that the fallback now uses.
 **Prevention:** A batch must contain only sets that change something. Check
 deterministic fallbacks for a no-op result before queueing an import.
+
+### 2026-10-02 — campaign menu icons could not be found
+
+**Symptom:** After the hero art merged (#291), the installed-engine check
+failed: `could not open image 'units/sw-hero-xwing-luke/standing.png'` and
+five more, all of them the campaign `icon=`/`image=` paths.
+**Confirmed cause:** `[binary_path]` existed only inside each campaign's
+`#ifdef CAMPAIGN_...` block. The campaign menu reads `[campaign]` icons
+before any campaign define is active, so the add-on's images did not resolve.
+**Resolution:** One top-level `[binary_path]` in `_main.cfg`. A Linux engine
+run then logs no image errors, and all three campaign sequences pass.
+**Prevention:** Any image a `[campaign]` tag references needs a binary path
+that is active at the title screen. Grep engine logs for `could not open
+image` after menu-facing changes.
+### 2026-10-02 — an art run kept generating after its import failed
+
+**Symptom:** A retried hero art import stopped with "Local main has
+unrelated uncommitted changes". A stormtrooper set generated after the
+earlier failed hero import was still uncommitted in the working tree.
+**Confirmed cause:** `_publish_generated_art` waited for the import thread
+but never checked its result, so the run moved on to the next unit file. The
+importer deliberately refuses to publish while unrelated changes exist, so
+every later batch would have failed too.
+**Resolution:** After the import thread ends, the run reads the job's
+production state and stops unless it is `published`. The existing state was
+recovered once by setting the extra set aside, publishing the hero batch, and
+restoring the set before resuming.
+**Prevention:** A long pipeline step must check the final state of every
+asynchronous step it waits on, not just whether the step started.

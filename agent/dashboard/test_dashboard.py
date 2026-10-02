@@ -214,8 +214,15 @@ class ArtImportProductionTests(unittest.TestCase):
             with mock.patch.object(controller, "confirm_art_import", side_effect=confirm), \
                     mock.patch.object(controller, "_pipeline_active", return_value=True), \
                     mock.patch("autonomy.time.sleep"):
-                controller._publish_generated_art("art-sw-unit-fixture-0", "a.cfg")
+                with mock.patch("autonomy.public_status",
+                                return_value={"art-sw-unit-fixture-0": {"state": "published"}}):
+                    controller._publish_generated_art("art-sw-unit-fixture-0", "a.cfg")
             self.assertEqual(len(attempts), 2)
+            with mock.patch.object(controller, "confirm_art_import", return_value={"pass": True}), \
+                    mock.patch("autonomy.public_status", return_value={
+                        "art-sw-unit-fixture-0": {"state": "failed", "error": "validation did not pass"}}):
+                with self.assertRaisesRegex(ControlError, "did not publish"):
+                    controller._publish_generated_art("art-sw-unit-fixture-0", "a.cfg")
             with mock.patch.object(controller, "confirm_art_import",
                                    side_effect=ControlError("Art set is not ready")), \
                     mock.patch.object(controller, "_pipeline_active", return_value=False):

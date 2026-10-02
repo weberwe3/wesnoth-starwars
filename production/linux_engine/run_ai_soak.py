@@ -13,7 +13,7 @@ balance signal only: an AI-controlled player is not a human player.
 
 Usage:
   python3 production/linux_engine/run_ai_soak.py [--campaign ID] [--scenario ID]
-      [--jobs 2] [--workdir DIR] [--output evidence.json]
+      [--player default|careful] [--jobs 2] [--workdir DIR] [--output evidence.json]
 """
 from __future__ import annotations
 
@@ -40,7 +40,8 @@ PLAY_ERRORS = re.compile(
 )
 
 
-def soak_one(engine: Path, campaign: str, scenario: str, workdir: Path, timeout: int) -> dict:
+def soak_one(engine: Path, campaign: str, scenario: str, workdir: Path, timeout: int,
+             player: str = "default") -> dict:
     userdata = workdir / "userdata"
     if workdir.exists():
         shutil.rmtree(workdir)
@@ -56,7 +57,8 @@ def soak_one(engine: Path, campaign: str, scenario: str, workdir: Path, timeout:
     plugin = workdir / "ai_soak_plugin.lua"
     plugin.write_text(
         PLUGIN.read_text(encoding="utf-8").replace(
-            'local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"', f'local CAMPAIGN = "{campaign}"'),
+            'local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"', f'local CAMPAIGN = "{campaign}"').replace(
+            'local PLAYER_STYLE = "default"', f'local PLAYER_STYLE = "{player}"'),
         encoding="utf-8",
     )
     # Skip animations and AI move playback: the soak checks logic, not looks.
@@ -110,6 +112,7 @@ def soak_one(engine: Path, campaign: str, scenario: str, workdir: Path, timeout:
     return {
         "scenario": scenario,
         "campaign": campaign,
+        "player": player,
         "side1_deaths": [d for d in deaths if " side 1 " in d][:12],
         "pass": not failures,
         "outcome": result,
@@ -126,6 +129,8 @@ def main() -> int:
     parser.add_argument("--scenario")
     parser.add_argument("--jobs", type=int, default=2)
     parser.add_argument("--timeout", type=int, default=600)
+    parser.add_argument("--player", choices=("default", "careful"), default="default",
+                        help="side-1 AI style; 'careful' protects units like a human with heroes")
     parser.add_argument("--workdir", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
@@ -135,7 +140,7 @@ def main() -> int:
             for scenario in scenarios if not args.scenario or scenario == args.scenario]
     results: list[dict] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
-        futures = {pool.submit(soak_one, args.engine, campaign, scenario, workdir / scenario, args.timeout): scenario
+        futures = {pool.submit(soak_one, args.engine, campaign, scenario, workdir / scenario, args.timeout, args.player): scenario
                    for campaign, scenario in work}
         for future in concurrent.futures.as_completed(futures):
             item = future.result()
@@ -145,7 +150,7 @@ def main() -> int:
                   f"{'; '.join(item['failures'])[:300]}", flush=True)
     order = {scenario: i for i, (_, scenario) in enumerate(work)}
     results.sort(key=lambda item: order.get(item["scenario"], 0))
-    evidence = {"schema_version": 1, "kind": "linux-ai-soak", "engine": str(args.engine),
+    evidence = {"schema_version": 1, "kind": "linux-ai-soak", "engine": str(args.engine), "player": args.player,
                 "results": results, "pass": all(item["pass"] for item in results)}
     if args.output:
         args.output.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")

@@ -212,7 +212,19 @@ lost before the player can react.
 python3 production/linux_engine/run_ai_soak.py --jobs 3 --workdir /tmp/soak --output /tmp/soak.json
 ```
 AI-controlled heroes charge recklessly, so hero deaths in the soak are not
-balance verdicts on their own.
+balance verdicts on their own. `--player careful` gives side 1 negative
+aggression and high caution, which is closer to how a person protects an
+irreplaceable hero; compare both runs before reading anything into a death.
+
+### 5.2 Hero start-threat report
+`production/tools/hero_threat_report.py` lists, for every hero's starting
+hex, the enemies placed at start that can reach it on their first move and
+their expected damage. A hero whose expected damage reaches 80% of its
+hitpoints is flagged: the player could lose it before acting. Run it after
+changing a scenario's start positions or the roster's stats:
+```bash
+python3 production/tools/hero_threat_report.py --fail-on-flag
+```
 
 ## 6. Art through the dashboard
 
