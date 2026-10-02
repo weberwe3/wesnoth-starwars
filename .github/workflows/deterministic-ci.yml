@@ -111,6 +111,7 @@ jobs:
 
       - name: Test ticket acceptance contracts
         run: |
+          python3 agent/coordinator/codex_art_selftest.py
           python3 agent/coordinator/ticket_acceptance_selftest.py
           python3 agent/coordinator/engine_compatibility_selftest.py
 

@@ -1,0 +1,167 @@
+-- Campaign-sequence probe for the Linux Wesnoth GUI harness.
+--
+-- Drives the real title screen into Campaign I, then for every scenario:
+--   1. waits for a playable Game context,
+--   2. reports the scenario id, side-1 heroes on the map, and stashed heroes,
+--   3. saves the game (save/load evidence),
+--   4. runs that scenario's scripted win path through real WML events
+--      ([move_unit] with fire_event=yes, [kill] with fire_event=yes, or the
+--      scenario's own named win event),
+--   5. skips dialogs until the next scenario starts.
+--
+-- Output lines start with "SW_SEQ:" and are parsed by run_campaign_sequence.py.
+-- This is a scripted functional check of event wiring, carryover, and
+-- transitions. It does not prove that a human can reach the objectives by
+-- legal moves; route probes cover that separately.
+
+local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"
+
+-- Win scripts run inside the game Lua kernel. Each returns nothing; WML
+-- events triggered here end the level.
+local function move(id, x, y)
+  wesnoth.wml_actions.move_unit{id = id, to_x = x, to_y = y, fire_event = true, check_passability = false}
+end
+local function fire(name)
+  wesnoth.wml_actions.fire_event{name = name}
+end
+local function kill_id(id)
+  wesnoth.wml_actions.kill{id = id, fire_event = true, animate = false}
+end
+
+local WIN = {
+  sw_hte_01_ysalamiri_harvest = function()
+    for _, t in ipairs{{12, 4}, {21, 5}, {17, 13}, {23, 15}} do
+      move("sw_hero_pellaeon", t[1], t[2])
+      move("sw_hero_pellaeon", 3, 9)
+    end
+  end,
+  sw_hte_02_ambush_at_bpfassh = function() move("sw_hero_leia", 25, 2) end,
+  sw_hte_03_adrift = function() fire("sw_hte03_rescue") end,
+  sw_hte_04_shadows_of_kashyyyk = function() fire("sw_hte04_win") end,
+  sw_hte_05_prisoner_of_myrkr = function()
+    move("sw_hero_luke", 6, 5)
+    move("sw_hero_luke", 17, 9)
+  end,
+  sw_hte_06_raid_on_karrdes_base = function()
+    local evac = 0
+    for _, u in ipairs(wesnoth.units.find_on_map{side = 1, type = "sw_unit_sm_smuggler,sw_hero_karrde"}) do
+      move(u.id, 27, 11)
+      evac = evac + 1
+    end
+    move("sw_hero_han", 27, 8)
+    move("sw_hero_lando", 27, 14)
+  end,
+  sw_hte_07_the_forest_crossing = function()
+    move("sw_hero_luke", 28, 10)
+    move("sw_hero_mara", 29, 10)
+  end,
+  sw_hte_08_nomad_city = function() kill_id("sw_hte08_harbid") end,
+  sw_hte_09_sluis_van_shipyards = function()
+    wml.variables.sw_hte09_last_wave = true
+    for _, u in ipairs(wesnoth.units.find_on_map{type = "sw_unit_im_mole_miner"}) do
+      kill_id(u.id)
+    end
+  end,
+  sw_hte_10_thrawns_gambit = function() kill_id("sw_hte10_judicator") end,
+}
+
+local HEROES = {
+  "sw_hero_luke", "sw_hero_leia", "sw_hero_han", "sw_hero_chewbacca", "sw_hero_lando",
+  "sw_hero_mara", "sw_hero_karrde", "sw_hero_wedge", "sw_hero_pellaeon",
+}
+
+local function plugin(events, context, info)
+  local function out(t) std_print("SW_SEQ: " .. t) end
+  local guard = 0
+  local stuck = 0
+  local function pump(want)
+    -- Advance slices, skipping dialogs and configure screens.
+    events, context, info = wesnoth.plugin.next_slice()
+    guard = guard + 1
+    if info.name == "Dialog" then context.skip_dialog{} end
+    if info.name == "Campaign Configure" then context.launch{} end
+    -- Linger mode after a victory: the map stays up with the player unable to
+    -- move until "End Scenario" (the end-turn action) is pressed.
+    if info.name == "Game" and not info.can_move().can_move then
+      stuck = stuck + 1
+      if stuck % 50 == 0 then context.end_turn{} end
+    else
+      stuck = 0
+    end
+    if guard > 400000 then out("fatal guard exceeded in " .. info.name); context.exit{code = 3} end
+  end
+
+  events, context, info = wesnoth.plugin.wait_until("titlescreen")
+  local args = info.command_line().args or {}
+  local tries = 0
+  while info.name == "titlescreen" and tries < 100 do
+    context.play_campaign({}); tries = tries + 1
+    events, context, info = coroutine.yield()
+  end
+  events, context, info = wesnoth.plugin.wait_until("Campaign Selection")
+  local s = info.find_level{id = CAMPAIGN}
+  if s.index < 0 then out("fatal campaign not found"); context.exit{code = 2}; return end
+  context.select_level({index = s.index})
+  events, context, info = wesnoth.plugin.next_slice()
+  context.create{}
+
+  local seen = {}
+  local last = nil
+  for step = 1, 12 do
+    repeat pump() until (info.name == "Game" and info.can_move().can_move) or info.name == "titlescreen"
+    if info.name == "titlescreen" then out("campaign ended at titlescreen"); break end
+    local scenario
+    wesnoth.plugin.execute(context, function()
+      wesnoth.interface.skip_messages(true)
+      scenario = wesnoth.scenario.id
+      local present, recall = {}, {}
+      for _, id in ipairs(HEROES) do
+        local u = wesnoth.units.get(id)
+        if u then table.insert(present, id .. "=" .. u.type .. "@" .. u.x .. "," .. u.y .. ":xp" .. u.experience) end
+        local r = wesnoth.units.find_on_recall{id = id}[1]
+        if r then table.insert(recall, id) end
+      end
+      std_print("SW_SEQ: scenario " .. scenario .. " turn " .. wesnoth.current.turn)
+      std_print("SW_SEQ: heroes_on_map " .. table.concat(present, ";"))
+      std_print("SW_SEQ: heroes_on_recall " .. table.concat(recall, ";"))
+      local stash = wml.array_access.get("sw_stashed_heroes")
+      local ids = {}
+      for _, v in ipairs(stash) do table.insert(ids, v.id) end
+      std_print("SW_SEQ: stashed " .. table.concat(ids, ";"))
+      std_print("SW_SEQ: units_on_map " .. #wesnoth.units.find_on_map{})
+      std_print("SW_SEQ: side1_gold " .. wesnoth.sides[1].gold)
+    end)
+    pump()
+    if scenario == last then out("fatal scenario did not advance from " .. tostring(scenario)); break end
+    last = scenario
+    context.save_game{filename = "sw_seq_" .. tostring(scenario)}
+    pump()
+    out("saved " .. tostring(scenario))
+    local win = WIN[scenario]
+    if not win then out("fatal no win script for " .. tostring(scenario)); break end
+    wesnoth.plugin.execute(context, function()
+      local ok, err = pcall(win)
+      if not ok then std_print("SW_SEQ: win_script_error " .. tostring(err)) end
+    end)
+    out("win script ran " .. scenario)
+    -- Wait for the game to leave this scenario.
+    local waited = 0
+    repeat
+      pump(); waited = waited + 1
+      local still = false
+      if info.name == "Game" and info.can_move().can_move then
+        wesnoth.plugin.execute(context, function() still = (wesnoth.scenario.id == scenario) end)
+      end
+    until (not still and info.name ~= "Game") or waited > 20000 or info.name == "titlescreen"
+    if waited > 20000 then out("fatal scenario " .. scenario .. " did not end") ; break end
+    out("left " .. scenario .. " via " .. info.name)
+    if scenario == "sw_hte_10_thrawns_gambit" then break end
+  end
+  out("done")
+  while info.name ~= "titlescreen" do
+    if info.name == "Dialog" then context.skip_dialog{} else context.quit{} end
+    events, context, info = wesnoth.plugin.next_slice()
+  end
+  context.exit{code = 0}
+end
+return plugin

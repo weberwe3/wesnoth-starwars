@@ -15,6 +15,7 @@ import shutil
 import struct
 import subprocess
 import tempfile
+import time
 import unittest
 from unittest import mock
 import zlib
@@ -40,7 +41,11 @@ from gameplay_contracts import (
 
 
 ADDON_ID = "Star_Wars_Thrawn_Trilogy"
-SCENARIO_ID = "01_First_Battle"
+SCENARIO_ID = "sw_hte_01_ysalamiri_harvest"
+# Linux build of the same engine version, run on SDL's offscreen video driver.
+# It gives the GUI campaign probes a supported display in unattended and
+# disconnected-desktop sessions (see production/linux_engine/README.md).
+LINUX_ENGINE_DEFAULT = Path.home() / "opt" / "bin" / "wesnoth-linux"
 
 
 def _test_png(width: int, height: int) -> bytes:
@@ -61,6 +66,8 @@ def _test_png(width: int, height: int) -> bytes:
 CAMPAIGN_DEFINE = "CAMPAIGN_STAR_WARS_THRAWN_TRILOGY"
 ENGINE_TIMEOUT_SECONDS = 120
 CAMPAIGN_STARTUP_PROBE_SECONDS = 20
+# The Linux probe exits on its own once Game is reached; this is only a ceiling.
+LINUX_STARTUP_PROBE_SECONDS = 180
 SCENARIO_RUNTIME_PROBE_SECONDS = 15
 MAX_DIAGNOSTIC_CHARS = 6000
 PLAYER_LAUNCHER_TIMEOUT_SECONDS = 90
@@ -72,6 +79,8 @@ def find_wesnoth_executable() -> Path | None:
     configured = os.environ.get("WESNOTH_EXECUTABLE")
     candidates = [
         configured,
+        os.environ.get("WESNOTH_LINUX_ENGINE"),
+        str(LINUX_ENGINE_DEFAULT),
         shutil.which("wesnoth"),
         shutil.which("wesnoth.exe"),
         r"C:\\Program Files (x86)\\battle for wesnoth\\wesnoth.exe",
@@ -307,79 +316,168 @@ def run_engine(command: list[str], *, cwd: Path, timeout: int) -> subprocess.Com
     )
 
 
+def campaign_startup_plugin(campaign_id: str) -> str:
+    """Lua plugin that enters ``campaign_id`` through the real title screen.
+
+    Wesnoth 1.19.27 ignores ``--campaign`` whenever ``--plugin`` is given
+    (``game_launcher.cpp``: loading a plugin sets ``jump_to_campaign_.jump``
+    to false), so a plugin that only waits for ``Game`` never gets there. This
+    plugin drives the title screen like the engine's own
+    ``data/test/plugin/start-campaign.lua``: play_campaign, select_level,
+    create, skip dialogs, then wait until the side can move.
+    """
+
+    if not re.fullmatch(r"[A-Za-z0-9_]+", campaign_id):
+        raise ValueError("Invalid campaign id for startup probe")
+    return f"""local function plugin(events, context, info)
+  events, context, info = wesnoth.plugin.wait_until('titlescreen')
+  local tries = 0
+  while info.name == 'titlescreen' and tries < 100 do
+    context.play_campaign({{}})
+    tries = tries + 1
+    events, context, info = coroutine.yield()
+  end
+  events, context, info = wesnoth.plugin.wait_until('Campaign Selection')
+  local level = info.find_level{{id = '{campaign_id}'}}
+  if level.index < 0 then
+    std_print('sw_campaign_startup_probe: campaign not found')
+    context.exit{{code = 2}}
+    return
+  end
+  context.select_level({{index = level.index}})
+  events, context, info = wesnoth.plugin.next_slice()
+  context.create{{}}
+  local guard = 0
+  repeat
+    events, context, info = wesnoth.plugin.next_slice()
+    guard = guard + 1
+    if info.name == 'Campaign Configure' then context.launch{{}} end
+    if info.name == 'Dialog' then context.skip_dialog{{}} end
+  until (info.name == 'Game' and info.can_move().can_move) or guard > 200000
+  if info.name == 'Game' then
+    std_print('{GAME_CONTEXT_MARKER}')
+    wesnoth.plugin.execute(context, function()
+      std_print('sw_campaign_startup_probe: scenario ' .. wesnoth.scenario.id)
+    end)
+    events, context, info = wesnoth.plugin.next_slice()
+    context.quit{{}}
+  end
+  while info.name ~= 'titlescreen' do
+    if info.name == 'Dialog' then context.skip_dialog{{}} else context.quit{{}} end
+    events, context, info = wesnoth.plugin.next_slice()
+  end
+  context.exit{{code = 0}}
+end
+return plugin
+"""
+
+
+def _run_linux_startup_probe(executable: Path, userdata: Path, plugin: Path, *, cwd: Path, timeout: int) -> dict:
+    """Run the plugin probe on the Linux engine (offscreen SDL video).
+
+    The engine does not always exit after the plugin requests it, so the run
+    ends as soon as the probe has reported the scenario (or failed to find the
+    campaign), or at the deadline.
+    """
+
+    environment = dict(os.environ)
+    environment.setdefault("SDL_VIDEO_DRIVER", "offscreen")
+    environment.setdefault("SDL_AUDIO_DRIVER", "dummy")
+    stdout_path = userdata / "startup.stdout.log"
+    with stdout_path.open("w", encoding="utf-8") as stream:
+        process = subprocess.Popen(
+            [str(executable), "--userdata-dir", str(userdata), "--plugin", str(plugin)],
+            cwd=cwd, env=environment, stdout=stream, stderr=subprocess.STDOUT,
+        )
+        deadline = time.monotonic() + timeout
+        timed_out = False
+        while process.poll() is None:
+            text = campaign_log_text(userdata) + stdout_path.read_text(encoding="utf-8", errors="replace")
+            if "sw_campaign_startup_probe: scenario" in text or "sw_campaign_startup_probe: campaign not found" in text:
+                time.sleep(1)
+                break
+            if time.monotonic() > deadline:
+                timed_out = True
+                break
+            time.sleep(1)
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=15)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+    return {"started": True, "survived_probe": not timed_out, "exit_code": process.returncode}
+
+
 def run_campaign_startup_probe(
     executable: Path, userdata: Path, *, cwd: Path,
     campaign_id: str = ADDON_ID,
     scenario_id: str = SCENARIO_ID,
     timeout: int = CAMPAIGN_STARTUP_PROBE_SECONDS,
 ) -> dict:
-    """Launch the staged campaign briefly, then close only that child process.
+    """Enter the staged campaign through the title screen and require ``Game``.
 
-    A campaign that reaches its initial map remains alive at the probe deadline. A
-    configuration or WML failure exits early and is reported in the staged log.
+    A configuration or WML failure exits early or never reaches a playable
+    ``Game`` context, and is reported from the staged log. ``scenario_id`` is
+    the first scenario of ``campaign_id``; it is recorded for diagnostics.
     """
 
-    if executable.suffix.casefold() != ".exe":
-        return {"started": False, "survived_probe": False, "game_context_reached": False,
-                "exit_code": None, "diagnostic": "Campaign startup probe requires the installed Windows engine."}
     userdata.mkdir(parents=True, exist_ok=True)
     # Wesnoth 1.19.27 opens its first-run migration dialog when logs/ is absent.
     (userdata / "logs").mkdir(exist_ok=True)
     plugin = userdata / "sw-campaign-startup-plugin.lua"
-    plugin.write_text(
-        "local function plugin()\n"
-        "  wesnoth.plugin.wait_until('Game')\n"
-        f"  wesnoth.log('warning', '{GAME_CONTEXT_MARKER}')\n"
-        "end\nreturn plugin\n", encoding="utf-8",
-    )
+    plugin.write_text(campaign_startup_plugin(campaign_id), encoding="utf-8")
     stdout_path = userdata / "startup.stdout.log"
     stderr_path = userdata / "startup.stderr.log"
-    arguments = subprocess.list2cmdline([
-        "--log-to-file",
-        "--userdata-dir", windows_path(userdata),
-        "--campaign", campaign_id,
-        "--campaign-difficulty", "1",
-        "--campaign-scenario", scenario_id,
-        "--campaign-skip-story",
-        "--plugin", windows_path(plugin),
-    ])
-    script = (
-        "$ErrorActionPreference='Stop';"
-        "$process=Start-Process -FilePath " + _powershell_literal(windows_path(executable))
-        + " -ArgumentList " + _powershell_literal(arguments)
-        + " -RedirectStandardOutput " + _powershell_literal(windows_path(stdout_path))
-        + " -RedirectStandardError " + _powershell_literal(windows_path(stderr_path))
-        + " -PassThru -WindowStyle Hidden;"
-        + f"Start-Sleep -Seconds {timeout};"
-        + "$process.Refresh();"
-        + "$alive=-not $process.HasExited;"
-        + "if($alive){Stop-Process -Id $process.Id -Force;$process.WaitForExit()};"
-        + "[Console]::Out.WriteLine((@{started=$true;survived_probe=$alive;exit_code=$process.ExitCode}|ConvertTo-Json -Compress))"
-    )
-    encoded = base64.b64encode(script.encode("utf-16le")).decode("ascii")
-    completed = subprocess.run(
-        ["powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
-        cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        timeout=timeout + 20, check=False,
-    )
-    payload = next(
-        (line for line in completed.stdout.splitlines() if line.lstrip().startswith("{")),
-        "",
-    )
-    try:
-        output = json.loads(payload)
-    except json.JSONDecodeError:
-        return {
-            "started": False, "survived_probe": False, "game_context_reached": False,
-            "exit_code": completed.returncode,
-            "diagnostic": _bounded_diagnostic(completed.stdout),
-        }
+    if executable.suffix.casefold() != ".exe":
+        output = _run_linux_startup_probe(
+            executable, userdata, plugin, cwd=cwd, timeout=max(timeout, LINUX_STARTUP_PROBE_SECONDS),
+        )
+    else:
+        arguments = subprocess.list2cmdline([
+            "--log-to-file",
+            "--userdata-dir", windows_path(userdata),
+            "--plugin", windows_path(plugin),
+        ])
+        script = (
+            "$ErrorActionPreference='Stop';"
+            "$process=Start-Process -FilePath " + _powershell_literal(windows_path(executable))
+            + " -ArgumentList " + _powershell_literal(arguments)
+            + " -RedirectStandardOutput " + _powershell_literal(windows_path(stdout_path))
+            + " -RedirectStandardError " + _powershell_literal(windows_path(stderr_path))
+            + " -PassThru -WindowStyle Hidden;"
+            + f"Start-Sleep -Seconds {timeout};"
+            + "$process.Refresh();"
+            + "$alive=-not $process.HasExited;"
+            + "if($alive){Stop-Process -Id $process.Id -Force;$process.WaitForExit()};"
+            + "[Console]::Out.WriteLine((@{started=$true;survived_probe=$true;exit_code=$process.ExitCode}|ConvertTo-Json -Compress))"
+        )
+        encoded = base64.b64encode(script.encode("utf-16le")).decode("ascii")
+        completed = subprocess.run(
+            ["powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
+            cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            timeout=timeout + 20, check=False,
+        )
+        payload = next(
+            (line for line in completed.stdout.splitlines() if line.lstrip().startswith("{")),
+            "",
+        )
+        try:
+            output = json.loads(payload)
+        except json.JSONDecodeError:
+            return {
+                "started": False, "survived_probe": False, "game_context_reached": False,
+                "exit_code": completed.returncode,
+                "diagnostic": _bounded_diagnostic(completed.stdout),
+            }
     child_output = "\n".join(
         path.read_text(encoding="utf-8", errors="replace")
         for path in (stdout_path, stderr_path) if path.is_file()
     )
     command_error = bool(re.search(r"Error in command line:|unrecognised option", child_output, re.I))
-    game_context = GAME_CONTEXT_MARKER in campaign_log_text(userdata)
+    log_text = campaign_log_text(userdata)
+    game_context = GAME_CONTEXT_MARKER in log_text or GAME_CONTEXT_MARKER in child_output
     return {
         "started": output.get("started") is True,
         "survived_probe": output.get("survived_probe") is True and not command_error,
@@ -459,6 +557,44 @@ def scenario_sources(root: Path) -> dict[str, Path]:
     return sources
 
 
+def _map_start_sides(root: Path, block: str) -> set[int]:
+    """Side numbers that have a starting position in the scenario's map."""
+
+    text = ""
+    inline = re.search(r'(?s)map_data\s*=\s*"(.*?)"', block)
+    if inline:
+        text = inline.group(1)
+    external = re.search(r"(?m)^\s*map_file\s*=\s*([A-Za-z0-9_./-]+)\s*$", block)
+    if external:
+        path = root / "addons" / ADDON_ID / "maps" / external.group(1)
+        if path.is_file():
+            text = path.read_text(encoding="utf-8", errors="replace")
+    return {int(match) for match in re.findall(r"(?:^|,)\s*([1-9]) [A-Z]", text, re.M)}
+
+
+def _side_is_populated(side: str, map_starts: set[int]) -> bool:
+    """A side starts with units, a positioned leader, or event-spawned forces.
+
+    Accepts every engine-supported form: ``x=``/``y=`` or ``x,y=`` on the
+    leader, a map starting position for the side, placed ``[unit]`` children,
+    or ``no_leader=yes`` (forces arrive by scenario events, which the runtime
+    probe and campaign-sequence probe verify).
+    """
+
+    number = re.search(r"(?m)^\s*side\s*=\s*([0-9]+)\s*$", side)
+    has_leader = re.search(r"(?m)^\s*(?:type|id)\s*=", side)
+    positioned = (
+        (re.search(r"(?m)^\s*x\s*=", side) and re.search(r"(?m)^\s*y\s*=", side))
+        or re.search(r"(?m)^\s*x,y\s*=", side)
+        or (number is not None and int(number.group(1)) in map_starts)
+    )
+    if has_leader and positioned:
+        return True
+    if re.search(r"\[unit\]", side):
+        return True
+    return bool(re.search(r"(?m)^\s*no_leader\s*=\s*yes\s*$", side))
+
+
 def scenario_structure_evidence(root: Path, selected: set[str]) -> dict:
     """Reject an empty or instant-ending source scenario before engine launch."""
 
@@ -470,12 +606,8 @@ def scenario_structure_evidence(root: Path, selected: set[str]) -> dict:
         text = path.read_text(encoding="utf-8")
         block = next(iter(re.findall(r"\[scenario\](.*?)\[/scenario\]", text, re.DOTALL)), "")
         sides = re.findall(r"\[side\](.*?)\[/side\]", block, re.DOTALL)
-        playable_sides = [
-            side for side in sides
-            if re.search(r"(?m)^\s*(?:type|id)\s*=", side)
-            and re.search(r"(?m)^\s*x\s*=", side)
-            and re.search(r"(?m)^\s*y\s*=", side)
-        ]
+        map_starts = _map_start_sides(root, block)
+        playable_sides = [side for side in sides if _side_is_populated(side, map_starts)]
         opening_events = re.findall(
             r"\[event\](.*?)\[/event\]", block, re.DOTALL
         )
@@ -523,36 +655,61 @@ def selected_scenarios(root: Path, required_gameplay_paths: list[str] | None) ->
     return selected or {SCENARIO_ID}
 
 
+def _owning_campaign_define(main_text: str, scenario_folder: str) -> str | None:
+    """Return the real campaign define whose loader block includes the folder."""
+
+    for match in re.finditer(r"(?ms)^#ifdef\s+([A-Z0-9_]+)\s*$(.*?)^#endif", main_text):
+        define, body = match.group(1), match.group(2)
+        if re.search(r"\{~add-ons/" + re.escape(ADDON_ID) + "/" + re.escape(scenario_folder) + r"/?\}", body):
+            return define
+    return None
+
+
 def prepare_runtime_probe_addon(staged_main: Path, scenario_relative: Path, scenario_id: str) -> str:
     """Append one temporary campaign that launches exactly one real scenario.
 
-    This touches only isolated staged userdata. The player-facing add-on and
-    normal campaign routing are never modified by the test harness.
+    When a real campaign loads the scenario's folder, the probe campaign reuses
+    that campaign's define, so the scenario loads exactly as players get it
+    (including scenario files that guard themselves with ``#ifdef``) and only
+    ``first_scenario`` differs. Otherwise a standalone loader is appended.
+    This touches only isolated staged userdata; the player-facing add-on is
+    never modified.
     """
 
     token = hashlib.sha256(scenario_id.encode("utf-8")).hexdigest()[:12]
     campaign_id = f"sw_runtime_probe_{token}"
-    relative = scenario_relative.as_posix()
-    staged_main.write_text(
-        staged_main.read_text(encoding="utf-8")
-        + "\n# Isolated deterministic runtime probe; never committed to the add-on.\n"
+    scenario_folder = scenario_relative.parent.as_posix()
+    main_text = staged_main.read_text(encoding="utf-8")
+    owner = _owning_campaign_define(main_text, scenario_folder)
+    campaign = (
+        "\n# Isolated deterministic runtime probe; never committed to the add-on.\n"
         + "[campaign]\n"
         + f"    id={campaign_id}\n"
-        + f"    define=SW_RUNTIME_PROBE_{token}\n"
+        + f"    define={owner or 'SW_RUNTIME_PROBE_' + token}\n"
         + f"    first_scenario={scenario_id}\n"
+        + "    [difficulty]\n"
+        + "        define=NORMAL\n"
+        + "        default=yes\n"
+        + "    [/difficulty]\n"
         + "[/campaign]\n"
-        + f"#ifdef SW_RUNTIME_PROBE_{token}\n"
+    )
+    loader = "" if owner else (
+        f"#ifdef SW_RUNTIME_PROBE_{token}\n"
         + "[binary_path]\n"
         + "    path=data/add-ons/Star_Wars_Thrawn_Trilogy\n"
         + "[/binary_path]\n"
+        + "{~add-ons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg}\n"
         + "[+units]\n"
         + "    {~add-ons/Star_Wars_Thrawn_Trilogy/units}\n"
         + "[/units]\n"
         + "{~add-ons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg}\n"
-        + "{~add-ons/Star_Wars_Thrawn_Trilogy/" + relative + "}\n"
-        + "#endif\n",
-        encoding="utf-8",
+        + "{~add-ons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg}\n"
+        # Load the scenario's whole folder so its next_scenario routes resolve;
+        # first_scenario still selects exactly the scenario under test.
+        + "{~add-ons/Star_Wars_Thrawn_Trilogy/" + scenario_folder + "}\n"
+        + "#endif\n"
     )
+    staged_main.write_text(main_text + campaign + loader, encoding="utf-8")
     return campaign_id
 
 
@@ -726,7 +883,10 @@ def validate_engine_002(
 ) -> dict:
     addon = root / "addons" / ADDON_ID
     source_main = addon / "_main.cfg"
-    source_scenario = addon / "scenarios" / "01_first_battle.cfg"
+    try:
+        source_scenario = scenario_sources(root).get(SCENARIO_ID) or addon / "scenarios" / "missing.cfg"
+    except (OSError, ValueError):
+        source_scenario = addon / "scenarios" / "missing.cfg"
     checks = {
         "engine_found": False,
         "source_main_present": source_main.is_file(),
@@ -777,7 +937,7 @@ def validate_engine_002(
         staged.parent.mkdir(parents=True)
         shutil.copytree(addon, staged)
         staged_main = staged / "_main.cfg"
-        staged_scenario = staged / "scenarios" / "01_first_battle.cfg"
+        staged_scenario = staged / source_scenario.relative_to(addon)
         output_dir = temporary / "preprocessed"
         output_dir.mkdir()
         checks["staged_main_present"] = staged_main.is_file()
@@ -1016,13 +1176,62 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             script = base64.b64decode(encoded).decode("utf-16le")
             self.assertTrue(result["survived_probe"])
             self.assertTrue(result["game_context_reached"])
-            self.assertIn("--campaign-scenario sw_scenario", script)
-            self.assertIn("--campaign-difficulty 1", script)
-            self.assertIn("--campaign-skip-story", script)
+            # --campaign is ignored by the engine when --plugin is given, so
+            # the plugin itself must select the campaign from the title screen.
+            self.assertNotIn("--campaign", script)
+            plugin_text = (userdata / "sw-campaign-startup-plugin.lua").read_text(encoding="utf-8")
+            self.assertIn("play_campaign", plugin_text)
+            self.assertIn("find_level{id = 'sw_probe'}", plugin_text)
+            self.assertIn("context.create", plugin_text)
             self.assertTrue((userdata / "logs").is_dir())
             self.assertIn("--plugin", script)
             self.assertIn("$process.Refresh()", script)
             self.assertIn("--log-to-file", script)
+
+    def test_linux_probe_runs_engine_directly_and_reads_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            userdata = Path(directory) / "userdata"
+            executable = Path(directory) / "wesnoth-linux"
+            executable.write_text("fixture\n", encoding="utf-8")
+            process = mock.Mock()
+            process.poll.side_effect = [None, 0, 0, 0]
+            process.returncode = 0
+            marker = GAME_CONTEXT_MARKER + "\nsw_campaign_startup_probe: scenario sw_x\n"
+            with mock.patch(
+                "scenario_launch_selftest.subprocess.Popen", return_value=process
+            ) as popen, mock.patch(__name__ + ".campaign_log_text", return_value=marker), \
+                    mock.patch("scenario_launch_selftest.time.sleep"):
+                result = run_campaign_startup_probe(executable, userdata, cwd=Path(directory), timeout=1)
+            command = popen.call_args.args[0]
+            self.assertEqual(command[0], str(executable))
+            self.assertIn("--plugin", command)
+            self.assertNotIn("--campaign", command)
+            self.assertEqual(popen.call_args.kwargs["env"]["SDL_VIDEO_DRIVER"], "offscreen")
+            self.assertTrue(result["game_context_reached"])
+            self.assertTrue(result["survived_probe"])
+
+    def test_linux_probe_timeout_is_not_survival(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            userdata = Path(directory) / "userdata"
+            executable = Path(directory) / "wesnoth-linux"
+            executable.write_text("fixture\n", encoding="utf-8")
+            process = mock.Mock()
+            process.poll.return_value = None
+            process.returncode = -15
+            userdata.mkdir()
+            clock = iter([0.0, 0.5, 5.0, 5.0, 5.0])
+            with mock.patch("scenario_launch_selftest.subprocess.Popen", return_value=process), \
+                    mock.patch(__name__ + ".campaign_log_text", return_value=""), \
+                    mock.patch("scenario_launch_selftest.time.sleep"), \
+                    mock.patch("scenario_launch_selftest.time.monotonic", side_effect=lambda: next(clock, 9.0)):
+                result = _run_linux_startup_probe(executable, userdata, Path(directory) / "p.lua",
+                                                  cwd=Path(directory), timeout=1)
+            self.assertFalse(result["survived_probe"])
+            process.terminate.assert_called_once()
+
+    def test_startup_plugin_rejects_unsafe_campaign_ids(self) -> None:
+        with self.assertRaises(ValueError):
+            campaign_startup_plugin("x'); os.exit(")
 
     def test_campaign_probe_rejects_process_survival_without_game_context(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1312,6 +1521,21 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             self.assertTrue(result["pass"], result)
             self.assertEqual(validate_art_queue(root)["complete"], 2)
 
+    def test_runtime_probe_reuses_the_owning_campaign_define(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            staged = Path(directory) / "_main.cfg"
+            staged.write_text(
+                "#ifdef CAMPAIGN_FIXTURE\n"
+                "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios/fixture_campaign}\n"
+                "#endif\n",
+                encoding="utf-8",
+            )
+            prepare_runtime_probe_addon(staged, Path("scenarios/fixture_campaign/02.cfg"), "sw_fixture_two")
+            text = staged.read_text(encoding="utf-8")
+            self.assertIn("define=CAMPAIGN_FIXTURE", text)
+            self.assertIn("first_scenario=sw_fixture_two", text)
+            self.assertNotIn("SW_RUNTIME_PROBE_", text)
+
     def test_runtime_probe_stages_a_one_scenario_campaign(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             staged = Path(directory) / "_main.cfg"
@@ -1322,10 +1546,14 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             text = staged.read_text(encoding="utf-8")
             self.assertIn(f"id={campaign_id}", text)
             self.assertIn("first_scenario=sw_fixture", text)
-            self.assertIn("scenarios/fixture.cfg", text)
+            # The scenario's folder is loaded so next_scenario routes resolve;
+            # first_scenario still selects only the scenario under test.
+            self.assertIn("{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios}", text)
             self.assertIn("path=data/add-ons/Star_Wars_Thrawn_Trilogy", text)
             self.assertIn("[+units]", text)
-            self.assertLess(text.index("/units}"), text.index("scenarios/fixture.cfg"))
+            self.assertIn("define=NORMAL", text)
+            self.assertLess(text.index("hte_terrain.cfg"), text.index("/scenarios}"))
+            self.assertLess(text.index("/units}"), text.index("/scenarios}"))
 
     def test_windows_command_translates_only_path_arguments(self) -> None:
         translated = []

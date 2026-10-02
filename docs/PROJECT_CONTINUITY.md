@@ -1591,3 +1591,46 @@ the game or resolve hidden/disconnected GUI execution. Next action: verify
 the exact probe in a supported active desktop session, then rerun historical
 validation before enabling automation. Do not alter login, lock, power, or
 credential settings to obtain a passing result.
+
+### 2026-10-02 — Campaign I rebuilt; Linux GUI engine harness replaces the blocked GUI gate
+
+The owner set a goal on 2026-10-01 to use the dashboard to develop a complete
+working mod, repairing or redesigning the dashboard where it blocked that. The
+owner then chose: hybrid workers (Claude for larger design and content work,
+Codex dashboard automation for small tickets), a Linux Wesnoth build on a
+virtual display for GUI gates, a full rebuild of Campaign I first, and
+Codex-generated art through the dashboard. Character art must be lore-accurate
+to Legends descriptions, original (no actor likenesses, no copied art), and
+consistent across all animation frames.
+
+- **Root cause of the stalled GUI gate:** Wesnoth 1.19.27 ignores
+  `--campaign` whenever `--plugin` is given (`game_launcher.cpp`). Probes now
+  drive the title screen through plugin callbacks. A Linux 1.19.27 build
+  (`~/opt/bin/wesnoth-linux`, SDL offscreen video) runs them without any
+  desktop session; see `production/linux_engine/README.md`.
+- **Campaign I (Heir to the Empire)** is ten new missions in
+  `scenarios/heir_to_the_empire/`, with generated maps
+  (`production/tools/gen_hte_maps.py`), 37 unit types generated from one
+  roster (`production/tools/gen_hte_units.py`), custom space terrain, and the
+  design record `production/campaigns/heir_to_the_empire/DESIGN.md`. The
+  placeholder missions 01–12 are retired through
+  `tests/retired-content.json`, which historical retention honors.
+- **Evidence:** `production/linux_engine/run_campaign_sequence.py` entered the
+  campaign from the title screen and completed all ten missions' scripted win
+  paths in one session, with correct transitions, hero stash and restore,
+  carryover gold, and ten in-game saves. The dashboard's post-publish
+  validation now reaches `Game` for the startup probe and per-scenario probes.
+  Scripted win paths prove event wiring and carryover, not that a human can
+  win by legal moves or that missions are balanced; those need route probes
+  and playtesting.
+- **Art:** every new unit has a code-drawn interim 13-state set
+  (`production/tools/gen_coded_unit_art.py`). The dashboard can generate
+  Codex art per job or for all pending jobs (`agent/coordinator/codex_art.py`):
+  two images per unit (master and portrait), with frames derived from the
+  master so gear stays identical. OpenAI's image service refused a Luke
+  Skywalker-like design at the output stage; refused designs keep code-drawn
+  art.
+
+Next: publish this branch through exact-head CI, re-enable dashboard
+automation against the new gates, run Codex art generation, add legal-route
+probes for each mission, then rebuild Campaign II on the same pattern.

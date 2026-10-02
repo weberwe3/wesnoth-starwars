@@ -230,6 +230,12 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 art_import = controller.confirm_art_import(data["job_id"])
                 if not art_import["pass"]:
                     raise ControlError(art_import["message"])
+            elif data.get("action") == "generate_art" and set(data) == {"action", "job_id"}:
+                if not isinstance(data.get("job_id"), str):
+                    raise ControlError("Invalid art generation request")
+                controller.generate_art([data["job_id"]])
+            elif data == {"action": "generate_all_art"}:
+                controller.generate_art(None)
             elif data.get("action") == "approve_publish" and set(data) == {
                 "action", "record_id", "commit_sha",
             }:

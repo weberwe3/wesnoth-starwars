@@ -2,9 +2,8 @@
   "schema_version": 2,
   "files": [
     "campaign.json",
-    "first-battle.json",
+    "heir-to-the-empire.json",
     "heroes.json",
-    "infantry.json",
-    "space-interception.json"
+    "infantry.json"
   ]
 }

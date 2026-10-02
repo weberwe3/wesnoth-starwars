@@ -80,6 +80,2818 @@
       ]
     },
     {
+      "id": "art-sw-hero-luke",
+      "unit_id": "sw_hero_luke",
+      "unit_name": "sw hero luke",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-luke.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-luke/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-luke/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-luke/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-luke/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-luke/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-luke/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-luke/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-luke/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-luke/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-luke/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-luke/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-luke/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-luke.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-xwing-luke",
+      "unit_id": "sw_hero_xwing_luke",
+      "unit_name": "sw hero xwing luke",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-xwing-luke.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-xwing-luke/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-xwing-luke/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-xwing-luke/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-xwing-luke/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-xwing-luke/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-xwing-luke/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-xwing-luke/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-xwing-luke/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-xwing-luke/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-xwing-luke/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-xwing-luke/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-xwing-luke/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-xwing-luke.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-leia",
+      "unit_id": "sw_hero_leia",
+      "unit_name": "sw hero leia",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-leia.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-leia/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-leia/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-leia/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-leia/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-leia/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-leia/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-leia/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-leia/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-leia/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-leia/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-leia/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-leia/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-leia.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-han",
+      "unit_id": "sw_hero_han",
+      "unit_name": "sw hero han",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-han.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-han/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-han/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-han/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-han/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-han/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-han/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-han/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-han/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-han/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-han/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-han/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-han/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-han.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-chewbacca",
+      "unit_id": "sw_hero_chewbacca",
+      "unit_name": "sw hero chewbacca",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-chewbacca.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-chewbacca/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-chewbacca/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-chewbacca/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-chewbacca/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-chewbacca/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-chewbacca/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-chewbacca/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-chewbacca/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-chewbacca/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-chewbacca/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-chewbacca/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-chewbacca/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-chewbacca.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-lando",
+      "unit_id": "sw_hero_lando",
+      "unit_name": "sw hero lando",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-lando.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-lando/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-lando/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-lando/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-lando/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-lando/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-lando/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-lando/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-lando/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-lando/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-lando/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-lando/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-lando/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-lando.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-mara",
+      "unit_id": "sw_hero_mara",
+      "unit_name": "sw hero mara",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-mara.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-mara/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-mara/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-mara/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-mara/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-mara/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-mara/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-mara/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-mara/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-mara/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-mara/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-mara/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-mara/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-mara.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-karrde",
+      "unit_id": "sw_hero_karrde",
+      "unit_name": "sw hero karrde",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-karrde.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-karrde/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-karrde/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-karrde/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-karrde/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-karrde/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-karrde/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-karrde/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-karrde/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-karrde/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-karrde/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-karrde/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-karrde/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-karrde.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-wedge",
+      "unit_id": "sw_hero_wedge",
+      "unit_name": "sw hero wedge",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-wedge.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-wedge/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-wedge/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-wedge/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-wedge/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-wedge/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-wedge/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-wedge/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-wedge/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-wedge/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-wedge/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-wedge/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-wedge/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-wedge.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-pellaeon",
+      "unit_id": "sw_hero_pellaeon",
+      "unit_name": "sw hero pellaeon",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-pellaeon.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-pellaeon/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-pellaeon/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-pellaeon/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-pellaeon/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-pellaeon/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-pellaeon/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-pellaeon/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-pellaeon/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-pellaeon/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-pellaeon/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-pellaeon/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-pellaeon/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-pellaeon.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-hero-thrawn",
+      "unit_id": "sw_hero_thrawn",
+      "unit_name": "sw hero thrawn",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-hero-thrawn.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-hero-thrawn/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-hero-thrawn/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-hero-thrawn/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-hero-thrawn/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-hero-thrawn/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-hero-thrawn/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-hero-thrawn/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-hero-thrawn/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-hero-thrawn/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-hero-thrawn/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-hero-thrawn/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-hero-thrawn/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-hero-thrawn.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-stormtrooper",
+      "unit_id": "sw_unit_im_stormtrooper",
+      "unit_name": "sw unit im stormtrooper",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-stormtrooper.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-stormtrooper/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-stormtrooper/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-stormtrooper/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-stormtrooper/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-stormtrooper/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-stormtrooper/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-stormtrooper/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-stormtrooper/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-stormtrooper/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-stormtrooper/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-stormtrooper/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-stormtrooper/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-stormtrooper.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-stormtrooper-sergeant",
+      "unit_id": "sw_unit_im_stormtrooper_sergeant",
+      "unit_name": "sw unit im stormtrooper sergeant",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-stormtrooper-sergeant.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-stormtrooper-sergeant/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-stormtrooper-sergeant.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-scout-trooper",
+      "unit_id": "sw_unit_im_scout_trooper",
+      "unit_name": "sw unit im scout trooper",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-scout-trooper.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-scout-trooper/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-scout-trooper/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-scout-trooper/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-scout-trooper/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-scout-trooper/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-scout-trooper/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-scout-trooper/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-scout-trooper/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-scout-trooper/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-scout-trooper/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-scout-trooper/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-scout-trooper/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-scout-trooper.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-officer",
+      "unit_id": "sw_unit_im_officer",
+      "unit_name": "sw unit im officer",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-officer.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-officer/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-officer/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-officer/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-officer/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-officer/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-officer/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-officer/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-officer/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-officer/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-officer/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-officer/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-officer/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-officer.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-at-st",
+      "unit_id": "sw_unit_im_at_st",
+      "unit_name": "sw unit im at st",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-at-st.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-at-st/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-at-st/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-at-st/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-at-st/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-at-st/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-at-st/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-at-st/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-at-st/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-at-st/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-at-st/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-at-st/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-at-st/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-at-st.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-noghri",
+      "unit_id": "sw_unit_im_noghri",
+      "unit_name": "sw unit im noghri",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-noghri.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-noghri/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-noghri/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-noghri/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-noghri/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-noghri/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-noghri/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-noghri/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-noghri/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-noghri/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-noghri/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-noghri/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-noghri/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-noghri.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-trooper",
+      "unit_id": "sw_unit_nr_trooper",
+      "unit_name": "sw unit nr trooper",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-trooper.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-trooper/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-trooper/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-trooper/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-trooper/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-trooper/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-trooper/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-trooper/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-trooper/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-trooper/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-trooper/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-trooper/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-trooper/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-trooper.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-sergeant",
+      "unit_id": "sw_unit_nr_sergeant",
+      "unit_name": "sw unit nr sergeant",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-sergeant.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-sergeant/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-sergeant/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-sergeant/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-sergeant/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-sergeant/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-sergeant/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-sergeant/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-sergeant/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-sergeant/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-sergeant/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-sergeant/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-sergeant/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-sergeant.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-commando",
+      "unit_id": "sw_unit_nr_commando",
+      "unit_name": "sw unit nr commando",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-commando.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-commando/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-commando/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-commando/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-commando/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-commando/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-commando/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-commando/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-commando/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-commando/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-commando/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-commando/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-commando/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-commando.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-eweb-team",
+      "unit_id": "sw_unit_nr_eweb_team",
+      "unit_name": "sw unit nr eweb team",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-eweb-team.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-eweb-team/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-eweb-team/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-eweb-team/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-eweb-team/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-eweb-team/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-eweb-team/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-eweb-team/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-eweb-team/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-eweb-team/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-eweb-team/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-eweb-team/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-eweb-team/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-eweb-team.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-field-medic",
+      "unit_id": "sw_unit_nr_field_medic",
+      "unit_name": "sw unit nr field medic",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-field-medic.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-field-medic/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-field-medic/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-field-medic/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-field-medic/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-field-medic/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-field-medic/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-field-medic/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-field-medic/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-field-medic/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-field-medic/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-field-medic/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-field-medic/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-field-medic.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-militia",
+      "unit_id": "sw_unit_nr_militia",
+      "unit_name": "sw unit nr militia",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-militia.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-militia/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-militia/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-militia/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-militia/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-militia/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-militia/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-militia/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-militia/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-militia/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-militia/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-militia/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-militia/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-militia.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-wk-warrior",
+      "unit_id": "sw_unit_wk_warrior",
+      "unit_name": "sw unit wk warrior",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-wk-warrior.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-wk-warrior/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-wk-warrior/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-wk-warrior/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-wk-warrior/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-wk-warrior/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-wk-warrior/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-wk-warrior/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-wk-warrior/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-wk-warrior/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-wk-warrior/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-wk-warrior/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-wk-warrior/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-wk-warrior.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-wk-lookout",
+      "unit_id": "sw_unit_wk_lookout",
+      "unit_name": "sw unit wk lookout",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-wk-lookout.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-wk-lookout/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-wk-lookout/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-wk-lookout/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-wk-lookout/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-wk-lookout/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-wk-lookout/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-wk-lookout/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-wk-lookout/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-wk-lookout/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-wk-lookout/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-wk-lookout/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-wk-lookout/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-wk-lookout.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-sm-smuggler",
+      "unit_id": "sw_unit_sm_smuggler",
+      "unit_name": "sw unit sm smuggler",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-sm-smuggler.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-sm-smuggler/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-sm-smuggler/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-sm-smuggler/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-sm-smuggler/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-sm-smuggler/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-sm-smuggler/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-sm-smuggler/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-sm-smuggler/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-sm-smuggler/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-sm-smuggler/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-sm-smuggler/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-sm-smuggler/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-sm-smuggler.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-sm-veteran",
+      "unit_id": "sw_unit_sm_veteran",
+      "unit_name": "sw unit sm veteran",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-sm-veteran.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-sm-veteran/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-sm-veteran/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-sm-veteran/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-sm-veteran/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-sm-veteran/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-sm-veteran/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-sm-veteran/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-sm-veteran/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-sm-veteran/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-sm-veteran/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-sm-veteran/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-sm-veteran/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-sm-veteran.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-wl-vornskr",
+      "unit_id": "sw_unit_wl_vornskr",
+      "unit_name": "sw unit wl vornskr",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-wl-vornskr.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-wl-vornskr/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-wl-vornskr/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-wl-vornskr/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-wl-vornskr/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-wl-vornskr/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-wl-vornskr/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-wl-vornskr/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-wl-vornskr/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-wl-vornskr/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-wl-vornskr/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-wl-vornskr/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-wl-vornskr/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-wl-vornskr.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-xwing",
+      "unit_id": "sw_unit_nr_xwing",
+      "unit_name": "sw unit nr xwing",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-xwing.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-xwing/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-xwing/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-xwing/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-xwing/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-xwing/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-xwing/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-xwing/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-xwing/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-xwing/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-xwing/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-xwing/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-xwing/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-xwing.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-awing",
+      "unit_id": "sw_unit_nr_awing",
+      "unit_name": "sw unit nr awing",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-awing.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-awing/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-awing/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-awing/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-awing/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-awing/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-awing/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-awing/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-awing/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-awing/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-awing/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-awing/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-awing/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-awing.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-ywing",
+      "unit_id": "sw_unit_nr_ywing",
+      "unit_name": "sw unit nr ywing",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-ywing.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-ywing/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-ywing/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-ywing/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-ywing/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-ywing/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-ywing/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-ywing/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-ywing/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-ywing/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-ywing/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-ywing/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-ywing/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-ywing.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-nr-docked-warship",
+      "unit_id": "sw_unit_nr_docked_warship",
+      "unit_name": "sw unit nr docked warship",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-nr-docked-warship.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-nr-docked-warship/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-nr-docked-warship/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-nr-docked-warship/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-nr-docked-warship/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-nr-docked-warship/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-nr-docked-warship/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-nr-docked-warship/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-nr-docked-warship/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-nr-docked-warship/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-nr-docked-warship/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-nr-docked-warship/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-nr-docked-warship/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-nr-docked-warship.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-tie-fighter",
+      "unit_id": "sw_unit_im_tie_fighter",
+      "unit_name": "sw unit im tie fighter",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-tie-fighter.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-tie-fighter/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-tie-fighter/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-tie-fighter/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-tie-fighter/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-tie-fighter/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-tie-fighter/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-tie-fighter/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-tie-fighter/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-tie-fighter/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-tie-fighter/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-tie-fighter/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-tie-fighter/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-tie-fighter.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-tie-interceptor",
+      "unit_id": "sw_unit_im_tie_interceptor",
+      "unit_name": "sw unit im tie interceptor",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-tie-interceptor.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-tie-interceptor/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-tie-interceptor/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-tie-interceptor/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-tie-interceptor/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-tie-interceptor/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-tie-interceptor/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-tie-interceptor/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-tie-interceptor/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-tie-interceptor/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-tie-interceptor/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-tie-interceptor/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-tie-interceptor/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-tie-interceptor.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-tie-bomber",
+      "unit_id": "sw_unit_im_tie_bomber",
+      "unit_name": "sw unit im tie bomber",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-tie-bomber.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-tie-bomber/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-tie-bomber/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-tie-bomber/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-tie-bomber/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-tie-bomber/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-tie-bomber/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-tie-bomber/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-tie-bomber/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-tie-bomber/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-tie-bomber/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-tie-bomber/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-tie-bomber/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-tie-bomber.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-mole-miner",
+      "unit_id": "sw_unit_im_mole_miner",
+      "unit_name": "sw unit im mole miner",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-mole-miner.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-mole-miner/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-mole-miner/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-mole-miner/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-mole-miner/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-mole-miner/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-mole-miner/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-mole-miner/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-mole-miner/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-mole-miner/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-mole-miner/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-mole-miner/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-mole-miner/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-mole-miner.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
+      "id": "art-sw-unit-im-star-destroyer",
+      "unit_id": "sw_unit_im_star_destroyer",
+      "unit_name": "sw unit im star destroyer",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "state": "pending_codex_imagegen",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-im-star-destroyer.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-im-star-destroyer/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-im-star-destroyer/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-im-star-destroyer/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-im-star-destroyer/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-im-star-destroyer/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-im-star-destroyer/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-im-star-destroyer/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-im-star-destroyer/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-im-star-destroyer/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-im-star-destroyer/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-im-star-destroyer/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-im-star-destroyer/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-im-star-destroyer.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
       "id": "art-thrawn-phalanx",
       "unit_id": "Thrawn_Phalanx",
       "unit_name": "Thrawn Phalanx",
