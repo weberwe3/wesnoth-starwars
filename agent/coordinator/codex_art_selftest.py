@@ -174,6 +174,20 @@ class CodexArtTests(unittest.TestCase):
         tools = [call.args[1] for call in tool.call_args_list]
         self.assertEqual(tools, [codex_art.PAINT_TOOL, codex_art.DERIVE_TOOL])
 
+    def test_derivation_rejects_a_flat_shape_instead_of_a_unit(self) -> None:
+        try:
+            from PIL import Image, ImageDraw
+        except ImportError:
+            self.skipTest("Pillow is only installed for the art toolchain")
+        sys.path.insert(0, str(ROOT / "production" / "tools"))
+        import derive_unit_frames
+        disc = Image.new("RGBA", (72, 72), (0, 0, 0, 0))
+        ImageDraw.Draw(disc).ellipse((2, 2, 70, 70), fill=(20, 60, 250, 255))
+        self.assertIn("distinct colors", derive_unit_frames.degenerate_reason(disc))
+        painted = Image.new("RGBA", (72, 72))
+        painted.putdata([(x * 3, y * 3, (x + y) * 2 % 256, 255) for y in range(72) for x in range(72)])
+        self.assertIsNone(derive_unit_frames.degenerate_reason(painted))
+
     def test_usage_limit_pauses_without_fallback(self) -> None:
         runner = mock.Mock(return_value=subprocess.CompletedProcess([], 1, "You've hit your usage limit.", ""))
         with mock.patch.object(codex_art, "_run_tool") as tool:
