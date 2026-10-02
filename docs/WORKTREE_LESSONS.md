@@ -15,6 +15,20 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-10-02 — a gap in side numbers silently dropped a scenario's side
+
+- **Symptom:** Campaign II mission 7 loaded without its derelict fleet; the engine logged "found invalid side=4 in definition of side number 3" and boarding never triggered.
+- **Cause:** The scenario defined sides 1, 2, and 4. Wesnoth numbers `[side]` tags in order and requires `side=` to match that position.
+- **Resolution:** Renumbered the neutral side to 3 and every filter that referenced it.
+- **Prevention:** Side numbers must be contiguous from 1; the Linux campaign-sequence probe fails on the logged config error.
+
+### 2026-10-02 — parentheses inside a macro argument broke argument grouping
+
+- **Symptom:** Campaign II failed to preprocess: "SW_STRAFING_RUN expects 3 arguments, but has 4".
+- **Cause:** A parenthesized macro argument contained a `$( ... )` formula; its inner parentheses ended the grouped argument early.
+- **Resolution:** Compute the value into a variable first and pass `$variable` in the macro argument.
+- **Prevention:** Never put `$( ... )` formulas inside parenthesized macro arguments; installed-engine preprocessing fails such content.
+
 ### 2026-10-02 — the GUI probe never reached Game because --plugin disables --campaign
 
 - **Symptom:** Every GUI startup probe (Windows hidden/RDP and Linux offscreen alike) stayed at the title screen until timeout; historical validation reported `engine_infrastructure` and automation stopped.

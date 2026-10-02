@@ -49,7 +49,7 @@ class CodexArtTests(unittest.TestCase):
         import re
         direction = codex_art.load_direction(ROOT)
         units = set()
-        for path in (ROOT / "addons/Star_Wars_Thrawn_Trilogy/units").glob("hte_*.cfg"):
+        for path in [*(ROOT / "addons/Star_Wars_Thrawn_Trilogy/units").glob("hte_*.cfg"), *(ROOT / "addons/Star_Wars_Thrawn_Trilogy/units").glob("dfr_*.cfg")]:
             units.update(re.findall(r"(?m)^\[unit_type\]\n    id=(\S+)", path.read_text(encoding="utf-8")))
         self.assertTrue(units)
         self.assertEqual(sorted(units - set(direction["units"])), [])

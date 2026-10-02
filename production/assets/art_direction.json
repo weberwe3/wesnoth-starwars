@@ -45,7 +45,16 @@
     "sw_unit_im_star_destroyer": "A huge dagger-shaped gray capital warship seen from three-quarter view, with a stepped command tower near the stern and rows of turbolaser turrets.",
     "sw_unit_sm_smuggler": "A fringe smuggler in a worn tan jacket over a dark shirt, cargo trousers, boots, and a blaster pistol at the hip.",
     "sw_unit_sm_veteran": "A hardened bald smuggler with a scarred face in a gray flight jacket and leather vest, holding a long blaster rifle.",
-    "sw_unit_wl_vornskr": "A lean, wolf-sized four-legged predator with smooth gray hide, a long whip-like tail, a narrow toothed snout, and pale eyes."
+    "sw_unit_wl_vornskr": "A lean, wolf-sized four-legged predator with smooth gray hide, a long whip-like tail, a narrow toothed snout, and pale eyes.",
+    "sw_hero_khabarakh": "A short, wiry gray-skinned alien commando with a heavy protruding jaw and dark eyes, wearing a sleek dark combat suit with a small clan sash, holding curved knives; an alert, uncertain expression.",
+    "sw_hero_cbaoth": "A tall, gaunt old man with a very long flowing white beard and long white hair, wearing simple brown robes over a cream tunic, holding an ignited green energy blade; piercing, imperious eyes.",
+    "sw_hero_bel_iblis": "A distinguished, fit man in his sixties with swept-back silver hair, wearing a dark olive military greatcoat with brass buttons over a field uniform, holding a blaster pistol; calm, commanding expression.",
+    "sw_unit_bi_commando": "An elite private-army infantry soldier in khaki-brown fatigues with tan armored plates and a full-coverage helmet with a dark visor, holding a blaster rifle.",
+    "sw_unit_im_clone_trooper": "An Imperial soldier in full white plastoid armor with a black undersuit and a fully enclosed white helmet with dark eye lenses, holding a black blaster rifle, standing rigidly at the ready.",
+    "sw_unit_im_decon_droid": "A bulky, slow industrial droid on short tracked legs with a dented ochre hull, a chemical sprayer nozzle, and a heavy manipulator arm.",
+    "sw_unit_ob_dreadnaught": "A long, old-fashioned heavy cruiser warship, weathered gray-tan hull with ribbed sections, a blocky command bridge, and banks of turbolaser turrets.",
+    "sw_unit_nr_boarding_shuttle": "A boxy armored assault shuttle with stubby wings, white and blue paneling, and a heavy forward docking hatch.",
+    "sw_unit_im_boarding_shuttle": "An angular gray Imperial assault shuttle with folded wings, a heavy forward boarding hatch, and twin laser cannons."
   },
   "portrait_from_sprite": [
     "sw_hero_luke",
@@ -59,14 +68,18 @@
   "sprite_only": [
     "sw_hero_xwing_luke",
     "sw_unit_im_at_st",
+    "sw_unit_im_boarding_shuttle",
+    "sw_unit_im_decon_droid",
     "sw_unit_im_mole_miner",
     "sw_unit_im_star_destroyer",
     "sw_unit_im_tie_bomber",
     "sw_unit_im_tie_fighter",
     "sw_unit_im_tie_interceptor",
     "sw_unit_nr_awing",
+    "sw_unit_nr_boarding_shuttle",
     "sw_unit_nr_docked_warship",
     "sw_unit_nr_xwing",
-    "sw_unit_nr_ywing"
+    "sw_unit_nr_ywing",
+    "sw_unit_ob_dreadnaught"
   ]
 }

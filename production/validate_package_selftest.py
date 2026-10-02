@@ -39,7 +39,8 @@ class PackageValidationTests(unittest.TestCase):
         self.assertTrue(result["package_copy_matches"])
         self.assertEqual(verify.call_count, 2)
         self.assertEqual(preprocess.call_count, 1)
-        self.assertEqual(sequence.call_count, 1)
+        # One full GUI sequence per campaign.
+        self.assertEqual(sequence.call_count, 2)
         self.assertEqual(runtime.call_count, 1)
         # Every campaign scenario gets its own GUI startup probe.
         self.assertEqual(len(runtime.call_args.args[2]), len(result["sequence_scenario_ids"]))
@@ -76,7 +77,7 @@ class PackageValidationTests(unittest.TestCase):
               mock.patch("validate_package.runtime_scenario_probes") as runtime):
             result = validate_packaged_candidate(self.root, self.candidate, self.engine)
         self.assertFalse(result["pass"])
-        self.assertEqual(result["campaign_sequence"], {"pass": False})
+        self.assertFalse(result["campaign_sequence"]["pass"])
         runtime.assert_not_called()
 
     def test_failed_runtime_probe_blocks_promotion(self) -> None:

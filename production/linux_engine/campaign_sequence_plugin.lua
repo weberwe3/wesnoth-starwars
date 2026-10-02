@@ -14,7 +14,9 @@
 -- transitions. It does not prove that a human can reach the objectives by
 -- legal moves; route probes cover that separately.
 
+-- run_campaign_sequence.py substitutes the campaign id and final scenario.
 local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"
+local FINAL_SCENARIO = "sw_hte_10_thrawns_gambit"
 
 -- Win scripts run inside the game Lua kernel. Each returns nothing; WML
 -- events triggered here end the level.
@@ -63,11 +65,41 @@ local WIN = {
     end
   end,
   sw_hte_10_thrawns_gambit = function() kill_id("sw_hte10_judicator") end,
+  -- Campaign II
+  sw_dfr_01_the_noghri_prisoner = function()
+    local k = wesnoth.units.get("sw_hero_khabarakh")
+    k.hitpoints = 5
+    fire("sw_dfr01_check_capture")
+  end,
+  sw_dfr_02_honoghr = function() move("sw_hero_leia", 26, 9) end,
+  sw_dfr_03_jomark = function() kill_id("sw_dfr03_raid_boss") end,
+  sw_dfr_04_the_senators_men = function() move("sw_hero_han", 25, 2) end,
+  sw_dfr_05_peregrines_nest = function() kill_id("sw_dfr05_commander") end,
+  sw_dfr_06_the_mad_jedi = function()
+    wesnoth.wml_actions.unit{side = 1, id = "sw_hero_mara", type = "sw_hero_mara", x = 24, y = 9}
+    move("sw_hero_luke", 26, 9)
+  end,
+  sw_dfr_07_the_dark_force = function()
+    local shuttle = wesnoth.units.find_on_map{side = 1, type = "sw_unit_nr_boarding_shuttle"}[1]
+    for _, hex in ipairs{{10, 9}, {11, 5}, {11, 14}} do
+      move(shuttle.id, hex[1], hex[2])
+    end
+  end,
+  sw_dfr_08_aboard_the_katana = function()
+    kill_id("sw_dfr08_clone_officer")
+    move("sw_hero_luke", 24, 9)
+  end,
+  sw_dfr_09_battle_for_the_fleet = function()
+    move("sw_dfr09_katana", 29, 11)
+    move("sw_dfr09_dread_2", 29, 9)
+  end,
+  sw_dfr_10_honoghrs_choice = function() kill_id("sw_dfr10_commander") end,
 }
 
 local HEROES = {
   "sw_hero_luke", "sw_hero_leia", "sw_hero_han", "sw_hero_chewbacca", "sw_hero_lando",
   "sw_hero_mara", "sw_hero_karrde", "sw_hero_wedge", "sw_hero_pellaeon",
+  "sw_hero_khabarakh", "sw_hero_cbaoth", "sw_hero_bel_iblis",
 }
 
 local function plugin(events, context, info)
@@ -155,7 +187,7 @@ local function plugin(events, context, info)
     until (not still and info.name ~= "Game") or waited > 20000 or info.name == "titlescreen"
     if waited > 20000 then out("fatal scenario " .. scenario .. " did not end") ; break end
     out("left " .. scenario .. " via " .. info.name)
-    if scenario == "sw_hte_10_thrawns_gambit" then break end
+    if scenario == FINAL_SCENARIO then break end
   end
   out("done")
   while info.name ~= "titlescreen" do

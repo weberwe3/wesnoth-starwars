@@ -17,7 +17,7 @@ import tempfile
 from build_store import ADDON_ID, BuildStoreError, verify_candidate
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "linux_engine"))
-from run_campaign_sequence import EXPECTED as SEQUENCE_SCENARIO_IDS  # noqa: E402
+from run_campaign_sequence import CAMPAIGNS as SEQUENCE_CAMPAIGNS  # noqa: E402
 from run_campaign_sequence import PLUGIN as SEQUENCE_PLUGIN  # noqa: E402
 from run_campaign_sequence import run_sequence  # noqa: E402
 
@@ -67,7 +67,7 @@ def validate_packaged_candidate(repo_root: Path, candidate: Path, engine: Path) 
         "sequence_plugin_sha256": _digest(SEQUENCE_PLUGIN),
         "sequence_harness_sha256": _digest(Path(__file__).resolve().parent / "linux_engine/run_campaign_sequence.py"),
         "scenario_ids": [SCENARIO_ID],
-        "sequence_scenario_ids": list(SEQUENCE_SCENARIO_IDS),
+        "sequence_scenario_ids": [sid for ids in SEQUENCE_CAMPAIGNS.values() for sid in ids],
         "package_copy_matches": False, "candidate_still_matches": False,
         "preprocess": None, "campaign_sequence": None,
         "runtime": None,
@@ -95,9 +95,16 @@ def validate_packaged_candidate(repo_root: Path, candidate: Path, engine: Path) 
         if result["preprocess"].get("pass") is True:
             # Full GUI campaign: title screen entry, every scenario, scripted
             # win events, linger, transitions, hero carryover, in-game saves.
-            result["campaign_sequence"] = run_sequence(addon, engine, Path(directory) / "sequence")
-            if result["campaign_sequence"].get("pass") is True:
-                result["runtime"] = runtime_scenario_probes(root, engine, set(SEQUENCE_SCENARIO_IDS))
+            sequences = {
+                campaign: run_sequence(addon, engine, Path(directory) / f"sequence-{index}", campaign=campaign)
+                for index, campaign in enumerate(SEQUENCE_CAMPAIGNS)
+            }
+            result["campaign_sequence"] = {
+                "pass": all(item.get("pass") is True for item in sequences.values()),
+                "campaigns": sequences,
+            }
+            if result["campaign_sequence"]["pass"]:
+                result["runtime"] = runtime_scenario_probes(root, engine, set(result["sequence_scenario_ids"]))
         result["package_copy_matches"] = _copy_matches(manifest, addon)
     try:
         result["candidate_still_matches"] = verify_candidate(candidate)["package_sha256"] == manifest["package_sha256"]

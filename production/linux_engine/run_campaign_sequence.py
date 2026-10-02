@@ -32,6 +32,8 @@ ROOT = Path(__file__).resolve().parents[2]
 ADDON_ID = "Star_Wars_Thrawn_Trilogy"
 ADDON = ROOT / "addons" / ADDON_ID
 PLUGIN = Path(__file__).resolve().parent / "campaign_sequence_plugin.lua"
+CAMPAIGN_I = "Star_Wars_Thrawn_Trilogy"
+CAMPAIGN_II = "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising"
 EXPECTED = [
     "sw_hte_01_ysalamiri_harvest",
     "sw_hte_02_ambush_at_bpfassh",
@@ -44,6 +46,19 @@ EXPECTED = [
     "sw_hte_09_sluis_van_shipyards",
     "sw_hte_10_thrawns_gambit",
 ]
+EXPECTED_II = [
+    "sw_dfr_01_the_noghri_prisoner",
+    "sw_dfr_02_honoghr",
+    "sw_dfr_03_jomark",
+    "sw_dfr_04_the_senators_men",
+    "sw_dfr_05_peregrines_nest",
+    "sw_dfr_06_the_mad_jedi",
+    "sw_dfr_07_the_dark_force",
+    "sw_dfr_08_aboard_the_katana",
+    "sw_dfr_09_battle_for_the_fleet",
+    "sw_dfr_10_honoghrs_choice",
+]
+CAMPAIGNS = {CAMPAIGN_I: EXPECTED, CAMPAIGN_II: EXPECTED_II}
 # Heroes that must be on the map when each scenario becomes playable.
 REQUIRED_HEROES = {
     "sw_hte_01_ysalamiri_harvest": ["sw_hero_pellaeon"],
@@ -56,6 +71,16 @@ REQUIRED_HEROES = {
     "sw_hte_08_nomad_city": ["sw_hero_lando", "sw_hero_han"],
     "sw_hte_09_sluis_van_shipyards": ["sw_hero_wedge", "sw_hero_luke"],
     "sw_hte_10_thrawns_gambit": ["sw_hero_wedge", "sw_hero_luke"],
+    "sw_dfr_01_the_noghri_prisoner": ["sw_hero_leia", "sw_hero_chewbacca"],
+    "sw_dfr_02_honoghr": ["sw_hero_leia", "sw_hero_chewbacca", "sw_hero_khabarakh"],
+    "sw_dfr_03_jomark": ["sw_hero_luke"],
+    "sw_dfr_04_the_senators_men": ["sw_hero_han", "sw_hero_lando"],
+    "sw_dfr_05_peregrines_nest": ["sw_hero_han", "sw_hero_lando", "sw_hero_bel_iblis"],
+    "sw_dfr_06_the_mad_jedi": ["sw_hero_luke"],
+    "sw_dfr_07_the_dark_force": ["sw_hero_wedge", "sw_hero_luke"],
+    "sw_dfr_08_aboard_the_katana": ["sw_hero_luke", "sw_hero_han", "sw_hero_lando", "sw_hero_chewbacca"],
+    "sw_dfr_09_battle_for_the_fleet": ["sw_hero_wedge", "sw_hero_luke"],
+    "sw_dfr_10_honoghrs_choice": ["sw_hero_leia", "sw_hero_chewbacca", "sw_hero_khabarakh"],
 }
 # Heroes that must NOT be on the map (stashed or out of story).
 FORBIDDEN_HEROES = {
@@ -113,11 +138,12 @@ def parse(log_text: str) -> dict:
     return {"scenarios": scenarios, "notes": notes}
 
 
-def evaluate(parsed: dict, log_text: str) -> list[str]:
+def evaluate(parsed: dict, log_text: str, expected: list[str] | None = None) -> list[str]:
     failures: list[str] = []
+    expected = expected or EXPECTED
     ids = [s["id"] for s in parsed["scenarios"]]
-    if ids != EXPECTED:
-        failures.append(f"scenario order {ids} != expected {EXPECTED}")
+    if ids != expected:
+        failures.append(f"scenario order {ids} != expected {expected}")
     for s in parsed["scenarios"]:
         for hero in REQUIRED_HEROES.get(s["id"], []):
             if hero not in s["heroes_on_map"]:
@@ -140,9 +166,19 @@ def evaluate(parsed: dict, log_text: str) -> list[str]:
     return failures
 
 
-def run_sequence(addon: Path, engine: Path, workdir: Path, timeout: int = 2400) -> dict:
+def run_sequence(addon: Path, engine: Path, workdir: Path, timeout: int = 2400,
+                 campaign: str = CAMPAIGN_I) -> dict:
     """Stage ``addon`` in isolated userdata, run the plugin, return evidence."""
 
+    expected = CAMPAIGNS[campaign]
+    workdir.mkdir(parents=True, exist_ok=True)
+    plugin = workdir / "campaign_sequence_plugin.lua"
+    plugin.write_text(
+        PLUGIN.read_text(encoding="utf-8")
+        .replace('local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"', f'local CAMPAIGN = "{campaign}"')
+        .replace('local FINAL_SCENARIO = "sw_hte_10_thrawns_gambit"', f'local FINAL_SCENARIO = "{expected[-1]}"'),
+        encoding="utf-8",
+    )
     userdata = workdir / "userdata"
     if userdata.exists():
         shutil.rmtree(userdata)
@@ -156,7 +192,7 @@ def run_sequence(addon: Path, engine: Path, workdir: Path, timeout: int = 2400) 
     # The engine does not always exit after the plugin calls exit; once the
     # probe reports "done" (or the deadline passes) the process is ended.
     process = subprocess.Popen(
-        [str(engine), "--resolution", "1024x768", "--userdata-dir", str(userdata), "--plugin", str(PLUGIN)],
+        [str(engine), "--resolution", "1024x768", "--userdata-dir", str(userdata), "--plugin", str(plugin)],
         cwd=workdir, env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
     timed_out = False
@@ -181,12 +217,13 @@ def run_sequence(addon: Path, engine: Path, workdir: Path, timeout: int = 2400) 
     log_text = "\n".join(p.read_text(encoding="utf-8", errors="replace")
                          for p in sorted((userdata / "logs").glob("*.log")))
     parsed = parse(log_text)
-    failures = evaluate(parsed, log_text)
+    failures = evaluate(parsed, log_text, expected)
     if timed_out:
         failures.append(f"engine timed out after {timeout}s")
     return {
         "schema_version": 1,
         "kind": "linux-gui-campaign-sequence",
+        "campaign": campaign,
         "engine": str(engine),
         "addon_sha256": sha256_tree(addon),
         "plugin_sha256": hashlib.sha256(PLUGIN.read_bytes()).hexdigest(),
@@ -206,12 +243,13 @@ def main() -> int:
     parser.add_argument("--workdir", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--timeout", type=int, default=2400)
+    parser.add_argument("--campaign", choices=sorted(CAMPAIGNS), default=CAMPAIGN_I)
     args = parser.parse_args()
     if not args.engine.is_file():
         print(f"Linux engine not found: {args.engine}", file=sys.stderr)
         return 2
     workdir = args.workdir or Path(tempfile.mkdtemp(prefix="sw-seq-"))
-    evidence = run_sequence(args.addon, args.engine, workdir, args.timeout)
+    evidence = run_sequence(args.addon, args.engine, workdir, args.timeout, args.campaign)
     text = json.dumps(evidence, indent=2)
     if args.output:
         args.output.write_text(text + "\n", encoding="utf-8")

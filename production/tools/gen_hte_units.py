@@ -258,6 +258,7 @@ SPECIALS = {
     "marksman": "{WEAPON_SPECIAL_MARKSMAN}",
     "backstab": "{WEAPON_SPECIAL_BACKSTAB}",
     "slow": "{WEAPON_SPECIAL_SLOW}",
+    "magical": "{WEAPON_SPECIAL_MAGICAL}",
     "deflection": (
         "[disable]\n"
         "    id=sw_special_deflection\n"
@@ -485,6 +486,50 @@ ROSTER = [
       attacks=[attack("turbolasers", "turbolasers", "fire", "ranged", 20, 3),
                attack("ion_cannons", "ion cannons", "cold", "ranged", 12, 2, specials=["slow"])]),
 
+    # Campaign II (Dark Force Rising) -------------------------------------
+    U("sw_hero_khabarakh", "Noghri Commando",
+      "Khabarakh of the clan Kihm'bar, a Noghri commando who has begun to doubt the Empire his people serve.",
+      file="dfr_units", level=2, hp=42, mp=6, xp=100, cost=40, mt="sw_noghri", race="sw_noghri", hero=True,
+      gender="male", alignment="chaotic",
+      attacks=[attack("noghri_knives", "Noghri knives", "blade", "melee", 9, 4, specials=["backstab"]),
+               attack("stun_blaster", "stun blaster", "fire", "ranged", 6, 2)],
+      abilities=["noghri_stealth"]),
+    U("sw_hero_cbaoth", "Jedi Master",
+      "Joruus C'baoth claims to be a Jedi Master of the Old Republic. His power is immense; his judgment is not. His Force abilities fail inside a ysalamiri bubble.",
+      file="dfr_units", level=4, hp=60, mp=5, xp=200, cost=80, mt="sw_jedi", hero=True, gender="male",
+      attacks=[attack("lightsaber", "lightsaber", "arcane", "melee", 12, 4),
+               attack("force_lightning", "Force lightning", "fire", "ranged", 12, 3, specials=["magical"])],
+      abilities=["force_agility", "force_healing"]),
+    U("sw_hero_bel_iblis", "Senator-General",
+      "Garm Bel Iblis, a founder of the Rebellion who broke with its leaders and fought on alone with his own private army.",
+      file="dfr_units", level=3, hp=48, mp=5, xp=150, cost=50, mt="sw_infantry", hero=True, gender="male",
+      attacks=[FISTS(6, 2), PISTOL(9, 3, sp=["marksman"])], abilities=["leadership"]),
+    U("sw_unit_bi_commando", "Corellian Commando",
+      "Veterans of Bel Iblis's private army: disciplined, well equipped, and fiercely loyal to their Senator.",
+      file="dfr_units", level=1, hp=40, mp=5, xp=44, cost=17, mt="sw_infantry",
+      attacks=[BUTT(6, 2), RIFLE(8, 3)]),
+    U("sw_unit_im_clone_trooper", "Clone Stormtrooper",
+      "Soldiers grown in the Grand Admiral's new cloning cylinders and sealed inside stormtrooper armor. They fight without hesitation.",
+      file="dfr_units", level=1, hp=40, mp=5, xp=40, cost=16, mt="sw_armored_trooper",
+      attacks=[BUTT(6, 2), RIFLE(8, 3)], advances="sw_unit_im_stormtrooper_sergeant"),
+    U("sw_unit_im_decon_droid", "Decontamination Droid",
+      "Slow, heavily built droids that have worked Honoghr's poisoned soil for a generation.",
+      file="dfr_units", level=1, hp=50, mp=3, xp=40, cost=15, mt="sw_walker", race="mechanical",
+      attacks=[attack("sprayer", "chemical sprayer", "cold", "ranged", 6, 2, specials=["slow"]),
+               attack("manipulator", "manipulator arm", "impact", "melee", 8, 2)]),
+    U("sw_unit_ob_dreadnaught", "Katana Dreadnaught",
+      "One of two hundred heavy cruisers lost before the Clone Wars, its systems slaved together and its crews long dead.",
+      file="dfr_units", level=3, hp=160, mp=1, xp=150, cost=0, mt="sw_capital", race="mechanical",
+      attacks=[attack("turbolasers", "turbolasers", "fire", "ranged", 14, 3)], zoc="no"),
+    U("sw_unit_nr_boarding_shuttle", "Boarding Shuttle",
+      "An armored shuttle carrying a boarding crew. It secures a derelict ship by docking beside it.",
+      file="dfr_units", level=1, hp=40, mp=6, xp=40, cost=20, mt="sw_starfighter", race="mechanical",
+      attacks=[LASERS(5, 2)]),
+    U("sw_unit_im_boarding_shuttle", "Imperial Assault Shuttle",
+      "An Imperial boarding craft packed with clone stormtroopers.",
+      file="dfr_units", level=1, hp=44, mp=6, xp=40, cost=20, mt="sw_starfighter", race="mechanical",
+      attacks=[LASERS(6, 2)]),
+
     # Smugglers and wildlife ----------------------------------------------
     U("sw_unit_sm_smuggler", "Smuggler",
       "Members of Talon Karrde's organization: pilots, slicers, and gunhands, loyal to Karrde before any government.",
@@ -509,6 +554,7 @@ FILES = {
     "hte_heroes": "Named characters for Campaign I. Instances set random_traits=no.",
     "hte_imperial": "Imperial Remnant ground forces for Campaign I.",
     "hte_smugglers": "Karrde's smugglers and Myrkr wildlife for Campaign I.",
+    "dfr_units": "Characters, forces, and craft introduced in Campaign II (Dark Force Rising).",
 }
 
 
