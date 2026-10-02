@@ -608,7 +608,12 @@ class AutonomyController:
         try:
             for source, members in groups.items():
                 for job in members:
-                    outcome = codex_art.generate_unit_art(self.root, job)
+                    try:
+                        outcome = codex_art.generate_unit_art(self.root, job)
+                    except (codex_art.CodexArtError, OSError, ValueError) as exc:
+                        # One job's failure keeps its existing art; the run continues.
+                        outcome = {"job_id": job.get("id"), "unit_id": job.get("unit_id"),
+                                   "state": "failed", "reason": str(exc)[:300]}
                     results.append(outcome)
                     self._write_art_generation_status(done=len(results), results=results[-60:])
                     if outcome["state"] == "quota_paused":

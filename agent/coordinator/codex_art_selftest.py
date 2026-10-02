@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import codex_art  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-PNG = b"\x89PNG\r\n\x1a\n" + b"\0" * 4096
+PNG = b"\x89PNG\r\n\x1a\n" + b"\0" * 4096 + b"\0\0\0\0IEND\xaeB`\x82"
 
 
 class CodexArtTests(unittest.TestCase):
@@ -61,7 +61,7 @@ class CodexArtTests(unittest.TestCase):
             self.assertEqual(command[-1], "-")
             kind = "sprite" if "sprite.png" in kwargs["input"] else "portrait"
             calls.append(kind)
-            (self.workspace / f"{kind}.png").write_bytes(PNG + kind.encode())
+            (self.workspace / f"{kind}.png").write_bytes(PNG)
             return subprocess.CompletedProcess(command, 0, f"{kind}.png\n", "")
 
         with mock.patch.object(codex_art, "_run_tool", return_value=json.dumps({"written": ["a"] * 13})) as tool:
@@ -89,7 +89,7 @@ class CodexArtTests(unittest.TestCase):
         home = Path(self.temp.name) / "codex-home"
         session = home / "generated_images" / "session-1"
         session.mkdir(parents=True)
-        made = iter([PNG + b"sprite", PNG + b"portrait"])
+        made = iter([PNG.replace(b"\0" * 8, b"sprite..", 1), PNG.replace(b"\0" * 8, b"portrait", 1)])
 
         def runner(command, **kwargs):
             (session / f"exec-{len(list(session.iterdir()))}.png").write_bytes(next(made))
@@ -100,8 +100,8 @@ class CodexArtTests(unittest.TestCase):
                 mock.patch.object(codex_art, "_run_tool", return_value=json.dumps({"written": ["a"] * 13})):
             result = codex_art.generate_unit_art(ROOT, self.job, runner=runner)
         self.assertEqual(result["state"], "generated")
-        self.assertEqual((self.workspace / "sprite.png").read_bytes(), PNG + b"sprite")
-        self.assertEqual((self.workspace / "portrait.png").read_bytes(), PNG + b"portrait")
+        self.assertIn(b"sprite..", (self.workspace / "sprite.png").read_bytes())
+        self.assertIn(b"portrait", (self.workspace / "portrait.png").read_bytes())
 
     def test_film_characters_get_sprite_framed_portraits(self) -> None:
         job = {"id": "art-sw-hero-han", "unit_id": "sw_hero_han", "unit_name": "Smuggler General"}
@@ -127,6 +127,34 @@ class CodexArtTests(unittest.TestCase):
         os.utime(old / "x.png", (1000, 1000))
         os.utime(old, (1000, 1000))
         self.assertEqual(codex_art.harvest_generated(home, 5000.0, 6000.0), [])
+
+    def test_truncated_png_is_not_complete(self) -> None:
+        path = self.workspace / "partial.png"
+        path.write_bytes(PNG[:-12])
+        self.assertFalse(codex_art._valid_png(path))
+        path.write_bytes(PNG)
+        self.assertTrue(codex_art._valid_png(path))
+
+    def test_image_from_before_the_call_is_never_harvested(self) -> None:
+        import os
+        home = Path(self.temp.name) / "codex-home"
+        session = home / "generated_images" / "s"
+        session.mkdir(parents=True)
+        (session / "prev.png").write_bytes(PNG)
+        os.utime(session / "prev.png", (4990.0, 4990.0))
+        self.assertEqual(codex_art.harvest_generated(home, 5000.0, 6000.0), [])
+
+    def test_an_image_is_never_harvested_twice(self) -> None:
+        home = Path(self.temp.name) / "codex-home"
+        session = home / "generated_images" / "s2"
+        session.mkdir(parents=True)
+        image = session / "once.png"
+        image.write_bytes(PNG)
+        codex_art._HARVESTED.add(str(image))
+        try:
+            self.assertEqual(codex_art.harvest_generated(home, 0.0, 9e12), [])
+        finally:
+            codex_art._HARVESTED.discard(str(image))
 
     def test_refused_design_keeps_code_drawn_art(self) -> None:
         refusal = 'error=image generation failed: "code": "moderation_blocked"'
