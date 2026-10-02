@@ -114,6 +114,20 @@ LOOKS: dict[str, Look] = {
     "sw_unit_sm_veteran": Look(skin="dark", hair=(20, 18, 16), hair_style="bald", top=(90, 90, 100),
                                vest=(60, 50, 40), bottom=(60, 55, 50), weapon="rifle"),
     "sw_unit_wl_vornskr": Look(kind="beast", skin="gray"),
+    # Campaign II
+    "sw_hero_khabarakh": Look(kind="noghri", skin="gray", top=(46, 44, 52), weapon="knives"),
+    "sw_hero_cbaoth": Look(hair=(236, 236, 236), hair_style="long", top=(110, 80, 50), bottom=(96, 70, 46),
+                           cape=(90, 64, 40), weapon="saber", blade=(120, 255, 130), belt=(60, 44, 30),
+                           extra={"beard": True}),
+    "sw_hero_bel_iblis": Look(hair=(200, 200, 205), top=(70, 80, 70), cape=(60, 66, 58), bottom=(50, 52, 50),
+                              weapon="pistol", accent=(200, 160, 60)),
+    "sw_unit_bi_commando": Look(helmet=(110, 100, 80), top=(100, 92, 70), vest=(80, 74, 60), bottom=(90, 84, 66)),
+    "sw_unit_im_clone_trooper": Look(helmet=(236, 236, 236), visor=(20, 20, 20), top=(236, 236, 236),
+                                     bottom=(236, 236, 236), belt=(30, 30, 30), skin="gray", accent=(60, 60, 64)),
+    "sw_unit_im_decon_droid": Look(kind="walker", top=(130, 120, 90)),
+    "sw_unit_ob_dreadnaught": Look(kind="capital", top=(170, 160, 150), accent=(120, 60, 50)),
+    "sw_unit_nr_boarding_shuttle": Look(kind="fighter", top=(200, 200, 196), accent=(60, 120, 200), extra={"long": True}),
+    "sw_unit_im_boarding_shuttle": Look(kind="fighter", top=(150, 154, 160), accent=(40, 40, 44), extra={"wedge": True}),
 }
 
 FRAMES = ("standing", "idle-1", "idle-2", "move-1", "move-2", "melee-1", "melee-2",
@@ -208,6 +222,10 @@ def paint_human(d, L: Look, pose: str):
         poly(d, [(cx - 6, top + 4), (cx - 5.5, top - 2), (cx, top - 4), (cx + 5.5, top - 2), (cx + 6, top + 4)], L.helmet)
         if L.visor:
             poly(d, [(cx - 1, top + 2), (cx + 6, top + 2), (cx + 5, top + 5), (cx - 1, top + 5)], L.visor, False)
+    if L.extra.get("beard"):
+        poly(d, [(cx - 4, top + 6), (cx + 5, top + 6), (cx + 3, top + 15), (cx, top + 17), (cx - 3, top + 14)], L.hair or (220, 220, 220))
+    if L.helmet:
+        pass
     elif L.hair and L.hair_style != "bald":
         poly(d, [(cx - 5.5, top + 3), (cx - 5, top - 2), (cx, top - 3.5), (cx + 5, top - 2), (cx + 5, top + 1),
                  (cx + 1, top), (cx - 3, top + 1)], L.hair)
@@ -407,7 +425,7 @@ def render_portrait(L: Look, unit_id: str) -> Image.Image:
 
 def unit_ids() -> list[str]:
     ids = []
-    for f in sorted((ADDON / "units").glob("hte_*.cfg")):
+    for f in sorted([*(ADDON / "units").glob("hte_*.cfg"), *(ADDON / "units").glob("dfr_*.cfg")]):
         ids += re.findall(r"(?m)^\s*id=(sw_[a-z0-9_]+)\s*$", f.read_text(encoding="utf-8"))
     return ids
 

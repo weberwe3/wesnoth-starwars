@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-dfr-scenario-sw-dfr-01-the-noghri-prisoner",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/01_the_noghri_prisoner.cfg",
+      "expected_id": "sw_dfr_01_the_noghri_prisoner"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-02-honoghr",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/02_honoghr.cfg",
+      "expected_id": "sw_dfr_02_honoghr"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-03-jomark",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/03_jomark.cfg",
+      "expected_id": "sw_dfr_03_jomark"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-04-the-senators-men",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/04_the_senators_men.cfg",
+      "expected_id": "sw_dfr_04_the_senators_men"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-05-peregrines-nest",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/05_peregrines_nest.cfg",
+      "expected_id": "sw_dfr_05_peregrines_nest"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-06-the-mad-jedi",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/06_the_mad_jedi.cfg",
+      "expected_id": "sw_dfr_06_the_mad_jedi"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-07-the-dark-force",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/07_the_dark_force.cfg",
+      "expected_id": "sw_dfr_07_the_dark_force"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-08-aboard-the-katana",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/08_aboard_the_katana.cfg",
+      "expected_id": "sw_dfr_08_aboard_the_katana"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-09-battle-for-the-fleet",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/09_battle_for_the_fleet.cfg",
+      "expected_id": "sw_dfr_09_battle_for_the_fleet"
+    },
+    {
+      "id": "sw-dfr-scenario-sw-dfr-10-honoghrs-choice",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/10_honoghrs_choice.cfg",
+      "expected_id": "sw_dfr_10_honoghrs_choice"
+    },
+    {
+      "id": "sw-dfr-unit-sw-hero-khabarakh",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_hero_khabarakh"
+    },
+    {
+      "id": "sw-dfr-unit-sw-hero-cbaoth",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_hero_cbaoth"
+    },
+    {
+      "id": "sw-dfr-unit-sw-hero-bel-iblis",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_hero_bel_iblis"
+    },
+    {
+      "id": "sw-dfr-unit-sw-unit-bi-commando",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_unit_bi_commando"
+    },
+    {
+      "id": "sw-dfr-unit-sw-unit-im-clone-trooper",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_unit_im_clone_trooper"
+    },
+    {
+      "id": "sw-dfr-unit-sw-unit-im-decon-droid",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_unit_im_decon_droid"
+    },
+    {
+      "id": "sw-dfr-unit-sw-unit-ob-dreadnaught",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_unit_ob_dreadnaught"
+    },
+    {
+      "id": "sw-dfr-unit-sw-unit-nr-boarding-shuttle",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_unit_nr_boarding_shuttle"
+    },
+    {
+      "id": "sw-dfr-unit-sw-unit-im-boarding-shuttle",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
+      "expected_id": "sw_unit_im_boarding_shuttle"
+    }
+  ]
+}

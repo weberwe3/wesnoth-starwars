@@ -1634,3 +1634,18 @@ consistent across all animation frames.
 Next: publish this branch through exact-head CI, re-enable dashboard
 automation against the new gates, run Codex art generation, add legal-route
 probes for each mission, then rebuild Campaign II on the same pattern.
+
+### 2026-10-02 — Campaign II (Dark Force Rising) rebuilt
+
+Campaign II is ten new missions in `scenarios/dark_force_rising/`: the Noghri
+prisoner, Honoghr, Jomark with C'baoth, Bel Iblis's commandos and base, the
+escape from the mad Jedi, the race for the Katana fleet, the boarding of the
+Katana, the escort battle, and the Noghri's choice. There are nine new unit
+types in `units/dfr_units.cfg`, maps from `production/tools/gen_dfr_maps.py`,
+and a design record in `production/campaigns/dark_force_rising/DESIGN.md`.
+The placeholder `sw_13`–`sw_21` scenarios are retired in
+`tests/retired-content.json`. The Linux campaign-sequence probe
+(`--campaign Star_Wars_Thrawn_Trilogy_Dark_Force_Rising`) plays all ten
+missions' scripted win paths in one session, and package validation now runs
+both campaigns. Next: Campaign III (The Last Command), legal-route probes, and
+Codex art for the remaining units.
