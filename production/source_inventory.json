@@ -6369,7 +6369,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/04_the_senators_men.cfg",
-      "sha256": "9e0d060a3da2f4e131092ad58cacca85f5b4737fdbe51ded398b79c20eb4ae56"
+      "sha256": "75e3d5dba25f9050c7b2a1223bb4c4b551cdd54c020fd5b7bf1c05b6fbb72750"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/05_peregrines_nest.cfg",
@@ -6385,7 +6385,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/08_aboard_the_katana.cfg",
-      "sha256": "2672f86094bc3f0f64d8d038598e008fa292aed1d84a878d2e161a2df279da74"
+      "sha256": "3ade7553efd9bffdc14934596be41daaf6273258963e9d7f26ab2df100e94373"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/09_battle_for_the_fleet.cfg",
@@ -6393,7 +6393,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/10_honoghrs_choice.cfg",
-      "sha256": "31ae444e96cbfa7c4fe0e04c4e658631c4fa49a1f709c974f1509febe9a14e69"
+      "sha256": "e904361af5457ceda84b1ada43035b8d62faec939ba53d9aea34d7b9f91f77f6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg",
@@ -6449,11 +6449,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/04_landfall_on_wayland.cfg",
-      "sha256": "7399f5095de5d389f1278a0e70d897f9073633a1c53e2bce8721bf12c0a8f69d"
+      "sha256": "f2f346086bd70b2c8d88959a71d9a802c3f1f7378cef1c8588c03f20bb5bff24"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/05_the_natives_of_wayland.cfg",
-      "sha256": "0489a912cb720d6e6741ea61701d3683fcfdc528e89e37d7d3ffe5521de2d5e0"
+      "sha256": "7c72f3ac813d77633186a013b794a5a9a217167ab373a3b0135a8165b12921ae"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/06_the_gates_of_tantiss.cfg",
