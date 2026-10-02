@@ -1,1 +1,2 @@
 *.docx binary
+production/launcher/*.cmd text eol=crlf
