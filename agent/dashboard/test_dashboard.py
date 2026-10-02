@@ -135,6 +135,27 @@ class ArtImportProductionTests(unittest.TestCase):
         self.assertEqual(job["production_message"], "Waiting for exact-head CI.")
         self.assertNotIn("internal_command", job)
 
+    def test_codex_art_generation_reads_the_full_manifest_not_the_display_cap(self) -> None:
+        jobs = [{"id": f"art-sw-unit-fixture-{index}", "unit_id": f"sw_unit_fixture_{index}",
+                 "state": "pending_codex_imagegen", "source_path": "u.cfg"} for index in range(14)]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "agent" / "runtime"
+            runtime.mkdir(parents=True)
+            controller = AutonomyController(
+                root, ControlStore(runtime / "control.json"), ApprovalQueue(root, runtime / "queue.json"),
+            )
+            started = []
+            with mock.patch("autonomy.validate_art_queue", return_value={"jobs": jobs}), \
+                    mock.patch("codex_art.art_python", return_value=Path("/bin/true")), \
+                    mock.patch("autonomy.threading.Thread") as thread:
+                thread.return_value.start.side_effect = lambda: started.append(True)
+                result = controller.generate_art(None)
+            self.assertEqual(result["jobs"], 14)
+            self.assertEqual(len(thread.call_args.kwargs["args"][0]), 14)
+            self.assertEqual(started, [True])
+            self.assertEqual(controller.art_generation_status()["state"], "running")
+
     def test_pending_art_is_not_reported_as_a_publication_failure(self) -> None:
         source = (ROOT / "agent" / "dashboard" / "static" / "app.js").read_text(encoding="utf-8")
         self.assertIn("Awaiting all 13 original generated PNGs", source)
