@@ -6397,7 +6397,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg",
-      "sha256": "94b4ba0f5f1f53f08eac9fa18876cadf34045ec3b51e1f49aa7d63fc0dc797e7"
+      "sha256": "b3301dab0cecf210c0512faa8a7352f120c840e4e580a2a5e3544d1069fb2345"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg",
@@ -6477,7 +6477,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "sha256": "e4de5245a0988ed9d40cf0736515ad7dcb4fcd12e6ae0974897e15d9140cd86b"
+      "sha256": "7ae53a7bd559880035b9e4626089359689740acb738708f154564b019b6d7be5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
@@ -6489,23 +6489,23 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "55dcd81791c564bcc23c35bfb355a57aa346b4a36bb62364793bfe77a646e0af"
+      "sha256": "fabf36e03cc648f034110e3db4357c7e9e7073a7efb39b36d4ed03ed2fa4abcd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "sha256": "d092354984c17fced01385950d50d3194f5cde9def67626e4a9d6da1d91d1c09"
+      "sha256": "5e6fd2aabb11fd070252e3c4121c59f74799260215b0fd1063afb7f47b0cead5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "sha256": "dba3ee476b2fc5de853b799aaa4d772483a7245c26bead59921dd0bf447326d1"
+      "sha256": "ffceddbf524f5f0599218765b3c03f829a206199607130c4054cf7f4b60d602e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
-      "sha256": "0831bf71ad117d23bd10480248fcf6e1c4189811d194638b3a501f3e2fece97e"
+      "sha256": "d98e2a9157cc70a4d7445deb80803dec61d0fc0041608af1a3bb5b1a1228ad2d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "sha256": "572c71cd9ae0f446924a3afab89be8b7b36017d82679f1f393ec5f9bda1477c3"
+      "sha256": "2ada459fdad15efdfff8f49a96b3dbd4a5f38e11010ab6396c33dd8ce792f1fd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
@@ -6517,7 +6517,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "ce71d3eb00ddd39fefc4eaf171d00c6635a3ce714ac2c7ceccc97b4aea575acf"
+      "sha256": "76d97fbf208a7010ecc46421a4cda6a1fa7a5a73b8385ccd52df5c5deb413f71"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
