@@ -632,3 +632,17 @@ looked resumable.
 `_plan` rebuilds the inventory before choosing work.
 **Prevention:** Derived planning state must be computed after every gate that
 can change the state it depends on.
+
+### 2026-10-02 — every content ticket failed exact-head CI on a stale inventory
+
+**Symptom:** The first dashboard Codex ticket (Cloning Vats objective note,
+PR #297) passed every local gate but failed CI with "inventory is stale;
+source changed".
+**Confirmed cause:** CI runs `production/inventory.py --check`. Art imports
+regenerate the inventory before committing, but `ApprovalQueue._commit` did
+not, so any ticket that changed indexed source was stale at its exact head.
+**Resolution:** `_commit` regenerates `production/source_inventory.json`
+before staging the candidate, so the reviewed and approved commit already
+matches CI.
+**Prevention:** Every pipeline that creates a publishable commit must run the
+same deterministic regeneration steps CI checks.
