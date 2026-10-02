@@ -35,7 +35,7 @@ CODED_TOOL = "production/tools/gen_coded_unit_art.py"
 # Refused heroes with a detailed painted master; others use the simpler coded set.
 PAINT_TOOL = "production/tools/paint_hero_masters.py"
 PORTRAIT_TOOL = "production/tools/fit_portrait.py"
-PAINTED_HEROES = frozenset({"sw_hero_luke", "sw_hero_chewbacca"})
+PAINTED_HEROES = frozenset({"sw_hero_luke", "sw_hero_chewbacca", "sw_unit_im_royal_guard"})
 ART_PYTHON_DEFAULT = Path.home() / "opt" / "swtools" / "bin" / "python"
 MANAGED_ART_ROOT = "art-gen"
 CODEX_TIMEOUT_SECONDS = 1500
