@@ -46,5 +46,27 @@
     "sw_unit_sm_smuggler": "A fringe smuggler in a worn tan jacket over a dark shirt, cargo trousers, boots, and a blaster pistol at the hip.",
     "sw_unit_sm_veteran": "A hardened bald smuggler with a scarred face in a gray flight jacket and leather vest, holding a long blaster rifle.",
     "sw_unit_wl_vornskr": "A lean, wolf-sized four-legged predator with smooth gray hide, a long whip-like tail, a narrow toothed snout, and pale eyes."
-  }
+  },
+  "portrait_from_sprite": [
+    "sw_hero_luke",
+    "sw_hero_leia",
+    "sw_hero_han",
+    "sw_hero_lando",
+    "sw_hero_wedge",
+    "sw_hero_chewbacca"
+  ],
+  "portrait_policy": "Characters portrayed by film actors use a portrait framed from their sprite, not a close-up face, so no real person's likeness is shown.",
+  "sprite_only": [
+    "sw_hero_xwing_luke",
+    "sw_unit_im_at_st",
+    "sw_unit_im_mole_miner",
+    "sw_unit_im_star_destroyer",
+    "sw_unit_im_tie_bomber",
+    "sw_unit_im_tie_fighter",
+    "sw_unit_im_tie_interceptor",
+    "sw_unit_nr_awing",
+    "sw_unit_nr_docked_warship",
+    "sw_unit_nr_xwing",
+    "sw_unit_nr_ywing"
+  ]
 }
