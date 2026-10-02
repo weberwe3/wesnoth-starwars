@@ -646,3 +646,18 @@ before staging the candidate, so the reviewed and approved commit already
 matches CI.
 **Prevention:** Every pipeline that creates a publishable commit must run the
 same deterministic regeneration steps CI checks.
+
+### 2026-10-02 — the secure bridge died on a transient WSL call
+
+**Symptom:** Twice in one day the control bridge stopped. Its last heartbeat
+froze, no `control-bridge.ps1` process remained, and the dashboard reported
+"Secure bridge offline".
+**Confirmed cause:** Every mailbox call ran one `wsl.exe` command and threw on
+any nonzero exit. The idle heartbeat and claim sat outside any `try`, and
+mailbox calls inside the run's `catch`/`finally` could throw out of them, so
+one transient WSL failure ended the script.
+**Resolution:** `Invoke-Mailbox` retries up to 3 times. An idle-loop failure
+sleeps and retries instead of exiting, and the failure-report and cleanup
+calls can no longer escape their handlers.
+**Prevention:** A long-lived supervisor loop must survive transient I/O
+failures. Keep only deliberate exits (shutdown marker, mutex) able to end it.
