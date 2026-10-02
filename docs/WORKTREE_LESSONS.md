@@ -558,3 +558,17 @@ set Codex actually produced. Luke and Chewbacca received detailed painted
 masters (`production/tools/paint_hero_masters.py`) that the fallback now uses.
 **Prevention:** A batch must contain only sets that change something. Check
 deterministic fallbacks for a no-op result before queueing an import.
+
+### 2026-10-02 — campaign menu icons could not be found
+
+**Symptom:** After the hero art merged (#291), the installed-engine check
+failed: `could not open image 'units/sw-hero-xwing-luke/standing.png'` and
+five more, all of them the campaign `icon=`/`image=` paths.
+**Confirmed cause:** `[binary_path]` existed only inside each campaign's
+`#ifdef CAMPAIGN_...` block. The campaign menu reads `[campaign]` icons
+before any campaign define is active, so the add-on's images did not resolve.
+**Resolution:** One top-level `[binary_path]` in `_main.cfg`. A Linux engine
+run then logs no image errors, and all three campaign sequences pass.
+**Prevention:** Any image a `[campaign]` tag references needs a binary path
+that is active at the title screen. Grep engine logs for `could not open
+image` after menu-facing changes.
