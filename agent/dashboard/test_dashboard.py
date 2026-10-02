@@ -2802,6 +2802,15 @@ class CoordinationControlTests(unittest.TestCase):
         self.assertIn('$childExitCode = $process.ExitCode', text)
         self.assertIn('Invoke-Mailbox -MailboxArguments $failureArguments', text)
 
+    def test_control_bridge_survives_transient_mailbox_failures(self) -> None:
+        text = (ROOT / "agent" / "dashboard" / "control-bridge.ps1").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("for ($attempt = 1; $attempt -le 3; $attempt++)", text)
+        idle = text.index('Write-Health "online" "Secure bridge ready"')
+        self.assertLess(text.rindex("try {", 0, idle), idle)
+        self.assertIn("# The mailbox is briefly unreachable; stay alive and try again.", text)
+
     def test_batch_launcher_exports_codex_compatible_worktree_root(self) -> None:
         text = (ROOT / "Start-WesnothAgentEnvironment.cmd").read_text(encoding="utf-8")
         self.assertIn(

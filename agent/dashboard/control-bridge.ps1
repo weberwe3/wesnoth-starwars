@@ -44,12 +44,18 @@ if ($codexWindows) {
 }
 
 function Invoke-Mailbox([string[]]$MailboxArguments) {
-    $output = & wsl.exe -d $Distro --cd $ProjectLinuxPath -e python3 `
-        agent/dashboard/bridge_mailbox.py @MailboxArguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Bridge mailbox command failed."
+    # A single wsl.exe call can fail transiently while the host is busy. Retry
+    # before treating the mailbox as unavailable; one hiccup used to end the
+    # whole bridge.
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        $output = & wsl.exe -d $Distro --cd $ProjectLinuxPath -e python3 `
+            agent/dashboard/bridge_mailbox.py @MailboxArguments
+        if ($LASTEXITCODE -eq 0) {
+            return ($output | Select-Object -Last 1)
+        }
+        Start-Sleep -Seconds 2
     }
-    return ($output | Select-Object -Last 1)
+    throw "Bridge mailbox command failed."
 }
 
 function Write-Health([string]$State, [string]$Message) {
@@ -65,11 +71,18 @@ try {
         if (Test-Path -LiteralPath $shutdownMarker) {
             break
         }
-        Write-Health "online" "Secure bridge ready"
-        if ($Once) {
-            break
+        try {
+            Write-Health "online" "Secure bridge ready"
+            if ($Once) {
+                break
+            }
+            $runId = Invoke-Mailbox @("claim")
         }
-        $runId = Invoke-Mailbox @("claim")
+        catch {
+            # The mailbox is briefly unreachable; stay alive and try again.
+            Start-Sleep -Seconds 5
+            continue
+        }
         if (-not $runId) {
             Start-Sleep -Seconds 1
             continue
@@ -151,18 +164,29 @@ try {
             }
         }
         catch {
-            if ($runId -match '^[a-f0-9]{12}$') {
-                $failureArguments = @("failure", $runId, $bridgePhase)
-                if ($null -ne $childExitCode -and
-                    [int]$childExitCode -ge 0 -and [int]$childExitCode -le 255) {
-                    $failureArguments += [string]$childExitCode
+            try {
+                if ($runId -match '^[a-f0-9]{12}$') {
+                    $failureArguments = @("failure", $runId, $bridgePhase)
+                    if ($null -ne $childExitCode -and
+                        [int]$childExitCode -ge 0 -and [int]$childExitCode -le 255) {
+                        $failureArguments += [string]$childExitCode
+                    }
+                    Invoke-Mailbox -MailboxArguments $failureArguments | Out-Null
                 }
-                Invoke-Mailbox -MailboxArguments $failureArguments | Out-Null
+                Write-Health "error" "Secure bridge stopped the request"
             }
-            Write-Health "error" "Secure bridge stopped the request"
+            catch {
+                # Reporting failed too; the dashboard sees a stale heartbeat and
+                # the run's own evidence. Keep the bridge alive for the next run.
+            }
         }
         finally {
-            Invoke-Mailbox @("cleanup", $runId) | Out-Null
+            try {
+                Invoke-Mailbox @("cleanup", $runId) | Out-Null
+            }
+            catch {
+                # Cleanup is retried implicitly by the next claim cycle.
+            }
         }
         if ($shutdownRequested -or (Test-Path -LiteralPath $shutdownMarker)) {
             break
