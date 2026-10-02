@@ -604,3 +604,18 @@ file elsewhere.
 exemption helper. Also note that planning refuses while the root checkout has
 tracked changes, so Codex art awaiting import and ticket planning cannot
 overlap; run them in sequence.
+
+### 2026-10-02 — Python kept resuming a historical repair with nothing to repair
+
+**Symptom:** With historical gameplay validation passed on current `main`,
+every dispatch resumed the previous "Repair the first failed retained gameplay
+contract" ticket. A resumed worker then made an invalid image-path edit that
+the deterministic validator rejected.
+**Confirmed cause:** The planning inventory treats every ticket log without a
+PASS result as resumable work, and the dashboard resumes a single unfinished
+contract before asking Sol. Only an *empty* repair worktree could be retired.
+**Resolution:** The planning inventory now retires any historical-repair
+contract once the historical validation record is `passed` at the current
+`main` head. The worktree stays preserved for audit.
+**Prevention:** Resumable work must still have a target. When a gate that
+created repair work passes, retire the repair tickets it spawned.

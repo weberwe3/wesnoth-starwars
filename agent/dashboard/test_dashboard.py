@@ -1884,6 +1884,20 @@ class CoordinationControlTests(unittest.TestCase):
             [{"id": "engine-002", "status": "completed"}],
         ))
 
+    def test_historical_repair_retires_once_validation_passes_on_current_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            controller = AutonomyController(
+                base, ControlStore(base / "control.json"), ApprovalQueue(base, base / "approval-queue.json"),
+            )
+            record = base / "agent" / "runtime" / "historical-gameplay-validation.json"
+            record.parent.mkdir(parents=True, exist_ok=True)
+            record.write_text(json.dumps({"state": "passed", "main_head": "a" * 40}), encoding="utf-8")
+            self.assertTrue(controller._historical_validation_passed("a" * 40))
+            self.assertFalse(controller._historical_validation_passed("b" * 40))
+            record.write_text(json.dumps({"state": "pending_repair", "main_head": "a" * 40}), encoding="utf-8")
+            self.assertFalse(controller._historical_validation_passed("a" * 40))
+
     def test_resume_restores_original_ticket_contract(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             controller = self.controller(directory)
