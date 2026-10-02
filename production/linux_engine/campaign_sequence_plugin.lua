@@ -94,12 +94,40 @@ local WIN = {
     move("sw_dfr09_dread_2", 29, 9)
   end,
   sw_dfr_10_honoghrs_choice = function() kill_id("sw_dfr10_commander") end,
+  -- Campaign III
+  sw_tlc_01_the_siege_of_coruscant = function()
+    kill_id("sw_tlc01_minelayer_n")
+    kill_id("sw_tlc01_minelayer_s")
+  end,
+  sw_tlc_02_the_smugglers_council = function() kill_id("sw_tlc02_commander") end,
+  sw_tlc_03_the_palace_infiltrators = function()
+    wml.variables.sw_tlc03_last_wave = true
+    for _, u in ipairs(wesnoth.units.find_on_map{type = "sw_unit_im_infiltrator"}) do kill_id(u.id) end
+  end,
+  sw_tlc_04_landfall_on_wayland = function()
+    move("sw_hero_luke", 25, 10)
+    move("sw_hero_mara", 26, 10)
+  end,
+  sw_tlc_05_the_natives_of_wayland = function() kill_id("sw_tlc05_commander") end,
+  sw_tlc_06_the_gates_of_tantiss = function() kill_id("sw_tlc06_generator") end,
+  sw_tlc_07_the_cloning_vats = function()
+    for _, u in ipairs(wesnoth.units.find_on_map{type = "sw_unit_ob_cloning_cylinder"}) do kill_id(u.id) end
+  end,
+  sw_tlc_08_the_throne_room = function()
+    kill_id("sw_hero_luuke")
+    kill_id("sw_hero_cbaoth")
+  end,
+  sw_tlc_09_bilbringi = function()
+    local platforms = wesnoth.units.find_on_map{type = "sw_unit_ob_shipyard_platform"}
+    for i = 1, 3 do kill_id(platforms[i].id) end
+  end,
+  sw_tlc_10_the_last_command = function() fire("sw_tlc10_the_end") end,
 }
 
 local HEROES = {
   "sw_hero_luke", "sw_hero_leia", "sw_hero_han", "sw_hero_chewbacca", "sw_hero_lando",
   "sw_hero_mara", "sw_hero_karrde", "sw_hero_wedge", "sw_hero_pellaeon",
-  "sw_hero_khabarakh", "sw_hero_cbaoth", "sw_hero_bel_iblis",
+  "sw_hero_khabarakh", "sw_hero_cbaoth", "sw_hero_bel_iblis", "sw_hero_luuke",
 }
 
 local function plugin(events, context, info)

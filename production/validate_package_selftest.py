@@ -40,7 +40,9 @@ class PackageValidationTests(unittest.TestCase):
         self.assertEqual(verify.call_count, 2)
         self.assertEqual(preprocess.call_count, 1)
         # One full GUI sequence per campaign.
-        self.assertEqual(sequence.call_count, 2)
+        from validate_package import SEQUENCE_CAMPAIGNS
+        self.assertEqual(sequence.call_count, len(SEQUENCE_CAMPAIGNS))
+        self.assertEqual(len(SEQUENCE_CAMPAIGNS), 3)
         self.assertEqual(runtime.call_count, 1)
         # Every campaign scenario gets its own GUI startup probe.
         self.assertEqual(len(runtime.call_args.args[2]), len(result["sequence_scenario_ids"]))

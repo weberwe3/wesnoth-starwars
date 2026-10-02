@@ -54,7 +54,17 @@
     "sw_unit_im_decon_droid": "A bulky, slow industrial droid on short tracked legs with a dented ochre hull, a chemical sprayer nozzle, and a heavy manipulator arm.",
     "sw_unit_ob_dreadnaught": "A long, old-fashioned heavy cruiser warship, weathered gray-tan hull with ribbed sections, a blocky command bridge, and banks of turbolaser turrets.",
     "sw_unit_nr_boarding_shuttle": "A boxy armored assault shuttle with stubby wings, white and blue paneling, and a heavy forward docking hatch.",
-    "sw_unit_im_boarding_shuttle": "An angular gray Imperial assault shuttle with folded wings, a heavy forward boarding hatch, and twin laser cannons."
+    "sw_unit_im_boarding_shuttle": "An angular gray Imperial assault shuttle with folded wings, a heavy forward boarding hatch, and twin laser cannons.",
+    "sw_hero_luuke": "A young man in his early twenties with dark hair, a pale face, and cold, empty eyes, wearing a plain black tunic and trousers, holding an ignited green energy blade in an aggressive stance.",
+    "sw_unit_wy_myneyrshi": "A lean alien native with four arms and dark leathery skin, wearing a woven loincloth, beads, and feathers, holding a long spear in two hands and a short bow in the other two.",
+    "sw_unit_wy_psadan": "A short, stocky alien native whose body is covered in overlapping gray stone-like armor plates, carrying a heavy wooden war club.",
+    "sw_unit_im_royal_guard": "An elite guard in flowing crimson robes and a smooth crimson full helmet with a narrow black visor slit, holding a tall force pike.",
+    "sw_unit_im_infiltrator": "A commando in a matte black infiltration suit with a close-fitting helmet and green-tinted goggles, holding a combat knife and a small blaster pistol.",
+    "sw_unit_im_minelayer": "A converted bulk freighter: a long boxy gray hull with open release bays along its belly and small Imperial gun turrets.",
+    "sw_unit_ob_cloaked_asteroid": "A rough gray-brown asteroid shimmering faintly at its edges with a half-visible stealth field.",
+    "sw_unit_ob_shield_generator": "A squat armored planetary shield generator: a gray dome on a fortified base with glowing blue emitter vanes.",
+    "sw_unit_ob_cloning_cylinder": "A tall glass cloning cylinder filled with pale green fluid and a vague human shape, on a metal base with cables and pipes.",
+    "sw_unit_ob_shipyard_platform": "A large orbital shipyard platform: a skeletal gray framework with work lights, cranes, and a half-built hull inside."
   },
   "portrait_from_sprite": [
     "sw_hero_luke",
@@ -70,6 +80,7 @@
     "sw_unit_im_at_st",
     "sw_unit_im_boarding_shuttle",
     "sw_unit_im_decon_droid",
+    "sw_unit_im_minelayer",
     "sw_unit_im_mole_miner",
     "sw_unit_im_star_destroyer",
     "sw_unit_im_tie_bomber",
@@ -80,6 +91,10 @@
     "sw_unit_nr_docked_warship",
     "sw_unit_nr_xwing",
     "sw_unit_nr_ywing",
-    "sw_unit_ob_dreadnaught"
+    "sw_unit_ob_cloaked_asteroid",
+    "sw_unit_ob_cloning_cylinder",
+    "sw_unit_ob_dreadnaught",
+    "sw_unit_ob_shield_generator",
+    "sw_unit_ob_shipyard_platform"
   ]
 }

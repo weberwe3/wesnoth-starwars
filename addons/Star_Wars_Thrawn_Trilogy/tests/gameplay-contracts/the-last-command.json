@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-tlc-scenario-sw-tlc-01-the-siege-of-coruscant",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg",
+      "expected_id": "sw_tlc_01_the_siege_of_coruscant"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-02-the-smugglers-council",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg",
+      "expected_id": "sw_tlc_02_the_smugglers_council"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-03-the-palace-infiltrators",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg",
+      "expected_id": "sw_tlc_03_the_palace_infiltrators"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-04-landfall-on-wayland",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/04_landfall_on_wayland.cfg",
+      "expected_id": "sw_tlc_04_landfall_on_wayland"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-05-the-natives-of-wayland",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/05_the_natives_of_wayland.cfg",
+      "expected_id": "sw_tlc_05_the_natives_of_wayland"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-06-the-gates-of-tantiss",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/06_the_gates_of_tantiss.cfg",
+      "expected_id": "sw_tlc_06_the_gates_of_tantiss"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-07-the-cloning-vats",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/07_the_cloning_vats.cfg",
+      "expected_id": "sw_tlc_07_the_cloning_vats"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-08-the-throne-room",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/08_the_throne_room.cfg",
+      "expected_id": "sw_tlc_08_the_throne_room"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-09-bilbringi",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/09_bilbringi.cfg",
+      "expected_id": "sw_tlc_09_bilbringi"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-10-the-last-command",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg",
+      "expected_id": "sw_tlc_10_the_last_command"
+    },
+    {
+      "id": "sw-tlc-unit-sw-hero-luuke",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_hero_luuke"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-wy-myneyrshi",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_wy_myneyrshi"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-wy-psadan",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_wy_psadan"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-im-royal-guard",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_im_royal_guard"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-im-infiltrator",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_im_infiltrator"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-im-minelayer",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_im_minelayer"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-ob-cloaked-asteroid",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_ob_cloaked_asteroid"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-ob-shield-generator",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_ob_shield_generator"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-ob-cloning-cylinder",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_ob_cloning_cylinder"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-ob-shipyard-platform",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "expected_id": "sw_unit_ob_shipyard_platform"
+    }
+  ]
+}

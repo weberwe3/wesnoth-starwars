@@ -58,7 +58,20 @@ EXPECTED_II = [
     "sw_dfr_09_battle_for_the_fleet",
     "sw_dfr_10_honoghrs_choice",
 ]
-CAMPAIGNS = {CAMPAIGN_I: EXPECTED, CAMPAIGN_II: EXPECTED_II}
+CAMPAIGN_III = "Star_Wars_Thrawn_Trilogy_The_Last_Command"
+EXPECTED_III = [
+    "sw_tlc_01_the_siege_of_coruscant",
+    "sw_tlc_02_the_smugglers_council",
+    "sw_tlc_03_the_palace_infiltrators",
+    "sw_tlc_04_landfall_on_wayland",
+    "sw_tlc_05_the_natives_of_wayland",
+    "sw_tlc_06_the_gates_of_tantiss",
+    "sw_tlc_07_the_cloning_vats",
+    "sw_tlc_08_the_throne_room",
+    "sw_tlc_09_bilbringi",
+    "sw_tlc_10_the_last_command",
+]
+CAMPAIGNS = {CAMPAIGN_I: EXPECTED, CAMPAIGN_II: EXPECTED_II, CAMPAIGN_III: EXPECTED_III}
 # Heroes that must be on the map when each scenario becomes playable.
 REQUIRED_HEROES = {
     "sw_hte_01_ysalamiri_harvest": ["sw_hero_pellaeon"],
@@ -81,6 +94,17 @@ REQUIRED_HEROES = {
     "sw_dfr_08_aboard_the_katana": ["sw_hero_luke", "sw_hero_han", "sw_hero_lando", "sw_hero_chewbacca"],
     "sw_dfr_09_battle_for_the_fleet": ["sw_hero_wedge", "sw_hero_luke"],
     "sw_dfr_10_honoghrs_choice": ["sw_hero_leia", "sw_hero_chewbacca", "sw_hero_khabarakh"],
+    "sw_tlc_01_the_siege_of_coruscant": ["sw_hero_wedge", "sw_hero_luke"],
+    "sw_tlc_02_the_smugglers_council": ["sw_hero_karrde", "sw_hero_mara"],
+    "sw_tlc_03_the_palace_infiltrators": ["sw_hero_leia", "sw_hero_chewbacca", "sw_hero_khabarakh"],
+    "sw_tlc_04_landfall_on_wayland": ["sw_hero_luke", "sw_hero_mara"],
+    "sw_tlc_05_the_natives_of_wayland": ["sw_hero_luke", "sw_hero_mara"],
+    "sw_tlc_06_the_gates_of_tantiss": ["sw_hero_han", "sw_hero_leia", "sw_hero_lando", "sw_hero_chewbacca",
+                                       "sw_hero_khabarakh"],
+    "sw_tlc_07_the_cloning_vats": ["sw_hero_han", "sw_hero_lando", "sw_hero_chewbacca"],
+    "sw_tlc_08_the_throne_room": ["sw_hero_luke", "sw_hero_mara"],
+    "sw_tlc_09_bilbringi": ["sw_hero_wedge", "sw_hero_luke"],
+    "sw_tlc_10_the_last_command": ["sw_hero_wedge", "sw_hero_luke"],
 }
 # Heroes that must NOT be on the map (stashed or out of story).
 FORBIDDEN_HEROES = {
