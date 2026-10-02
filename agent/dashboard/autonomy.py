@@ -31,7 +31,7 @@ from game_validation_state import (
 )
 from gameplay_contracts import ContractStoreError, load_contracts, validate_historical_retention
 from scenario_launch_selftest import validate_post_publish_game
-from art_pipeline import public_art_queue
+from art_pipeline import public_art_queue, validate_art_queue
 from art_import_production import ArtImportProduction, ArtProductionError, public_status
 import recovery_policy
 import ticket_runner
@@ -576,7 +576,8 @@ class AutonomyController:
         with self._lock:
             if self._pipeline_active() or (self._art_generator and self._art_generator.is_alive()):
                 raise ControlError("Wait for the active governed operation to finish")
-            jobs = [job for job in public_art_queue(self.root, public_status(self.root)).get("jobs", [])
+            # The public queue view is capped for display; read the full manifest.
+            jobs = [job for job in validate_art_queue(self.root).get("jobs", [])
                     if isinstance(job, dict) and job.get("state") != "complete"]
             if job_ids is not None:
                 wanted = set(job_ids)
