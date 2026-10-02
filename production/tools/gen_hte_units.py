@@ -639,7 +639,8 @@ def animations(u: dict) -> str:
         "[standing_anim]\n" + indent(frame(f"{base}/standing.png", 1000), 4) + "\n[/standing_anim]",
         "[idle_anim]\n" + indent(frame(f"{base}/idle-1.png", 300), 4) + "\n"
         + indent(frame(f"{base}/idle-2.png", 300), 4) + "\n[/idle_anim]",
-        "[movement_anim]\n" + indent(frame(f"{base}/move-1.png", 150), 4) + "\n"
+        "[movement_anim]\n" + indent(with_sound(frame(f"{base}/move-1.png", 150),
+                                                None if u["id"] in STATIONARY else MOVE_SOUNDS.get(u["mt"])), 4) + "\n"
         + indent(frame(f"{base}/move-2.png", 150), 4) + "\n[/movement_anim]",
     ]
     # The melee and ranged frames are always wired so the art contract stays
@@ -656,7 +657,8 @@ def animations(u: dict) -> str:
     del has_melee, has_ranged
     blocks.append("[defend]\n" + indent(frame(f"{base}/defend.png", 250), 4) + "\n[/defend]")
     blocks.append(
-        "[death]\n" + indent(frame(f"{base}/death-1.png", 200), 4) + "\n"
+        "[death]\n" + indent(with_sound(frame(f"{base}/death-1.png", 200),
+                                        DEATH_OVERRIDES.get(u["id"], DEATH_SOUNDS.get(u["mt"]))), 4) + "\n"
         + indent(frame(f"{base}/death-2.png", 400), 4) + "\n[/death]"
     )
     return "\n".join(blocks)
@@ -737,6 +739,60 @@ MELEE_SOUNDS = {
 }
 
 
+# Hit and miss sounds at the moment of impact (core SOUND:HIT_AND_MISS).
+RANGED_IMPACTS = {
+    "sw-blaster.wav": ("sw-blaster-hit.wav", "sw-blaster-miss.wav"),
+    "sw-blaster-heavy.wav": ("sw-heavy-hit.wav", "sw-heavy-miss.wav"),
+    "sw-laser-cannon.wav": ("sw-laser-hit.wav", "sw-laser-miss.wav"),
+    "sw-turbolaser.wav": ("sw-turbolaser-hit.wav", "sw-turbolaser-miss.wav"),
+    "sw-ion.wav": ("sw-ion-hit.wav", "sw-ion-miss.wav"),
+    "sw-torpedo.wav": ("sw-torpedo-hit.wav", "sw-torpedo-miss.wav"),
+    "sw-stun.wav": ("sw-stun-hit.wav", "sw-stun-miss.wav"),
+    "sw-bowcaster.wav": ("sw-bowcaster-hit.wav", "sw-bowcaster-miss.wav"),
+    "sw-force-lightning.wav": ("sw-lightning-hit.wav", "sw-lightning-miss.wav"),
+}
+MELEE_IMPACTS = {
+    "lightsaber": ("sw-saber-clash.wav", "sw-lightsaber.wav"),
+    "vibroblade": ("sw-vibro-hit.wav", "sw-vibroblade.wav"),
+    "vibroknife": ("sw-vibro-hit.wav", "sw-vibroblade.wav"),
+    "force_pike": ("sw-vibro-hit.wav", "sw-vibroblade.wav"),
+    "ryyk_blade": ("sword-1.ogg", "miss-1.ogg"),
+    "noghri_knives": ("sword-1.ogg", "dagger-swish.wav"),
+    "fists": ("fist.ogg", "miss-1.ogg"),
+    "wookiee_strength": ("sw-wookiee-roar.wav", "miss-2.ogg"),
+    "rifle_butt": ("club.ogg", "club-miss.ogg"),
+    "stomp": ("club.ogg", "club-miss.ogg"),
+    "ram": ("club.ogg", "club-miss.ogg"),
+    "war_club": ("club.ogg", "club-miss.ogg"),
+    "manipulator": ("club.ogg", "club-miss.ogg"),
+    "spear": ("spear.ogg", "spear-miss.ogg"),
+    "fangs": ("bite.ogg", "sw-vornskr-snarl.wav"),
+    "whip_tail": ("tail.ogg", "miss-3.ogg"),
+    "plasma_jets": ("sw-ion-hit.wav", "miss-1.ogg"),
+}
+# Death and movement sounds by movement type, with a few lore exceptions.
+DEATH_SOUNDS = {
+    "sw_armored_trooper": "sw-death-armor.wav", "sw_infantry": "sw-death-soft.wav", "sw_jedi": "sw-death-soft.wav",
+    "sw_noghri": "sw-death-soft.wav", "sw_wookiee": "sw-death-wookiee.wav", "sw_beast": "sw-death-beast.wav",
+    "sw_repulsor": "sw-death-vehicle.wav", "sw_walker": "sw-death-vehicle.wav",
+    "sw_starfighter": "sw-death-fighter.wav", "sw_capital": "sw-death-capital.wav",
+}
+DEATH_OVERRIDES = {
+    "sw_unit_wy_myneyrshi": "sw-death-soft.wav", "sw_unit_wy_psadan": "sw-death-soft.wav",
+    "sw_unit_im_decon_droid": "sw-death-droid.wav", "sw_unit_ob_cloning_cylinder": "sw-death-glass.wav",
+    "sw_unit_ob_cloaked_asteroid": "sw-death-rock.wav", "sw_unit_ob_shield_generator": "sw-death-vehicle.wav",
+    "sw_unit_ob_shipyard_platform": "sw-death-capital.wav",
+}
+MOVE_SOUNDS = {"sw_starfighter": "sw-move-fighter.wav", "sw_capital": "sw-move-capital.wav",
+               "sw_repulsor": "sw-move-speeder.wav", "sw_walker": "sw-move-walker.wav"}
+STATIONARY = {"sw_unit_ob_cloaked_asteroid", "sw_unit_ob_cloning_cylinder", "sw_unit_ob_shield_generator",
+              "sw_unit_ob_shipyard_platform"}
+
+
+def with_sound(frame_text: str, sound: str | None) -> str:
+    return frame_text.replace("\n[/frame]", f"\n    sound={sound}\n[/frame]") if sound else frame_text
+
+
 def ranged_sound(attack_name: str) -> str | None:
     if attack_name in NO_PROJECTILE:
         return None
@@ -747,7 +803,7 @@ def ranged_sound(attack_name: str) -> str | None:
     if attack_name.startswith("proton_torpedo"):
         return "sw-torpedo.wav"
     if attack_name.startswith("concussion_"):
-        return "sw-explosion.wav"
+        return "sw-torpedo.wav"
     if attack_name == "force_lightning":
         return "sw-force-lightning.wav"
     if attack_name == "stun_blaster":
@@ -764,15 +820,16 @@ def ranged_sound(attack_name: str) -> str | None:
 
 
 def melee_anim(base: str, unit_id: str, attack: dict | None) -> str:
-    """Wind-up (melee-1), then the follow-through (melee-2) with the weapon's sound."""
+    """Wind-up (melee-1) before the strike at time 0, follow-through (melee-2) after it,
+    with the weapon's hit or miss sound at the moment of impact."""
     filter_line = "        range=melee" if attack is None else f"        name={attack['name']}"
-    sound = MELEE_SOUNDS.get(attack["name"]) if attack else None
-    follow = frame(f"{base}/melee-2.png", 200)
-    if sound:
-        follow = follow.replace("\n[/frame]", f"\n    sound={sound}\n[/frame]")
+    impact = MELEE_IMPACTS.get(attack["name"]) if attack else None
+    sound = f"    {{SOUND:HIT_AND_MISS {impact[0]} {impact[1]} -25}}\n" if impact else ""
     del unit_id
     return ("[attack_anim]\n    [filter_attack]\n" + filter_line + "\n    [/filter_attack]\n"
-            + indent(frame(f"{base}/melee-1.png", 150), 4) + "\n" + indent(follow, 4) + "\n[/attack_anim]")
+            "    start_time=-150\n" + sound
+            + indent(frame(f"{base}/melee-1.png", 150), 4) + "\n"
+            + indent(frame(f"{base}/melee-2.png", 200), 4) + "\n[/attack_anim]")
 
 
 def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
@@ -790,8 +847,17 @@ def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
         lines.append("    [/missile_frame]")
     fire = frame(f"{base}/ranged-2.png", 150)
     sound = ranged_sound(attack["name"]) if attack else None
-    if sound:
-        fire = fire.replace("\n[/frame]", f"\n    sound={sound}\n[/frame]")
+    if attack and attack["name"] == "bow":
+        lines.append("    {SOUND:HIT_AND_MISS bow.ogg bow-miss.ogg -150}")
+        sound = None
+    elif attack and attack["name"].startswith("concussion_"):
+        lines.append("    {SOUND:HIT_AND_MISS sw-explosion.wav sw-bomb-miss.wav -10}")
+    elif attack and attack["name"] == "deflection":
+        lines.append("    {SOUND:HIT_AND_MISS sw-deflect.wav sw-blaster-miss.wav -10}")
+    elif sound in RANGED_IMPACTS:
+        hit, miss = RANGED_IMPACTS[sound]
+        lines.append(f"    {{SOUND:HIT_AND_MISS {hit} {miss} -10}}")
+    fire = with_sound(fire, sound)
     return ("\n".join(lines) + "\n" + indent(frame(f"{base}/ranged-1.png", 150), 4) + "\n"
             + indent(fire, 4) + "\n[/attack_anim]")
 
