@@ -6,6 +6,9 @@
 -- run_ai_soak.py substitutes the campaign id and turn cap.
 local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"
 local TURN_CAP = 30
+-- "careful" makes side 1 value its own units (heroes above all) far more
+-- than the default AI, closer to how a person plays an irreplaceable hero.
+local PLAYER_STYLE = "default"
 
 -- Plugin accessors return a table; take its single value.
 local function value_of(v)
@@ -59,6 +62,14 @@ local function plugin(events, context, info)
       end,
     }
     wesnoth.sides[1].controller = "ai"
+    if PLAYER_STYLE == "careful" then
+      -- Negative aggression weighs own losses above damage dealt; high
+      -- caution makes the AI retreat wounded units to heal.
+      wesnoth.sides[1]:append_ai{
+        {"aspect", {id = "aggression", {"facet", {value = -0.5}}}},
+        {"aspect", {id = "caution", {"facet", {value = 0.9}}}},
+      }
+    end
   end)
   if ok == false then out("fatal execute refused " .. tostring(err)) end
   pump()
