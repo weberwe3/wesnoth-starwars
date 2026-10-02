@@ -243,13 +243,14 @@ def build_inventory(repo_root: str | os.PathLike[str]) -> dict:
                 if unit_id in unit_types:
                     raise InventoryError(f"duplicate unit type id: {unit_id}")
                 unit_types[unit_id] = rel
-            for match in _LOCAL.finditer(text):
-                raw = match.group(1) or match.group(2)
-                if raw:
-                    asset = _asset_reference(root, raw)
-                    if asset:
-                        target, asset_path = asset
-                        (assets if target == "local" else external_assets).setdefault(asset_path, set()).add(rel)
+        # Scan the file's references once (this used to rescan the whole file
+        # for every block, which made inventory time quadratic in roster size).
+        for raw in {match.group(1) or match.group(2) for match in _LOCAL.finditer(text)}:
+            if raw:
+                asset = _asset_reference(root, raw)
+                if asset:
+                    target, asset_path = asset
+                    (assets if target == "local" else external_assets).setdefault(asset_path, set()).add(rel)
 
     for campaign in campaigns:
         if campaign["first_scenario"] not in scenario_ids:
