@@ -6477,7 +6477,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "sha256": "07623658bdd88f78563a2c145716056da129cd7f8375b5e43f045e066286535d"
+      "sha256": "e4de5245a0988ed9d40cf0736515ad7dcb4fcd12e6ae0974897e15d9140cd86b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
@@ -6489,23 +6489,23 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "e039be043ca72ec03ca9b9cfb898f7e719ab7b2fc2bfd16c174c2247458903fb"
+      "sha256": "55dcd81791c564bcc23c35bfb355a57aa346b4a36bb62364793bfe77a646e0af"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "sha256": "9c294198d56b01a59ea795493f76754c94b9181488501581d65df6cb9ab60cd5"
+      "sha256": "d092354984c17fced01385950d50d3194f5cde9def67626e4a9d6da1d91d1c09"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "sha256": "7d16d6ef5638705fdc3538f6d532d6932115c7e9d8f2ed073ae9af6381d138ca"
+      "sha256": "dba3ee476b2fc5de853b799aaa4d772483a7245c26bead59921dd0bf447326d1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
-      "sha256": "0697cb29437dd273ac2d318546c8fe7fb49b66b80cee0808d4dee8609ec478b8"
+      "sha256": "0831bf71ad117d23bd10480248fcf6e1c4189811d194638b3a501f3e2fece97e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "sha256": "362dae30400e3edcd3f9bcb3d065ae894aba328968a616c8e93a6c5b48d49939"
+      "sha256": "572c71cd9ae0f446924a3afab89be8b7b36017d82679f1f393ec5f9bda1477c3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
@@ -6517,7 +6517,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "f7f5291d98eda934a35ceb86f2f5afc15dd0ff1440468654547511637df2ea15"
+      "sha256": "ce71d3eb00ddd39fefc4eaf171d00c6635a3ce714ac2c7ceccc97b4aea575acf"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",

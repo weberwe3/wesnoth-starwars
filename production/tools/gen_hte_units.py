@@ -644,11 +644,9 @@ def animations(u: dict) -> str:
     ]
     # The melee and ranged frames are always wired so the art contract stays
     # complete; the range filter keeps an absent attack range from using them.
-    blocks.append(
-        "[attack_anim]\n    [filter_attack]\n        range=melee\n    [/filter_attack]\n"
-        + indent(frame(f"{base}/melee-1.png", 150), 4) + "\n"
-        + indent(frame(f"{base}/melee-2.png", 200), 4) + "\n[/attack_anim]"
-    )
+    melee = [a for a in u["attacks"] if a["range"] == "melee"]
+    for a in melee or [None]:
+        blocks.append(melee_anim(base, u["id"], a))
     ranged = [a for a in u["attacks"] if a["range"] == "ranged"]
     # One animation per ranged attack, each firing its own projectile. A unit
     # without a ranged attack keeps one plain ranged block so its art set is
@@ -726,6 +724,57 @@ def projectile(unit_id: str, attack_name: str) -> tuple[str, str | None] | None:
     return f"projectiles/{kind}-{color}-n.png", f"projectiles/{kind}-{color}-ne.png"
 
 
+# --- sounds ------------------------------------------------------------------
+# Original synthesized effects (production/tools/gen_sound_effects.py) for
+# Star Wars weapons; mainline sounds only for natural attacks (fists, bites,
+# clubs, the Wayland natives' spears and bows).
+MELEE_SOUNDS = {
+    "lightsaber": "sw-lightsaber.wav", "vibroblade": "sw-vibroblade.wav", "vibroknife": "sw-vibroblade.wav",
+    "force_pike": "sw-vibroblade.wav", "ryyk_blade": "sword-1.ogg", "noghri_knives": "dagger-swish.wav",
+    "fists": "fist.ogg", "wookiee_strength": "fist.ogg", "rifle_butt": "club.ogg", "stomp": "club.ogg",
+    "ram": "club.ogg", "war_club": "club.ogg", "spear": "spear.ogg", "fangs": "bite.ogg",
+    "whip_tail": "tail.ogg", "manipulator": "club.ogg", "plasma_jets": "sw-ion.wav",
+}
+
+
+def ranged_sound(attack_name: str) -> str | None:
+    if attack_name in NO_PROJECTILE:
+        return None
+    if attack_name == "bow":
+        return "bow.ogg"
+    if attack_name.startswith("ion_"):
+        return "sw-ion.wav"
+    if attack_name.startswith("proton_torpedo"):
+        return "sw-torpedo.wav"
+    if attack_name.startswith("concussion_"):
+        return "sw-explosion.wav"
+    if attack_name == "force_lightning":
+        return "sw-force-lightning.wav"
+    if attack_name == "stun_blaster":
+        return "sw-stun.wav"
+    if attack_name == "bowcaster":
+        return "sw-bowcaster.wav"
+    if attack_name in ("turbolasers", "turbo_laser"):
+        return "sw-turbolaser.wav"
+    if attack_name.endswith("laser_cannons"):
+        return "sw-laser-cannon.wav"
+    if attack_name in HEAVY_WEAPONS:
+        return "sw-blaster-heavy.wav"
+    return "sw-blaster.wav"
+
+
+def melee_anim(base: str, unit_id: str, attack: dict | None) -> str:
+    """Wind-up (melee-1), then the follow-through (melee-2) with the weapon's sound."""
+    filter_line = "        range=melee" if attack is None else f"        name={attack['name']}"
+    sound = MELEE_SOUNDS.get(attack["name"]) if attack else None
+    follow = frame(f"{base}/melee-2.png", 200)
+    if sound:
+        follow = follow.replace("\n[/frame]", f"\n    sound={sound}\n[/frame]")
+    del unit_id
+    return ("[attack_anim]\n    [filter_attack]\n" + filter_line + "\n    [/filter_attack]\n"
+            + indent(frame(f"{base}/melee-1.png", 150), 4) + "\n" + indent(follow, 4) + "\n[/attack_anim]")
+
+
 def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
     """Aim (ranged-1), then fire (ranged-2) as the projectile leaves; it lands at time 0."""
     filter_lines = "        range=ranged\n" if attack is None else f"        name={attack['name']}\n"
@@ -739,8 +788,12 @@ def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
         if diagonal:
             lines.append(f"        image_diagonal={diagonal}")
         lines.append("    [/missile_frame]")
+    fire = frame(f"{base}/ranged-2.png", 150)
+    sound = ranged_sound(attack["name"]) if attack else None
+    if sound:
+        fire = fire.replace("\n[/frame]", f"\n    sound={sound}\n[/frame]")
     return ("\n".join(lines) + "\n" + indent(frame(f"{base}/ranged-1.png", 150), 4) + "\n"
-            + indent(frame(f"{base}/ranged-2.png", 150), 4) + "\n[/attack_anim]")
+            + indent(fire, 4) + "\n[/attack_anim]")
 
 
 # Attack icons: original Star Wars icons from production/tools/gen_attack_icons.py
