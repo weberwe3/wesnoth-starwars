@@ -164,6 +164,16 @@ class CodexArtTests(unittest.TestCase):
         self.assertEqual(result["state"], "coded_fallback")
         self.assertEqual(tool.call_args.args[1], codex_art.CODED_TOOL)
 
+    def test_refused_luke_uses_the_painted_master(self) -> None:
+        refusal = 'error=image generation failed: "code": "moderation_blocked"'
+        runner = mock.Mock(return_value=subprocess.CompletedProcess([], 0, refusal, ""))
+        job = {"id": "art-sw-hero-luke", "unit_id": "sw_hero_luke", "unit_name": "Luke Skywalker"}
+        with mock.patch.object(codex_art, "_run_tool", return_value="{}") as tool:
+            result = codex_art.generate_unit_art(ROOT, job, runner=runner)
+        self.assertEqual(result["state"], "coded_fallback")
+        tools = [call.args[1] for call in tool.call_args_list]
+        self.assertEqual(tools, [codex_art.PAINT_TOOL, codex_art.DERIVE_TOOL])
+
     def test_usage_limit_pauses_without_fallback(self) -> None:
         runner = mock.Mock(return_value=subprocess.CompletedProcess([], 1, "You've hit your usage limit.", ""))
         with mock.patch.object(codex_art, "_run_tool") as tool:

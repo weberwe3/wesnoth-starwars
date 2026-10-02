@@ -644,7 +644,14 @@ class AutonomyController:
                         self._write_art_generation_status(state="quota_paused", error=outcome["reason"])
                         self.queue.event("Codex art generation paused", level="warning", detail=outcome["reason"])
                         return
-                self._publish_generated_art(members[0]["id"], source)
+                # Lead the batch with a set Codex actually produced; a refused
+                # set's code-drawn fallback can be identical to the published art.
+                produced = {item.get("unit_id"): item.get("state") for item in results}
+                lead = next((job for job in members if produced.get(job.get("unit_id")) == "generated"),
+                            next((job for job in members
+                                  if produced.get(job.get("unit_id")) in RESUMABLE_ART_STATES), None))
+                if lead is not None:
+                    self._publish_generated_art(lead["id"], source)
             self._write_art_generation_status(state="complete")
             self.queue.event("Codex art generation finished", detail=f"{len(results)} unit art sets processed.")
         except (codex_art.CodexArtError, ControlError, QueueError, OSError, ValueError) as exc:
@@ -670,6 +677,14 @@ class AutonomyController:
             raise ControlError(published.get("message") or f"Art import for {source} was not accepted")
         while self._art_importer is not None and self._art_importer.is_alive():
             time.sleep(5)
+        # A failed import leaves its sets uncommitted in the working tree, and
+        # the importer refuses later batches while unrelated changes exist, so
+        # the run stops here instead of generating sets it cannot publish.
+        final = public_status(self.root).get(job_id, {})
+        if final.get("state") != "published":
+            raise ControlError(
+                f"Art import for {source} did not publish: {final.get('error') or final.get('message') or 'unknown'}"
+            )
 
     def _retry_published_art_validation(self, job_id: str) -> None:
         try:

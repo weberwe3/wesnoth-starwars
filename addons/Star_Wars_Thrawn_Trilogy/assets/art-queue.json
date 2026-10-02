@@ -768,7 +768,7 @@
       "unit_id": "sw_hero_luke",
       "unit_name": "sw hero luke",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-luke.md",
       "assets": [
@@ -844,7 +844,7 @@
       "unit_id": "sw_hero_xwing_luke",
       "unit_name": "sw hero xwing luke",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-xwing-luke.md",
       "assets": [
@@ -920,7 +920,7 @@
       "unit_id": "sw_hero_leia",
       "unit_name": "sw hero leia",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-leia.md",
       "assets": [
@@ -996,7 +996,7 @@
       "unit_id": "sw_hero_han",
       "unit_name": "sw hero han",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-han.md",
       "assets": [
@@ -1072,7 +1072,7 @@
       "unit_id": "sw_hero_chewbacca",
       "unit_name": "sw hero chewbacca",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-chewbacca.md",
       "assets": [
@@ -1148,7 +1148,7 @@
       "unit_id": "sw_hero_lando",
       "unit_name": "sw hero lando",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-lando.md",
       "assets": [
@@ -1224,7 +1224,7 @@
       "unit_id": "sw_hero_mara",
       "unit_name": "sw hero mara",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-mara.md",
       "assets": [
@@ -1300,7 +1300,7 @@
       "unit_id": "sw_hero_karrde",
       "unit_name": "sw hero karrde",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-karrde.md",
       "assets": [
@@ -1376,7 +1376,7 @@
       "unit_id": "sw_hero_wedge",
       "unit_name": "sw hero wedge",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-wedge.md",
       "assets": [
@@ -1452,7 +1452,7 @@
       "unit_id": "sw_hero_pellaeon",
       "unit_name": "sw hero pellaeon",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-pellaeon.md",
       "assets": [
@@ -1528,7 +1528,7 @@
       "unit_id": "sw_hero_thrawn",
       "unit_name": "sw hero thrawn",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-thrawn.md",
       "assets": [
