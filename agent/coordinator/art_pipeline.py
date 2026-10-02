@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
+import subprocess
 import struct
 import tempfile
 from typing import Any
@@ -429,6 +430,28 @@ def art_import_preflight(root: Path, job_id: str) -> dict[str, Any]:
     }
 
 
+def _standing_unchanged(root: Path, contract: dict[str, Any]) -> bool:
+    """True when the set's standing sprite is byte-identical to the committed one.
+
+    Import acceptance proves each set by its changed standing sprite. A set
+    regenerated identically (for example deterministic code-drawn fallback
+    art) has nothing to publish and would fail that proof for the whole batch.
+    """
+    for asset in contract.get("assets", []):
+        if isinstance(asset, dict) and asset.get("state") == "standing":
+            relative = f"{ADDON_ROOT}/{asset.get('path')}"
+            completed = subprocess.run(
+                ["git", "-C", str(root), "diff", "--quiet", "HEAD", "--", relative],
+                capture_output=True, check=False,
+            )
+            tracked = subprocess.run(
+                ["git", "-C", str(root), "ls-files", "--error-unmatch", "--", relative],
+                capture_output=True, check=False,
+            )
+            return completed.returncode == 0 and tracked.returncode == 0
+    return False
+
+
 def art_import_batch_contract(root: Path, job_id: str) -> dict[str, Any]:
     """Collect one safe source-file batch of fully imported pending art jobs.
 
@@ -447,6 +470,8 @@ def art_import_batch_contract(root: Path, job_id: str) -> dict[str, Any]:
     selected_preflight = art_import_preflight(root, job_id)
     if not selected_preflight.get("pass"):
         return {**selected_preflight, "job_ids": []}
+    if _standing_unchanged(root, selected):
+        return {"pass": False, "message": "Selected art is unchanged from the published version", "job_ids": []}
 
     manifest = _load_manifest(root / ADDON_ROOT / ART_MANIFEST)
     jobs = manifest.get("jobs") if isinstance(manifest, dict) else None
@@ -464,7 +489,7 @@ def art_import_batch_contract(root: Path, job_id: str) -> dict[str, Any]:
         candidate = art_import_contract(root, candidate_id)
         if not candidate.get("pass") or candidate.get("source_path") != source_path:
             continue
-        if art_import_preflight(root, candidate_id).get("pass"):
+        if art_import_preflight(root, candidate_id).get("pass") and not _standing_unchanged(root, candidate):
             contracts.append(candidate)
     if not any(contract["job"]["id"] == job_id for contract in contracts):
         return {"pass": False, "message": "Selected art is no longer eligible for governed import", "job_ids": []}

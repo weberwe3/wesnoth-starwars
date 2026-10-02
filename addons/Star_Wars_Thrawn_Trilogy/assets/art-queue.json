@@ -768,7 +768,7 @@
       "unit_id": "sw_hero_luke",
       "unit_name": "sw hero luke",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-luke.md",
       "assets": [
@@ -1072,7 +1072,7 @@
       "unit_id": "sw_hero_chewbacca",
       "unit_name": "sw hero chewbacca",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-chewbacca.md",
       "assets": [

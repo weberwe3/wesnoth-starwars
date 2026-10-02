@@ -48,7 +48,7 @@ SCENARIO_ID = "sw_hte_01_ysalamiri_harvest"
 LINUX_ENGINE_DEFAULT = Path.home() / "opt" / "bin" / "wesnoth-linux"
 
 
-def _test_png(width: int, height: int) -> bytes:
+def _test_png(width: int, height: int, color: tuple[int, int, int] = (0, 0, 0)) -> bytes:
     """Build a small valid transparent RGBA PNG without external libraries."""
 
     def chunk(kind: bytes, data: bytes) -> bytes:
@@ -58,7 +58,7 @@ def _test_png(width: int, height: int) -> bytes:
         )
 
     ihdr = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
-    row = b"\x00" + (b"\x00\x00\x00\x00" * width)
+    row = b"\x00" + (bytes(color) + b"\x00") * width
     return (
         b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr)
         + chunk(b"IDAT", zlib.compress(row * height)) + chunk(b"IEND", b"")
@@ -1520,6 +1520,44 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             result = confirm_art_import_batch(root, batch["job_ids"])
             self.assertTrue(result["pass"], result)
             self.assertEqual(validate_art_queue(root)["complete"], 2)
+
+    def test_art_batch_skips_sets_unchanged_from_the_commit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            unit = root / "addons" / ADDON_ID / "units" / "infantry.cfg"
+            unit.parent.mkdir(parents=True)
+            unit.write_text(
+                "[unit_type]\nid=sw_unit_fixture_one\nname=_\"Fixture One\"\n"
+                "description=_\"An original unit.\"\n[/unit_type]\n"
+                "[unit_type]\nid=sw_unit_fixture_two\nname=_\"Fixture Two\"\n"
+                "description=_\"An original unit.\"\n[/unit_type]\n",
+                encoding="utf-8",
+            )
+            sync = synchronize_art_queue(root, {"sw_unit_fixture_one", "sw_unit_fixture_two"})
+            references: list[str] = []
+            for job in sync["jobs"]:
+                for asset in job["assets"]:
+                    target = root / "addons" / ADDON_ID / asset["path"]
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    width, height = (256, 256) if asset["state"] == "portrait" else (72, 72)
+                    target.write_bytes(_test_png(width, height))
+                    references.append(f"image={asset['path'].removeprefix('images/')}")
+            unit.write_text(unit.read_text(encoding="utf-8").replace(
+                "[/unit_type]", "\n" + "\n".join(references) + "\n[/unit_type]"
+            ), encoding="utf-8")
+            for command in (["init", "-q"], ["add", "-A"],
+                            ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "base"]):
+                subprocess.run(["git", "-C", str(root), *command], check=True, capture_output=True)
+            # Only the first set is regenerated with different pixels.
+            first = sync["jobs"][0]
+            standing = next(a for a in first["assets"] if a["state"] == "standing")
+            (root / "addons" / ADDON_ID / standing["path"]).write_bytes(_test_png(72, 72, color=(9, 9, 9)))
+            batch = art_import_batch_contract(root, first["id"])
+            self.assertTrue(batch["pass"], batch)
+            self.assertEqual(batch["job_ids"], [first["id"]])
+            unchanged = art_import_batch_contract(root, sync["jobs"][1]["id"])
+            self.assertFalse(unchanged["pass"])
+            self.assertIn("unchanged", unchanged["message"])
 
     def test_runtime_probe_reuses_the_owning_campaign_define(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

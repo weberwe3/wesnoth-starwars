@@ -32,6 +32,9 @@ from gameplay_contracts import ADDON_ROOT
 ART_DIRECTION = "production/assets/art_direction.json"
 DERIVE_TOOL = "production/tools/derive_unit_frames.py"
 CODED_TOOL = "production/tools/gen_coded_unit_art.py"
+# Refused heroes with a detailed painted master; others use the simpler coded set.
+PAINT_TOOL = "production/tools/paint_hero_masters.py"
+PAINTED_HEROES = frozenset({"sw_hero_luke", "sw_hero_chewbacca"})
 ART_PYTHON_DEFAULT = Path.home() / "opt" / "swtools" / "bin" / "python"
 MANAGED_ART_ROOT = "art-gen"
 CODEX_TIMEOUT_SECONDS = 1500
@@ -233,7 +236,13 @@ def generate_unit_art(
             result.update(state="quota_paused", reason="Codex usage limit reached; art generation paused")
             return result
         refused = bool(MODERATION.search(transcript))
-        _run_tool(root, CODED_TOOL, "--only", unit_id)
+        if refused and unit_id in PAINTED_HEROES:
+            _run_tool(root, PAINT_TOOL, "--out", str(workspace), "--unit", unit_id)
+            _run_tool(root, DERIVE_TOOL, "--sprite", str(workspace / f"{slug}-master.png"),
+                      "--portrait", str(workspace / f"{slug}-portrait.png"),
+                      "--addon", str(root / ADDON_ROOT), "--slug", slug)
+        else:
+            _run_tool(root, CODED_TOOL, "--only", unit_id)
         result.update(state="coded_fallback" if refused else "failed",
                       reason="image service refused the design" if refused else "Codex did not produce an image")
         return result
