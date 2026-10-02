@@ -1,0 +1,20 @@
+Dd, Dd, Dd, Dd, Dd, Dd, Hd, Hd, Hhd, Dd, Dd, Dd, Hd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Mm, Dd, Mm, Mm, Hhd, Hd, Hd, Dd, Dd
+Dd, Dd, Dd, Dd, Dd, Dd, Hd, Hd, Hhd, Dd, Dd, Dd, Hd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Mm, Dd, Mm, Mm, Hhd, Hd, Hd, Dd, Dd
+Dd, Dd, Dd, Hhd, Dd, Hhd, Dd, Hhd, Hhd, Hhd, Dd, Hd, Hd, Hd, Hd, Dd, Dd, Hd, Hhd, Dd, Dd, Dd, Dd, Dd, Dd, Mm, Dd, Dd, Hd, Hd
+Dd, Dd, Mm, Dd, Hhd, Hhd, Hhd, Hhd, Hhd, Hhd, Dd, Dd, Hhd, Dd, Dd, Hd, Hd, Xos, Xos, Xos, Xos, Isr, Xos, Xos, Xos, Xos, Xos, Hd, Hd, Hd
+Dd, Dd, Dd, Dd, Hhd, Hhd, Hhd, Dd, Dd, Dd, Dd, Hhd, Dd, Dd, Dd, Dd, Xos, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Hd, Dd, Dd
+Hhd, Hhd, Dd, Dd, Mm, Hhd, Hd, Dd, Hhd, Hhd, Mm, Hd, Dd, Dd, Dd, Dd, Xos, Isr, Isr^Vhc, Isr, Isr, Isr, Isr, Isr, Isr, Isr^Vhc, Isr, Hd, Hd, Hd
+Mm, Mm, Hd, Dd, Hd, Hd, Mm, Dd, Dd, Dd, Dd, Hd, Hhd, Dd, Hd, Dd, Xos, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Hhd, Dd, Dd
+Dd, Dd, Dd, Hd, Dd, Dd, Dd, Dd, Mm, Mm, Dd, Hhd, Hhd, Hhd, Dd, Dd, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Dd, Dd, Dd
+Dd, Dd, Ce, Ce, Ce, Hd, Hd, Dd, Hd, Dd, Hhd, Hhd, Hhd, Hhd, Dd, Dd, Xos, Isr, Isr, Isr, Isr, Isr, Ch, Ch, Ch, Isr, Isr, Dd, Dd, Dd
+Dd, Dd, Dd, 2 Ke, Ce, Hhd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Hd, Xos, Isr, Isr, Isr, Isr^Vhc, Isr, Ch, 1 Kh, Ch, Isr, Isr, Dd, Dd, Dd
+Dd, Dd, Dd, Dd, Dd, Dd, Dd, Hd, Dd, Hhd, Dd, Dd, Mm, Dd, Dd, Dd, Xos, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Dd, Dd, Dd
+Dd, Dd, Dd, Hd, Hhd, Dd, Dd, Hd, Hd, Hd, Dd, Dd, Hd, Hd, Dd, Dd, Xos, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Dd, Hhd, Hhd
+Hd, Hd, Dd, Dd, Dd, Hd, Dd, Dd, Hhd, Hhd, Hhd, Dd, Dd, Dd, Hhd, Dd, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Dd, Dd, Dd
+Hd, Hd, Dd, Dd, Dd, Dd, Hd, Hd, Hhd, Hhd, Hhd, Dd, Dd, Hhd, Mm, Dd, Xos, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Hd, Dd, Dd
+Dd, Dd, Dd, Dd, Hhd, Dd, Dd, Dd, Dd, Hhd, Dd, Dd, Dd, Dd, Dd, Dd, Xos, Isr, Isr^Vhc, Isr, Isr, Isr, Isr, Isr, Isr, Isr^Vhc, Isr, Hd, Dd, Dd
+Hd, Hd, Dd, Hhd, Hhd, Hhd, Dd, Dd, Mm, Dd, Dd, Dd, Hhd, Hhd, Hhd, Dd, Xos, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Isr, Dd, Hd, Hd
+Hhd, Hhd, Hd, Hhd, Hhd, Hhd, Mm, Dd, Hd, Dd, Dd, Dd, Hhd, Hhd, Hhd, Dd, Dd, Xos, Xos, Xos, Xos, Isr, Xos, Xos, Xos, Xos, Xos, Dd, Dd, Dd
+Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Dd, Hhd, Hd, Hd, Dd, Dd, Hhd, Dd, Mm, Hd, Dd, Dd, Hd, Dd, Dd, Dd, Dd, Dd
+Dd, Dd, Dd, Hd, Dd, Dd, Dd, Hd, Hd, Dd, Dd, Mm, Dd, Dd, Dd, Dd, Dd, Hd, Dd, Hd, Dd, Dd, Dd, Hd, Dd, Dd, Hhd, Hd, Dd, Dd
+Dd, Dd, Dd, Hd, Dd, Dd, Dd, Hd, Hd, Dd, Dd, Mm, Dd, Dd, Dd, Dd, Dd, Hd, Dd, Hd, Dd, Dd, Dd, Hd, Dd, Dd, Hhd, Hd, Dd, Dd

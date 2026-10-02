@@ -307,6 +307,7 @@ class AutonomyController:
         self._thread: threading.Thread | None = None
         self._publisher: threading.Thread | None = None
         self._art_importer: threading.Thread | None = None
+        self._art_generator: threading.Thread | None = None
         self.art_imports = ArtImportProduction(self.root, self.queue.event)
         self._last_completion_monotonic = 0.0
         self._monitor = threading.Thread(
@@ -363,7 +364,12 @@ class AutonomyController:
     def art_queue(self) -> dict:
         """Expose only public art-contract and production progress to the dashboard."""
 
-        return public_art_queue(self.root, public_status(self.root))
+        queue = public_art_queue(self.root, public_status(self.root))
+        queue["generation"] = {
+            key: value for key, value in self.art_generation_status().items()
+            if key in {"state", "total", "done", "error", "updated_at"}
+        }
+        return queue
 
     def set_mode(self, mode: str) -> dict:
         if mode not in VALID_MODES:
@@ -535,6 +541,90 @@ class AutonomyController:
                 "Original unit art production stopped safely", level="error",
                 detail=str(exc)[:1200], ticket_id=job_id,
             )
+
+    # --- Codex art generation ------------------------------------------------
+
+    def art_generation_status(self) -> dict:
+        path = self.root / "agent" / "runtime" / "codex-art-generation.json"
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            value = {}
+        return value if isinstance(value, dict) else {}
+
+    def _write_art_generation_status(self, **values) -> None:
+        path = self.root / "agent" / "runtime" / "codex-art-generation.json"
+        status = self.art_generation_status()
+        status.update(values)
+        status["updated_at"] = utc_now()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(status, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(path)
+
+    def generate_art(self, job_ids: list[str] | None = None) -> dict:
+        """Generate original unit art with Codex and publish it per source file.
+
+        ``job_ids`` limits the run; ``None`` processes every pending job. Each
+        unit costs two Codex image generations. Jobs are grouped by unit source
+        file, generated (or given code-drawn art when the image service refuses
+        a design), then published through the existing governed art import.
+        The run stops at the first Codex usage-limit response.
+        """
+        import codex_art  # local import keeps dashboard start-up independent of art tooling
+
+        with self._lock:
+            if self._pipeline_active() or (self._art_generator and self._art_generator.is_alive()):
+                raise ControlError("Wait for the active governed operation to finish")
+            jobs = [job for job in public_art_queue(self.root, public_status(self.root)).get("jobs", [])
+                    if isinstance(job, dict) and job.get("state") != "complete"]
+            if job_ids is not None:
+                wanted = set(job_ids)
+                if not all(re.fullmatch(r"art-[a-z0-9-]{1,100}", item) for item in wanted):
+                    raise ControlError("Invalid art-job identifier")
+                jobs = [job for job in jobs if job.get("id") in wanted]
+            if not jobs:
+                raise ControlError("No pending art jobs to generate")
+            try:
+                codex_art.art_python()
+            except codex_art.CodexArtError as exc:
+                raise ControlError(str(exc)) from exc
+            self._write_art_generation_status(state="running", total=len(jobs), done=0, results=[], error=None)
+            self._art_generator = threading.Thread(
+                target=self._run_art_generation, args=(jobs,), name="codex-art-generation", daemon=True,
+            )
+            self._art_generator.start()
+        self.queue.event("Codex art generation started", detail=f"{len(jobs)} unit art jobs queued.")
+        return {"pass": True, "state": "running", "jobs": len(jobs)}
+
+    def _run_art_generation(self, jobs: list[dict]) -> None:
+        import codex_art
+
+        groups: dict[str, list[dict]] = {}
+        for job in jobs:
+            groups.setdefault(str(job.get("source_path")), []).append(job)
+        results: list[dict] = []
+        try:
+            for source, members in groups.items():
+                for job in members:
+                    outcome = codex_art.generate_unit_art(self.root, job)
+                    results.append(outcome)
+                    self._write_art_generation_status(done=len(results), results=results[-60:])
+                    if outcome["state"] == "quota_paused":
+                        self._write_art_generation_status(state="quota_paused", error=outcome["reason"])
+                        self.queue.event("Codex art generation paused", level="warning", detail=outcome["reason"])
+                        return
+                # Publish this source file's finished sets as one governed batch.
+                published = self.confirm_art_import(members[0]["id"])
+                if not published.get("pass"):
+                    raise ControlError(published.get("message") or f"Art import for {source} was not accepted")
+                while self._art_importer is not None and self._art_importer.is_alive():
+                    time.sleep(5)
+            self._write_art_generation_status(state="complete")
+            self.queue.event("Codex art generation finished", detail=f"{len(results)} unit art sets processed.")
+        except (codex_art.CodexArtError, ControlError, QueueError, OSError, ValueError) as exc:
+            self._write_art_generation_status(state="failed", error=str(exc)[:600])
+            self.queue.event("Codex art generation stopped safely", level="error", detail=str(exc)[:1200])
 
     def _retry_published_art_validation(self, job_id: str) -> None:
         try:

@@ -1,5 +1,11 @@
 # Headless Automation Gaps: Transition, Save/Reload, Carryover
 
+> **Superseded 2026-10-02.** These gaps are now automated. Plugin-driven GUI
+> runs on the Linux 1.19.27 harness enter campaigns through the title screen,
+> dismiss dialogs, end linger mode, move between scenarios, check carryover,
+> and save in-game (`production/linux_engine/`). The text below is kept as
+> history.
+
 **Date:** 2026-09-27
 **Engine:** Wesnoth 1.19.28
 **Status:** Documented limitation, not a code defect

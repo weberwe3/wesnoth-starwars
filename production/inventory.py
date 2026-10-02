@@ -23,7 +23,8 @@ except ImportError:
 
 SCHEMA_ID = "wesnoth-starwars.production.source-inventory"
 SCHEMA_VERSION = 1
-MAX_FILES = 512
+# Each unit carries a 13-image state set; a full trilogy roster needs ~2,000.
+MAX_FILES = 4096
 MAX_FILE_BYTES = 2_000_000
 MAX_TOTAL_BYTES = 20_000_000
 MAX_REFERENCES = 10_000
@@ -32,7 +33,9 @@ CONTRACT_FILE = Path(INDEX_PATH)
 
 _ASSIGNMENT = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$")
 _BLOCK = re.compile(r"^\s*\[\s*([+A-Za-z_][A-Za-z0-9_]*)\s*\]\s*$")
-_LOCAL = re.compile(r"(?:\{(~add-ons/[^}]+)\}|(?:image|portrait|profile)=\"?([^\s\"]+)\"?)")
+_LOCAL = re.compile(
+    r"(?:\{(~add-ons/[^}]+)\}|(?:image|portrait|profile)=\"?([^\s\"]+)\"?|map_file=\"?([^\s\"]+)\"?)"
+)
 
 
 class InventoryError(ValueError):
@@ -120,6 +123,11 @@ def _asset_reference(root: Path, raw: str) -> tuple[str, str] | None:
         rel = "addons/Star_Wars_Thrawn_Trilogy/images/" + raw
     elif raw.startswith("portraits/"):
         rel = "addons/Star_Wars_Thrawn_Trilogy/images/" + raw
+    elif raw.startswith("misc/sw-"):
+        rel = "addons/Star_Wars_Thrawn_Trilogy/images/" + raw
+    elif raw.endswith(".map") and "/" not in raw:
+        # map_file= resolves through the add-on binary path's maps/ directory.
+        rel = "addons/Star_Wars_Thrawn_Trilogy/maps/" + raw
     else:
         return ("external", raw)
     if not rel.startswith("addons/Star_Wars_Thrawn_Trilogy/"):
@@ -216,9 +224,11 @@ def build_inventory(repo_root: str | os.PathLike[str]) -> dict:
         scenario_ids[scenario_id] = rel
         next_ids = re.findall(r"^\s*next_scenario\s*=\s*([^\s#]+)", text, re.MULTILINE)
         for target in next_ids:
+            if target == "null":  # documented end of campaign
+                continue
             transitions.append({"from": scenario_id, "to": target, "source_path": rel})
         for match in _LOCAL.finditer(text):
-            raw = match.group(1) or match.group(2)
+            raw = match.group(1) or match.group(2) or match.group(3)
             if raw:
                 asset = _asset_reference(root, raw)
                 if asset:

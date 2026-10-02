@@ -358,7 +358,8 @@ def validate_campaign_dependencies(root: Path, sources: dict[str, str]) -> dict[
         if not path.startswith(ADDON_ROOT + "/scenarios/"):
             continue
         for target in re.findall(r"(?m)^\s*next_scenario\s*=\s*([A-Za-z0-9_]+)\s*$", text):
-            if target not in scenarios:
+            # "null" is Wesnoth's documented end-of-campaign value (ScenarioWML).
+            if target != "null" and target not in scenarios:
                 failures.append({"path": path, "detail": f"Scenario route points to missing next_scenario {target}"})
 
     for source_path, relative in _project_resource_references(sources):
@@ -609,6 +610,34 @@ def _symbols_added_by_commit(root: Path, commit: str) -> tuple[list[str], list[s
     return sorted(set(paths)), sorted(set(symbols))
 
 
+RETIRED_CONTENT = "tests/retired-content.json"
+
+
+def _retired_content(root: Path) -> tuple[set[str], set[str]]:
+    """Paths and ids the owner explicitly retired (tests/retired-content.json).
+
+    Retirement is an owner decision recorded in the repository, never an
+    inference: only listed paths/ids are exempt from historical retention,
+    and a listed path must actually be absent from the current add-on.
+    """
+    path = root / ADDON_ROOT / RETIRED_CONTENT
+    if not path.is_file():
+        return set(), set()
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set(), set()
+    paths: set[str] = set()
+    ids: set[str] = set()
+    for item in document.get("retirements", []) if isinstance(document, dict) else []:
+        if not isinstance(item, dict) or not item.get("approved_by") or not item.get("reason"):
+            continue
+        paths.update(p for p in item.get("paths", []) if isinstance(p, str) and p.startswith(ADDON_ROOT + "/")
+                     and not (root / p).exists())
+        ids.update(i for i in item.get("ids", []) if isinstance(i, str) and re.fullmatch(r"[A-Za-z0-9_]+", i))
+    return paths, ids
+
+
 def validate_historical_retention(root: Path) -> dict[str, Any]:
     """Validate every published add-on ticket in first-parent publication order.
 
@@ -625,11 +654,17 @@ def validate_historical_retention(root: Path) -> dict[str, Any]:
         evidence["diagnostic"] = f"Historical validation unavailable: {exc.__class__.__name__}"
         return evidence
     corpus = "\n".join(sources.values())
+    retired_paths, retired_ids = _retired_content(root)
+    evidence["retired"] = {"paths": len(retired_paths), "ids": len(retired_ids)}
     failures: list[dict[str, Any]] = []
     for sequence, commit in enumerate(commits, start=1):
         paths, symbols = _symbols_added_by_commit(root, commit)
-        missing_paths = [path for path in paths if path not in sources]
-        missing_symbols = [symbol for symbol in symbols if not re.search(rf"(?m)^\s*id\s*=\s*{re.escape(symbol)}\s*$", corpus)]
+        missing_paths = [path for path in paths if path not in sources and path not in retired_paths]
+        missing_symbols = [
+            symbol for symbol in symbols
+            if symbol not in retired_ids
+            and not re.search(rf"(?m)^\s*id\s*=\s*{re.escape(symbol)}\s*$", corpus)
+        ]
         item = {"sequence": sequence, "commit": commit, "pass": not missing_paths and not missing_symbols, "introduced_paths": paths, "introduced_ids": symbols, "missing_paths": missing_paths, "missing_ids": missing_symbols}
         evidence["tickets"].append(item)
         if not item["pass"]:

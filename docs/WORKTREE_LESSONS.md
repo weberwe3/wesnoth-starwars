@@ -15,6 +15,41 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-10-02 — the GUI probe never reached Game because --plugin disables --campaign
+
+- **Symptom:** Every GUI startup probe (Windows hidden/RDP and Linux offscreen alike) stayed at the title screen until timeout; historical validation reported `engine_infrastructure` and automation stopped.
+- **Cause:** Wesnoth 1.19.27 `src/game_launcher.cpp` sets `jump_to_campaign_.jump = false` when a plugin file is loaded, so `--campaign`, `--campaign-scenario`, and `--campaign-skip-story` are silently ignored whenever `--plugin` is given. The desktop session was not the cause.
+- **Resolution:** The probe plugin drives the title screen itself (`play_campaign`, `select_level` by campaign id, `create`, `skip_dialog`, `launch`) and requires `info.can_move().can_move` in `Game`, like the engine's `data/test/plugin/start-campaign.lua`. A Linux 1.19.27 build on SDL `offscreen` video runs it without any desktop.
+- **Prevention:** Never pass `--campaign*` flags to a plugin-driven probe; unit tests assert the plugin text selects the campaign and that no `--campaign` flag is sent.
+
+### 2026-10-02 — carryover was lost when a campaign changed its side-1 leader
+
+- **Symptom:** Mission 3 of the rebuilt Campaign I ended instantly; the start save had no side-1 leader and recall units were missing.
+- **Cause:** Carryover is matched by side `save_id`, which defaults to the side's leader id (`saved_game.cpp`, `carryover.cpp`). Changing the leader from Leia to Luke produced a new `save_id`, so nothing carried over. Separately, the map had no side-1 starting position, so the new leader was never placed.
+- **Resolution:** Every Campaign I scenario sets `save_id=sw_player` and `persistent=yes` on side 1; every map that needs a leader declares a `1 ` start position.
+- **Prevention:** The Linux campaign-sequence probe enters each scenario in order and fails when a required hero is missing or the campaign returns to the title screen.
+
+### 2026-10-02 — a recalled leader without canrecruit ended the mission at once
+
+- **Symptom:** After a mission whose side-1 leader changed, the next mission linger-ended on turn 1 although its leader was recalled onto the map.
+- **Cause:** Former leaders kept `canrecruit=yes` in the recall list, and the engine could take one of them as the side leader in place of the one the scenario names. After that flag was cleared at victory, the scenario's own leader was recalled with its stored `canrecruit=no`, and the default side `defeat_condition=no_leader_left` defeated side 1 immediately.
+- **Resolution:** At every victory clear `canrecruit` on all side-1 units with `[modify_unit]` (not store/unstore, which drops recall-list units). Each scenario sets `defeat_condition=never` on side 1 (defeat comes from explicit hero-death events) and restores `canrecruit=yes` on its own leader in prestart.
+- **Prevention:** The Linux campaign-sequence probe runs every transition in one campaign session.
+
+### 2026-10-02 — previous_recruits leaked one mission's recruit list into later missions
+
+- **Symptom:** Recruit lists after the Imperial prologue included stormtroopers for the New Republic player.
+- **Cause:** Campaign carryover merges each side's earlier recruit lists (`previous_recruits`) into the next scenario.
+- **Resolution:** Each Campaign I scenario's prestart replaces the list with `[set_recruit]`.
+- **Prevention:** Keep `[set_recruit]` in every scenario whose recruit list differs from the previous one.
+
+### 2026-10-02 — next_scenario=null rejected as a missing route
+
+- **Symptom:** The dependency gate and inventory failed the campaign finale with "missing next_scenario null".
+- **Cause:** The validators treated `null`, Wesnoth's documented end-of-campaign value, as a scenario id.
+- **Resolution:** Both validators skip `next_scenario=null`.
+- **Prevention:** Route checks must treat `null` as terminal; all other unknown targets still fail.
+
 ### 2026-09-08 — published game checks did not prove the player launcher mirror
 
 - **Symptom:** A ticket could be labeled Published and Tested after its isolated engine validation while the dashboard had no evidence that `Play-WesnothStarWars.cmd` had refreshed the player-facing add-on copy to a revision containing that ticket.

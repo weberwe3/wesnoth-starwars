@@ -42,9 +42,10 @@ def test_stock_art_is_external_but_missing_project_art_is_rejected() -> None:
 
 def test_missing_transition_duplicate_id_and_unsafe_path_are_rejected() -> None:
     _, copy_root = _copy_repo()
-    first = copy_root / "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"
+    hte = copy_root / "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire"
+    first = hte / "01_ysalamiri_harvest.cfg"
     original = first.read_text(encoding="utf-8")
-    first.write_text(original.replace("sw_02_space_interception", "missing_scenario"), encoding="utf-8")
+    first.write_text(original.replace("next_scenario=sw_hte_02_ambush_at_bpfassh", "next_scenario=missing_scenario"), encoding="utf-8")
     try:
         build_inventory(copy_root)
     except InventoryError:
@@ -52,8 +53,9 @@ def test_missing_transition_duplicate_id_and_unsafe_path_are_rejected() -> None:
     else:
         raise AssertionError("missing transition was accepted")
     first.write_text(original, encoding="utf-8")
-    second = copy_root / "addons/Star_Wars_Thrawn_Trilogy/scenarios/02_space_interception.cfg"
-    second.write_text(second.read_text(encoding="utf-8").replace("sw_02_space_interception", "01_First_Battle", 1), encoding="utf-8")
+    second = hte / "02_ambush_at_bpfassh.cfg"
+    second.write_text(second.read_text(encoding="utf-8").replace(
+        "id=sw_hte_02_ambush_at_bpfassh", "id=sw_hte_01_ysalamiri_harvest", 1), encoding="utf-8")
     try:
         build_inventory(copy_root)
     except InventoryError:
@@ -75,7 +77,7 @@ def test_inventory_is_deterministic_and_check_is_read_only() -> None:
         write_inventory(root, output)
         first = output.read_bytes()
         inventory = json.loads(first)
-        map_path = "addons/Star_Wars_Thrawn_Trilogy/maps/01_first_battle.map"
+        map_path = "addons/Star_Wars_Thrawn_Trilogy/maps/hte_01_ysalamiri_harvest.map"
         assert map_path in {item["path"] for item in inventory["asset_references"]}
         assert map_path in {item["path"] for item in inventory["source_files"]}
         assert "addons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg" in {

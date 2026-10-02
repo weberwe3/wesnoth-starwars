@@ -60,6 +60,12 @@ function renderArtQueue(queue) {
   const complete = Number.isInteger(queue?.complete) ? queue.complete : 0;
   $("art-queue-summary").textContent = `${pending} awaiting art · ${complete} complete`;
   $("art-queue-policy").textContent = safe(queue?.policy, "Interactive Codex generation only; no API key.");
+  const generation = queue?.generation || {};
+  const generating = generation.state === "running";
+  $("art-generation-status").textContent = generation.state
+    ? `${displayState(generation.state)}${Number.isInteger(generation.total) ? ` · ${generation.done || 0}/${generation.total}` : ""}${generation.error ? ` · ${generation.error}` : ""}`
+    : "Two Codex images per unit; frames are derived from one master design.";
+  $("generate-all-art").disabled = generating || pending === 0 || !controlToken || controlBusy;
   $("art-queue").innerHTML = jobs.map(job => {
     const prompt = safe(job.prompt_path, "");
     const canCopy = typeof job.brief === "string" && job.brief.length > 0;
@@ -89,7 +95,7 @@ function renderArtQueue(queue) {
     const visualState = productionState || (awaitingArt ? "awaiting-art" : job.state);
     return `<article class="art-job ${esc(job.state, "pending").toLowerCase()} ${esc(visualState || "waiting")}">
       <div><strong>${esc(job.unit_name || job.unit_id)}</strong><small>${esc(displayState(visualState || job.state))} · ${esc(job.asset_count)} required PNGs</small></div>
-      <div class="art-job-actions"><code>${esc(prompt)}</code><p class="art-import-status ${published ? "ready" : failed || job.requires_llm || outcome ? "attention" : ""}">${esc(status)}</p><div class="art-buttons"><button type="button" class="copy-art-brief" data-art-id="${esc(job.id, "")}" ${canCopy ? "" : "disabled"}>Copy $imagegen brief</button><button type="button" class="confirm-art-import" data-art-id="${esc(job.id, "")}" ${buttonDisabled ? "disabled" : ""}>${esc(buttonLabel)}</button></div></div>
+      <div class="art-job-actions"><code>${esc(prompt)}</code><p class="art-import-status ${published ? "ready" : failed || job.requires_llm || outcome ? "attention" : ""}">${esc(status)}</p><div class="art-buttons"><button type="button" class="copy-art-brief" data-art-id="${esc(job.id, "")}" ${canCopy ? "" : "disabled"}>Copy $imagegen brief</button><button type="button" class="generate-art" data-art-id="${esc(job.id, "")}" ${job.state === "complete" || working || !controlToken || controlBusy || artQueueSnapshot?.generation?.state === "running" ? "disabled" : ""}>Generate with Codex</button><button type="button" class="confirm-art-import" data-art-id="${esc(job.id, "")}" ${buttonDisabled ? "disabled" : ""}>${esc(buttonLabel)}</button></div></div>
     </article>`;
   }).join("") || '<p class="empty">No unit art contracts are queued.</p>';
 }
@@ -531,10 +537,14 @@ $("approval-queue").addEventListener("click", event => {
 });
 
 $("art-queue").addEventListener("click", async event => {
-  const button = event.target.closest(".copy-art-brief, .confirm-art-import");
+  const button = event.target.closest(".copy-art-brief, .confirm-art-import, .generate-art");
   if (!button) return;
   const job = (artQueueSnapshot?.jobs || []).find(item => item?.id === button.dataset.artId);
   if (!job) return;
+  if (button.classList.contains("generate-art")) {
+    await requestArtGeneration({action: "generate_art", job_id: job.id});
+    return;
+  }
   if (button.classList.contains("confirm-art-import")) {
     if (!controlToken || controlBusy) return;
     controlBusy = true;
@@ -568,6 +578,27 @@ $("art-queue").addEventListener("click", async event => {
     button.textContent = "Copy unavailable";
   }
 });
+
+async function requestArtGeneration(body) {
+  if (!controlToken || controlBusy) return;
+  controlBusy = true;
+  try {
+    const response = await fetch("/api/control", {
+      method: "POST",
+      headers: apiHeaders({"Content-Type": "application/json", "X-Wesnoth-CSRF": controlToken}),
+      body: JSON.stringify(body),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Art generation was not started");
+    await refresh();
+  } catch (error) {
+    $("art-generation-status").textContent = error.message || "Art generation was not started.";
+  } finally {
+    controlBusy = false;
+  }
+}
+
+$("generate-all-art").addEventListener("click", () => requestArtGeneration({action: "generate_all_art"}));
 
 document.addEventListener("toggle", event => {
   const detail = event.target;

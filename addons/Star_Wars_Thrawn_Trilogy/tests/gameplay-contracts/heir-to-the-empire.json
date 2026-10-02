@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-hte-scenario-sw-hte-01-ysalamiri-harvest",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg",
+      "expected_id": "sw_hte_01_ysalamiri_harvest"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-02-ambush-at-bpfassh",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg",
+      "expected_id": "sw_hte_02_ambush_at_bpfassh"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-03-adrift",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/03_adrift.cfg",
+      "expected_id": "sw_hte_03_adrift"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-04-shadows-of-kashyyyk",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/04_shadows_of_kashyyyk.cfg",
+      "expected_id": "sw_hte_04_shadows_of_kashyyyk"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-05-prisoner-of-myrkr",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg",
+      "expected_id": "sw_hte_05_prisoner_of_myrkr"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-06-raid-on-karrdes-base",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg",
+      "expected_id": "sw_hte_06_raid_on_karrdes_base"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-07-the-forest-crossing",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/07_the_forest_crossing.cfg",
+      "expected_id": "sw_hte_07_the_forest_crossing"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-08-nomad-city",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/08_nomad_city.cfg",
+      "expected_id": "sw_hte_08_nomad_city"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-09-sluis-van-shipyards",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg",
+      "expected_id": "sw_hte_09_sluis_van_shipyards"
+    },
+    {
+      "id": "sw-hte-scenario-sw-hte-10-thrawns-gambit",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/10_thrawns_gambit.cfg",
+      "expected_id": "sw_hte_10_thrawns_gambit"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-luke",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_luke"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-xwing-luke",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_xwing_luke"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-leia",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_leia"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-han",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_han"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-chewbacca",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_chewbacca"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-lando",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_lando"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-mara",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_mara"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-karrde",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_karrde"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-wedge",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_wedge"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-pellaeon",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_pellaeon"
+    },
+    {
+      "id": "sw-hte-unit-sw-hero-thrawn",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
+      "expected_id": "sw_hero_thrawn"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-stormtrooper",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "expected_id": "sw_unit_im_stormtrooper"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-stormtrooper-sergeant",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "expected_id": "sw_unit_im_stormtrooper_sergeant"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-scout-trooper",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "expected_id": "sw_unit_im_scout_trooper"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-officer",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "expected_id": "sw_unit_im_officer"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-at-st",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "expected_id": "sw_unit_im_at_st"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-noghri",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+      "expected_id": "sw_unit_im_noghri"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-trooper",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "expected_id": "sw_unit_nr_trooper"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-sergeant",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "expected_id": "sw_unit_nr_sergeant"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-commando",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "expected_id": "sw_unit_nr_commando"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-eweb-team",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "expected_id": "sw_unit_nr_eweb_team"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-field-medic",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "expected_id": "sw_unit_nr_field_medic"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-militia",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "expected_id": "sw_unit_nr_militia"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-wk-warrior",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "expected_id": "sw_unit_wk_warrior"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-wk-lookout",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
+      "expected_id": "sw_unit_wk_lookout"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-sm-smuggler",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
+      "expected_id": "sw_unit_sm_smuggler"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-sm-veteran",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
+      "expected_id": "sw_unit_sm_veteran"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-wl-vornskr",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
+      "expected_id": "sw_unit_wl_vornskr"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-xwing",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_nr_xwing"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-awing",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_nr_awing"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-ywing",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_nr_ywing"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-nr-docked-warship",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_nr_docked_warship"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-tie-fighter",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_im_tie_fighter"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-tie-interceptor",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_im_tie_interceptor"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-tie-bomber",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_im_tie_bomber"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-mole-miner",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_im_mole_miner"
+    },
+    {
+      "id": "sw-hte-unit-sw-unit-im-star-destroyer",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+      "expected_id": "sw_unit_im_star_destroyer"
+    }
+  ]
+}
