@@ -743,28 +743,38 @@ def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
             + indent(frame(f"{base}/ranged-2.png", 150), 4) + "\n[/attack_anim]")
 
 
-# Mainline attack icons until original icons are produced.
+# Attack icons: original Star Wars icons from production/tools/gen_attack_icons.py
+# (sw-*), and mainline icons only where they already fit (fists, fangs, the
+# Wayland natives' primitive spears, bows and clubs).
 ICONS = {
-    "blaster_rifle": "lightbeam", "blaster_pistol": "lightbeam", "blaster_carbine": "lightbeam",
-    "heavy_blaster_pistol": "lightbeam", "hold_out_blaster": "lightbeam", "stun_blaster": "lightbeam",
-    "bike_blaster": "lightbeam", "eweb_repeater": "thunderstick", "laser_cannons": "lightbeam",
-    "point_defense": "lightbeam", "turbolasers": "fire-blast", "twin_blaster_cannon": "fire-blast",
-    "ion_cannon": "lightning", "ion_cannons": "lightning", "proton_torpedoes": "magic-missile",
-    "concussion_bombs": "fireball", "concussion_grenade": "fireball", "plasma_jets": "fire-breath-drake",
-    "lightsaber": "sword-flaming", "deflection": "lightbeam", "vibroknife": "dagger-human",
-    "vibroblade": "saber-human", "ryyk_blade": "blade-curved", "noghri_knives": "dagger-curved",
-    "bowcaster": "crossbow-iron", "rifle_butt": "club-small", "fists": "fist-human",
-    "wookiee_strength": "fist-troll", "stomp": "foot-boot", "ram": "ram", "fangs": "fangs-animal",
-    "whip_tail": "tail-jumpcat",
+    "blaster_rifle": "sw-blaster-rifle", "blaster_carbine": "sw-blaster-rifle", "bike_blaster": "sw-blaster-rifle",
+    "blaster_pistol": "sw-blaster-pistol", "heavy_blaster_pistol": "sw-heavy-blaster-pistol",
+    "hold_out_blaster": "sw-hold-out-blaster", "stun_blaster": "sw-stun-blaster",
+    "eweb_repeater": "sw-heavy-repeater", "twin_blaster_cannon": "sw-heavy-repeater",
+    "laser_cannons": "sw-laser-cannon", "point_defense": "sw-laser-cannon", "turbolasers": "sw-turbolaser",
+    "ion_cannon": "sw-ion-cannon", "ion_cannons": "sw-ion-cannon", "proton_torpedoes": "sw-proton-torpedo",
+    "concussion_bombs": "sw-concussion-bomb", "concussion_grenade": "sw-concussion-bomb",
+    "plasma_jets": "fire-breath-drake", "lightsaber": "sw-lightsaber-blue", "deflection": "sw-deflection",
+    "force_lightning": "sw-force-lightning", "force_pike": "sw-force-pike", "vibroknife": "sw-vibroknife",
+    "vibroblade": "sw-vibroblade", "ryyk_blade": "blade-curved", "noghri_knives": "dagger-curved",
+    "bowcaster": "sw-bowcaster", "sprayer": "sw-sprayer", "manipulator": "sw-manipulator",
+    "rifle_butt": "club-small", "fists": "fist-human", "wookiee_strength": "fist-troll", "stomp": "foot-boot",
+    "ram": "ram", "fangs": "fangs-animal", "whip_tail": "tail-jumpcat", "spear": "spear", "bow": "bow",
+    "war_club": "club",
 }
+# Luke's lightsaber is green (the blade he built himself). The novels do not
+# fix C'baoth's colour, so his keeps the classic Jedi blue; the clone Luuke's
+# published art shows a green blade, and the icon matches the art.
+UNIT_ICONS = {("sw_hero_luke", "lightsaber"): "sw-lightsaber-green",
+              ("sw_hero_luuke", "lightsaber"): "sw-lightsaber-green"}
 
 
-def attack_wml(a: dict, unit_slug: str) -> str:
+def attack_wml(a: dict, unit_slug: str, unit_id: str = "") -> str:
     lines = [
         "[attack]",
         f"    name={a['name']}",
         f"    description= _ \"{a['desc']}\"",
-        f"    icon=attacks/{ICONS.get(a['name'], 'blank-attack')}.png",
+        f"    icon=attacks/{UNIT_ICONS.get((unit_id, a['name']), ICONS.get(a['name'], 'blank-attack'))}.png",
         f"    type={a['type']}",
         f"    range={a['range']}",
         f"    damage={a['damage']}",
@@ -821,7 +831,7 @@ def unit_wml(u: dict) -> str:
             lines.append(indent(ABILITY_BUILDERS[ab](), 8))
         lines.append("    [/abilities]")
     for a in u["attacks"]:
-        lines.append(indent(attack_wml(a, s), 4))
+        lines.append(indent(attack_wml(a, s, u["id"]), 4))
     lines.append(indent(animations(u), 4))
     lines.append("[/unit_type]")
     return "\n".join(lines)
