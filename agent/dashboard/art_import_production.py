@@ -369,12 +369,17 @@ class ArtImportProduction:
             relative = asset.get("path")
             if not isinstance(relative, str) or not relative.startswith("images/units/"):
                 raise ArtProductionError("Art import batch has an invalid standing-art path")
-            claims.append({
-                "kind": "source_text",
-                "path": source_path,
-                "base": "different",
-                "contains": "image=" + relative.removeprefix("images/"),
-            })
+            wiring = "image=" + relative.removeprefix("images/")
+            try:
+                current_source = (self.root / source_path).read_text(encoding="utf-8")
+            except OSError:
+                current_source = ""
+            if wiring in current_source:
+                # The unit already references this image (for example interim
+                # code-drawn art): prove the import replaced the image itself.
+                claims.append({"kind": "asset_changed", "path": f"{ADDON_ROOT}/{relative}", "base": "different"})
+            else:
+                claims.append({"kind": "source_text", "path": source_path, "base": "different", "contains": wiring})
         if not 1 <= len(claims) <= 12:
             raise ArtProductionError("Art import batch has no bounded WML acceptance proof")
         return {"schema_version": 1, "claims": claims}
