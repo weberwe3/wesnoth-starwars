@@ -677,6 +677,14 @@ class AutonomyController:
             raise ControlError(published.get("message") or f"Art import for {source} was not accepted")
         while self._art_importer is not None and self._art_importer.is_alive():
             time.sleep(5)
+        # A failed import leaves its sets uncommitted in the working tree, and
+        # the importer refuses later batches while unrelated changes exist, so
+        # the run stops here instead of generating sets it cannot publish.
+        final = public_status(self.root).get(job_id, {})
+        if final.get("state") != "published":
+            raise ControlError(
+                f"Art import for {source} did not publish: {final.get('error') or final.get('message') or 'unknown'}"
+            )
 
     def _retry_published_art_validation(self, job_id: str) -> None:
         try:
