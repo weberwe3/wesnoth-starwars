@@ -15,6 +15,11 @@ with fixed seeds so it is reproducible.
   sw/landing-pad-keep  circular shuttle landing pad (encampment keeps)
   sw/landing-pad       landing apron plates with guide lights (encampments)
 
+Phase 2 (2026-10-02): paved settlements.
+
+  sw/duracrete-road    weathered duracrete roadway slabs (replaces cobbles)
+  sw/duracrete-plaza   pale duracrete plaza paving (replaces clean cobbles)
+
 Tiles are 72x72 flat-top hexes. Plate seams sit on an 18 px grid, which
 divides the map's 54 px column step, 72 px row step and 36 px odd-column
 offset, so plating continues seamlessly from hex to hex.
@@ -265,6 +270,51 @@ def landing_pad_keep(seed: int = 107) -> Image.Image:
     return finish(img)
 
 
+def duracrete_road(seed: int = 108) -> Image.Image:
+    """Weathered duracrete slabs with expansion joints, stains and wheel wear."""
+    rng = random.Random(seed)
+    base = (128, 124, 116)
+    img = noise(rng, base, 10)
+    d = ImageDraw.Draw(img, "RGBA")
+    for g in range(0, BIG, 18 * S):
+        d.line([(g, 0), (g, BIG)], fill=(84, 80, 74, 170), width=S)
+    for g in range(0, BIG, 36 * S):
+        d.line([(0, g), (BIG, g)], fill=(84, 80, 74, 170), width=S)
+    for x in (27 * S, 45 * S):  # repulsorlift wear bands
+        wear = Image.new("L", (BIG, BIG), 0)
+        ImageDraw.Draw(wear).rectangle((x - 4 * S, 0, x + 4 * S, BIG), fill=40)
+        layer = Image.new("RGBA", (BIG, BIG), (60, 56, 50, 0))
+        layer.putalpha(wear.filter(ImageFilter.GaussianBlur(S * 3)))
+        composite(img, layer)
+    for _ in range(4):  # oil and scorch stains
+        x, y, r = rng.randrange(BIG), rng.randrange(BIG), rng.randint(3, 7) * S
+        stain = Image.new("L", (BIG, BIG), 0)
+        ImageDraw.Draw(stain).ellipse((x - r, y - r, x + r, y + r), fill=rng.randint(30, 60))
+        layer = Image.new("RGBA", (BIG, BIG), (40, 36, 32, 0))
+        layer.putalpha(stain.filter(ImageFilter.GaussianBlur(S * 2)))
+        composite(img, layer)
+    scuffs(img, rng, 10)
+    return finish(img)
+
+
+def duracrete_plaza(seed: int = 109) -> Image.Image:
+    """Pale plaza paving in large square slabs."""
+    rng = random.Random(seed)
+    base = (172, 168, 158)
+    img = noise(rng, base, 8)
+    d = ImageDraw.Draw(img, "RGBA")
+    step = 18 * S
+    for gx in range(0, BIG, step):
+        for gy in range(0, BIG, step):
+            tone = rng.uniform(0.95, 1.05)
+            d.rectangle((gx + S, gy + S, gx + step - S, gy + step - S), fill=shade(base, tone) + (120,))
+        d.line([(gx, 0), (gx, BIG)], fill=(120, 116, 108, 200), width=S)
+    for gy in range(0, BIG, step):
+        d.line([(0, gy), (BIG, gy)], fill=(120, 116, 108, 200), width=S)
+    scuffs(img, rng, 8)
+    return finish(img)
+
+
 TILES = {
     "interior-deck": interior_deck,
     "bulkhead": bulkhead,
@@ -273,6 +323,8 @@ TILES = {
     "bunker-keep": bunker_keep,
     "landing-pad": landing_pad,
     "landing-pad-keep": landing_pad_keep,
+    "duracrete-road": duracrete_road,
+    "duracrete-plaza": duracrete_plaza,
 }
 
 
