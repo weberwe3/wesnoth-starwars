@@ -4375,6 +4375,18 @@ class PublicationGameValidationTests(unittest.TestCase):
         self.assertEqual(result["final_verdict"], "FAIL")
         self.assertEqual(len(self.queue.read()["records"]), 1)
 
+    def test_empty_repair_resolves_beside_the_owner_handoff_reference(self) -> None:
+        ticket, secure, result, _ = self.empty_repair()
+        (self.root / "docs").mkdir(exist_ok=True)
+        (self.root / "docs" / "AI_HANDOFF_REFERENCE.md").write_text("owner notes", encoding="utf-8")
+        with (
+            mock.patch.object(self.controller, "_latest_ticket_result", return_value=result),
+            mock.patch("autonomy.validate_post_publish_game", return_value=self.engine),
+            mock.patch("autonomy.validate_historical_retention", return_value=self.retained),
+        ):
+            self.assertTrue(self.controller._resolve_empty_historical_repair(ticket, secure))
+        self.assertTrue((self.root / "docs" / "AI_HANDOFF_REFERENCE.md").exists())
+
     def test_empty_repair_is_not_resolved_while_engine_still_fails(self) -> None:
         ticket, secure, result, _ = self.empty_repair()
         with (

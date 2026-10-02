@@ -1987,7 +1987,10 @@ fresh_start_authorized: {json.dumps(fresh_start_authorized or self._fresh_start_
         if (
             queue_run(["git", "rev-parse", "HEAD"], self.root) != main_head
             or queue_run(["git", "rev-parse", "HEAD"], worktree) != main_head
-            or queue_run(["git", "status", "--porcelain=v1", "--untracked-files=all"], self.root)
+            # The owner's untracked local handoff reference is expected on main.
+            or worktree_paths.unexpected_main_status_entries(
+                queue_run(["git", "status", "--porcelain=v1", "--untracked-files=all"], self.root)
+            )
             or queue_run(["git", "status", "--porcelain=v1", "--untracked-files=all"], worktree)
         ):
             return False
