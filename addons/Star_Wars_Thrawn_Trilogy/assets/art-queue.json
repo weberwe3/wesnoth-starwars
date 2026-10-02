@@ -2060,7 +2060,7 @@
       "unit_id": "sw_unit_nr_trooper",
       "unit_name": "sw unit nr trooper",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-trooper.md",
       "assets": [
@@ -2136,7 +2136,7 @@
       "unit_id": "sw_unit_nr_sergeant",
       "unit_name": "sw unit nr sergeant",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-sergeant.md",
       "assets": [
@@ -2212,7 +2212,7 @@
       "unit_id": "sw_unit_nr_commando",
       "unit_name": "sw unit nr commando",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-commando.md",
       "assets": [
@@ -2288,7 +2288,7 @@
       "unit_id": "sw_unit_nr_eweb_team",
       "unit_name": "sw unit nr eweb team",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-eweb-team.md",
       "assets": [
@@ -2364,7 +2364,7 @@
       "unit_id": "sw_unit_nr_field_medic",
       "unit_name": "sw unit nr field medic",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-field-medic.md",
       "assets": [
@@ -2440,7 +2440,7 @@
       "unit_id": "sw_unit_nr_militia",
       "unit_name": "sw unit nr militia",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-nr-militia.md",
       "assets": [
@@ -2516,7 +2516,7 @@
       "unit_id": "sw_unit_wk_warrior",
       "unit_name": "sw unit wk warrior",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-wk-warrior.md",
       "assets": [
@@ -2592,7 +2592,7 @@
       "unit_id": "sw_unit_wk_lookout",
       "unit_name": "sw unit wk lookout",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-wk-lookout.md",
       "assets": [
