@@ -201,6 +201,19 @@ For each new scenario:
    save for each scenario (`sync/saves/<Abbrev>-<Name>.gz`) shows the
    constructed sides when a transition fails.
 
+### 5.1 AI soak test
+`production/linux_engine/run_ai_soak.py` starts each scenario directly, hands
+side 1 to the AI, and plays until the scenario ends. That exercises every
+turn-based event, wave, hazard, and AI decision the scripted probe skips.
+Any WML/Lua/engine error fails it. It records the outcome and every side-1
+death; a quick defeat with no hero death points to an objective that can be
+lost before the player can react.
+```bash
+python3 production/linux_engine/run_ai_soak.py --jobs 3 --workdir /tmp/soak --output /tmp/soak.json
+```
+AI-controlled heroes charge recklessly, so hero deaths in the soak are not
+balance verdicts on their own.
+
 ## 6. Art through the dashboard
 
 - Owner rules: lore-accurate designs; the guide artists' qualities are

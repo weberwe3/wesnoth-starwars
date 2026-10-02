@@ -15,6 +15,13 @@ Keep entries short and reusable. Newer entries may supersede earlier ones; do no
 
 ## Verified lessons
 
+### 2026-10-02 — palace infiltrators could win before the player could act
+
+- **Symptom:** In the AI soak, The Palace Infiltrators ended in defeat on turn 2 with no side-1 deaths.
+- **Cause:** Infiltrators spawning at the north and south-east entries could reach the nursery in two turns.
+- **Resolution:** All infiltrator waves now enter from the west edge, about four turns away, with Leia's keep in between.
+- **Prevention:** Run `production/linux_engine/run_ai_soak.py`; a quick defeat with no hero death flags an objective that can be lost before the player reacts.
+
 ### 2026-10-02 — art that replaced already-wired images failed acceptance
 
 - **Symptom:** The governed art import for nine Campaign II units failed "Deterministic art-import validation".
