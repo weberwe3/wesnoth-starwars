@@ -34,6 +34,7 @@ DERIVE_TOOL = "production/tools/derive_unit_frames.py"
 CODED_TOOL = "production/tools/gen_coded_unit_art.py"
 # Refused heroes with a detailed painted master; others use the simpler coded set.
 PAINT_TOOL = "production/tools/paint_hero_masters.py"
+PORTRAIT_TOOL = "production/tools/fit_portrait.py"
 PAINTED_HEROES = frozenset({"sw_hero_luke", "sw_hero_chewbacca"})
 ART_PYTHON_DEFAULT = Path.home() / "opt" / "swtools" / "bin" / "python"
 MANAGED_ART_ROOT = "art-gen"
@@ -108,6 +109,9 @@ def build_prompt(direction: dict[str, Any], unit_id: str, unit_name: str, kind: 
     the working directory, so each call must be unambiguous on its own.
     """
     subject = direction["units"].get(unit_id)
+    if kind == "portrait":
+        # A pilot hero's unit is a starfighter, but the pilot speaks in dialogue.
+        subject = (direction.get("portrait_subjects") or {}).get(unit_id, subject)
     if not isinstance(subject, str) or not subject.strip():
         raise CodexArtError(f"No art direction for {unit_id}")
     rules = "\n".join(f"- {rule}" for rule in direction.get("rules", []))
@@ -115,8 +119,8 @@ def build_prompt(direction: dict[str, Any], unit_id: str, unit_name: str, kind: 
         framing = ("a full-body game unit for a turn-based tactics game, seen in three-quarter view facing "
                    "right in a ready stance, the whole subject centered with an empty margin")
     else:
-        framing = ("a head-and-shoulders portrait of the character (for a vehicle or ship, a dramatic close "
-                   "three-quarter view of the craft)")
+        framing = ("a head-and-shoulders portrait of the character for dialogue scenes, the face and upper body "
+                   "filling the frame (for a vehicle or ship, a dramatic close three-quarter view of the craft)")
     return f"""Use your image generation tool to create exactly ONE original image: {framing}, on a TRANSPARENT background. Show a single subject only; do not combine several views in one image. Save it as {kind}.png in the current working directory. Do not create any other files.
 
 Subject ({unit_name}): {subject}
@@ -254,6 +258,37 @@ def generate_unit_art(
                         "--addon", str(root / ADDON_ROOT), "--slug", slug)
     result.update(state="generated", written=len(json.loads(derived).get("written", [])))
     return result
+
+
+def generate_portrait(
+    root: Path, unit_id: str, unit_name: str, *,
+    runner: Callable[..., subprocess.CompletedProcess] = subprocess.run,
+    model: str = "gpt-6-luna",
+) -> dict[str, Any]:
+    """Generate only the dialogue portrait for one unit, keeping its sprites.
+
+    Returns ``{"state": "generated" | "refused" | "failed" | "quota_paused", ...}``.
+    """
+    slug = re.sub(r"[^a-z0-9]+", "-", unit_id.casefold()).strip("-")
+    if not JOB_ID.fullmatch(f"art-{slug}"):
+        raise CodexArtError("Invalid portrait unit")
+    direction = load_direction(root)
+    executable = ticket_runner.resolve_codex_executable()
+    environment = ticket_runner.require_codex_chatgpt_quota(executable or "")
+    workspace = _managed_directory(f"{slug}-portrait")
+    portrait = workspace / "portrait.png"
+    ok, output = _codex_image(executable or "", environment, workspace,
+                              build_prompt(direction, unit_id, unit_name, "portrait"), portrait, runner, model)
+    (workspace / "codex-output.txt").write_text(output[-20000:], encoding="utf-8")
+    result: dict[str, Any] = {"unit_id": unit_id, "workspace": workspace.name}
+    if not ok:
+        if QUOTA.search(output) and not MODERATION.search(output):
+            return {**result, "state": "quota_paused", "reason": "Codex usage limit reached"}
+        refused = bool(MODERATION.search(output))
+        return {**result, "state": "refused" if refused else "failed",
+                "reason": "image service refused the design" if refused else "Codex did not produce an image"}
+    _run_tool(root, PORTRAIT_TOOL, "--portrait", str(portrait), "--addon", str(root / ADDON_ROOT), "--slug", slug)
+    return {**result, "state": "generated"}
 
 
 def _run_tool(root: Path, tool: str, *arguments: str) -> str:
