@@ -181,11 +181,17 @@ For each new scenario:
    `move(id, x, y)` (real `moveto` events), `kill_id(id)` (real `die` and
    `last breath` events), or `fire(event_name)`. Do not call `[endlevel]`
    directly; the scenario's own events must end it.
-2. Add the scenario id to the campaign's expected list, and its required
+2. If the mission has a "reach a place" or "defeat a leader" objective, add
+   a legal-route spec to `ROUTE_SPECS` in the same plugin, as a flat string
+   `"unit_id:x,y;x,y|other_unit:x,y"`. The engine cannot serialize nested
+   tables into the game kernel, so the specs must stay flat strings. The
+   probe asks the engine's pathfinder whether each target can be reached over
+   legal terrain, and fails if one needs more than 80% of the turn limit.
+3. Add the scenario id to the campaign's expected list, and its required
    heroes to `REQUIRED_HEROES`, in
    `production/linux_engine/run_campaign_sequence.py`. A new campaign also
    goes into `CAMPAIGNS`.
-3. Run it:
+4. Run it:
    ```bash
    python3 production/linux_engine/run_campaign_sequence.py --campaign <campaign_id> \
        --workdir /tmp/<dir> --output /tmp/<dir>/seq.json
@@ -261,6 +267,9 @@ print(s.validate_published_player_launcher(root, sha)['pass'])"
 - `previous_recruits` merges earlier recruit lists; use `[set_recruit]`.
 - Directory includes load only `.cfg` files and do not recurse into
   subfolders unless they have `_main.cfg`.
+- A plugin's `wesnoth.plugin.execute` serializes the function and its
+  upvalues; nested tables cannot be serialized (it returns false and a
+  message). Check its return value.
 - Wesnoth 1.19.27 supports `min_range` and `max_range` attacks, but the AI
   does not use them.
 - The Linux engine sometimes does not exit after the plugin asks it to; the
@@ -279,9 +288,8 @@ results only; when something is unverified, say so.
 See the newest addenda in `docs/PROJECT_CONTINUITY.md` and the open PRs.
 Open work at the time of writing:
 
-- Campaign III branch `content/the-last-command` awaits PR and merge.
 - Codex art: many units still use code-drawn art.
-- Legal-route probes (win each mission by legal moves) and balance
-  playtesting have not been done.
+- Objective reachability is checked by the sequence probe. Full AI-opposed
+  playthroughs and balance playtesting have not been done.
 - The dashboard's automation of small Codex tickets needs the Windows
   launcher's secure bridge.

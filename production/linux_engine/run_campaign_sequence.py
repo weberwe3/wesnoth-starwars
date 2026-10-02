@@ -58,7 +58,20 @@ EXPECTED_II = [
     "sw_dfr_09_battle_for_the_fleet",
     "sw_dfr_10_honoghrs_choice",
 ]
-CAMPAIGNS = {CAMPAIGN_I: EXPECTED, CAMPAIGN_II: EXPECTED_II}
+CAMPAIGN_III = "Star_Wars_Thrawn_Trilogy_The_Last_Command"
+EXPECTED_III = [
+    "sw_tlc_01_the_siege_of_coruscant",
+    "sw_tlc_02_the_smugglers_council",
+    "sw_tlc_03_the_palace_infiltrators",
+    "sw_tlc_04_landfall_on_wayland",
+    "sw_tlc_05_the_natives_of_wayland",
+    "sw_tlc_06_the_gates_of_tantiss",
+    "sw_tlc_07_the_cloning_vats",
+    "sw_tlc_08_the_throne_room",
+    "sw_tlc_09_bilbringi",
+    "sw_tlc_10_the_last_command",
+]
+CAMPAIGNS = {CAMPAIGN_I: EXPECTED, CAMPAIGN_II: EXPECTED_II, CAMPAIGN_III: EXPECTED_III}
 # Heroes that must be on the map when each scenario becomes playable.
 REQUIRED_HEROES = {
     "sw_hte_01_ysalamiri_harvest": ["sw_hero_pellaeon"],
@@ -81,6 +94,17 @@ REQUIRED_HEROES = {
     "sw_dfr_08_aboard_the_katana": ["sw_hero_luke", "sw_hero_han", "sw_hero_lando", "sw_hero_chewbacca"],
     "sw_dfr_09_battle_for_the_fleet": ["sw_hero_wedge", "sw_hero_luke"],
     "sw_dfr_10_honoghrs_choice": ["sw_hero_leia", "sw_hero_chewbacca", "sw_hero_khabarakh"],
+    "sw_tlc_01_the_siege_of_coruscant": ["sw_hero_wedge", "sw_hero_luke"],
+    "sw_tlc_02_the_smugglers_council": ["sw_hero_karrde", "sw_hero_mara"],
+    "sw_tlc_03_the_palace_infiltrators": ["sw_hero_leia", "sw_hero_chewbacca", "sw_hero_khabarakh"],
+    "sw_tlc_04_landfall_on_wayland": ["sw_hero_luke", "sw_hero_mara"],
+    "sw_tlc_05_the_natives_of_wayland": ["sw_hero_luke", "sw_hero_mara"],
+    "sw_tlc_06_the_gates_of_tantiss": ["sw_hero_han", "sw_hero_leia", "sw_hero_lando", "sw_hero_chewbacca",
+                                       "sw_hero_khabarakh"],
+    "sw_tlc_07_the_cloning_vats": ["sw_hero_han", "sw_hero_lando", "sw_hero_chewbacca"],
+    "sw_tlc_08_the_throne_room": ["sw_hero_luke", "sw_hero_mara"],
+    "sw_tlc_09_bilbringi": ["sw_hero_wedge", "sw_hero_luke"],
+    "sw_tlc_10_the_last_command": ["sw_hero_wedge", "sw_hero_luke"],
 }
 # Heroes that must NOT be on the map (stashed or out of story).
 FORBIDDEN_HEROES = {
@@ -133,6 +157,8 @@ def parse(log_text: str) -> dict:
             current["won"] = True
         elif current is not None and body.startswith("left "):
             current["left"] = body
+        elif current is not None and body.startswith("route "):
+            current.setdefault("routes", []).append(body[len("route "):])
         else:
             notes.append(body)
     return {"scenarios": scenarios, "notes": notes}
@@ -155,8 +181,19 @@ def evaluate(parsed: dict, log_text: str, expected: list[str] | None = None) -> 
             failures.append(f"{s['id']}: in-game save not confirmed")
         if not s["won"]:
             failures.append(f"{s['id']}: win script did not run")
+    for s in parsed["scenarios"]:
+        for route in s.get("routes", []):
+            match = re.search(r"turns=(\S+) limit=(\S+)", route)
+            if "missing_unit" in route or not match or match.group(1) == "nil":
+                failures.append(f"{s['id']}: objective unreachable by legal moves: {route}")
+                continue
+            turns, limit = int(match.group(1)), int(match.group(2))
+            # The objective must fit comfortably: at most 80% of the turn
+            # limit with no enemies in the way.
+            if limit > 0 and turns > limit * 0.8:
+                failures.append(f"{s['id']}: objective route needs {turns} of {limit} turns: {route}")
     for note in parsed["notes"]:
-        if note.startswith(("fatal", "win_script_error")):
+        if note.startswith(("fatal", "win_script_error", "route_error")):
             failures.append(note)
     if "done" not in parsed["notes"]:
         failures.append("probe did not finish")

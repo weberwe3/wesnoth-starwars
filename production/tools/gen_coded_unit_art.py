@@ -128,6 +128,22 @@ LOOKS: dict[str, Look] = {
     "sw_unit_ob_dreadnaught": Look(kind="capital", top=(170, 160, 150), accent=(120, 60, 50)),
     "sw_unit_nr_boarding_shuttle": Look(kind="fighter", top=(200, 200, 196), accent=(60, 120, 200), extra={"long": True}),
     "sw_unit_im_boarding_shuttle": Look(kind="fighter", top=(150, 154, 160), accent=(40, 40, 44), extra={"wedge": True}),
+    # Campaign III
+    "sw_hero_luuke": Look(hair=(60, 50, 40), top=(24, 24, 28), bottom=(24, 24, 28), weapon="saber",
+                          blade=(110, 255, 120), eyes=(120, 30, 30)),
+    "sw_unit_wy_myneyrshi": Look(skin="brown", hair=(30, 26, 22), top=(120, 96, 60), bottom=(100, 80, 50),
+                                 weapon="blade", blade=(170, 150, 110), accent=(170, 60, 40)),
+    "sw_unit_wy_psadan": Look(skin="gray", hair=None, hair_style="bald", top=(110, 100, 90), vest=(90, 82, 74),
+                              bottom=(96, 88, 80), weapon="blade", blade=(120, 100, 80)),
+    "sw_unit_im_royal_guard": Look(helmet=(170, 30, 30), top=(170, 30, 30), cape=(150, 24, 24),
+                                   bottom=(160, 28, 28), weapon="blade", blade=(200, 200, 210), skin="gray"),
+    "sw_unit_im_infiltrator": Look(helmet=(30, 30, 34), visor=(60, 120, 60), top=(30, 30, 34),
+                                   bottom=(28, 28, 32), weapon="knives", blade=(190, 190, 200), skin="gray"),
+    "sw_unit_im_minelayer": Look(kind="capital", top=(150, 146, 140), accent=(80, 80, 84)),
+    "sw_unit_ob_cloaked_asteroid": Look(kind="miner", top=(90, 84, 76)),
+    "sw_unit_ob_shield_generator": Look(kind="walker", top=(160, 164, 172)),
+    "sw_unit_ob_cloning_cylinder": Look(kind="miner", top=(120, 200, 200)),
+    "sw_unit_ob_shipyard_platform": Look(kind="capital", top=(176, 176, 180), accent=(90, 90, 96)),
 }
 
 FRAMES = ("standing", "idle-1", "idle-2", "move-1", "move-2", "melee-1", "melee-2",
@@ -425,7 +441,7 @@ def render_portrait(L: Look, unit_id: str) -> Image.Image:
 
 def unit_ids() -> list[str]:
     ids = []
-    for f in sorted([*(ADDON / "units").glob("hte_*.cfg"), *(ADDON / "units").glob("dfr_*.cfg")]):
+    for f in sorted([*(ADDON / "units").glob("hte_*.cfg"), *(ADDON / "units").glob("dfr_*.cfg"), *(ADDON / "units").glob("tlc_*.cfg")]):
         ids += re.findall(r"(?m)^\s*id=(sw_[a-z0-9_]+)\s*$", f.read_text(encoding="utf-8"))
     return ids
 

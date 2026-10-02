@@ -1649,3 +1649,18 @@ The placeholder `sw_13`–`sw_21` scenarios are retired in
 missions' scripted win paths in one session, and package validation now runs
 both campaigns. Next: Campaign III (The Last Command), legal-route probes, and
 Codex art for the remaining units.
+
+### 2026-10-02 — Campaign III (The Last Command) added; trilogy complete in structure
+
+Campaign III is ten missions in `scenarios/the_last_command/`: the siege of
+Coruscant (cloaked asteroids), Karrde's smugglers' council, the palace
+infiltrators, landfall on Wayland, the Wayland natives, the gates of Mount
+Tantiss, the cloning vats, the throne room (C'baoth and Luuke), the Bilbringi
+shipyards, and the finale. It adds ten unit types in `units/tlc_units.cfg`,
+cloaked-asteroid macros in `utils/tlc_macros.cfg`, maps from
+`production/tools/gen_tlc_maps.py`, and a design record in
+`production/campaigns/the_last_command/DESIGN.md`. The campaign-sequence probe
+plays all ten missions' scripted win paths, and package validation now runs
+all three campaigns. All 30 missions pass the per-scenario GUI probe. Open
+work: legal-route probes, balance playtesting, and Codex art for the
+remaining units.

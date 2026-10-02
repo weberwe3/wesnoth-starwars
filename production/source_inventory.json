@@ -24,6 +24,15 @@
       "structural_status": "observed",
       "runtime_readiness": "unknown",
       "play_readiness": "unknown"
+    },
+    {
+      "id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "define": "CAMPAIGN_STAR_WARS_THE_LAST_COMMAND",
+      "first_scenario": "sw_tlc_01_the_siege_of_coruscant",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
     }
   ],
   "scenarios": [
@@ -242,6 +251,114 @@
       "structural_status": "observed",
       "runtime_readiness": "unknown",
       "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_01_the_siege_of_coruscant",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg",
+      "next_scenarios": [
+        "sw_tlc_02_the_smugglers_council"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_02_the_smugglers_council",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg",
+      "next_scenarios": [
+        "sw_tlc_03_the_palace_infiltrators"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_03_the_palace_infiltrators",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg",
+      "next_scenarios": [
+        "sw_tlc_04_landfall_on_wayland"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_04_landfall_on_wayland",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/04_landfall_on_wayland.cfg",
+      "next_scenarios": [
+        "sw_tlc_05_the_natives_of_wayland"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_05_the_natives_of_wayland",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/05_the_natives_of_wayland.cfg",
+      "next_scenarios": [
+        "sw_tlc_06_the_gates_of_tantiss"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_06_the_gates_of_tantiss",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/06_the_gates_of_tantiss.cfg",
+      "next_scenarios": [
+        "sw_tlc_07_the_cloning_vats"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_07_the_cloning_vats",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/07_the_cloning_vats.cfg",
+      "next_scenarios": [
+        "sw_tlc_08_the_throne_room"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_08_the_throne_room",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/08_the_throne_room.cfg",
+      "next_scenarios": [
+        "sw_tlc_09_bilbringi"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_09_bilbringi",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/09_bilbringi.cfg",
+      "next_scenarios": [
+        "sw_tlc_10_the_last_command"
+      ],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
+    },
+    {
+      "id": "sw_tlc_10_the_last_command",
+      "campaign_id": "Star_Wars_Thrawn_Trilogy_The_Last_Command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg",
+      "next_scenarios": [],
+      "structural_status": "observed",
+      "runtime_readiness": "unknown",
+      "play_readiness": "unknown"
     }
   ],
   "transition_edges": [
@@ -334,6 +451,51 @@
       "from": "sw_hte_09_sluis_van_shipyards",
       "to": "sw_hte_10_thrawns_gambit",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg"
+    },
+    {
+      "from": "sw_tlc_01_the_siege_of_coruscant",
+      "to": "sw_tlc_02_the_smugglers_council",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg"
+    },
+    {
+      "from": "sw_tlc_02_the_smugglers_council",
+      "to": "sw_tlc_03_the_palace_infiltrators",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg"
+    },
+    {
+      "from": "sw_tlc_03_the_palace_infiltrators",
+      "to": "sw_tlc_04_landfall_on_wayland",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg"
+    },
+    {
+      "from": "sw_tlc_04_landfall_on_wayland",
+      "to": "sw_tlc_05_the_natives_of_wayland",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/04_landfall_on_wayland.cfg"
+    },
+    {
+      "from": "sw_tlc_05_the_natives_of_wayland",
+      "to": "sw_tlc_06_the_gates_of_tantiss",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/05_the_natives_of_wayland.cfg"
+    },
+    {
+      "from": "sw_tlc_06_the_gates_of_tantiss",
+      "to": "sw_tlc_07_the_cloning_vats",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/06_the_gates_of_tantiss.cfg"
+    },
+    {
+      "from": "sw_tlc_07_the_cloning_vats",
+      "to": "sw_tlc_08_the_throne_room",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/07_the_cloning_vats.cfg"
+    },
+    {
+      "from": "sw_tlc_08_the_throne_room",
+      "to": "sw_tlc_09_bilbringi",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/08_the_throne_room.cfg"
+    },
+    {
+      "from": "sw_tlc_09_bilbringi",
+      "to": "sw_tlc_10_the_last_command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/09_bilbringi.cfg"
     }
   ],
   "unit_type_ids": [
@@ -376,6 +538,10 @@
     {
       "id": "sw_hero_luke",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+    },
+    {
+      "id": "sw_hero_luuke",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
     },
     {
       "id": "sw_hero_mara",
@@ -422,6 +588,14 @@
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
     },
     {
+      "id": "sw_unit_im_infiltrator",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+    },
+    {
+      "id": "sw_unit_im_minelayer",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+    },
+    {
       "id": "sw_unit_im_mole_miner",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg"
     },
@@ -448,6 +622,10 @@
     {
       "id": "sw_unit_im_rem_stormtrooper",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+    },
+    {
+      "id": "sw_unit_im_royal_guard",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
     },
     {
       "id": "sw_unit_im_scout_trooper",
@@ -582,8 +760,24 @@
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg"
     },
     {
+      "id": "sw_unit_ob_cloaked_asteroid",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+    },
+    {
+      "id": "sw_unit_ob_cloning_cylinder",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+    },
+    {
       "id": "sw_unit_ob_dreadnaught",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+    },
+    {
+      "id": "sw_unit_ob_shield_generator",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+    },
+    {
+      "id": "sw_unit_ob_shipyard_platform",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
     },
     {
       "id": "sw_unit_sm_smuggler",
@@ -604,6 +798,14 @@
     {
       "id": "sw_unit_wl_vornskr",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+    },
+    {
+      "id": "sw_unit_wy_myneyrshi",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+    },
+    {
+      "id": "sw_unit_wy_psadan",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
     }
   ],
   "asset_references": [
@@ -616,7 +818,8 @@
         "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg",
-        "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/08_nomad_city.cfg"
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/08_nomad_city.cfg",
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg"
       ]
     },
     {
@@ -682,6 +885,12 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-luuke.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-mara.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/03_adrift.cfg",
@@ -693,6 +902,7 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-pellaeon.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/10_thrawns_gambit.cfg",
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
       ]
     },
@@ -745,6 +955,18 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-infiltrator.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-minelayer.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-mole-miner.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg"
@@ -766,6 +988,12 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-recon-squad.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-royal-guard.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
     {
@@ -907,9 +1135,33 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-cloaked-asteroid.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-cloning-cylinder.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-dreadnaught.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-shield-generator.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-shipyard-platform.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
     {
@@ -940,6 +1192,18 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wl-vornskr.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wy-myneyrshi.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wy-psadan.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
     {
@@ -1588,6 +1852,78 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/standing.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
     {
@@ -2312,6 +2648,150 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-mole-miner/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg"
@@ -2598,6 +3078,78 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/standing.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
     {
@@ -4264,6 +4816,150 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-dreadnaught/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
@@ -4333,6 +5029,150 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-dreadnaught/standing.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
     {
@@ -4696,6 +5536,150 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_01_the_noghri_prisoner.map",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/01_the_noghri_prisoner.cfg"
@@ -4813,6 +5797,66 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_10_thrawns_gambit.map",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/10_thrawns_gambit.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_01_the_siege_of_coruscant.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_02_the_smugglers_council.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_03_the_palace_infiltrators.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_04_landfall_on_wayland.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/04_landfall_on_wayland.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_05_the_natives_of_wayland.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/05_the_natives_of_wayland.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_06_the_gates_of_tantiss.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/06_the_gates_of_tantiss.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_07_the_cloning_vats.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/07_the_cloning_vats.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_08_the_throne_room.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/08_the_throne_room.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_09_bilbringi.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/09_bilbringi.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_10_the_last_command.map",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg"
       ]
     }
   ],
@@ -5130,12 +6174,92 @@
     {
       "id": "sw-thrawn-campaign-registration",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/campaign.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-01-the-siege-of-coruscant",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-02-the-smugglers-council",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-03-the-palace-infiltrators",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-04-landfall-on-wayland",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-05-the-natives-of-wayland",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-06-the-gates-of-tantiss",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-07-the-cloning-vats",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-08-the-throne-room",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-09-bilbringi",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-scenario-sw-tlc-10-the-last-command",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-hero-luuke",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-im-infiltrator",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-im-minelayer",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-im-royal-guard",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-ob-cloaked-asteroid",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-ob-cloning-cylinder",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-ob-shield-generator",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-ob-shipyard-platform",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-wy-myneyrshi",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
+    },
+    {
+      "id": "sw-tlc-unit-sw-unit-wy-psadan",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json"
     }
   ],
   "source_files": [
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
-      "sha256": "f7d6d35a01d6126e68a2c6b33e9415caf6a73c0ef0f29f3ff145acc622538027"
+      "sha256": "da565234ff8c7839eed00399e7f0398d88e8b6561b1974d981542ca13ef3b721"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/01_the_noghri_prisoner.cfg",
@@ -5218,6 +6342,46 @@
       "sha256": "588bc713d0fbaa50e5667256fe22e2745eaaf8e25d6765c92dcb15976c7b2a2f"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg",
+      "sha256": "9d313391ceede7561fa62877a3f19f420cc556c4a3650363b4df22aba73d7bfb"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg",
+      "sha256": "0b7a1c7cbc83776b8d9f2fb98b64d2e4760cfd13eb2c64829e387912534d09d2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg",
+      "sha256": "424d964043006ff79c1919e07147c6b91ced51c0769200fd6bc6b5156a1da606"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/04_landfall_on_wayland.cfg",
+      "sha256": "d8681a74cf556d296e88da58b4bce0417fd16843755e62d105d14eaf46c9010f"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/05_the_natives_of_wayland.cfg",
+      "sha256": "d0d3468622356be1f9c7e2248c74adc0b5bea1d653735e7929b57cf15c4fa75e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/06_the_gates_of_tantiss.cfg",
+      "sha256": "0142d5a321da1c86d00a39b370f3cf2530d0c4c93981d9e97d00a9d2ba8fa754"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/07_the_cloning_vats.cfg",
+      "sha256": "0db7ea8b16ad3234ff5420ff5232fc0fd13439a20bf9b11d0646d03cea65af25"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/08_the_throne_room.cfg",
+      "sha256": "2d1b5ab3c9469cdd3aed20a719d99e4a4c5e5d646c5d04e874a91422881b4580"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/09_bilbringi.cfg",
+      "sha256": "e0a95d13ea913204faf7f7e6bed04c954c2c4d0beece0cda9d458fd1a92443f4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg",
+      "sha256": "573d4488a1444fb036ce4a373e0c95480f98817c88452dfe110166b2b39d5a8f"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
       "sha256": "2e2fab17f655a047042a6ff3ddea8c17b7342056b535b1c03539c1fd197e5e6f"
     },
@@ -5227,7 +6391,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_00_movetypes.cfg",
-      "sha256": "ae58b222fa2cadd8fe2bc9eddccea50bcdf5ac2936c8a78dcd5a9df93941e1db"
+      "sha256": "cb5abad0b6d74dc18e7861c3ddfc1e4d9902633d9e8fe6b9e3d2874746f0e2c7"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
@@ -5258,6 +6422,10 @@
       "sha256": "8259d6eb08840b4c9fff050adba652a503b8e91290b38ba2e7e4f9defd96991e"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "sha256": "841f2bfc0068ebe7465ff77f67dfa52261e5f44b93d1dbce4ca86d3559535c58"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
       "sha256": "ec036e2e1d425ede5a677056a61fb39757cb02b9bdef6153b939ddbebeb3a2ba"
     },
@@ -5274,8 +6442,12 @@
       "sha256": "79805fd529c7a43c22ef4869a24bf42824d691ec97484aa25b3d39f6ed00928e"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/utils/tlc_macros.cfg",
+      "sha256": "002ba21c7a311013600e1429d50fdde5dafc4fc7d96a5f126290d0199f0b5c60"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
-      "sha256": "48da5a8ecac15e4fe2fb92d7c687d1af0e4e0f14f853e58c98d32d669abc8b9e"
+      "sha256": "2d0c44a9a0a2bba94f74d471fa14b3c7cb0ee1fe7bced0624cf98f32aa35cd03"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/campaign.json",
@@ -5296,6 +6468,10 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json",
       "sha256": "673178cff89c58f43d9bb998eaa49a4a297ab8b2cbff7c7bbb57c57403252c06"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json",
+      "sha256": "c509653eb31cbe5f29a423abdce6475d375931cb7e324b0925e02b644af5ea74"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/misc/sw-objective.png",
@@ -5342,6 +6518,10 @@
       "sha256": "664f8fe0f05613c9f6194851a95330791c4a54f7f66d262a090d8cc716c33119"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-luuke.png",
+      "sha256": "009c4a23b8862f27d8db976fdd41a74240d1869b1f368f1df448606e798f3ce4"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-mara.png",
       "sha256": "489b5f7f4ae64fabe4f836eaf4d2284f4218ad084e14b67273c9314f8699f60f"
     },
@@ -5382,6 +6562,14 @@
       "sha256": "a92edde590a0ded8448d7a814186e6ed80455549aed06d560bb3c38715047b09"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-infiltrator.png",
+      "sha256": "a6856386e83ac891d91126292b1d5dba8020a326570f36f028ad474878c4c60b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-minelayer.png",
+      "sha256": "dffd85a1a3a7b19756bd7bd41a76def80f9592fbc7fb831621e21895457ca810"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-mole-miner.png",
       "sha256": "0b7c8c2abe6498ea44d903a468444265d3b7258369ce632acceb49bb7df6a333"
     },
@@ -5396,6 +6584,10 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-recon-squad.png",
       "sha256": "a005990b5b4133ca30be7d8e789bbefcf681c035142f47870dbf660777c59107"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-royal-guard.png",
+      "sha256": "00ec395f88b0669ad04ed7beb37ec1387038aeaed1e4f464a674a8f6553c019f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-scout-trooper.png",
@@ -5490,8 +6682,24 @@
       "sha256": "0d5a104468e9dbfabe5a5d954bc0fc5f34fdbd0ec28121ce28c5b1704801cf7a"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-cloaked-asteroid.png",
+      "sha256": "45c8d1c33f0957f7245b8d0a91ed80982ba2fe6b76f93409fdf556e35095b24e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-cloning-cylinder.png",
+      "sha256": "432b1f2299be92dc471ff74e34a46bcca7f284eac8db4adc6251f99210fb6471"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-dreadnaught.png",
       "sha256": "d9bc9c9451ec85c642a13e338a5c0a4cbec3151665c3c517e2e7c5a2d376fcc1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-shield-generator.png",
+      "sha256": "eeaf494c16aa01986bba7afbd7da825f0be2664688de5c5f74491f73e2f9a6ce"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-shipyard-platform.png",
+      "sha256": "2d2f853c7a1a7cc0c4a5494b17211cb67f2e011f349754a40f7a0ac4943c08a4"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-sm-smuggler.png",
@@ -5512,6 +6720,14 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wl-vornskr.png",
       "sha256": "4a14c7f5b689629d2116e10f711e5d73ea75765f03dcd6ed89d97dc4a3f10977"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wy-myneyrshi.png",
+      "sha256": "7967859e502fc9cc9911d484d627b17bfa32214c5ec92afe56493dfbdcf5c845"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wy-psadan.png",
+      "sha256": "98b3599ea8636ce0b7a83194b90b1fa80de7c45a1aa25b240c3000c93c194ad7"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis/death-1.png",
@@ -5944,6 +7160,54 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/standing.png",
       "sha256": "96ebf0215e4fcb56cd9b7e551402420d1c6d86cdbd29b80f78a6264c84f56806"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/death-1.png",
+      "sha256": "a038b41b9ad3b2f78d2e66cc63b56d7922b0022b8dd1ce86084b6876145fe50c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/death-2.png",
+      "sha256": "443871c6e9beab125a70075dc46b2b39673ad3490fd478a726e1e3162ede52ea"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/defend.png",
+      "sha256": "bf065cffd48d61c1efb76d4627a88b6cbd63f44f0fe40afb179c192fdc532290"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/idle-1.png",
+      "sha256": "f3b6b083e22d9effd0e8ed8551bef48a200287894744e5e2dbf1203264db358e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/idle-2.png",
+      "sha256": "9edd034e9e7bc9d8213bb6e01c8693ea24eae6b4d71b96604d3eaa9d82dd0f38"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/melee-1.png",
+      "sha256": "9a099ef1d0d702071cd730657c8c64f4759d148ab394c06b774b393db77f87e4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/melee-2.png",
+      "sha256": "890d02cfa205896aca9cb224e37065a814dcbbd3427affc6ba5cc0a950a1648e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/move-1.png",
+      "sha256": "ad9044256708ece291c4277281ad70396a4c29067eb13c452a4936e55d9588d7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/move-2.png",
+      "sha256": "f27662b82d88add82919e54df5ecc9ce8813d7e224b0a7db5fd0d36a6ac4dc16"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/ranged-1.png",
+      "sha256": "2323b6fc4820f5761502bbcbf6003edf44cae84ec6b8b90c328d9eb340a66ae3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/ranged-2.png",
+      "sha256": "2323b6fc4820f5761502bbcbf6003edf44cae84ec6b8b90c328d9eb340a66ae3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/standing.png",
+      "sha256": "2323b6fc4820f5761502bbcbf6003edf44cae84ec6b8b90c328d9eb340a66ae3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-mara/death-1.png",
@@ -6426,6 +7690,102 @@
       "sha256": "802a3be51b01e889352bfb40a892a9fe5382bff6f7fb9e2be8306df9e1e63987"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/death-1.png",
+      "sha256": "c8a47d45a5755360bc35922c111632eaf8d245d1230f6c1d86de230931c17c83"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/death-2.png",
+      "sha256": "dd93627ead4ced3350f009e54f884662db82b816fc0913ba09406929cb77a329"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/defend.png",
+      "sha256": "50ac2ec6d536e94f2e042f8416d6997de9be6a232c281a55d87f56497878b04d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/idle-1.png",
+      "sha256": "543fa9a402824ff1fa0c36dcf728868e11783f03c32652f6f92c7e9a2ce1b444"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/idle-2.png",
+      "sha256": "8bfc1d403fb1383713874e1efd299342390c0455ccd763248231351eabc4dbc5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/melee-1.png",
+      "sha256": "0f6fb4847457aafcc659e6322333a938f1576b892448249c874e5ad21cf8096a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/melee-2.png",
+      "sha256": "83c34ddbde352a82c50edc466599c5ef6aea9648cccf6765deb04a7e85205155"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/move-1.png",
+      "sha256": "22dffd79005f8756c04bc9f2eb7ccb64b7d05500a4edb2b09bae0dba2923e2eb"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/move-2.png",
+      "sha256": "17f6fd92dad7f9514922bc4d5f567b8353d973a58514b34fe5a77d4dbdd34e68"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/ranged-1.png",
+      "sha256": "d4a37638941e810c55b1173944be6f5c276ee2823807e7e2c2afa457fbdc5e59"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/ranged-2.png",
+      "sha256": "d4a37638941e810c55b1173944be6f5c276ee2823807e7e2c2afa457fbdc5e59"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/standing.png",
+      "sha256": "d4a37638941e810c55b1173944be6f5c276ee2823807e7e2c2afa457fbdc5e59"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/death-1.png",
+      "sha256": "7bf0738d78eb850c1678c1e000e849a4a3f6bf5f3d42ba3281808d3fbaa1af1b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/death-2.png",
+      "sha256": "8e65a7d0f070dd34839409162c9680f64d95ce493971f67d041093522ed3bec2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/defend.png",
+      "sha256": "aa39af980101bf8182d77a5ebdc8a18a818e1014b7441a1310c1194695a124e8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/idle-1.png",
+      "sha256": "2dfc7f3549f75c3fe0046582a5a4ce199d629619135ad29cca70614df1af754e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/idle-2.png",
+      "sha256": "2dfc7f3549f75c3fe0046582a5a4ce199d629619135ad29cca70614df1af754e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/melee-1.png",
+      "sha256": "2dfc7f3549f75c3fe0046582a5a4ce199d629619135ad29cca70614df1af754e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/melee-2.png",
+      "sha256": "2dfc7f3549f75c3fe0046582a5a4ce199d629619135ad29cca70614df1af754e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/move-1.png",
+      "sha256": "2dfc7f3549f75c3fe0046582a5a4ce199d629619135ad29cca70614df1af754e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/move-2.png",
+      "sha256": "2dfc7f3549f75c3fe0046582a5a4ce199d629619135ad29cca70614df1af754e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/ranged-1.png",
+      "sha256": "2dfc7f3549f75c3fe0046582a5a4ce199d629619135ad29cca70614df1af754e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/ranged-2.png",
+      "sha256": "8c59f020dee5ab71b2c400545d58e0bda445cc1dfb94a6602a642450842c8088"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/standing.png",
+      "sha256": "2dfc7f3549f75c3fe0046582a5a4ce199d629619135ad29cca70614df1af754e"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-mole-miner/death-1.png",
       "sha256": "b87a402aed77b71841241812567f32c1eee53939d06340ed37830d8f64113300"
     },
@@ -6616,6 +7976,54 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/standing.png",
       "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/death-1.png",
+      "sha256": "b0ab5c123fbcd859b61f58426b8e8b2fe8bc33e34910f6c7142304245ee5172b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/death-2.png",
+      "sha256": "e5c58774d2e3cc8eba534dd4b8719523d22d756d02f0a27bc5507da6549d0044"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/defend.png",
+      "sha256": "743a303a591575ded28ba6f1b8299841c4e513b55a3abbc772f004035ea72fab"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/idle-1.png",
+      "sha256": "e1e6bf3077f4545c6ef5f22172044f084fa9f5b842ec1cd354e244e54d61f9e7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/idle-2.png",
+      "sha256": "34ce27855838124df5af7e47e59196c1579e5d33253a490ebb6e53420ccab979"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/melee-1.png",
+      "sha256": "2a9a637a1d64e2f0b14c7235e8ed207397411b4e9664d3f71d5f8d449713c48b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/melee-2.png",
+      "sha256": "591d29c4d336dddeafa1dd7758776af789a11e8e7ede2773cfcebdb7104b79d7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/move-1.png",
+      "sha256": "3951f470386d884638b37dbf8c04270e10f638749f6daba5dbdbc423321fc812"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/move-2.png",
+      "sha256": "b6174a39e0fb32fe70447e417120d3bab321a9ef1042dce3968a4f4ba4832301"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/ranged-1.png",
+      "sha256": "bcb34271386bc80e2cb83f60656dfe11fcbf41307b658acc1b572601be12a88c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/ranged-2.png",
+      "sha256": "bcb34271386bc80e2cb83f60656dfe11fcbf41307b658acc1b572601be12a88c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/standing.png",
+      "sha256": "bcb34271386bc80e2cb83f60656dfe11fcbf41307b658acc1b572601be12a88c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-scout-trooper/death-1.png",
@@ -7722,6 +9130,102 @@
       "sha256": "129dfc1fee2a690f1852b71d31713e5b1dd698a81a9dbff988aaaa050912d7a9"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/death-1.png",
+      "sha256": "b6420a04778a65cf128a6557a2593372cf3a63790930afa804318861b44e7aee"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/death-2.png",
+      "sha256": "2d439ee98e55d548a356f1984195faf05a7b79e7811b9b7fb842ecf1409dd56b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/defend.png",
+      "sha256": "774f00f33a4c4008ef5e1980954bd18b639cbb352c7eb1ed6dff9c3d7dc3a22c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/idle-1.png",
+      "sha256": "85f552a5340acc8050d0220ffee02a34b6bfb6d1d938d7b0d643443220a4c6be"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/idle-2.png",
+      "sha256": "85f552a5340acc8050d0220ffee02a34b6bfb6d1d938d7b0d643443220a4c6be"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/melee-1.png",
+      "sha256": "0b663f049b1e03d1b3a64a64bdd02f6a440adb0701ac3e9c387caedd2f71105e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/melee-2.png",
+      "sha256": "0b663f049b1e03d1b3a64a64bdd02f6a440adb0701ac3e9c387caedd2f71105e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/move-1.png",
+      "sha256": "85f552a5340acc8050d0220ffee02a34b6bfb6d1d938d7b0d643443220a4c6be"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/move-2.png",
+      "sha256": "85f552a5340acc8050d0220ffee02a34b6bfb6d1d938d7b0d643443220a4c6be"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/ranged-1.png",
+      "sha256": "85f552a5340acc8050d0220ffee02a34b6bfb6d1d938d7b0d643443220a4c6be"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/ranged-2.png",
+      "sha256": "85f552a5340acc8050d0220ffee02a34b6bfb6d1d938d7b0d643443220a4c6be"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloaked-asteroid/standing.png",
+      "sha256": "85f552a5340acc8050d0220ffee02a34b6bfb6d1d938d7b0d643443220a4c6be"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/death-1.png",
+      "sha256": "85898f5e83ee3e005457df81beca116e101aa1c36e5640df1044ad122a1a67d9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/death-2.png",
+      "sha256": "3f31968440796379b4d27dc48a93dcff922774f9f797f55a4b1a8d2b81a55f85"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/defend.png",
+      "sha256": "7ce4ef4c60c8c77fc982b567fb0488cdc20e62b5ed774a884ec08636dbeec6ec"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/idle-1.png",
+      "sha256": "79f13fea51a22797d02e830748bf7b688f24f7a6c15765677f12628ed912b82e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/idle-2.png",
+      "sha256": "79f13fea51a22797d02e830748bf7b688f24f7a6c15765677f12628ed912b82e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/melee-1.png",
+      "sha256": "85030fa954479ccfca78d1852b354abca7335b78ec85e1fd115238917439cdf9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/melee-2.png",
+      "sha256": "85030fa954479ccfca78d1852b354abca7335b78ec85e1fd115238917439cdf9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/move-1.png",
+      "sha256": "79f13fea51a22797d02e830748bf7b688f24f7a6c15765677f12628ed912b82e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/move-2.png",
+      "sha256": "79f13fea51a22797d02e830748bf7b688f24f7a6c15765677f12628ed912b82e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/ranged-1.png",
+      "sha256": "79f13fea51a22797d02e830748bf7b688f24f7a6c15765677f12628ed912b82e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/ranged-2.png",
+      "sha256": "79f13fea51a22797d02e830748bf7b688f24f7a6c15765677f12628ed912b82e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-cloning-cylinder/standing.png",
+      "sha256": "79f13fea51a22797d02e830748bf7b688f24f7a6c15765677f12628ed912b82e"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-dreadnaught/death-1.png",
       "sha256": "20654b54b823dc9bd5809e9b89e69910f18ded7b7da853c6a59ce69c881ead63"
     },
@@ -7768,6 +9272,102 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-dreadnaught/standing.png",
       "sha256": "d3291e124e832c6de806e37086f995264640e509d6dee82a00190f70cf1ee893"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/death-1.png",
+      "sha256": "a5dfb2c12199dd3951a34db278e68fa65e0f4f582ab1a5f73ed6fa1038cc9747"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/death-2.png",
+      "sha256": "d90831e8129a3e464623a9493a6a254537bf5366e2a97218bf465eccb34f141d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/defend.png",
+      "sha256": "7cd1da3014787001be38ec31132ddc5655be617929f93c9910ec88864ee81147"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/idle-1.png",
+      "sha256": "7cd88e799c4e79f2dfa5ff6520a43556f6c9400f251ed1846099ff181153cd36"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/idle-2.png",
+      "sha256": "7cd88e799c4e79f2dfa5ff6520a43556f6c9400f251ed1846099ff181153cd36"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/melee-1.png",
+      "sha256": "7cd88e799c4e79f2dfa5ff6520a43556f6c9400f251ed1846099ff181153cd36"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/melee-2.png",
+      "sha256": "7cd88e799c4e79f2dfa5ff6520a43556f6c9400f251ed1846099ff181153cd36"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/move-1.png",
+      "sha256": "0a2f0e506edfa8e72f2783a16f44249b33a455ee2ca1aa2d46d416a3c7336809"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/move-2.png",
+      "sha256": "842325663c4e1a189534158f8eb1e8a919d79d9f46a6670c35befc3d161d0258"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/ranged-1.png",
+      "sha256": "7cd88e799c4e79f2dfa5ff6520a43556f6c9400f251ed1846099ff181153cd36"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/ranged-2.png",
+      "sha256": "285b07b98c5cbfdf6e13bc0abb04a1dabb9890b38b8c21d48944424e616d6316"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shield-generator/standing.png",
+      "sha256": "7cd88e799c4e79f2dfa5ff6520a43556f6c9400f251ed1846099ff181153cd36"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/death-1.png",
+      "sha256": "20b8c566bf2c1edeea12833d1fa6439f8449c6d7a42f356f777c959ca8eda781"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/death-2.png",
+      "sha256": "0ea54081456bc6e94ae0d6a0cc8e5c735aff798297bc770a8f91ef277661e17e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/defend.png",
+      "sha256": "88b05ae1a3533ae942ae441ac02dd3999a4da4e7693945753392f2fb7d0d519a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/idle-1.png",
+      "sha256": "a9c181e90247dfc9605078cd582a9ac5c9f10bea0ee12e5509e1de11fab763c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/idle-2.png",
+      "sha256": "a9c181e90247dfc9605078cd582a9ac5c9f10bea0ee12e5509e1de11fab763c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/melee-1.png",
+      "sha256": "a9c181e90247dfc9605078cd582a9ac5c9f10bea0ee12e5509e1de11fab763c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/melee-2.png",
+      "sha256": "a9c181e90247dfc9605078cd582a9ac5c9f10bea0ee12e5509e1de11fab763c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/move-1.png",
+      "sha256": "a9c181e90247dfc9605078cd582a9ac5c9f10bea0ee12e5509e1de11fab763c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/move-2.png",
+      "sha256": "a9c181e90247dfc9605078cd582a9ac5c9f10bea0ee12e5509e1de11fab763c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/ranged-1.png",
+      "sha256": "a9c181e90247dfc9605078cd582a9ac5c9f10bea0ee12e5509e1de11fab763c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/ranged-2.png",
+      "sha256": "1c707bd329b3802484d598fdfbcc0cd93dddd71f0d33c79121e79954f6e1b9c1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/standing.png",
+      "sha256": "a9c181e90247dfc9605078cd582a9ac5c9f10bea0ee12e5509e1de11fab763c8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-smuggler/death-1.png",
@@ -8010,6 +9610,102 @@
       "sha256": "55188f19f45d7520db04b3edd612878501c601cdf00ae4f0bc95f51a479d25c6"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/death-1.png",
+      "sha256": "e6569936bb4974a27679267a636d9ce21e947c344b2a4b147309b8c7081500db"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/death-2.png",
+      "sha256": "4563a78cd98236cf4c21ece0c7854648e152120e45f951b9961e525572fd2f38"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/defend.png",
+      "sha256": "e58b18a493e572b0e2bde4251be5d8413d20440b2cbd2774e7e715fd38022ab4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/idle-1.png",
+      "sha256": "c84e1492581f482afd3961f8663759825b8a03b2f6b40c8aef082407681cef9c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/idle-2.png",
+      "sha256": "db1798f8c037b1951e3aba83701a0c3e748216d6e26c17f59eec40ea93b1d368"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/melee-1.png",
+      "sha256": "526f1f877d17f2e2cb880f94b58478fb8a85ce4de286ffd13d1475a1e2c14b08"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/melee-2.png",
+      "sha256": "a169dcf9ae35c4ad407879206f4a313c849d29556e83b187763e0d84ec30217e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/move-1.png",
+      "sha256": "b2de68fe1ee072b7e4d893ac0d7d6ba55956e96441957ff42d870ac0754d8182"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/move-2.png",
+      "sha256": "ade176437e5a9e64036ce5d6ebe50eac3fe815a1bc053d0c3e7c221d9d36aee5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/ranged-1.png",
+      "sha256": "a743bcefe0a7095f88868d1b2d1b64f7296a31d7304ca3cc436b6720c57a7aaa"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/ranged-2.png",
+      "sha256": "a743bcefe0a7095f88868d1b2d1b64f7296a31d7304ca3cc436b6720c57a7aaa"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/standing.png",
+      "sha256": "a743bcefe0a7095f88868d1b2d1b64f7296a31d7304ca3cc436b6720c57a7aaa"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/death-1.png",
+      "sha256": "db78a4bc2661dadaf4bff0b1732daa6b53023e29154f65b192407f14e2cc0a72"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/death-2.png",
+      "sha256": "310a29ee21d7aa16c72f46d3f5f89c4ce4cfc871b3a70493e79de4ceacc7c1fa"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/defend.png",
+      "sha256": "94b4bf1efc5a7949b42e3e547dd67227b55eb210cc9fce38641bb830285d7948"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/idle-1.png",
+      "sha256": "a945ea99fbf956b873f60cb9ad6a3c99e9831a6c9a458884d693bff43753092b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/idle-2.png",
+      "sha256": "bf1221a083fd2ad895934afc497ba4c471fa334f03d73c2356c4e939c9ad1b4c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/melee-1.png",
+      "sha256": "2eef31581f6a1f2da5450adddc5145d1a79d9a022113cc8970046b9bf510b6bc"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/melee-2.png",
+      "sha256": "53d40f01f1ef6bed9daaa460e2a7d6401d66489edbbde3d3266dd315d402e5ec"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/move-1.png",
+      "sha256": "4ba0ddd750ed68cb90a4b266704f90c372da92bfde4e1a4cbf2601125ecd7e66"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/move-2.png",
+      "sha256": "072e7bfa7181f2ddadb108f387a317908cca6186e0bb212e7fa035a6a8ef8d6c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/ranged-1.png",
+      "sha256": "b4918148d04af6bd522a75be6ce9c09e065c84292fa223c3544ad431d9044047"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/ranged-2.png",
+      "sha256": "b4918148d04af6bd522a75be6ce9c09e065c84292fa223c3544ad431d9044047"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/standing.png",
+      "sha256": "b4918148d04af6bd522a75be6ce9c09e065c84292fa223c3544ad431d9044047"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_01_the_noghri_prisoner.map",
       "sha256": "4b51c5674e3dec3a269bbbe0706842d073ea5390a58a441a123d80194e9bb98f"
     },
@@ -8088,6 +9784,46 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_10_thrawns_gambit.map",
       "sha256": "3712e18716c2f96317d9e25ae0be77c00450ab4d9c8580774997afad140def4e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_01_the_siege_of_coruscant.map",
+      "sha256": "215e3edd7893bcb6595985df6e09a90017cd04adcd6d86a2f12ece2fc49be4a8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_02_the_smugglers_council.map",
+      "sha256": "77f6b411fb6a2cafaaa729e112daa205350825215dbaa54e584e3f6372e7c897"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_03_the_palace_infiltrators.map",
+      "sha256": "40b87c0a0061861aaa7ed866943a588d3002d2f76d7e10bd0e7d11b1e4f5efc1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_04_landfall_on_wayland.map",
+      "sha256": "8d9026d7a6ea9b5210bb97aa56ac8b725877841cf09233ecce90ea7f51dd8c16"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_05_the_natives_of_wayland.map",
+      "sha256": "3a8bedb85142cc48b0d6f846450a7e79c9795b40bba2ac0f6a9de74c9b16db00"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_06_the_gates_of_tantiss.map",
+      "sha256": "b7f965f809ebfa12d83d4ca9c3752830569cbc322853dc8b4cbf0848852c1f93"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_07_the_cloning_vats.map",
+      "sha256": "a2dcfb0736c2802e834cfb4152c672a6eb6ead7f74cb9597962d9120a8f98aa3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_08_the_throne_room.map",
+      "sha256": "07340d2da9bcf5a420ac033839c53e9095c081bfaca8b0cc83add2579e312184"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_09_bilbringi.map",
+      "sha256": "80ba39c4fcf40da979a3978e2e4f9d180c8ba8693cebb83c5ca5d17c5528e42d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_10_the_last_command.map",
+      "sha256": "355f7235f3312fa4086799fe57f44c68cacc839e345502cc3fe365d8ab056bea"
     }
   ],
   "production_dependencies": []
