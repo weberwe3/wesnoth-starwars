@@ -4492,7 +4492,7 @@
       "unit_id": "sw_hero_luuke",
       "unit_name": "sw hero luuke",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-hero-luuke.md",
       "assets": [
@@ -4568,7 +4568,7 @@
       "unit_id": "sw_unit_wy_myneyrshi",
       "unit_name": "sw unit wy myneyrshi",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-wy-myneyrshi.md",
       "assets": [
@@ -4644,7 +4644,7 @@
       "unit_id": "sw_unit_wy_psadan",
       "unit_name": "sw unit wy psadan",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-wy-psadan.md",
       "assets": [
@@ -4796,7 +4796,7 @@
       "unit_id": "sw_unit_im_infiltrator",
       "unit_name": "sw unit im infiltrator",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-infiltrator.md",
       "assets": [
@@ -4872,7 +4872,7 @@
       "unit_id": "sw_unit_im_minelayer",
       "unit_name": "sw unit im minelayer",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-im-minelayer.md",
       "assets": [
@@ -4948,7 +4948,7 @@
       "unit_id": "sw_unit_ob_cloaked_asteroid",
       "unit_name": "sw unit ob cloaked asteroid",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-ob-cloaked-asteroid.md",
       "assets": [
@@ -5024,7 +5024,7 @@
       "unit_id": "sw_unit_ob_shield_generator",
       "unit_name": "sw unit ob shield generator",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-ob-shield-generator.md",
       "assets": [
@@ -5100,7 +5100,7 @@
       "unit_id": "sw_unit_ob_cloning_cylinder",
       "unit_name": "sw unit ob cloning cylinder",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-ob-cloning-cylinder.md",
       "assets": [
@@ -5176,7 +5176,7 @@
       "unit_id": "sw_unit_ob_shipyard_platform",
       "unit_name": "sw unit ob shipyard platform",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-ob-shipyard-platform.md",
       "assets": [
