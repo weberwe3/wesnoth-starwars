@@ -1,0 +1,11 @@
+# Add-on server metadata for the official Battle for Wesnoth add-on server.
+# Upload from Wesnoth 1.19/1.20 (Add-ons > Upload). Authentication: either
+# add `passphrase=` locally at upload time (never commit it) or use
+# `forum_auth=yes` with the uploader's forum account. Content uploaded to the
+# official server is distributed under the GNU GPL v2 or later.
+title="Star Wars: Thrawn Trilogy"
+type="campaign"
+icon="data/add-ons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-xwing-luke/standing.png"
+author="weberwe3"
+version="0.3.0"
+description="An original, non-commercial fan total conversion set five years after Return of the Jedi. Three campaigns (30 missions): Heir to the Empire, Dark Force Rising, and The Last Command. Ground battles, escapes, space combat with custom terrain, named Legends characters, and original story and art. No copyrighted prose, film, game assets, or music are used."

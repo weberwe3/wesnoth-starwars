@@ -6259,7 +6259,7 @@
   "source_files": [
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
-      "sha256": "da565234ff8c7839eed00399e7f0398d88e8b6561b1974d981542ca13ef3b721"
+      "sha256": "dfe43f66c0e160ba84052b7924a87d4725a29252707703188251c8cb798268ed"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/01_the_noghri_prisoner.cfg",
