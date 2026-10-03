@@ -2516,7 +2516,7 @@
       "unit_id": "sw_unit_wk_warrior",
       "unit_name": "sw unit wk warrior",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "state": "pending_codex_imagegen",
+      "state": "complete",
       "generation": "codex_quota_interactive_only",
       "prompt_path": "assets/prompts/sw-unit-wk-warrior.md",
       "assets": [
