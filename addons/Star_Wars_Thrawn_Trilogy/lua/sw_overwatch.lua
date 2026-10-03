@@ -39,7 +39,7 @@ function ow.config(u)
 	if not cfg then return nil end
 	local weapons = core.split(cfg.weapons)
 	if #weapons == 0 then
-		for _, a in ipairs(u.attacks) do
+		for _i, a in ipairs(u.attacks) do
 			if a.range == "ranged" then table.insert(weapons, a.name) end
 		end
 	end
@@ -55,8 +55,8 @@ function ow.config(u)
 end
 
 local function find_attack(u, names)
-	for _, name in ipairs(names) do
-		for _, a in ipairs(u.attacks) do
+	for _i, name in ipairs(names) do
+		for _i, a in ipairs(u.attacks) do
 			if a.name == name then return a end
 		end
 	end
@@ -67,7 +67,7 @@ end
 
 local function index_ids()
 	local ids = {}
-	for _, e in ipairs(wml.array_access.get("sw_ow_index")) do table.insert(ids, e.id) end
+	for _i, e in ipairs(wml.array_access.get("sw_ow_index")) do table.insert(ids, e.id) end
 	table.sort(ids)
 	return ids
 end
@@ -75,7 +75,7 @@ end
 local function index_set(ids)
 	local arr = {}
 	table.sort(ids)
-	for _, id in ipairs(ids) do table.insert(arr, { id = id }) end
+	for _i, id in ipairs(ids) do table.insert(arr, { id = id }) end
 	wml.array_access.set("sw_ow_index", arr)
 end
 
@@ -112,17 +112,18 @@ function ow.enter(u)
 	ow.update_indicator(u)
 	core.float(u.x, u.y, _ "overwatch", "#ffd27a")
 	core.log("overwatch", u.id .. " on overwatch: " .. cfg.reactions .. " reaction(s), range " .. cfg.range)
+	if ow.on_enter then ow.on_enter(u) end   -- observation hook (Thrawn Doctrine)
 	return true
 end
 
 function ow.clear(u)
 	if not u.variables.sw_ow_active then return end
-	for _, k in ipairs{ "sw_ow_active", "sw_ow_shots", "sw_ow_range", "sw_ow_weapon", "sw_ow_accuracy",
+	for _i, k in ipairs{ "sw_ow_active", "sw_ow_shots", "sw_ow_range", "sw_ow_weapon", "sw_ow_accuracy",
 			"sw_ow_damage", "sw_ow_arc", "sw_ow_facing", "sw_ow_fired" } do
 		u.variables[k] = nil
 	end
 	local ids = {}
-	for _, id in ipairs(index_ids()) do if id ~= u.id then table.insert(ids, id) end end
+	for _i, id in ipairs(index_ids()) do if id ~= u.id then table.insert(ids, id) end end
 	index_set(ids)
 	core.set_overlay(u, "overwatch", nil)
 end
@@ -138,12 +139,12 @@ end
 
 -- Overwatch lasts until the start of its side's next turn (no stale state).
 function ow.on_side_turn(side)
-	for _, id in ipairs(index_ids()) do
+	for _i, id in ipairs(index_ids()) do
 		local u = wesnoth.units.get(id)
 		if not u then
 			-- Unit died or left the map: drop it from the index.
 			local ids = {}
-			for _, other in ipairs(index_ids()) do if other ~= id then table.insert(ids, other) end end
+			for _i, other in ipairs(index_ids()) do if other ~= id then table.insert(ids, other) end end
 			index_set(ids)
 		elseif u.side == side then
 			ow.clear(u)
@@ -192,7 +193,7 @@ function ow.eligible(shooter, target)
 	if not target:matches{ T.filter_vision{ side = shooter.side, visible = true } } then return false, "not visible" end
 	local serial = core.number(target.variables.sw_move_serial, 0)
 	if shooter.variables.sw_ow_fired == target.id .. "#" .. serial then return false, "already fired this move" end
-	for _, hook in ipairs(ow.hooks.can_react) do
+	for _i, hook in ipairs(ow.hooks.can_react) do
 		if not hook(shooter, target) then return false, "vetoed by hook" end
 	end
 	return true
@@ -219,10 +220,10 @@ function ow.resolve(shooter, target)
 		damage = math.max(1, math.floor(weapon.damage * core.number(shooter.variables.sw_ow_damage, 100) / 100 + 0.5)),
 		strikes = weapon.number,
 	}
-	for _, hook in ipairs(ow.hooks.modify) do hook(shooter, target, shot) end
+	for _i, hook in ipairs(ow.hooks.modify) do hook(shooter, target, shot) end
 	local chance = math.max(0, math.min(100, 100 - target:defense_on({ x = target.x, y = target.y }) + shot.accuracy))
 	local hits = 0
-	for _ = 1, shot.strikes do
+	for _n = 1, shot.strikes do
 		if mathx.random(1, 100) <= chance then hits = hits + 1 end
 	end
 	core.log("overwatch", shooter.id .. " fires at " .. target.id .. ": " .. hits .. "/" .. shot.strikes ..
@@ -254,7 +255,7 @@ function ow.on_enter_hex()
 	local reacted = false
 	ow.resolving = true
 	local ok, err = pcall(function()
-		for _, id in ipairs(ids) do
+		for _i, id in ipairs(ids) do
 			local shooter = wesnoth.units.get(id)
 			local target = wesnoth.units.get(ctx.x1, ctx.y1)
 			if not target or target.id ~= mover.id then break end -- target died
@@ -296,7 +297,7 @@ force.on_disabled = function(u) ow.clear(u) end
 function ow.on_side_turn_end(side)
 	if wml.variables.sw_overwatch_ai == false or wml.variables.sw_overwatch_ai == "no" then return end
 	if wesnoth.sides[side].controller ~= "ai" then return end
-	for _, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ side = side, ability = ow.ABILITY })) do
+	for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ side = side, ability = ow.ABILITY })) do
 		if ow.can_enter(u) then ow.enter(u) end
 	end
 end

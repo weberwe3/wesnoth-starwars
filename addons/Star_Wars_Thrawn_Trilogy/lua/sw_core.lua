@@ -31,7 +31,7 @@ end
 function core.ability_cfg(u, ability_id)
 	local abilities = wml.get_child(u.__cfg, "abilities")
 	if not abilities then return nil end
-	for _, entry in ipairs(abilities) do
+	for _i, entry in ipairs(abilities) do
 		local content = entry[2]
 		if type(content) == "table" and content.id == ability_id then
 			return content
@@ -78,7 +78,7 @@ function core.choose(caption, text, labels, image)
 		message = text,
 		image = image or "misc/sw-objective.png",
 	}
-	for _, o in ipairs(options) do table.insert(cfg, o) end
+	for _i, o in ipairs(options) do table.insert(cfg, o) end
 	wesnoth.wml_actions.message(cfg)
 	local choice = tonumber(wml.variables.sw_systems_choice) or 0
 	wml.variables.sw_systems_choice = nil
@@ -109,13 +109,13 @@ function core.set_overlay(u, slot, image)
 	u.variables[key] = image
 end
 
-core.OVERLAY_SLOTS = { "force", "overwatch", "dazed" }
+core.OVERLAY_SLOTS = { "force", "overwatch", "dazed", "ew", "intel" }
 
 -- At mission start (units are at full moves, so a rebuild is harmless):
 -- replace all indicator objects with one per shown image.
 function core.compact_overlays(u)
 	u:remove_modifications({ id = "sw_ui_overlay" }, "object")
-	for _, slot in ipairs(core.OVERLAY_SLOTS) do
+	for _i, slot in ipairs(core.OVERLAY_SLOTS) do
 		local image = u.variables["sw_overlay_" .. slot]
 		if image then
 			u:add_modification("object", { id = "sw_ui_overlay", T.effect{ apply_to = "overlay", add = image } })
@@ -127,6 +127,60 @@ end
 function core.sorted_by_id(units)
 	table.sort(units, function(a, b) return a.id < b.id end)
 	return units
+end
+
+-- ---------------------------------------------------------------- sides, teams, scope
+
+-- The team a side belongs to. Allied sides share a team_name, and the engine
+-- gives a side without one its side number as team name, so this is always
+-- a usable key (and the value [item] team_name= compares against).
+function core.team_key(side)
+	local name = wesnoth.sides[side].team_name
+	if name == nil or name == "" then return tostring(side) end
+	return name
+end
+
+-- Sides in play (not empty "null" slots), in side order.
+function core.active_sides()
+	local out = {}
+	for _i, s in ipairs(wesnoth.sides) do
+		if s.controller ~= "null" then table.insert(out, s.side) end
+	end
+	return out
+end
+
+-- Sorted keys of a table: Lua's pairs() order is not stable across
+-- processes, so anything that affects game state iterates in sorted order.
+function core.sorted_keys(t)
+	local keys = {}
+	for k in pairs(t) do table.insert(keys, k) end
+	table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+	return keys
+end
+
+-- WML variables persist from one campaign scenario to the next. Systems that
+-- keep per-mission state stamp it with the scenario id; stale state from an
+-- earlier mission is discarded on first use (see sw_force / sw_ew).
+function core.scenario_id()
+	return wesnoth.scenario.id
+end
+
+-- ---------------------------------------------------------------- display only
+
+-- The side whose view the local client shows. Display-only: never use it to
+-- decide game state (it differs between multiplayer clients and replays).
+function core.viewing_side()
+	local side = wesnoth.interface.get_viewing_side()
+	return side
+end
+
+-- A floating label shown only to viewers on the given team, so private
+-- sensor or intelligence results never appear on an opponent's screen.
+function core.float_for_team(team, x, y, text, color)
+	local side = core.viewing_side()
+	if side and side >= 1 and side <= #wesnoth.sides and core.team_key(side) == team then
+		core.float(x, y, text, color)
+	end
 end
 
 -- Whether it is a human player's own turn for this side (menu visibility).

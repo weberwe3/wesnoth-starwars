@@ -235,12 +235,18 @@ def noghri_stealth() -> str:
 
 
 def cloaked() -> str:
+    # Engine concealment for the sensor system (lua/sw_ew.lua): hidden only
+    # while sw_ew sets the custom status sw_ew_concealed, i.e. while no enemy
+    # team has identified the unit by sensors, intelligence or contact.
     return (
         "[hides]\n"
         "    id=sw_ability_cloaked\n"
         "    name= _ \"cloaked\"\n"
-        "    description= _ \"This object is shrouded by a stealth field and cannot be seen until something runs into it.\"\n"
+        "    description= _ \"A cloaking field hides this unit until an enemy team identifies it (sensor sweeps, close sensors or physical contact) or it fires. Partial sensor contacts are shown to the enemy as markers.\"\n"
         "    affect_self=yes\n"
+        "    [filter]\n"
+        "        status=sw_ew_concealed\n"
+        "    [/filter]\n"
         "[/hides]"
     )
 
@@ -323,6 +329,76 @@ def overwatch_ability(attacks: list[dict]) -> str | None:
                 "[/dummy]"
             )
     return None
+
+
+# Sensors and electronic warfare (lua/sw_ew.lua). Units without an entry use
+# their class defaults (capital ship 5 sensors/7 hexes/signature 8,
+# starfighter 3/5/3, vehicle 3/4/4, infantry 2/3/2, creature 3/3/2).
+# Lore (Legends): Imperial Star Destroyers mount powerful jammers and sensor
+# decoy drones; A-wings carry military jammers; astromech-equipped X-wings
+# and New Republic capital ships run counter-jamming; Thrawn's mole miners
+# read as mining equipment on sensors (Sluis Van); his cloaked asteroids
+# (Coruscant, Bilbringi) defeat ordinary sensors; Karrde's Wild Karrde
+# relies on sensor tricks; Noghri and commandos run silent; Y-wings fly
+# recon sweeps with Longprobe-style sensor packages.
+EW_PROFILES = {
+    "sw_unit_ob_cloaked_asteroid": dict(cloak=6, signature=1, sensor=0, sensor_range=0, **{"class": "object"}),
+    "sw_unit_im_star_destroyer": dict(sensor=6, sensor_range=8, ecm=2, ecm_range=3, scan=3, decoys=1),
+    "sw_unit_nr_docked_warship": dict(sensor=5, sensor_range=7, eccm=2, scan=3),
+    "sw_unit_ob_dreadnaught": dict(sensor=4, sensor_range=6, signature=9),
+    "sw_unit_im_minelayer": dict(scan=2),
+    "sw_unit_nr_awing": dict(ecm=2, ecm_range=2),
+    "sw_unit_nr_xwing": dict(eccm=1),
+    "sw_unit_nr_ywing": dict(scan=3),   # Longprobe-style recon sensor package
+    "sw_hero_xwing_luke": dict(eccm=1),
+    "sw_hero_wedge": dict(eccm=1),
+    "sw_unit_im_tie_interceptor": dict(sensor=4),
+    "sw_unit_im_mole_miner": dict(signature=2, disguise_class="object"),
+    "sw_unit_im_scout_trooper": dict(sensor=3, sensor_range=5, scan=2),
+    "sw_unit_wk_lookout": dict(sensor=4, sensor_range=5, scan=2),
+    "sw_hero_karrde": dict(scan=2, ecm=1, ecm_range=2, decoys=2),
+    "sw_unit_nr_commando": dict(signature=1),
+    "sw_unit_bi_commando": dict(signature=1),
+    "sw_unit_im_noghri": dict(signature=1),
+    "sw_hero_khabarakh": dict(signature=1),
+    "sw_unit_im_infiltrator": dict(signature=1),
+    "sw_unit_ob_shield_generator": dict(sensor=0, sensor_range=0, signature=6, **{"class": "object"}),
+    "sw_unit_ob_cloning_cylinder": dict(sensor=0, sensor_range=0, signature=4, **{"class": "object"}),
+    "sw_unit_ob_shipyard_platform": dict(sensor=4, sensor_range=5, signature=8, **{"class": "object"}),
+}
+EW_CLASS_NAMES = {"object": "object", "capital": "capital ship"}
+
+
+def ew_ability(unit_id: str) -> str | None:
+    profile = EW_PROFILES.get(unit_id)
+    if not profile:
+        return None
+    attrs = "".join(f"    {k}={v}\n" for k, v in profile.items())
+    parts = []
+    if profile.get("cloak"):
+        parts.append(f"cloak {profile['cloak']} (drops after firing)")
+    if profile.get("ecm"):
+        parts.append(f"jammer {profile['ecm']} over {profile.get('ecm_range', 2)} hexes (it is loud: +2 signature)")
+    if profile.get("eccm"):
+        parts.append(f"counter-jamming {profile['eccm']}")
+    if profile.get("scan"):
+        parts.append(f"active sweep +{profile['scan']} (right-click menu)")
+    if profile.get("decoys"):
+        parts.append(f"{profile['decoys']} sensor decoy(s)")
+    if profile.get("disguise_class"):
+        parts.append(f"reads as {EW_CLASS_NAMES.get(profile['disguise_class'], profile['disguise_class'])} until identified")
+    if "sensor" in profile and profile.get("sensor_range", 1) > 0:
+        parts.append(f"sensors {profile['sensor']} out to {profile.get('sensor_range', '?')} hexes")
+    if "signature" in profile:
+        parts.append(f"signature {profile['signature']}")
+    return (
+        "[dummy]\n"
+        "    id=sw_ability_ew\n"
+        f"{attrs}"
+        "    name= _ \"sensors & EW\"\n"
+        f"    description= _ \"Sensors and electronic warfare: {'; '.join(parts)}. See the Field Manual: Sensors and cloaking.\"\n"
+        "[/dummy]"
+    )
 
 
 ABILITY_BUILDERS = {
@@ -1014,7 +1090,7 @@ def unit_wml(u: dict) -> str:
         lines.append("    # Named character: scenarios place the single instance and keep")
         lines.append("    # it out of recruit lists.")
         lines.append("    do_not_list=yes")
-    system_abilities = [x for x in (force_ability(u["id"]), overwatch_ability(u["attacks"])) if x]
+    system_abilities = [x for x in (force_ability(u["id"]), overwatch_ability(u["attacks"]), ew_ability(u["id"])) if x]
     if u["abilities"] or system_abilities:
         lines.append("    [abilities]")
         for ab in u["abilities"]:

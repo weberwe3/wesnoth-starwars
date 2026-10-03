@@ -370,7 +370,14 @@ local function plugin(events, context, info)
       for _, id in ipairs({ "t_ai1", "t_ai2" }) do
         if u(id) and not u(id).variables.sw_ow_active and u(id).attacks_left == 0 then attacked = attacked + 1 end
       end
-      check("AI units with an unused attack entered overwatch at turn end", count >= 1, count)
+      local detail = {}
+      for _, id in ipairs({ "t_ai1", "t_ai2" }) do
+        local a = u(id)
+        table.insert(detail, id .. (a and ("@" .. a.x .. "," .. a.y .. " atk=" .. a.attacks_left ..
+          " ow=" .. tostring(a.variables.sw_ow_active)) or " dead"))
+      end
+      check("AI units with an unused attack entered overwatch at turn end", count >= 1,
+        count .. " " .. table.concat(detail, "; ") .. " turn=" .. wesnoth.current.turn .. " side=" .. wesnoth.current.side)
       check("overwatch index matches units on overwatch", #wml.array_access.get("sw_ow_index") >= count)
       check("AI Force user keeps valid Force Points", u("t_ai_jedi") == nil or tonumber(u("t_ai_jedi").variables.sw_fp) ~= nil)
       wesnoth.sides[2].controller = "human"
@@ -451,8 +458,12 @@ local function plugin(events, context, info)
     settle()
     if step == "ai_turn" then
       -- End side 1's turn; the AI plays side 2; control returns to side 1.
+      -- can_move is briefly true during the AI's turn too, so wait for side 1.
       context.end_turn{}
-      settle()
+      local g = 0
+      repeat
+        settle(); g = g + 1
+      until (info.name == "Game" and info.current_side and info.current_side() == 1) or g > 50
     end
   end
   if PHASE == "main" then

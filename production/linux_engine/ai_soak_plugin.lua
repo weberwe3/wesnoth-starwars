@@ -61,6 +61,20 @@ local function plugin(events, context, info)
         end
       end,
     }
+    -- Evidence that the intelligence systems are live in this mission.
+    wesnoth.game_events.add{
+      name = "new turn", first_time_only = false,
+      action = function()
+        if not sw_systems or not sw_systems.ew then return end
+        local ins = {}
+        for _i, d in ipairs(sw_systems.doctrine.enabled_sides()) do
+          table.insert(ins, "side" .. d.side .. "=" .. d.insight .. "/tier" .. d.tier_reached)
+        end
+        std_print("SW_SOAK: intel turn " .. wesnoth.current.turn .. " contacts=" ..
+          #wml.array_access.get("sw_ew_contacts") .. " decoys=" .. #wml.array_access.get("sw_ew_decoys") ..
+          " doctrine=" .. (#ins > 0 and table.concat(ins, ",") or "none"))
+      end,
+    }
     wesnoth.sides[1].controller = "ai"
     if PLAYER_STYLE == "careful" then
       -- Negative aggression weighs own losses above damage dealt; high

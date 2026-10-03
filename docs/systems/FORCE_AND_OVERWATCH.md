@@ -78,6 +78,12 @@ All handlers are registered in `sw_systems.lua`:
 5. Damage and death through `[harm_unit]`, firing `die` events.
 6. If the target survives, `[cancel_action]` pauses its move.
 
+The sensors/EW and doctrine handlers slot into the same events; the full
+order is in the header of `lua/sw_systems.lua` and in
+[INTELLIGENCE_AND_EW.md](INTELLIGENCE_AND_EW.md). Mission state is stamped
+with the scenario id, so static ysalamiri sources from one mission are not
+carried into the next.
+
 **Loop prevention:**
 - `overwatch.resolving` blocks any reaction while one resolves.
 - Force Push and Pull move units without firing events, so they never provoke
@@ -183,11 +189,13 @@ Ysalamiri carrier: the field moves with the unit. It can be given by an
 ## Tests
 
 ```bash
-python3 production/linux_engine/run_systems_tests.py --output /tmp/systems.json
+python3 production/linux_engine/run_systems_tests.py --suite force
 ```
 
-The runner stages a test-only scenario (`systems_test/sw_test_systems.cfg`:
-a flat map with one wall hex) and runs 85 engine checks across two phases.
+`--suite all` (the default) also runs the sensors/EW and doctrine suites
+([INTELLIGENCE_AND_EW.md](INTELLIGENCE_AND_EW.md)). The force suite stages a
+test-only scenario (`systems_test/sw_test_systems.cfg`: a flat map with one
+wall hex) and runs 85 engine checks across two phases.
 The second phase reloads the save the first one made. Coverage:
 - Force Point spending, regeneration and cap; target validation; Push and Pull
   displacement plus its blocked, occupied and edge safety; cooldowns.
