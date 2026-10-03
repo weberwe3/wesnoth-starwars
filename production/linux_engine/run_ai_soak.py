@@ -101,7 +101,10 @@ def soak_one(engine: Path, campaign: str, scenario: str, workdir: Path, timeout:
     turns = [int(m.group(1)) for line in lines for m in [re.match(r"turn (\d+)$", line)] if m]
     errors = sorted({line.strip() for line in text.splitlines()
                      if (PLAY_ERRORS.search(line) or FATAL_LOG.search(line))
-                     and "could not open image" not in line})
+                     and "could not open image" not in line
+                     # Air sorties fly a fake unit over enemy-held hexes; the
+                     # engine warns, then uses its emergency path as intended.
+                     and "move_unit_fake route" not in line})
     failures = [line for line in lines if line.startswith("fatal")]
     if not any(line.startswith("scenario ") for line in lines):
         failures.append("scenario never started")

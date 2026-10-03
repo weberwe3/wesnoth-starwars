@@ -6,6 +6,8 @@ Suites (default: all):
           it, runs systems_test_plugin.lua, then reloads the save it made.
   intel   Sensors/EW and Thrawn Doctrine: same, with sw_test_intel and
           intel_test_plugin.lua (fog, decoys, doctrine, AI turn, save/load).
+  air     Off-map air support and rank insignia: sw_test_air and
+          air_test_plugin.lua (sorties, accuracy, AI use and avoidance, ranks).
   replay  Engine replay: runs the [test] sw_test_intel_replay with -u (an AI
           battle using every intelligence mechanic); the engine then replays
           the recorded game and the test compares digests of all
@@ -68,8 +70,9 @@ def run_phase(engine: Path, userdata: Path, plugin_name: str, phase: str, timeou
 SUITES = {
     "force": ("sw_test_systems", "systems_test_plugin.lua", "sw_systems_test_save"),
     "intel": ("sw_test_intel", "intel_test_plugin.lua", "sw_intel_test_save"),
+    "air": ("sw_test_air", "air_test_plugin.lua", "sw_air_test_save"),
 }
-REPLAY_TEST = "sw_test_intel_replay"
+REPLAY_TESTS = ("sw_test_intel_replay", "sw_test_air_replay")
 REPLAY_STRICT_IGNORE = re.compile(r"change_controller_wml")
 
 
@@ -89,14 +92,15 @@ def stage(work: Path, scenario: str | None, replay: bool) -> Path:
         text = text.replace(f"first_scenario={first}", f"first_scenario={scenario}", 1)
     if replay:
         (staged / "tests").mkdir(exist_ok=True)
-        shutil.copy(HERE / f"{REPLAY_TEST}.cfg", staged / f"tests/{REPLAY_TEST}.cfg")
+        for test in REPLAY_TESTS:
+            shutil.copy(HERE / f"{test}.cfg", staged / f"tests/{test}.cfg")
         text += (
             "\n#ifdef TEST\n"
             f"{{~add-ons/{ADDON_ID}/utils/hte_terrain.cfg}}\n"
             f"[+units]\n    {{~add-ons/{ADDON_ID}/units}}\n[/units]\n"
             f"{{~add-ons/{ADDON_ID}/utils/mission_events.cfg}}\n"
             f"{{~add-ons/{ADDON_ID}/utils/hte_macros.cfg}}\n"
-            f"{{~add-ons/{ADDON_ID}/tests/{REPLAY_TEST}.cfg}}\n"
+            + "".join(f"{{~add-ons/{ADDON_ID}/tests/{test}.cfg}}\n" for test in REPLAY_TESTS) +
             "#endif\n")
     main_cfg.write_text(text, encoding="utf-8")
     (userdata / "preferences").write_text("animate_map=no\nidle_anim=no\nturbo=yes\nturbo_speed=20\n", encoding="utf-8")
@@ -121,11 +125,21 @@ def run_plugin_suite(engine: Path, work: Path, suite: str, timeout: int) -> tupl
 
 
 def run_replay_suite(engine: Path, work: Path, timeout: int) -> tuple[list[str], list[str]]:
+    results: list[str] = []
+    errors: list[str] = []
+    for test in REPLAY_TESTS:
+        r, e = run_replay_test(engine, work / test, test, timeout)
+        results += r
+        errors += e
+    return results, errors
+
+
+def run_replay_test(engine: Path, work: Path, test: str, timeout: int) -> tuple[list[str], list[str]]:
     userdata = stage(work, None, True)
     env = dict(os.environ, SDL_VIDEO_DRIVER="offscreen", SDL_AUDIO_DRIVER="dummy")
     try:
         proc = subprocess.run([str(engine), "--userdata-dir", str(userdata), "--log-strict=error",
-                               "-u", REPLAY_TEST], cwd=work, env=env, capture_output=True, text=True,
+                               "-u", test], cwd=work, env=env, capture_output=True, text=True,
                               timeout=timeout)
         out, code = proc.stdout + proc.stderr, proc.returncode
     except subprocess.TimeoutExpired as exc:
@@ -134,15 +148,20 @@ def run_replay_suite(engine: Path, work: Path, timeout: int) -> tuple[list[str],
     logs = "\n".join(p.read_text(encoding="utf-8", errors="replace") for p in (userdata / "logs").glob("*.log"))
     text = out + "\n" + logs
     lines = sorted({l for l in text.splitlines() if l.startswith("SW_TEST: ")})
-    results = [f"[replay] " + l[len("SW_TEST: "):] for l in lines if l.startswith(("SW_TEST: PASS", "SW_TEST: FAIL"))]
-    original = [l for l in lines if "(original)" in l and "PASS" in l]
-    replayed = [l for l in lines if "(replay)" in l and "PASS" in l]
+    tag = f"[replay:{test}]"
+    results = [f"{tag} " + l[len("SW_TEST: "):] for l in lines if l.startswith(("SW_TEST: PASS", "SW_TEST: FAIL"))]
+    infos = [l[len("SW_TEST: INFO "):] for l in lines if l.startswith("SW_TEST: INFO ")]
+    # Count every checkpoint line on the engine's output (two checkpoints
+    # may legitimately produce the same digest).
+    out_lines = [l for l in out.splitlines() if l.startswith("SW_TEST: ")]
+    original = [l for l in out_lines if "(original)" in l and "PASS" in l]
+    replayed = [l for l in out_lines if "(replay)" in l and "PASS" in l]
     verdict = re.search(r"(PASS TEST|FAIL TEST|BROKE STRICT)[^\n]*", text)
     ok = code == 0 and verdict is not None and verdict.group(0).startswith("PASS TEST")
-    results.append(f"[replay] {'PASS' if ok else 'FAIL'} engine unit test and replay: exit {code}, "
-                   f"{verdict.group(0) if verdict else 'no verdict'}")
-    results.append(f"[replay] {'PASS' if len(original) >= 4 else 'FAIL'} digest checkpoints recorded in play: {len(original)}")
-    results.append(f"[replay] {'PASS' if len(replayed) >= 4 and len(replayed) == len(original) else 'FAIL'} "
+    results.append(f"{tag} {'PASS' if ok else 'FAIL'} engine unit test and replay: exit {code}, "
+                   f"{verdict.group(0) if verdict else 'no verdict'}" + (f" ({'; '.join(infos)})" if infos else ""))
+    results.append(f"{tag} {'PASS' if len(original) >= 4 else 'FAIL'} digest checkpoints recorded in play: {len(original)}")
+    results.append(f"{tag} {'PASS' if len(replayed) >= 4 and len(replayed) == len(original) else 'FAIL'} "
                    f"digest checkpoints reproduced by the replay: {len(replayed)}")
     errors = sorted({l.strip() for l in text.splitlines()
                      if ENGINE_ERRORS.search(l) and not REPLAY_STRICT_IGNORE.search(l)})
@@ -174,13 +193,13 @@ def run_static_checks() -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--engine", type=Path, default=Path(os.environ.get("WESNOTH_LINUX_ENGINE", DEFAULT_ENGINE)))
-    parser.add_argument("--suite", choices=("all", "force", "intel", "replay"), default="all")
+    parser.add_argument("--suite", choices=("all", "force", "intel", "air", "replay"), default="all")
     parser.add_argument("--workdir", type=Path)
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     base = args.workdir or Path(tempfile.mkdtemp(prefix="sw-systems-"))
-    suites = ["force", "intel", "replay"] if args.suite == "all" else [args.suite]
+    suites = ["force", "intel", "air", "replay"] if args.suite == "all" else [args.suite]
     results: list[str] = run_static_checks()
     errors: list[str] = []
     for suite in suites:

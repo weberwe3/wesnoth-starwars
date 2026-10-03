@@ -72,7 +72,18 @@ local function plugin(events, context, info)
         end
         std_print("SW_SOAK: intel turn " .. wesnoth.current.turn .. " contacts=" ..
           #wml.array_access.get("sw_ew_contacts") .. " decoys=" .. #wml.array_access.get("sw_ew_decoys") ..
-          " doctrine=" .. (#ins > 0 and table.concat(ins, ",") or "none"))
+          " doctrine=" .. (#ins > 0 and table.concat(ins, ",") or "none") ..
+          " air=" .. (function()
+            if not sw_systems.air then return "none" end
+            local parts = {}
+            for _i, side in ipairs{ 1, 2, 3 } do
+              local st = sw_systems.air.load(side)
+              for _j, id in ipairs(sw_systems.air.sortie_order) do
+                if st.charges[id] then table.insert(parts, "s" .. side .. id .. "=" .. st.charges[id]) end
+              end
+            end
+            return #parts > 0 and table.concat(parts, ",") or "none"
+          end)())
       end,
     }
     wesnoth.sides[1].controller = "ai"
