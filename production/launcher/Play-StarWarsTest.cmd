@@ -62,10 +62,35 @@ if not exist "%ADDON_TARGET%\_main.cfg" (
   goto :failed
 )
 
+rem Optional private audio overlay. The sounds live only in the private
+rem wesnoth-starwars-private-audio repository, never in this public repository
+rem or the add-on package. If this machine has a clone of it next to the
+rem project (or at WESNOTH_PRIVATE_AUDIO_LINUX), refresh it and apply it to the
+rem freshly installed copy above. Machines without it keep the standard sounds.
+set "PRIVATE_AUDIO_LINUX=/home/willj/projects/wesnoth-starwars-private-audio"
+if defined WESNOTH_PRIVATE_AUDIO_LINUX set "PRIVATE_AUDIO_LINUX=%WESNOTH_PRIVATE_AUDIO_LINUX%"
+set "PRIVATE_AUDIO=none"
+wsl.exe -d %DISTRO% -- test -f "%PRIVATE_AUDIO_LINUX%/apply_private_audio.py"
+if errorlevel 1 goto :private_audio_done
+set "ADDON_TARGET_LINUX="
+for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- wslpath -u "%ADDON_TARGET%"') do set "ADDON_TARGET_LINUX=%%I"
+echo Updating the private audio...
+wsl.exe -d %DISTRO% -- git -C "%PRIVATE_AUDIO_LINUX%" pull --quiet --ff-only
+if errorlevel 1 echo Could not update the private audio; using the copy already downloaded.
+wsl.exe -d %DISTRO% -- python3 "%PRIVATE_AUDIO_LINUX%/apply_private_audio.py" "%ADDON_TARGET_LINUX%"
+if errorlevel 1 (
+  echo The private audio could not be applied; the standard sounds are used.
+  set "PRIVATE_AUDIO=failed"
+) else (
+  set "PRIVATE_AUDIO=applied"
+)
+:private_audio_done
+
 > "%USERDATA%\wesnoth-starwars-launch.txt" (
   echo add-on=%ADDON_ID%
   echo published_main=%PUBLISHED_SHA%
   echo launcher=tester
+  echo private_audio=%PRIVATE_AUDIO%
 )
 echo Starting Wesnoth with build %PUBLISHED_SHA:~0,10%.
 echo Choose Campaigns on the title screen, then any of the three Thrawn Trilogy campaigns.
