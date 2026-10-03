@@ -811,7 +811,8 @@ function doctrine.summary_text(d)
 			local dmg = key:match("^([^/]*)/")
 			local best, best_r = nil, -999
 			for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ side = d.side })) do
-				local r = 100 - u:resistance_against(dmg)
+				-- resistance_against returns the resistance percentage (damage taken is 100 - it).
+				local r = u:resistance_against(dmg)
 				if r > best_r then best, best_r = u, r end
 			end
 			if best then

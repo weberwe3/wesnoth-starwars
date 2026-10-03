@@ -12,7 +12,7 @@ local PHASE = "main"
 local STEPS = {
   "profiles", "thresholds", "jamming", "sweep", "transitions", "real_move", "decoys", "terrain_env",
   "reveal", "leakage", "menu_show_if", "doctrine_gain", "doctrine_control", "doctrine_effects", "check_doctrine_effects",
-  "integration", "carryover", "ai_turn", "check_ai_turn", "prepare_save",
+  "integration", "counter_deployment", "carryover", "ai_turn", "check_ai_turn", "prepare_save",
 }
 
 local function plugin(events, context, info)
@@ -673,6 +673,27 @@ local function plugin(events, context, info)
         doctrine.summary_text(doctrine.load(1)))
       check("recognising the enemy's decoy use was recorded", doctrine.load(1).patterns.tactic and
         doctrine.load(1).patterns.tactic.decoy == 1)
+    end
+
+    -- Sensor doctrine's advice names the deployed type that best resists the
+    -- enemy's favoured damage (regression: resistance was read inverted).
+    function S.counter_deployment()
+      swt.clear()
+      local a = swt.place("sw_unit_nr_trooper", 1, 3, 3, "t_a")
+      local b = swt.place("sw_unit_wk_warrior", 1, 3, 5, "t_b")
+      local c = swt.place("sw_unit_nr_eweb_team", 1, 3, 7, "t_c")
+      doctrine.enable(1)
+      wesnoth.wml_actions.sw_doctrine{ action = "seed", side = 1, amount = 45,
+        T.pattern{ category = "attack", key = "fire/ranged", count = 4 } }
+      local best, best_r = nil, -999
+      for _i, unit in ipairs{ a, b, c } do
+        local r = unit:resistance_against("fire")
+        if r > best_r then best, best_r = unit, r end
+      end
+      local text = doctrine.summary_text(doctrine.load(1))
+      check("counter-deployment names the most fire-resistant deployed type",
+        text:find(tostring(wesnoth.unit_types[best.type].name), 1, true) ~= nil and
+        text:find(best_r .. "% ", 1, true) ~= nil, text)
     end
 
     -- State from an earlier mission does not leak into the next one.

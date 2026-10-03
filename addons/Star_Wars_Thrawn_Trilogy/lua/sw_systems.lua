@@ -6,7 +6,8 @@
 -- variables, so re-registering after a load restores the systems exactly.
 --
 -- Systems: the Force (sw_force), overwatch (sw_overwatch), sensors and
--- electronic warfare (sw_ew) and Thrawn Doctrine (sw_doctrine).
+-- electronic warfare (sw_ew), Thrawn Doctrine (sw_doctrine), off-map air
+-- support (sw_air) and rank insignia (sw_rank).
 --
 -- Event precedence (all handlers are registered here, nowhere else):
 --   prestart    1. carried-over state reset (overwatch, Force, EW, doctrine)
@@ -22,10 +23,12 @@
 --   turn refresh (start of a side's turn, after the engine resets moves):
 --               1. overwatch expires for that side  2. null-field refresh
 --               3. Force regeneration, cooldowns, Mind Trick, Sense expiry
---               4. EW: that side's sweeps end, decoys/reveals expire, pictures
---               5. doctrine: composition, studied marks, prediction
+--               4. that side's telegraphed bombing runs land
+--               5. EW: that side's sweeps end, decoys/reveals expire, pictures
+--               6. doctrine: composition, studied marks, prediction
 --   side turn end  1. doctrine observes the side's formation
---                  2. AI sides may sweep, then enter overwatch
+--                  2. AI sides may call air support, sweep, then enter overwatch
+--   post advance   rank insignia (promotion or AMLA)
 --   die / unit placed / recruit  refreshes and initialisation
 -- Force displacement (Push/Pull) moves units without firing events, so it
 -- never provokes reactions; reaction fire runs under a reentrancy guard so
@@ -37,10 +40,12 @@ local force = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_force.lu
 local overwatch = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_overwatch.lua")
 local ew = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ew.lua")
 local doctrine = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_doctrine.lua")
+local air = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_air.lua")
+local rank = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_rank.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank }
 
 -- Cross-system wiring (hooks are plain Lua tables, rebuilt on every load).
 ew.hooks.bonus = { doctrine.ew_bonus }
@@ -49,6 +54,7 @@ ew.on_tactic = function(u, key) doctrine.observe_tactic(u, key) end
 overwatch.hooks.modify = { doctrine.overwatch_modify }
 overwatch.on_enter = function(u) doctrine.observe_tactic(u, "overwatch") end
 force.on_power_used = function(u, power_id) doctrine.observe_tactic(u, "force_" .. power_id) end
+air.hooks.on_call = { function(side, sortie_id, observer) doctrine.observe_tactic(observer, "air_" .. sortie_id) end }
 
 local function on(name, id, action)
 	wesnoth.game_events.add{ name = name, id = id, first_time_only = false, action = action }
@@ -65,8 +71,10 @@ on("prestart", "sw_sys_prestart", function()
 		core.compact_overlays(u)
 		local cfg = force.config(u)
 		if cfg then force.set_fp(u, cfg.fp_max, cfg) end
+		rank.update(u)
 	end
 	wml.array_access.set("sw_ow_index", {})
+	air.ensure_scenario()
 	force.refresh_fields()
 	doctrine.on_prestart()
 	ew.on_prestart()
@@ -95,6 +103,7 @@ on("turn refresh", "sw_sys_turn_refresh", function()
 	overwatch.on_side_turn(side)
 	force.refresh_fields()
 	force.on_side_turn(side)
+	air.on_side_turn(side)
 	ew.on_side_turn(side)
 	doctrine.on_side_turn(side)
 end)
@@ -102,6 +111,7 @@ end)
 on("side turn end", "sw_sys_side_turn_end", function()
 	local side = wesnoth.current.side
 	doctrine.on_side_turn_end(side)
+	air.on_side_turn_end(side)
 	ew.on_side_turn_end(side)
 	overwatch.on_side_turn_end(side)
 end)
@@ -124,9 +134,14 @@ on("unit placed", "sw_sys_unit_placed", function()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	if not u then return end
 	force.init_unit(u)
+	rank.update(u)
 	doctrine.on_unit_placed(u)
 	if mover_matters(u) then force.refresh_fields() end
 	ew.refresh()
+end)
+
+on("post advance", "sw_sys_post_advance", function()
+	rank.on_post_advance()
 end)
 
 on("recruit", "sw_sys_recruit", function()
@@ -175,6 +190,13 @@ wesnoth.interface.set_menu_item("sw_ew_contact_menu", {
 	T.command{ T.lua{ code = "sw_systems.ew.contact_menu_command()" } },
 })
 
+wesnoth.interface.set_menu_item("sw_air_menu", {
+	description = _ "Call air support…",
+	image = "misc/sw-menu-air.png",
+	T.show_if{ T.lua{ code = "return sw_systems.air.menu_visible()" } },
+	T.command{ T.lua{ code = "sw_systems.air.menu_command()" } },
+})
+
 wesnoth.interface.set_menu_item("sw_doctrine_menu", {
 	description = _ "Thrawn's doctrine",
 	image = "misc/sw-menu-doctrine.png",
@@ -219,6 +241,12 @@ function sw_systems.show_status()
 	for _i, l in ipairs(ew.status_lines(u, viewer_team)) do table.insert(lines, l) end
 	local dl = doctrine.leader_status(u)
 	if dl then table.insert(lines, dl) end
+	local rl = rank.status_line(u)
+	if rl then table.insert(lines, rl) end
+	if u.side == wesnoth.current.side then
+		local al = air.status_line(u)
+		if al then table.insert(lines, al) end
+	end
 	-- side_for: only the player who asked sees the answer (multiplayer).
 	wesnoth.wml_actions.message{ speaker = "narrator", caption = _ "Tactical status", side_for = wesnoth.current.side,
 		image = "misc/sw-objective.png", message = table.concat(lines, "\n") }
@@ -273,6 +301,32 @@ function wesnoth.wml_actions.sw_ew_decoy(cfg)
 		type = cfg.type, signature = cfg.signature, deception = cfg.deception, turns = cfg.turns }
 end
 
+-- [sw_air_support] side= sortie=strafe|bombing count=1 craft=<unit type>
+-- Grants off-map sorties for this mission (see sw_air.lua).
+function wesnoth.wml_actions.sw_air_support(cfg)
+	cfg = wml.parsed(cfg)
+	air.grant(tonumber(cfg.side) or wml.error("[sw_air_support] needs side="), cfg.sortie or "strafe",
+		tonumber(cfg.count) or 1, cfg.craft)
+end
+
+-- [sw_air_strike] side= sortie= craft= damage= strikes= certain=yes|no enemies_only=yes|no and either
+-- x= y= direction= or a [filter_location] (hexes flown in x order): a
+-- scripted sortie with no observer and no charge, resolved at once.
+function wesnoth.wml_actions.sw_air_strike(cfg)
+	cfg = wml.parsed(cfg)
+	local hexes = nil
+	local fl = wml.get_child(cfg, "filter_location")
+	if fl then
+		hexes = {}
+		for _i, loc in ipairs(wesnoth.map.find(fl)) do table.insert(hexes, { x = loc[1] or loc.x, y = loc[2] or loc.y }) end
+		table.sort(hexes, function(a, b) if a.x ~= b.x then return a.x < b.x end return a.y < b.y end)
+	end
+	air.scripted_strike{ side = tonumber(cfg.side) or 1, sortie = cfg.sortie, craft = cfg.craft,
+		damage = tonumber(cfg.damage), strikes = tonumber(cfg.strikes), certain = cfg.certain,
+		enemies_only = cfg.enemies_only, hexes = hexes,
+		x = tonumber(cfg.x), y = tonumber(cfg.y), direction = cfg.direction }
+end
+
 -- [sw_ew_settings] thresholds/modifiers, [terrain] rules (see sw_ew.lua)
 function wesnoth.wml_actions.sw_ew_settings(cfg)
 	ew.configure(wml.parsed(cfg))
@@ -296,8 +350,15 @@ function sw_systems.digest()
 		for _i, ty in ipairs(core.sorted_keys(d.studied)) do add(ty, d.studied[ty]) end
 	end
 	for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{})) do
-		add(u.id, u.x, u.y, u.hitpoints, u.status[ew.CONCEALED] == true, u.variables.sw_ew_sweep == true)
+		add(u.id, u.x, u.y, u.hitpoints, u.status[ew.CONCEALED] == true, u.variables.sw_ew_sweep == true,
+			u.variables.sw_rank_shown or 0, u.experience)
 	end
+	for _i, side in ipairs(core.active_sides()) do
+		local st = air.load(side)
+		add("air", side, st.used_turn)
+		for _j, id in ipairs(core.sorted_keys(st.charges)) do add(id, st.charges[id]) end
+	end
+	for _i, s in ipairs(wml.array_access.get("sw_air_inbound")) do add(s.id, s.side, s.sortie, s.xs, s.ys, s.due_turn) end
 	local text = table.concat(parts, ",")
 	local h = 5381
 	for i = 1, #text do h = (h * 33 + text:byte(i)) % 2147483647 end

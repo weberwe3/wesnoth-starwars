@@ -21,6 +21,12 @@ Sensors and EW (lua/sw_ew.lua) and Thrawn Doctrine (lua/sw_doctrine.lua):
   misc/sw-doctrine-threat.png       hex marker: predicted enemy target
   misc/sw-menu-sensor.png, sw-menu-decoy.png, sw-menu-doctrine.png  menu icons
 
+Rank insignia (lua/sw_rank.lua) and air support (lua/sw_air.lua):
+  misc/sw-rank-<style>-1..3.png  20x10 rank plates blitted into the unit sprite
+                                 at (37,61); each higher rank covers the lower
+  misc/sw-air-inbound.png        hex marker: bombing run inbound (seen by all)
+  misc/sw-menu-air.png           menu icon
+
 Usage: python3 production/tools/gen_ui_icons.py   (requires Pillow)
 """
 from __future__ import annotations
@@ -298,6 +304,79 @@ def menu_doctrine() -> Image.Image:
     return img.resize((16, 16), Image.LANCZOS)
 
 
+# --- rank insignia ------------------------------------------------------------
+
+RANK_W, RANK_H, RS = 20, 10, 8
+
+
+def rank_plate(style: str, n: int) -> Image.Image:
+    """An opaque 20x10 plate; identical footprint for every rank and style."""
+    img = Image.new("RGBA", (RANK_W * RS, RANK_H * RS), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    plate, rim = {
+        "republic": ((24, 36, 72, 255), (217, 176, 74, 255)),
+        "imperial": ((44, 46, 52, 255), (170, 176, 186, 255)),
+        "independent": ((78, 52, 32, 255), (196, 150, 84, 255)),
+        "darkside": ((20, 12, 28, 255), (150, 70, 200, 255)),
+    }[style]
+    d.rounded_rectangle((0, 0, RANK_W * RS - 1, RANK_H * RS - 1), radius=2 * RS, fill=OUTLINE)
+    d.rounded_rectangle((RS, RS, RANK_W * RS - 1 - RS, RANK_H * RS - 1 - RS), radius=RS, fill=plate, outline=rim, width=RS)
+    cx0 = RANK_W * RS / 2
+    if style == "republic":
+        # n gold chevrons side by side
+        span = 5 * RS
+        for i in range(n):
+            x = cx0 + (i - (n - 1) / 2) * span
+            d.line([(x - 2 * RS, 6.5 * RS), (x, 3.2 * RS), (x + 2 * RS, 6.5 * RS)], fill=(255, 214, 90, 255), width=int(1.4 * RS))
+    elif style == "imperial":
+        # Imperial rank plaque: a row of red tiles over a row of blue tiles
+        span = 4 * RS
+        for i in range(n):
+            x = cx0 + (i - (n - 1) / 2) * span
+            d.rectangle((x - 1.4 * RS, 2.6 * RS, x + 1.4 * RS, 4.6 * RS), fill=(220, 40, 40, 255))
+            d.rectangle((x - 1.4 * RS, 5.4 * RS, x + 1.4 * RS, 7.4 * RS), fill=(60, 110, 230, 255))
+    elif style == "independent":
+        span = 4.5 * RS
+        for i in range(n):
+            x = cx0 + (i - (n - 1) / 2) * span
+            d.ellipse((x - 1.6 * RS, 3.4 * RS, x + 1.6 * RS, 6.6 * RS), fill=(232, 190, 110, 255), outline=(90, 60, 30, 255))
+    else:
+        span = 4.5 * RS
+        for i in range(n):
+            x, y, r = cx0 + (i - (n - 1) / 2) * span, 5 * RS, 1.9 * RS
+            d.polygon([(x, y - r), (x + r, y), (x, y + r), (x - r, y)], fill=(220, 60, 90, 255))
+    return img.resize((RANK_W, RANK_H), Image.LANCZOS)
+
+
+def air_inbound() -> Image.Image:
+    img = canvas()
+    d = ImageDraw.Draw(img)
+    color = (255, 120, 40, 255)
+    cx, cy, r = 36 * S, 36 * S, 26 * S
+    for a in range(0, 360, 30):
+        outlined_arc = (cx - r, cy - r, cx + r, cy + r)
+        d.arc(outlined_arc, start=a, end=a + 18, fill=OUTLINE, width=5 * S)
+        d.arc(outlined_arc, start=a, end=a + 18, fill=color, width=3 * S)
+    # three falling bombs
+    for dx in (-9, 0, 9):
+        x = (36 + dx) * S
+        for fill, w in ((OUTLINE, 5 * S), (color, 3 * S)):
+            d.line([(x, 26 * S), (x, 38 * S)], fill=fill, width=w)
+        for fill, grow in ((OUTLINE, 1.2), (color, 0)):
+            d.polygon([(x - (4 + grow) * S, 38 * S), (x + (4 + grow) * S, 38 * S), (x, (44 + grow) * S)], fill=fill)
+    return done(img)
+
+
+def menu_air() -> Image.Image:
+    img = canvas(64)
+    d = ImageDraw.Draw(img)
+    color = (255, 150, 60, 255)
+    d.polygon([(32, 4), (40, 24), (60, 30), (40, 34), (34, 44), (30, 44), (24, 34), (4, 30), (24, 24)], fill=color)
+    d.line([(32, 46), (32, 62)], fill=(255, 220, 120, 255), width=5)
+    d.polygon([(24, 54), (40, 54), (32, 63)], fill=(255, 220, 120, 255))
+    return img.resize((16, 16), Image.LANCZOS)
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     for n in range(11):
@@ -321,6 +400,11 @@ def main() -> int:
     menu_sensor().save(OUT / "sw-menu-sensor.png", optimize=True)
     menu_decoy().save(OUT / "sw-menu-decoy.png", optimize=True)
     menu_doctrine().save(OUT / "sw-menu-doctrine.png", optimize=True)
+    for style in ("republic", "imperial", "independent", "darkside"):
+        for n in (1, 2, 3):
+            rank_plate(style, n).save(OUT / f"sw-rank-{style}-{n}.png", optimize=True)
+    air_inbound().save(OUT / "sw-air-inbound.png", optimize=True)
+    menu_air().save(OUT / "sw-menu-air.png", optimize=True)
     print("wrote tactical-system UI icons")
     return 0
 

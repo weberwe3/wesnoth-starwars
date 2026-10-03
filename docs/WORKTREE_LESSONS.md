@@ -815,3 +815,28 @@ hex, else `x1`, `y1` from WML; every menu function uses it. The intel suite
 evaluates each show_if outside an event, as the engine does.
 **Prevention:** Test menu visibility the way the engine calls it (no event,
 `x1`/`y1` set), not only by firing the menu event.
+
+### 2026-10-03 — Lua resistance_against returns the resistance, not the damage multiplier
+
+**Symptom:** The air-support damage checks failed against real damage, and
+review found Doctrine's counter-deployment advice recommending the most
+vulnerable unit type.
+**Confirmed cause:** `unit:resistance_against(type)` returns the resistance
+percentage (damage taken is `100 - value`), as core `harm_unit.lua` uses it;
+the code assumed the multiplier.
+**Resolution:** Doctrine uses the value directly; tests compute damage as
+`amount * (100 - resistance) / 100` and check advice against real units.
+**Prevention:** Check Lua API semantics against core Lua that uses them.
+
+### 2026-10-03 — Halos fail in the engine's -u test mode; fake moves warn over enemies
+
+**Symptom:** The air replay test broke strict mode with "no texture found for
+current halo animation frame"; soaks flagged "Could not find
+move_unit_fake route".
+**Confirmed cause:** `-u` mode has no textures (the same halos log nothing in
+GUI-mode runs). `[move_unit_fake]` routes the fake unit like a real one, so
+enemy-held hexes block it; the engine then uses its emergency path.
+**Resolution:** Display-only switch `sw_air_effects=no` for the `-u` test;
+the soak ignores the documented move_unit_fake route warning.
+**Prevention:** Keep cosmetic effects switchable from game state, and run
+strict `-u` tests with them off.
