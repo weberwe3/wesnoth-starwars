@@ -737,3 +737,66 @@ Lua state is not saved; only WML variables are.
 `sw_ysalamiri_zone`.
 **Prevention:** Treat Lua tables as caches derived from WML or unit
 variables, and cover every system with a save/load phase in its engine test.
+
+### 2026-10-02 — Translated strings failed inside loops ("attempt to call a number value (local '_')")
+
+**Symptom:** The doctrine tier-unlock and grant floats raised Lua errors in
+the engine replay test; the plugin tests had not reached that code path.
+**Confirmed cause:** `for _, leader in ipairs(...)` rebinds `_`, the
+textdomain function, so `_ "text"` inside the loop calls a number. The same
+mistake had been fixed once before in `sw_force.lua`.
+**Resolution:** No loop in the add-on's Lua binds `_` (`_i`, `_v`, `_n`).
+`run_systems_tests.py` now fails if any `sw_*.lua` module does.
+**Prevention:** Never use `_` as a throwaway variable in a file that
+defines `local _ = wesnoth.textdomain(...)`; the static check enforces it.
+
+### 2026-10-02 — Static ysalamiri fields leaked into the next mission
+
+**Symptom:** Found in review: HTE 5's static null-field sources would still
+suppress the Force at the same coordinates in HTE 6.
+**Confirmed cause:** WML variables carry over between campaign scenarios,
+and `sw_force_null_sources` was never cleared.
+**Resolution:** Mission state is stamped with `wesnoth.scenario.id`
+(`force.ensure_scenario`, `ew.ensure_scenario`,
+`doctrine.ensure_scenario`); stale state is dropped on first use. The intel
+suite has a carryover test.
+**Prevention:** Any system that keeps per-mission state in WML variables
+must stamp it with the scenario id and clear it when the id differs.
+
+### 2026-10-02 — Engine API shapes that broke the first intelligence tests
+
+**Symptom:** Doctrine never recorded attack types; the menu sweep did
+nothing; a scripted decoy was never launched in the replay battle.
+**Confirmed cause:**
+- `wesnoth.current.event_context` exposes the attack weapon as a
+  `[weapon]` child, not a field.
+- A menu item fires the event `menu item <id>`.
+- `side N turn` events fire before units are refreshed, so attacks are not
+  yet restored.
+**Resolution:** `wml.get_child(ctx, "weapon")`; tests fire
+`menu item <id>`; scripted actions use `side N turn M refresh`.
+**Prevention:** Check event-context and event-name shapes against
+`src/scripting/game_lua_kernel.cpp` and `src/game_events/menu_item.cpp`
+before relying on them.
+
+### 2026-10-02 — Plugin test checked the AI's turn while it was still playing
+
+**Symptom:** "AI units ... entered overwatch" failed with the AI's units
+mid-move, turn 1, side 2.
+**Confirmed cause:** The plugin's `settle()` waits for `can_move`, which is
+briefly true during an AI turn too; the extra sensor refreshes made the AI
+turn long enough to expose the race.
+**Resolution:** After `end_turn`, wait until `info.current_side() == 1`.
+**Prevention:** Gate post-turn checks on the current side, not only on
+`can_move`.
+
+### 2026-10-02 — Information windows from synced menu commands reach every client
+
+**Symptom:** Found in review: Tactical status, Sensor contact and the
+doctrine summary are `[message]`s raised from synced menu commands.
+**Confirmed cause:** A synced command runs on every multiplayer client, so
+a plain `[message]` would show one player's sensor picture to all players.
+**Resolution:** Information windows use `side_for=` the acting side, and
+show_if menus over hexes use the viewer's own visibility or contacts only.
+**Prevention:** Any message that reports private information needs
+`side_for`. Test that menus over a hidden unit's hex match an empty hex.

@@ -119,6 +119,7 @@ def soak_one(engine: Path, campaign: str, scenario: str, workdir: Path, timeout:
         "turns_played": max(turns) if turns else 0,
         "seconds": round(time.time() - started, 1),
         "failures": failures,
+        "intel": next((line[len("intel "):] for line in reversed(lines) if line.startswith("intel ")), None),
     }
 
 

@@ -91,14 +91,14 @@ force.null_set = nil
 local function null_cache()
 	if force.null_set == nil then
 		local set = {}
-		for _, loc in ipairs(wml.array_access.get("sw_ysalamiri_zone")) do set[core.key(loc.x, loc.y)] = true end
+		for _i, loc in ipairs(wml.array_access.get("sw_ysalamiri_zone")) do set[core.key(loc.x, loc.y)] = true end
 		force.null_set = set
 	end
 	return force.null_set
 end
 
 local function add_radius(set, list, x, y, radius)
-	for _, loc in ipairs(wesnoth.map.find{ x = x, y = y, radius = radius }) do
+	for _i, loc in ipairs(wesnoth.map.find{ x = x, y = y, radius = radius }) do
 		local k = core.key(loc.x, loc.y)
 		if not set[k] then
 			set[k] = true
@@ -107,7 +107,20 @@ local function add_radius(set, list, x, y, radius)
 	end
 end
 
+-- Static sources belong to the mission that placed them. WML variables carry
+-- over between campaign scenarios, so sources stamped with another scenario's
+-- id are discarded (a field from HTE 5 must not appear in HTE 6).
+function force.ensure_scenario()
+	local id = core.scenario_id()
+	if wml.variables.sw_force_null_scenario ~= id then
+		wml.array_access.set("sw_force_null_sources", {})
+		wml.variables.sw_force_null_scenario = id
+		force.null_set = nil
+	end
+end
+
 function force.add_static_source(x, y, radius)
+	force.ensure_scenario()
 	local sources = wml.array_access.get("sw_force_null_sources")
 	table.insert(sources, { x = x, y = y, radius = radius })
 	wml.array_access.set("sw_force_null_sources", sources)
@@ -126,11 +139,12 @@ end
 -- suppression indicators. Called after anything that can move a source or a
 -- Force user: every move, displacement, death, placement and turn start.
 function force.refresh_fields()
+	force.ensure_scenario()
 	local set, list = {}, {}
-	for _, src in ipairs(wml.array_access.get("sw_force_null_sources")) do
+	for _i, src in ipairs(wml.array_access.get("sw_force_null_sources")) do
 		add_radius(set, list, src.x, src.y, core.number(src.radius, force.DEFAULT_FIELD_RADIUS))
 	end
-	for _, carrier in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ ability = force.YSALAMIRI })) do
+	for _i, carrier in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ ability = force.YSALAMIRI })) do
 		if carrier.hitpoints > 0 then
 			local cfg = core.ability_cfg(carrier, force.YSALAMIRI) or {}
 			add_radius(set, list, carrier.x, carrier.y, core.number(cfg.radius, force.DEFAULT_FIELD_RADIUS))
@@ -141,20 +155,20 @@ function force.refresh_fields()
 	wml.array_access.set("sw_ysalamiri_zone", list)
 	-- Redraw the field tint: remove hexes no longer covered, add new ones.
 	local drawn = {}
-	for _, loc in ipairs(wml.array_access.get("sw_force_null_drawn")) do
+	for _i, loc in ipairs(wml.array_access.get("sw_force_null_drawn")) do
 		if not set[core.key(loc.x, loc.y)] then
 			wesnoth.interface.remove_item(loc.x, loc.y, "misc/sw-ysalamiri-zone.png")
 		else
 			drawn[core.key(loc.x, loc.y)] = true
 		end
 	end
-	for _, loc in ipairs(list) do
+	for _i, loc in ipairs(list) do
 		if not drawn[core.key(loc.x, loc.y)] then
 			wesnoth.interface.add_item_image(loc.x, loc.y, "misc/sw-ysalamiri-zone.png")
 		end
 	end
 	wml.array_access.set("sw_force_null_drawn", list)
-	for _, u in ipairs(wesnoth.units.find_on_map{ ability = force.ABILITY }) do
+	for _i, u in ipairs(wesnoth.units.find_on_map{ ability = force.ABILITY }) do
 		force.update_indicator(u)
 	end
 	core.log("force", "null field refreshed: " .. #list .. " hexes")
@@ -181,7 +195,7 @@ function force.can_use(u, power_id, cfg)
 	local power = force.powers[power_id]
 	if not cfg or not power then return false, _ "unknown power" end
 	local has = false
-	for _, p in ipairs(cfg.powers) do if p == power_id then has = true end end
+	for _i, p in ipairs(cfg.powers) do if p == power_id then has = true end end
 	if not has then return false, _ "not known to this unit" end
 	if force.is_suppressed(u) then return false, _ "suppressed by a ysalamiri" end
 	local cost = force.power_value(u, cfg, power, "cost")
@@ -202,7 +216,7 @@ function force.valid_targets(caster, power_id, cfg)
 	if power.target == "self" then return { caster } end
 	local range = force.power_value(caster, cfg, power, "range")
 	local out = {}
-	for _, t in ipairs(wesnoth.units.find_on_map{ T.filter_location{ x = caster.x, y = caster.y, radius = range } }) do
+	for _i, t in ipairs(wesnoth.units.find_on_map{ T.filter_location{ x = caster.x, y = caster.y, radius = range } }) do
 		local ok = t.id ~= caster.id
 		if ok and power.target == "enemy" then ok = wesnoth.sides.is_enemy(caster.side, t.side) end
 		if ok and power.target == "ally" then ok = not wesnoth.sides.is_enemy(caster.side, t.side) end
@@ -237,6 +251,7 @@ function force.use(caster, power_id, target)
 	core.log("force", caster.id .. " uses " .. power_id .. " on " .. (target and target.id or "-") .. " (cost " .. cost .. ")")
 	power.apply(caster, target, power, cfg)
 	force.refresh_fields()
+	if force.on_power_used then force.on_power_used(caster, power_id) end   -- observation hook
 	return true
 end
 
@@ -300,12 +315,12 @@ force.register_power("sense", {
 	description = _ "Feel living beings within four hexes. Hidden creatures there lose their stealth until your next turn. It cannot see through technological cloaking.",
 	apply = function(caster, _target, power)
 		local found = 0
-		for _, t in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{
+		for _i, t in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{
 				T.filter_location{ x = caster.x, y = caster.y, radius = power.radius },
 				T.filter_side{ T.enemy_of{ side = caster.side } } })) do
 			-- Only living stealth (ability ids listed in force.SENSE_REVEALS)
 			-- is defeated; cloaking fields are not living presences.
-			for ability_id, _ in pairs(force.SENSE_REVEALS) do
+			for ability_id, _v in pairs(force.SENSE_REVEALS) do
 				if t:matches{ ability = ability_id } then
 					t:add_modification("object", { id = "sw_force_sensed",
 						T.effect{ apply_to = "remove_ability", T.abilities{ T.hides{ id = ability_id } } } })
@@ -371,13 +386,13 @@ end
 -- At the start of a side's turn: regenerate Force Points (not inside a null
 -- field), tick cooldowns, apply Mind Trick, and expire Force Sense reveals.
 function force.on_side_turn(side)
-	for _, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ side = side })) do
+	for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ side = side })) do
 		local cfg = force.config(u)
 		if cfg then
 			if not force.is_suppressed(u) then
 				force.set_fp(u, force.fp(u) + cfg.fp_regen, cfg)
 			end
-			for _, p in ipairs(cfg.powers) do
+			for _i, p in ipairs(cfg.powers) do
 				local cd = core.number(u.variables["sw_cd_" .. p], 0)
 				if cd > 0 then u.variables["sw_cd_" .. p] = cd - 1 end
 			end
@@ -396,7 +411,7 @@ function force.on_side_turn(side)
 		end
 	end
 	-- Force Sense reveals last until the sensing side's next turn.
-	for _, u in ipairs(wesnoth.units.find_on_map{ T.filter_wml{ T.variables{ sw_sensed_side = side } } }) do
+	for _i, u in ipairs(wesnoth.units.find_on_map{ T.filter_wml{ T.variables{ sw_sensed_side = side } } }) do
 		u:remove_modifications({ id = "sw_force_sensed" }, "object")
 		u.variables.sw_sensed_until = nil
 		u.variables.sw_sensed_side = nil
@@ -435,10 +450,10 @@ function force.open_menu()
 	local cfg = force.config(caster)
 	if not cfg then return end
 	local labels, ids = {}, {}
-	for _, id in ipairs(force.power_order) do
+	for _i, id in ipairs(force.power_order) do
 		local power = force.powers[id]
 		local known = false
-		for _, p in ipairs(cfg.powers) do if p == id then known = true end end
+		for _i, p in ipairs(cfg.powers) do if p == id then known = true end end
 		if known and not power.passive then
 			local ok, why = force.can_use(caster, id, cfg)
 			local cost = force.power_value(caster, cfg, power, "cost")
@@ -457,7 +472,7 @@ function force.open_menu()
 	local target = targets[1]
 	if force.powers[chosen.id].target ~= "self" and #targets > 1 then
 		local tlabels = {}
-		for _, t in ipairs(targets) do
+		for _i, t in ipairs(targets) do
 			table.insert(tlabels, tostring(t.name ~= "" and t.name or t.type) .. " (" .. t.x .. "," .. t.y .. ")")
 		end
 		table.insert(tlabels, tostring(_ "Cancel"))
