@@ -811,19 +811,19 @@ local function viewing_team()
 end
 
 function ew.sweep_menu_visible()
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	return u ~= nil and core.is_local_turn_of(u.side) and ew.profile(u).scan > 0 and (ew.can_sweep(u))
 end
 
 function ew.sweep_menu_command()
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	if u then ew.sweep(u) end
 end
 
 function ew.decoy_menu_visible()
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	return u ~= nil and core.is_local_turn_of(u.side) and ew.profile(u).decoys > 0 and (ew.can_decoy(u))
 end
@@ -831,7 +831,7 @@ end
 local DIR_NAMES = { n = _ "north", ne = _ "north-east", se = _ "south-east", s = _ "south", sw = _ "south-west", nw = _ "north-west" }
 
 function ew.decoy_menu_command()
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	if not u then return end
 	local hexes = ew.decoy_hexes(u)
@@ -855,7 +855,7 @@ end
 function ew.contact_menu_visible()
 	local team = viewing_team()
 	if not team then return false end
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	return #ew.contacts_at(team, ctx.x1, ctx.y1) > 0
 end
 
@@ -894,7 +894,7 @@ end
 
 function ew.contact_menu_command()
 	local team = core.team_key(wesnoth.current.side)
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local recs = ew.contacts_at(team, ctx.x1, ctx.y1)
 	local texts = {}
 	local s = ew.settings()

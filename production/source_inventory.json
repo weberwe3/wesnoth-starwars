@@ -6541,7 +6541,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_core.lua",
-      "sha256": "eb86e24ed1a66ae77f06e911d37ddb773135e82412767ab179a6fc943498d64e"
+      "sha256": "c2518b88cba2670f0e4ddc9341b2565d4bc892e242215d20d07b7e21848c8727"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_doctrine.lua",
@@ -6549,19 +6549,19 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ew.lua",
-      "sha256": "ef8add0852b3d1c2ef0090ae955b3905e33ffd7487d2b70d5657cbe54c98075d"
+      "sha256": "07f4d2b8f25d4babec21ac06293e1e89a35fd2a7d2502aef543e4c7b67790926"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_force.lua",
-      "sha256": "6c2496becca7c42880f2e9be606f874d0f5de6ba3c7c117801305fa940817419"
+      "sha256": "7a16bd43a9e482007cf6e4b8149af21969168261da81ad445388c7c59d86bed6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_overwatch.lua",
-      "sha256": "47ef83b26e4447178341f7e078ff5dea67a088be29bed6ed14cf698e72221832"
+      "sha256": "e451c28d646309a44a52429afd3dcbffa1eb6b4b3c9fac6a50c91694190ec00a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "7893ad2ec03e667d4c0b267795ddf132653a2c2ac8fa86f9f8c1a370867a7499"
+      "sha256": "d8672f343f9c65ecc177e3387519c6c976f1e4c19f89487a682f74468073af88"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",

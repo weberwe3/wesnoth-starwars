@@ -183,6 +183,16 @@ function core.float_for_team(team, x, y, text, color)
 	end
 end
 
+-- The hex a right-click menu item refers to. A menu command runs as an event
+-- with the hex in the event context, but the engine evaluates [show_if]
+-- outside any event and passes the hex only as the WML variables x1, y1
+-- (src/game_events/wmi_manager.cpp). Every menu function uses this helper.
+function core.menu_context()
+	local ctx = wesnoth.current.event_context
+	if ctx.x1 ~= nil and ctx.y1 ~= nil then return ctx end
+	return { x1 = tonumber(wml.variables.x1) or 0, y1 = tonumber(wml.variables.y1) or 0 }
+end
+
 -- Whether it is a human player's own turn for this side (menu visibility).
 function core.is_local_turn_of(side)
 	return wesnoth.current.side == side and wesnoth.sides[side].is_local

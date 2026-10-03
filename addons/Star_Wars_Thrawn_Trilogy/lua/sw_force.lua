@@ -427,7 +427,7 @@ end
 -- ---------------------------------------------------------------- menu
 
 function force.menu_visible()
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	return u ~= nil and force.is_sensitive(u) and core.is_local_turn_of(u.side)
 end
@@ -444,7 +444,7 @@ end
 -- Two synced choices: power, then target. Unavailable powers are listed with
 -- the reason so the player always knows why.
 function force.open_menu()
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local caster = wesnoth.units.get(ctx.x1, ctx.y1)
 	if not caster then return end
 	local cfg = force.config(caster)

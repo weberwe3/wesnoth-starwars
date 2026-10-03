@@ -800,3 +800,18 @@ a plain `[message]` would show one player's sensor picture to all players.
 show_if menus over hexes use the viewer's own visibility or contacts only.
 **Prevention:** Any message that reports private information needs
 `side_for`. Test that menus over a hidden unit's hex match an empty hex.
+
+### 2026-10-03 — Every right-click raised Lua errors from the tactical menus
+
+**Symptom:** In the GUI, right-clicking any unit showed "bad argument #1 to
+'get' (expected string or location)" from every system menu's show_if.
+**Confirmed cause:** The engine evaluates `[show_if]` outside any event and
+passes the hex only as the WML variables `x1`, `y1`
+(`src/game_events/wmi_manager.cpp`). The menu functions read
+`wesnoth.current.event_context.x1`, which is nil there. The engine tests had
+fired the menu events directly, which supplies an event context.
+**Resolution:** `core.menu_context()` returns the event context when it has a
+hex, else `x1`, `y1` from WML; every menu function uses it. The intel suite
+evaluates each show_if outside an event, as the engine does.
+**Prevention:** Test menu visibility the way the engine calls it (no event,
+`x1`/`y1` set), not only by firing the menu event.

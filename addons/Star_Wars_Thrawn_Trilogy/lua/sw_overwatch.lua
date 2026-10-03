@@ -305,13 +305,13 @@ end
 -- ---------------------------------------------------------------- menu
 
 function ow.menu_visible()
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	return u ~= nil and core.is_local_turn_of(u.side) and ow.config(u) ~= nil and (ow.can_enter(u))
 end
 
 function ow.menu_command()
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	if u then ow.enter(u) end
 end
