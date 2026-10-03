@@ -191,7 +191,7 @@ wesnoth.interface.set_menu_item("sw_status_menu", {
 -- A unit on the clicked hex that the given side can see (never a hidden one:
 -- a menu that appeared over an "empty" hex would betray it).
 local function seen_unit(side)
-	local ctx = wesnoth.current.event_context
+	local ctx = core.menu_context()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	if u == nil or side == nil or side < 1 then return nil end
 	if not u:matches{ T.filter_vision{ side = side, visible = true } } then return nil end

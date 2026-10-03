@@ -11,7 +11,7 @@ local PHASE = "main"
 
 local STEPS = {
   "profiles", "thresholds", "jamming", "sweep", "transitions", "real_move", "decoys", "terrain_env",
-  "reveal", "leakage", "doctrine_gain", "doctrine_control", "doctrine_effects", "check_doctrine_effects",
+  "reveal", "leakage", "menu_show_if", "doctrine_gain", "doctrine_control", "doctrine_effects", "check_doctrine_effects",
   "integration", "carryover", "ai_turn", "check_ai_turn", "prepare_save",
 }
 
@@ -455,6 +455,38 @@ local function plugin(events, context, info)
         text:find(tostring(wesnoth.unit_types.sw_hero_cbaoth.name), 1, true) == nil and
         text:find(tostring(wesnoth.unit_types.sw_unit_im_stormtrooper.name), 1, true) ~= nil, text)
       check("Tactical status is refused for a hidden unit", swt.probe_at(12, 6).status == false)
+    end
+
+    -- The engine evaluates [show_if] outside any event: the hex is only in
+    -- the WML variables x1, y1 (regression: every right-click raised Lua
+    -- errors because menus read it from the event context).
+    function S.menu_show_if()
+      swt.clear()
+      local luke = swt.place("sw_hero_luke", 1, 5, 5, "t_luke")
+      swt.place("sw_unit_nr_eweb_team", 1, 6, 5, "t_eweb")
+      swt.place("sw_unit_nr_ywing", 1, 7, 5, "t_y")
+      swt.place("sw_unit_im_stormtrooper", 2, 9, 5, "t_enemy")
+      swt.refresh()
+      local menus = {
+        force = force.menu_visible, overwatch = ow.menu_visible, sweep = ew.sweep_menu_visible,
+        decoy = ew.decoy_menu_visible, contact = ew.contact_menu_visible, status = sw_systems.status_visible,
+        doctrine = doctrine.menu_visible,
+      }
+      local expect = { ["5,5"] = { force = true, status = true }, ["6,5"] = { overwatch = true, status = true },
+        ["7,5"] = { sweep = true, overwatch = true, status = true }, ["9,5"] = { status = true }, ["12,12"] = {} }
+      local errors, wrong = {}, {}
+      for _i, hex in ipairs{ "5,5", "6,5", "7,5", "9,5", "12,12" } do
+        local x, y = hex:match("(%d+),(%d+)")
+        wml.variables.x1, wml.variables.y1 = tonumber(x), tonumber(y)
+        for _j, name in ipairs(core.sorted_keys(menus)) do
+          local ok, res = pcall(menus[name])
+          if not ok then table.insert(errors, name .. "@" .. hex .. ": " .. tostring(res))
+          elseif (res == true) ~= (expect[hex][name] == true) then table.insert(wrong, name .. "@" .. hex .. "=" .. tostring(res)) end
+        end
+      end
+      wml.variables.x1, wml.variables.y1 = nil, nil
+      check("every menu's show_if runs outside an event without errors", #errors == 0, table.concat(errors, "; "))
+      check("show_if picks the right-clicked hex from x1, y1", #wrong == 0, table.concat(wrong, "; "))
     end
 
     function S.doctrine_gain()
