@@ -24,8 +24,11 @@
 -- unaware guard who can see the spot is alerted. Creatures (beast movement,
 -- e.g. vornskrs) cannot be taken down.
 --
--- Display: "!" over alert guards, "?" over suspicious ones, and (toggle in
--- the menu) the hexes each unaware guard can see, for the intruder team only.
+-- Display: "!" over alert guards, "?" over suspicious ones, and the hexes
+-- each unaware guard can see (an amber tint and rim, for the intruder team
+-- only; on by default, toggled in the menu). A guard's hexes vanish as soon as
+-- it is alerted or dies: refresh runs after every move, on attack end and on
+-- die (lua/sw_systems.lua).
 --
 -- State: WML container sw_alert (scenario-stamped: sides, sight display);
 -- guard unit variables sw_alert_state (unaware|alert), sw_alert_sight,
@@ -220,7 +223,10 @@ function alert.refresh()
 	local sight = {}
 	for _i, g in ipairs(alert.guards()) do
 		local mark = nil
-		if not alert.is_unaware(g) then
+		if g.hitpoints <= 0 then
+			-- Dying (the die event runs while the unit is still on the map): no
+			-- sight hexes; the unit and its overlay go with it.
+		elseif not alert.is_unaware(g) then
 			mark = "misc/sw-alert-alert.png"
 		else
 			for _j, it in ipairs(intruders) do

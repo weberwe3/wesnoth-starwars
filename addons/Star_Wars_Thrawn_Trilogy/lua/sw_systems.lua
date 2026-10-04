@@ -141,6 +141,9 @@ on("die", "sw_sys_die", function()
 		-- collapses and its contacts disappear now.
 		if mover_matters(u) then force.refresh_fields() end
 		ew.refresh()
+		-- A fallen guard's sight hexes disappear at once, whatever killed it
+		-- (combat, takedown, Force power, air strike, hazard).
+		alert.refresh()
 	end
 end)
 
@@ -171,6 +174,8 @@ end)
 on("attack end", "sw_sys_attack_end", function()
 	force.refresh_fields()
 	ew.refresh()
+	-- A guard alerted by being attacked stops showing its sight hexes now.
+	alert.refresh()
 end)
 
 -- Right-click menu items (contextual: shown only where they apply, so normal

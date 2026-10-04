@@ -430,14 +430,15 @@ def alert_mark(symbol: str) -> Image.Image:
 
 
 def alert_sight() -> Image.Image:
-    """Faint amber hex rim: a hex an unaware guard can see."""
+    """Amber tint and rim: a hex an unaware guard can see. Strong enough to
+    read at a glance on any terrain (owner request), still see-through."""
     img = canvas()
     d = ImageDraw.Draw(img)
     pts = [(x * S, y * S) for x, y in hex_points(0.08)]
-    d.polygon(pts, fill=(255, 200, 80, 34))
+    d.polygon(pts, fill=(255, 190, 60, 62))
     for i in range(6):
         a, b = pts[i], pts[(i + 1) % 6]
-        d.line([a, b], fill=(255, 200, 80, 120), width=int(1.5 * S))
+        d.line([a, b], fill=(255, 190, 60, 190), width=int(2 * S))
     return done(img)
 
 

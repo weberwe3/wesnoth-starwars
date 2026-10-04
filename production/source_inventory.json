@@ -6529,7 +6529,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "952c09bc2a447594197bae65f6c204fc025ba00ebb826089f5ad248173be6fe5"
+      "sha256": "8dde78e5760fe5b4235e1da9839042ef2b7cda5a88f9649e4cd798c4953b5bf2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -6553,7 +6553,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua",
-      "sha256": "284254a88bfaae5bcc6f09ff10da1565ca5110104bf6eff25e01b22f010d51a1"
+      "sha256": "8cfc5cf228a3d5d6c0669cb00c299dc21c1b04b4985f703fcc688e433a5b7fbe"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_core.lua",
@@ -6589,7 +6589,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "6f91e7bb15b2f9f98c6b04cbbdec3cdef3c4603730053af5f4c14f89907d7277"
+      "sha256": "0215ad4a8f785a13dbc00522f49eba4e1fd689d857dd671f52af12b90248a9ee"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
