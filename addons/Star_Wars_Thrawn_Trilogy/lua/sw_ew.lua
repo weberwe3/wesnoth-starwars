@@ -384,11 +384,12 @@ function ew.refresh_now()
 		if not e.cloaked and e.u.status[ew.CONCEALED] then e.u.status[ew.CONCEALED] = false end
 	end
 
-	local reveals = {}
+	local reveals, reveal_source = {}, {}
 	for _i, r in ipairs(wml.array_access.get("sw_ew_reveals")) do
 		if wesnoth.current.turn < core.number(r.until_turn, 0) then
 			local k = r.team .. "|" .. r.id
 			reveals[k] = math.max(reveals[k] or 0, core.number(r.state, ew.FULL))
+			reveal_source[k] = r.source or reveal_source[k]
 		end
 	end
 
@@ -446,6 +447,7 @@ function ew.refresh_now()
 						rec.distance = terms.distance; rec.jam = terms.jam; rec.env = terms.env; rec.net = terms.net
 						rec.observer = terms.observer; rec.doctrine = team.bonus.identify
 					end
+					if not terms and reveal_source[key .. "|" .. u.id] then rec.source = reveal_source[key .. "|" .. u.id] end
 					rec.image = team.human and contact_image(state, class, visual, locked) or nil
 					table.insert(records, rec)
 				end
@@ -685,11 +687,13 @@ end
 
 -- Scenario intelligence: a team learns of a unit at least to the given state
 -- for a number of turns.
-function ew.reveal(u, team, state, turns)
+-- source: "intelligence" (default) or "force" (Force Sense), shown in the
+-- Sensor contact description.
+function ew.reveal(u, team, state, turns, source)
 	ew.ensure_scenario()
 	local reveals = wml.array_access.get("sw_ew_reveals")
 	table.insert(reveals, { team = team, id = u.id, state = state or ew.FULL,
-		until_turn = wesnoth.current.turn + (turns or 1) })
+		until_turn = wesnoth.current.turn + (turns or 1), source = source or "intelligence" })
 	wml.array_access.set("sw_ew_reveals", reveals)
 	core.log("ew", "team " .. team .. " given intelligence on " .. u.id .. " (state " .. (state or ew.FULL) .. ")")
 	ew.refresh()
@@ -886,6 +890,8 @@ function ew.describe(rec, s)
 		if state < ew.FULL then
 			table.insert(lines, tostring(_ "To identify: an active sweep, closer sensors, ECCM against jamming, or contact."))
 		end
+	elseif rec.source == "force" then
+		table.insert(lines, tostring(_ "Felt through the Force: a living presence, not yet seen."))
 	else
 		table.insert(lines, tostring(_ "From intelligence reports."))
 	end

@@ -12,7 +12,7 @@ local PHASE = "main"
 local STEPS = {
   "profiles", "thresholds", "jamming", "sweep", "transitions", "real_move", "decoys", "terrain_env",
   "reveal", "leakage", "menu_show_if", "doctrine_gain", "doctrine_control", "doctrine_effects", "check_doctrine_effects",
-  "integration", "counter_deployment", "carryover", "ai_turn", "check_ai_turn", "prepare_save",
+  "integration", "counter_deployment", "force_sense", "carryover", "ai_turn", "check_ai_turn", "prepare_save",
 }
 
 local function plugin(events, context, info)
@@ -694,6 +694,49 @@ local function plugin(events, context, info)
       check("counter-deployment names the most fire-resistant deployed type",
         text:find(tostring(wesnoth.unit_types[best.type].name), 1, true) ~= nil and
         text:find(best_r .. "% ", 1, true) ~= nil, text)
+    end
+
+    -- Force Sense under fog (regression: Leia's Sense on Kashyyyk showed
+    -- nothing useful). Side 1 plays with fog; fog is reset so only what
+    -- Leia can really see is clear.
+    function S.force_sense()
+      swt.clear()
+      local function refog()
+        local all = {}
+        for x = 1, 22 do for y = 1, 14 do table.insert(all, { x, y }) end end
+        wesnoth.sides.place_fog(1, all, true)
+        wesnoth.wml_actions.redraw{ side = 1 }
+        swt.flush()
+      end
+      local leia = swt.place("sw_hero_leia", 1, 9, 13, "t_leia")
+      -- Short sight, as in deep forest.
+      leia:add_modification("object", { T.effect{ apply_to = "vision", set = 1 } })
+      swt.place("sw_unit_im_noghri", 2, 12, 13, "t_noghri_forest")   -- 3 hexes, forest
+      swt.place("sw_unit_im_noghri", 2, 6, 13, "t_noghri_fog")       -- 3 hexes, grass, beyond sight
+      swt.place("sw_unit_im_noghri", 2, 3, 13, "t_noghri_far")       -- 6 hexes
+      swt.place("sw_unit_ob_cloaked_asteroid", 2, 10, 11, "t_ast")
+      refog()
+      swt.refresh()
+      check("before Sense: the stealthed Noghri in forest is hidden", not swt.seen("t_noghri_forest", 1))
+      check("before Sense: the Noghri beyond Leia's sight is under fog", not swt.seen("t_noghri_fog", 1) and
+        wesnoth.sides.is_fogged(1, { x = 6, y = 13 }))
+      force.use(u("t_leia"), "sense", u("t_leia"))
+      swt.flush()
+      check("Force Sense reveals the stealthed Noghri in forest", swt.seen("t_noghri_forest", 1))
+      check("Force Sense lifts fog from a sensed presence within 4 hexes", swt.seen("t_noghri_fog", 1) and
+        not wesnoth.sides.is_fogged(1, { x = 6, y = 13 }))
+      local rec = ew.record(REP, "t_noghri_far")
+      check("a presence 6 hexes away is marked as an unknown contact felt through the Force",
+        rec ~= nil and rec.state == ew.CONTACT and rec.source == "force" and ew.describe(rec):find("Force", 1, true) ~= nil,
+        rec and (rec.state .. " " .. tostring(rec.source)))
+      check("Force Sense does not reveal technological cloaking", not swt.seen("t_ast", 1) and ew.state_for(REP, "t_ast") == ew.NONE)
+      force.on_side_turn(1)
+      swt.refresh()
+      wesnoth.wml_actions.redraw{ side = 1 }
+      swt.flush()
+      check("at Leia's next turn the Noghri hides again", not swt.seen("t_noghri_forest", 1))
+      check("at Leia's next turn the lifted fog returns", wesnoth.sides.is_fogged(1, { x = 6, y = 13 }) and
+        #wml.array_access.get("sw_force_sense_lifted") == 0)
     end
 
     -- State from an earlier mission does not leak into the next one.

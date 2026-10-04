@@ -114,6 +114,7 @@ function force.ensure_scenario()
 	local id = core.scenario_id()
 	if wml.variables.sw_force_null_scenario ~= id then
 		wml.array_access.set("sw_force_null_sources", {})
+		wml.array_access.set("sw_force_sense_lifted", {})
 		wml.variables.sw_force_null_scenario = id
 		force.null_set = nil
 	end
@@ -311,28 +312,77 @@ force.register_power("speed", {
 })
 
 force.register_power("sense", {
-	name = _ "Force Sense", cost = 1, range = 0, target = "self", per_turn = true, radius = 4,
-	description = _ "Feel every living being within 4 hexes. Hidden creatures there (such as Noghri) lose their stealth until your next turn. It cannot see through technological cloaking.",
+	name = _ "Force Sense", cost = 1, range = 0, target = "self", per_turn = true, radius = 4, feel_radius = 8,
+	description = _ "Reveal every living enemy within 4 hexes until your next turn, even in fog or deep forest; hiding creatures such as Noghri lose their stealth. Living presences up to 8 hexes away are marked on the map as unknown contacts. Droids, technological cloaking and anything inside a ysalamiri field cannot be sensed.",
 	apply = function(caster, _target, power)
-		local found = 0
+		local team = core.team_key(caster.side)
+		local team_sides = {}
+		for _i, s in ipairs(core.active_sides()) do
+			if core.team_key(s) == team then table.insert(team_sides, s) end
+		end
+		local ew = sw_systems and sw_systems.ew
+		local revealed, felt, lifted = 0, 0, {}
 		for _i, t in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{
-				T.filter_location{ x = caster.x, y = caster.y, radius = power.radius },
+				T.filter_location{ x = caster.x, y = caster.y, radius = power.feel_radius },
 				T.filter_side{ T.enemy_of{ side = caster.side } } })) do
-			-- Only living stealth (ability ids listed in force.SENSE_REVEALS)
-			-- is defeated; cloaking fields are not living presences.
-			for ability_id, _v in pairs(force.SENSE_REVEALS) do
-				if t:matches{ ability = ability_id } then
-					t:add_modification("object", { id = "sw_force_sensed",
-						T.effect{ apply_to = "remove_ability", T.abilities{ T.hides{ id = ability_id } } } })
-					t.variables.sw_sensed_until = wesnoth.current.turn + 1
-					t.variables.sw_sensed_side = caster.side
+			if force.is_living(t) and not force.is_suppressed(t) and t.hitpoints > 0 then
+				if wesnoth.map.distance_between(caster.x, caster.y, t.x, t.y) <= power.radius then
+					-- Close presences are revealed: living stealth (abilities
+					-- in force.SENSE_REVEALS) is stripped until the sensing
+					-- side's next turn, and fog is lifted from their hexes.
+					for _j, ability_id in ipairs(core.sorted_keys(force.SENSE_REVEALS)) do
+						if t:matches{ ability = ability_id } then
+							t:add_modification("object", { id = "sw_force_sensed",
+								T.effect{ apply_to = "remove_ability", T.abilities{ T.hides{ id = ability_id } } } })
+							t.variables.sw_sensed_until = wesnoth.current.turn + 1
+							t.variables.sw_sensed_side = caster.side
+						end
+					end
+					table.insert(lifted, { x = t.x, y = t.y })
+					core.float_for_team(team, t.x, t.y, _ "presence", "#a8c8ff")
+					revealed = revealed + 1
+				elseif ew then
+					-- Farther presences are felt, not seen: an unknown contact.
+					ew.reveal(t, team, ew.CONTACT, 1, "force")
+					felt = felt + 1
 				end
 			end
-			if not force.is_suppressed(t) then found = found + 1 end
 		end
-		core.float(caster.x, caster.y, tostring(found) .. " " .. tostring(_ "presences"), "#a8c8ff")
+		if #lifted > 0 then
+			wesnoth.sides.remove_fog(team_sides, lifted)
+			local all = wml.array_access.get("sw_force_sense_lifted")
+			for _i, loc in ipairs(lifted) do table.insert(all, { side = caster.side, x = loc.x, y = loc.y }) end
+			wml.array_access.set("sw_force_sense_lifted", all)
+			wesnoth.wml_actions.redraw{}
+			if ew then ew.refresh() end
+		end
+		local text = revealed .. " " .. tostring(_ "revealed")
+		if felt > 0 then text = text .. ", " .. felt .. " " .. tostring(_ "felt further out") end
+		core.float_for_team(team, caster.x, caster.y, text, "#a8c8ff")
+		core.log("force", caster.id .. " senses: " .. revealed .. " revealed, " .. felt .. " felt")
 	end,
 })
+
+-- Living presences: everything but droids and machines (race mechanical).
+function force.is_living(u)
+	return u.race ~= "mechanical"
+end
+
+-- At the sensing side's next turn the lifted fog returns to normal.
+function force.restore_sensed_fog(side)
+	local keep, locs = {}, {}
+	for _i, e in ipairs(wml.array_access.get("sw_force_sense_lifted")) do
+		if e.side == side then table.insert(locs, { x = e.x, y = e.y }) else table.insert(keep, e) end
+	end
+	if #locs == 0 then return end
+	local team = core.team_key(side)
+	local team_sides = {}
+	for _i, s in ipairs(core.active_sides()) do
+		if core.team_key(s) == team then table.insert(team_sides, s) end
+	end
+	wesnoth.sides.place_fog(team_sides, locs)
+	wml.array_access.set("sw_force_sense_lifted", keep)
+end
 -- Living stealth abilities that Force Sense defeats (extensible by scenarios).
 force.SENSE_REVEALS = { sw_ability_noghri_stealth = true }
 
@@ -411,6 +461,7 @@ function force.on_side_turn(side)
 		end
 	end
 	-- Force Sense reveals last until the sensing side's next turn.
+	force.restore_sensed_fog(side)
 	for _i, u in ipairs(wesnoth.units.find_on_map{ T.filter_wml{ T.variables{ sw_sensed_side = side } } }) do
 		u:remove_modifications({ id = "sw_force_sensed" }, "object")
 		u.variables.sw_sensed_until = nil

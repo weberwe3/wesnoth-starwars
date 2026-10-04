@@ -840,3 +840,20 @@ enemy-held hexes block it; the engine then uses its emergency path.
 the soak ignores the documented move_unit_fake route warning.
 **Prevention:** Keep cosmetic effects switchable from game state, and run
 strict `-u` tests with them off.
+
+### 2026-10-03 — Force Sense "did nothing" on Kashyyyk; tests had no real fog
+
+**Symptom:** In HTE 4 the owner used Leia's Force Sense and saw no hidden
+enemies revealed. The engine tests had passed.
+**Confirmed cause:** Sense only stripped Noghri stealth within 4 hexes. Under
+fog in deep forest (short vision) a de-stealthed Noghri stayed invisible, and
+farther presences gave no sign at all. The tests checked that the ability was
+removed, not that the player could see the unit, and fog cleared earlier in a
+test turn stays cleared, so fog was never really in play.
+**Resolution:** Sense lifts fog from sensed presences within 4 hexes until the
+caster's next turn (fog override, restored at expiry), and marks living
+presences up to 8 hexes away as Force-felt sensor contacts. The test resets
+fog with `wesnoth.sides.place_fog(side, all, true)` + `[redraw] side=` and
+checks what the side can actually see.
+**Prevention:** Test detection by what the player can see (`filter_vision`,
+`is_fogged`), from a freshly refogged state, not by internal state.
