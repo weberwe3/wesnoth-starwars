@@ -101,6 +101,7 @@ def m03() -> HexMap:
 # 4. The Senator's Men -- city, 26x18 ----------------------------------------
 def m04() -> HexMap:
     m = HexMap(26, 18, "Rr", seed=2404)
+    m.interior = "colony"  # location interior (hte_mapkit.INTERIORS)
     for x1, y1, x2, y2 in ((4, 3, 7, 5), (11, 2, 13, 4), (18, 3, 21, 5), (3, 9, 5, 11), (9, 8, 12, 10),
                            (16, 8, 18, 10), (22, 9, 24, 11), (6, 14, 9, 16), (13, 13, 15, 16), (19, 14, 22, 16)):
         m.rect(x1, y1, x2, y2, "Xos")

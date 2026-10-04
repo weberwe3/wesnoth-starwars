@@ -6413,7 +6413,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg",
-      "sha256": "342d58e4ec7a2b3fa9cb5b48fc8ec830b9013b1f16b8936bff4ca6c2a574b3b7"
+      "sha256": "d0a3c5d17054f66c8f57cc44797b4e1d74689dc4e77996636c5e48114f09373a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg",
@@ -6529,7 +6529,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
-      "sha256": "d81cd8494dbd0f3a13367cbae3cdcaa7bf0defff70ca18c1e6a4ba7d87e5f548"
+      "sha256": "e730a5a0cea3237ff0bad592312a21d991e36a35a2221bb51732d63851b11b01"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg",
@@ -6548,8 +6548,12 @@
       "sha256": "f10ae68cb41cc64a898eefc4dd8879f0edf57fa7c39262f0f061104a9fa93a11"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua",
+      "sha256": "284254a88bfaae5bcc6f09ff10da1565ca5110104bf6eff25e01b22f010d51a1"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_core.lua",
-      "sha256": "e2992b8995b1a604c271ce5a20cd997c90a24fe88b2ff01a004a0c26cd6751d2"
+      "sha256": "a00b3d25af8e996b4c28399025600d283212e68e99d226496bc176c424cf8e0b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_doctrine.lua",
@@ -6577,7 +6581,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "b2f50816e1a2c226aa04e7545c0e5d3ce163c277ed2224c9448644e4394a8d33"
+      "sha256": "a429b1d3dca04e6aabfed88f0db3c95bc813e22f0de79ccb34a94c9c7af8584c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
@@ -9853,7 +9857,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_04_the_senators_men.map",
-      "sha256": "72f5913eeec05e7c5b1a3ac5b20b7f3bd27392ac980e2f2517ee314ed67cd25e"
+      "sha256": "35b83b6c17d69d545232dda5d509edbde83d12e1043533f17684c3280fdb53d3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_05_peregrines_nest.map",
@@ -9885,7 +9889,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_02_ambush_at_bpfassh.map",
-      "sha256": "e2203e9dd7c29f52ea1278de67bcb9425fdc1d1533c7d75d6c597e08bbaa357e"
+      "sha256": "5daee896afc5b11e91f3d0d6d932d502dd64e42c860077c55d81ce7763bdb9bb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_03_adrift.map",
@@ -9897,11 +9901,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_05_prisoner_of_myrkr.map",
-      "sha256": "00cfa780ef578bb396958a5131c5f3b9acb960177b1289348fcc8bf2f73855c1"
+      "sha256": "e9516ad984da8fc27e97ce61fb0c6262fb2399a580e8a21afe9a223120c817ef"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_06_raid_on_karrdes_base.map",
-      "sha256": "0bf3622547ad0c41e25e5a14a7774484f06d72f85bbd2e5fd1253e335d778ed8"
+      "sha256": "22fbc812f43ee4580077f072e2ac558d5fea8471d3b14fce5244128185af15ff"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_07_the_forest_crossing.map",
@@ -9925,11 +9929,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_02_the_smugglers_council.map",
-      "sha256": "e821a10bfd40625413cb7ad8fd8f77024e1d366d773dd3a906022d73020a834c"
+      "sha256": "75f44cfea500f4a681ace3d2b79875ec994fe444bbb4f5562297b5d94234cae0"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_03_the_palace_infiltrators.map",
-      "sha256": "396776b4e2922b77c5166eb6780715936ee5dc1d0d904cbc8292b09a6b003884"
+      "sha256": "9ed4d2778823bea55ef47dad2bd6c1cadb90b9f4a32c3207101ce62d73f823d4"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_04_landfall_on_wayland.map",
@@ -9941,15 +9945,15 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_06_the_gates_of_tantiss.map",
-      "sha256": "44d4e3b19d0163c71a05a6b76a3f817966edf6e44421c3d40eca0d55ae3ee515"
+      "sha256": "d28559cbc70f4b698d43060379ea90c9820c5fec30861617370d98f7ea3ffde3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_07_the_cloning_vats.map",
-      "sha256": "8e6091e9275dc870386fc77b624dc2dc9476848c77c725824e395c2b1f5ad633"
+      "sha256": "eee16250daac38514ccb0d65e7cab64b5b10da085c6fbdc51df27df4d8dc3961"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_08_the_throne_room.map",
-      "sha256": "54ff40a86297a3f98a8185ad57527af685c7b3f1368cceb2f91d0e15439701df"
+      "sha256": "be8b7003ebec4e6bf4fdb21bd01c100607ecc669c3d7876d6cdf554bdfd8e189"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_09_bilbringi.map",

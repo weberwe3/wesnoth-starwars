@@ -11,9 +11,10 @@ local PHASE = "main"
 local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ai_ranged", "check_ai_ranged", "prepare_save",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ai_ranged", "check_ai_ranged",
+  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "prepare_save",
 }
-local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true }
+local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
 
 local function plugin(events, context, info)
   local function pump()
@@ -59,12 +60,23 @@ local function plugin(events, context, info)
       for _i, u in ipairs(wesnoth.units.find_on_map{}) do u:erase() end
       for _i, side in ipairs{ 1, 2, 3 } do wml.variables["sw_air_s" .. side] = nil end
       wml.array_access.set("sw_air_inbound", {})
+      for _i, loc in ipairs(wml.array_access.get("sw_alert_drawn")) do wesnoth.interface.remove_item(loc.x, loc.y, "sw_alert_sight") end
+      wml.array_access.set("sw_alert_drawn", {})
+      wml.variables.sw_alert = nil
       for _i, side in ipairs{ 1, 2, 3 } do wml.variables["sw_doctrine_s" .. side] = nil end
       wml.variables.sw_doctrine_sides = nil
     end
     function swt.place(type, side, x, y, id)
       wesnoth.wml_actions.unit{ type = type, side = side, x = x, y = y, id = id, random_traits = false, generate_name = false }
       return wesnoth.units.get(id)
+    end
+    function swt.move(px, py) wesnoth.wml_actions.do_command{ T.move{ x = px, y = py } } end
+    function swt.move_to(id, x, y)
+      local unit = wesnoth.units.get(id)
+      local path = wesnoth.paths.find_path(unit, x, y)
+      local xs, ys = {}, {}
+      for _i, loc in ipairs(path) do table.insert(xs, loc[1] or loc.x); table.insert(ys, loc[2] or loc.y) end
+      swt.move(table.concat(xs, ","), table.concat(ys, ","))
     end
     function swt.level_up(id)
       local u = wesnoth.units.get(id)
@@ -448,6 +460,114 @@ local function plugin(events, context, info)
       check("the AI attacked", shot ~= nil)
       check("the AI fired from 2 hexes, out of the pistol's reach", shot and shot.d == 2,
         shot and (shot.d .. " " .. tostring(shot.w)))
+    end
+
+    -- Guard alertness and stealth (lua/sw_alert.lua).
+    function S.alert_rules()
+      swt.clear()
+      local alert = sw_systems.alert
+      local g1 = swt.place("sw_unit_sm_smuggler", 2, 10, 4, "t_g1")
+      local g2 = swt.place("sw_unit_sm_smuggler", 2, 13, 5, "t_g2")
+      local g3 = swt.place("sw_unit_sm_smuggler", 2, 20, 12, "t_g3")
+      local spy = swt.place("sw_unit_nr_commando", 1, 3, 4, "t_spy")
+      wesnoth.wml_actions.sw_alert{ action = "enable", guard_side = 2, intruder_side = 1 }
+      check("guards start unaware", alert.is_unaware(u("t_g1")) and alert.is_unaware(u("t_g3")))
+      local sight = 0
+      for _i, loc in ipairs(wml.array_access.get("sw_alert_drawn")) do sight = sight + 1 end
+      local item = wesnoth.interface.get_items(11, 4)[1]
+      check("guard sight shown to the intruder team only", sight > 0 and item and item.team_name == core.team_key(1),
+        sight .. " " .. tostring(item and item.team_name))
+      spy:to_map(6, 4); alert.check()
+      check("4 hexes away in the open: not spotted", alert.is_unaware(u("t_g1")))
+      check("one hex beyond sight: the guard is suspicious (?)",
+        table.concat(u("t_g1").overlays, ","):find("sw%-alert%-suspicious") ~= nil)
+      -- Real move order into sight.
+      u("t_spy").moves = 5
+      swt.move_to("t_spy", 7, 4)
+      check("3 hexes away in the open: spotted on the move", not alert.is_unaware(u("t_g1")))
+      check("the shout alerts a guard within 4 hexes", not alert.is_unaware(u("t_g2")))
+      check("a distant guard stays unaware", alert.is_unaware(u("t_g3")))
+      check("alert guards show !", table.concat(u("t_g1").overlays, ","):find("sw%-alert%-alert") ~= nil)
+      check("an alert guard is no longer a guardian", u("t_g1").status.guardian ~= true)
+      -- Cover: the forest block at 14-17,11-13; g3 at 20,12.
+      u("t_spy"):to_map(17, 12); alert.check()
+      check("3 hexes away in cover: not spotted", alert.is_unaware(u("t_g3")))
+      u("t_spy").variables.sw_alert_fought_turn = wesnoth.current.turn
+      alert.check()
+      check("noise from fighting extends sight by 1", not alert.is_unaware(u("t_g3")))
+      -- Line of sight: a wall between.
+      swt.clear()
+      -- Same column, so the line of sight runs straight through 10,7.
+      local g = swt.place("sw_unit_sm_smuggler", 2, 10, 8, "t_gw")
+      swt.place("sw_unit_nr_commando", 1, 10, 6, "t_spy")
+      wesnoth.wml_actions.terrain{ x = 10, y = 7, terrain = "Xu" }
+      wesnoth.wml_actions.sw_alert{ action = "enable", guard_side = 2, intruder_side = 1 }
+      alert.check()
+      check("a wall between blocks sight", alert.is_unaware(u("t_gw")))
+      wesnoth.wml_actions.terrain{ x = 10, y = 7, terrain = "Gg" }
+      alert.check()
+      check("with the wall gone the guard sees", not alert.is_unaware(u("t_gw")))
+      -- Patrol and unaware guards holding still.
+      swt.clear()
+      local pg = swt.place("sw_unit_sm_smuggler", 2, 15, 3, "t_patrol")
+      wesnoth.wml_actions.sw_alert{ action = "enable", guard_side = 2, intruder_side = 1 }
+      wesnoth.wml_actions.sw_alert{ action = "guard", T.filter{ id = "t_patrol" }, patrol = "17.3,15.3" }
+      alert.on_side_turn(2)
+      pg = u("t_patrol")
+      check("a patrolling guard walks to its next waypoint", pg.x == 17 and pg.y == 3, pg.x .. "," .. pg.y)
+      check("unaware guards neither move further nor attack", pg.moves == 0 and pg.attacks_left == 0)
+      alert.on_side_turn(2)
+      check("and walks back along its route", u("t_patrol").x == 15)
+      -- Alarm and reinforcements.
+      wesnoth.wml_actions.sw_alert{ action = "alarm" }
+      check("the alarm alerts every guard", not alert.is_unaware(u("t_patrol")))
+      swt.place("sw_unit_sm_smuggler", 2, 20, 3, "t_late")
+      check("reinforcements after the alarm arrive alert", not alert.is_unaware(u("t_late")))
+    end
+
+    function S.alert_takedown()
+      swt.clear()
+      local alert = sw_systems.alert
+      swt.place("sw_unit_sm_smuggler", 2, 10, 8, "t_victim")
+      swt.place("sw_unit_sm_smuggler", 2, 13, 8, "t_witness")     -- 3 hexes, open: sees the spot
+      swt.place("sw_unit_sm_smuggler", 2, 20, 2, "t_far")
+      swt.place("sw_unit_wl_vornskr", 2, 9, 9, "t_beast")
+      local spy = swt.place("sw_unit_nr_commando", 1, 9, 8, "t_spy")
+      wesnoth.wml_actions.sw_alert{ action = "enable", guard_side = 2, intruder_side = 1, show_sight = false }
+      -- (The spy is adjacent, so the victim would spot it on the next check;
+      -- the takedown happens first, as when a player sneaks up and acts.)
+      wml.variables.x1, wml.variables.y1 = 9, 8
+      local ok, vis = pcall(alert.takedown_menu_visible)
+      wml.variables.x1, wml.variables.y1 = nil, nil
+      check("Silent takedown is offered next to an unaware guard", ok and vis == true, tostring(vis))
+      local ids = {}
+      for _i, g in ipairs(alert.takedown_targets(spy)) do ids[g.id] = true end
+      check("creatures cannot be taken down", ids.t_victim and not ids.t_beast)
+      alert.takedown(u("t_spy"), u("t_victim"))
+      check("the guard is knocked out", u("t_victim") == nil)
+      check("a takedown uses the attack", u("t_spy").attacks_left == 0)
+      check("a guard who sees the spot raises the alarm", not alert.is_unaware(u("t_witness")))
+      check("a guard who cannot see it stays unaware", alert.is_unaware(u("t_far")))
+      local g = swt.place("sw_unit_sm_smuggler", 2, 3, 12, "t_hit")
+      g.variables.sw_alert_state = "unaware"
+      wesnoth.game_events.fire("attack", { 4, 12 }, { 3, 12 }, { T.first{ name = "x", type = "fire", range = "ranged" } })
+      check("an unaware guard that is attacked becomes alert", not alert.is_unaware(u("t_hit")))
+    end
+
+    -- AI: unaware guards hold their posts during the AI turn.
+    function S.alert_ai()
+      swt.clear()
+      swt.place("sw_unit_sm_smuggler", 2, 20, 12, "t_post")
+      swt.place("sw_unit_nr_commando", 1, 16, 12, "t_spy")     -- 4 hexes, in the forest: unseen
+      wesnoth.wml_actions.sw_alert{ action = "enable", guard_side = 2, intruder_side = 1 }
+      swt.mem.spy_hp = u("t_spy").hitpoints
+      wesnoth.sides[2].controller = "ai"
+    end
+    function S.check_alert_ai()
+      wesnoth.sides[2].controller = "human"
+      local post = u("t_post")
+      check("an unaware AI guard holds its post", post and post.x == 20 and post.y == 12, post and (post.x .. "," .. post.y))
+      check("and does not attack", u("t_spy").hitpoints == swt.mem.spy_hp)
     end
 
     function S.prepare_save()
