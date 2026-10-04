@@ -48,6 +48,7 @@ def castle_ring(m: HexMap, keep: tuple[int, int], keep_code: str, castle_code: s
 # 1. The Grand Admiral's Harvest -- Myrkr forest, 26x18 -----------------------
 def m01() -> HexMap:
     m = HexMap(26, 18, FOREST, seed=101)
+    m.planet = "myrkr"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.30)
     m.scatter(GREAT, 0.05)
     m.scatter("Hh^Fds", 0.05)
@@ -140,6 +141,7 @@ def m03() -> HexMap:
 # 4. Shadows of Kashyyyk -- wroshyr forest, 26x20 -----------------------------
 def m04() -> HexMap:
     m = HexMap(26, 20, GREAT, seed=404)
+    m.planet = "kashyyyk"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.35)
     m.scatter("Ss^Ftr", 0.06)
     # Village platforms and walkways high in the trees.
@@ -192,6 +194,7 @@ def compound(m: HexMap, ox: int, oy: int) -> dict[str, tuple[int, int]]:
 
 def m05() -> HexMap:
     m = HexMap(24, 18, FOREST, seed=505)
+    m.planet = "myrkr"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.3)
     m.scatter(GREAT, 0.05)
     k = compound(m, 4, 3)
@@ -204,6 +207,7 @@ def m05() -> HexMap:
 # 6. Raid on Karrde's Base -- compound and forest, 28x20 ------------------------
 def m06() -> HexMap:
     m = HexMap(28, 20, FOREST, seed=606)
+    m.planet = "myrkr"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.25)
     m.scatter(GREAT, 0.04)
     k = compound(m, 9, 4)
@@ -230,6 +234,7 @@ def m06() -> HexMap:
 # 7. The Forest Crossing -- Myrkr forest, 30x20 ---------------------------------
 def m07() -> HexMap:
     m = HexMap(30, 20, FOREST, seed=707)
+    m.planet = "myrkr"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.35)
     m.scatter(GREAT, 0.08)
     m.scatter("Hh^Fds", 0.06)
