@@ -12,7 +12,7 @@ local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "flanking", "ai_ranged", "check_ai_ranged",
-  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "attack_range", "prepare_save",
+  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
 
@@ -638,6 +638,42 @@ local function plugin(events, context, info)
       local post = u("t_post")
       check("an unaware AI guard holds its post", post and post.x == 20 and post.y == 12, post and (post.x .. "," .. post.y))
       check("and does not attack", u("t_spy").hitpoints == swt.mem.spy_hp)
+    end
+
+    -- Guard sight hexes vanish the moment a guard dies (any cause) or is
+    -- alerted, without waiting for another move.
+    local function drawn_near(x, y)
+      local n = 0
+      for _i, loc in ipairs(wml.array_access.get("sw_alert_drawn")) do
+        if wesnoth.map.distance_between(loc.x, loc.y, x, y) <= 1 then n = n + 1 end
+      end
+      return n
+    end
+    function S.alert_sight()
+      swt.clear()
+      local alert = sw_systems.alert
+      swt.place("sw_unit_sm_smuggler", 2, 10, 4, "t_sg_a")
+      swt.place("sw_unit_sm_smuggler", 2, 20, 12, "t_sg_b")
+      wesnoth.wml_actions.sw_alert{ action = "enable", guard_side = 2, intruder_side = 1 }
+      check("sight hexes are drawn around each unaware guard", drawn_near(10, 4) > 0 and drawn_near(20, 12) > 0,
+        drawn_near(10, 4) .. " " .. drawn_near(20, 12))
+      -- Not combat: a Force power, air strike or hazard kill.
+      wesnoth.wml_actions.harm_unit{ T.filter{ id = "t_sg_b" }, amount = 999, kill = true, fire_event = true,
+        animate = false }
+      check("a guard killed outside combat: its sight hexes vanish at once", drawn_near(20, 12) == 0
+        and #wesnoth.interface.get_items(21, 12) == 0, drawn_near(20, 12))
+      check("the other guard's sight hexes stay", drawn_near(10, 4) > 0)
+      -- An intruder next to the guard attacks it (no move order, so only the
+      -- attack itself can alert it); checked in the next step.
+      swt.place("sw_unit_nr_commando", 1, 9, 4, "t_sg_spy")
+      check("the guard is still unaware before the attack", alert.is_unaware(wesnoth.units.get("t_sg_a")))
+      wesnoth.wml_actions.do_command{ T.attack{ weapon = 0, T.source{ x = 9, y = 4 }, T.destination{ x = 10, y = 4 } } }
+    end
+    function S.check_alert_sight()
+      local g = wesnoth.units.get("t_sg_a")
+      check("the attacked guard is alert", g == nil or not sw_systems.alert.is_unaware(g))
+      check("an alerted guard's sight hexes vanish when the fight ends", drawn_near(10, 4) == 0
+        and #wml.array_access.get("sw_alert_drawn") == 0, drawn_near(10, 4))
     end
 
     -- Attack range display (lua/sw_range.lua).
