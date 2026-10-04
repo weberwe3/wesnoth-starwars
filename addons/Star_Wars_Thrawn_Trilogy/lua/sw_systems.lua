@@ -43,10 +43,11 @@ local doctrine = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_doctr
 local air = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_air.lua")
 local rank = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_rank.lua")
 local alert = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua")
+local range = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_range.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range }
 
 -- Cross-system wiring (hooks are plain Lua tables, rebuilt on every load).
 ew.hooks.bonus = { doctrine.ew_bonus }
@@ -101,6 +102,7 @@ on("moveto", "sw_sys_moveto", function()
 	ew.refresh()
 	doctrine.on_moveto()
 	alert.check()
+	range.on_moveto()
 end)
 
 on("attack", "sw_sys_attack", function()
@@ -111,6 +113,7 @@ end)
 
 on("turn refresh", "sw_sys_turn_refresh", function()
 	local side = wesnoth.current.side
+	range.on_turn()
 	overwatch.on_side_turn(side)
 	force.refresh_fields()
 	force.on_side_turn(side)
@@ -226,6 +229,20 @@ wesnoth.interface.set_menu_item("sw_alert_sight_menu", {
 	image = "misc/sw-alert-suspicious.png~SCALE(16,16)",
 	T.show_if{ T.lua{ code = "return sw_systems.alert.sight_menu_visible()" } },
 	T.command{ T.lua{ code = "sw_systems.alert.sight_menu_command()" } },
+})
+
+wesnoth.interface.set_menu_item("sw_range_show_menu", {
+	description = _ "Show attack range",
+	image = "misc/sw-menu-range.png",
+	T.show_if{ T.lua{ code = "return sw_systems.range.show_menu_visible()" } },
+	T.command{ T.lua{ code = "sw_systems.range.show_menu_command()" } },
+})
+
+wesnoth.interface.set_menu_item("sw_range_hide_menu", {
+	description = _ "Hide attack range",
+	image = "misc/sw-menu-range.png",
+	T.show_if{ T.lua{ code = "return sw_systems.range.hide_menu_visible()" } },
+	T.command{ T.lua{ code = "sw_systems.range.hide_menu_command()" } },
 })
 
 wesnoth.interface.set_menu_item("sw_doctrine_menu", {

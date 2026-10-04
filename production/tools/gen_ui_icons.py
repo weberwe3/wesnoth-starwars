@@ -450,6 +450,58 @@ def menu_takedown() -> Image.Image:
     return img.resize((16, 16), Image.LANCZOS)
 
 
+# --- Force-null zones and attack ranges ---------------------------------------
+
+HEX_EDGES = {"n": (0, 1), "ne": (1, 2), "se": (2, 3), "s": (3, 4), "sw": (4, 5), "nw": (5, 0)}
+
+
+def null_fill() -> Image.Image:
+    """A very faint violet wash: this hex is inside a ysalamiri null field."""
+    img = canvas()
+    d = ImageDraw.Draw(img)
+    d.polygon([(x * S, y * S) for x, y in hex_points(0.0)], fill=(150, 90, 210, 26))
+    return done(img)
+
+
+def null_edge(direction: str) -> Image.Image:
+    """A thin violet line along one hex edge: the outer border of a null field."""
+    img = canvas()
+    d = ImageDraw.Draw(img)
+    pts = [(x * S, y * S) for x, y in hex_points(0.04)]
+    a, b = HEX_EDGES[direction]
+    d.line([pts[a], pts[b]], fill=(10, 8, 18, 110), width=int(3.2 * S))
+    d.line([pts[a], pts[b]], fill=(190, 130, 255, 200), width=int(1.6 * S))
+    return done(img)
+
+
+def range_mark(direct: bool) -> Image.Image:
+    """Attack range: solid rim = can hit from where it stands; dotted = after moving."""
+    img = canvas()
+    d = ImageDraw.Draw(img)
+    pts = [(x * S, y * S) for x, y in hex_points(0.12)]
+    color = (255, 110, 60) if direct else (255, 170, 80)
+    if direct:
+        d.polygon(pts, fill=color + (40,))
+        for i in range(6):
+            d.line([pts[i], pts[(i + 1) % 6]], fill=color + (190,), width=int(1.6 * S))
+    else:
+        for i in range(6):
+            a, b = pts[i], pts[(i + 1) % 6]
+            for t0 in (0.1, 0.45, 0.8):
+                p0 = (a[0] + (b[0] - a[0]) * t0, a[1] + (b[1] - a[1]) * t0)
+                p1 = (a[0] + (b[0] - a[0]) * (t0 + 0.12), a[1] + (b[1] - a[1]) * (t0 + 0.12))
+                d.line([p0, p1], fill=color + (150,), width=int(1.4 * S))
+    return done(img)
+
+
+def menu_range() -> Image.Image:
+    img = canvas(64)
+    d = ImageDraw.Draw(img)
+    for r, a in ((28, 255), (18, 255), (8, 255)):
+        d.ellipse((32 - r, 32 - r, 32 + r, 32 + r), outline=(255, 120, 60, a), width=5)
+    return img.resize((16, 16), Image.LANCZOS)
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     for n in range(11):
@@ -477,6 +529,12 @@ def main() -> int:
         for n in (1, 2, 3):
             rank_plate(style, n).save(OUT / f"sw-rank-{style}-{n}.png", optimize=True)
     air_inbound().save(OUT / "sw-air-inbound.png", optimize=True)
+    null_fill().save(OUT / "sw-null-fill.png", optimize=True)
+    for direction in HEX_EDGES:
+        null_edge(direction).save(OUT / f"sw-null-edge-{direction}.png", optimize=True)
+    range_mark(True).save(OUT / "sw-range-direct.png", optimize=True)
+    range_mark(False).save(OUT / "sw-range-move.png", optimize=True)
+    menu_range().save(OUT / "sw-menu-range.png", optimize=True)
     alert_mark("!").save(OUT / "sw-alert-alert.png", optimize=True)
     alert_mark("?").save(OUT / "sw-alert-suspicious.png", optimize=True)
     alert_sight().save(OUT / "sw-alert-sight.png", optimize=True)

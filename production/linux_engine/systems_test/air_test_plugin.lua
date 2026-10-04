@@ -12,7 +12,7 @@ local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ai_ranged", "check_ai_ranged",
-  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "prepare_save",
+  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
 
@@ -568,6 +568,44 @@ local function plugin(events, context, info)
       local post = u("t_post")
       check("an unaware AI guard holds its post", post and post.x == 20 and post.y == 12, post and (post.x .. "," .. post.y))
       check("and does not attack", u("t_spy").hitpoints == swt.mem.spy_hp)
+    end
+
+    -- Attack range display (lua/sw_range.lua).
+    function S.attack_range()
+      swt.clear()
+      local range = sw_systems.range
+      local tr = swt.place("sw_unit_nr_trooper", 1, 8, 8, "t_tr")
+      local mil = swt.place("sw_unit_nr_militia", 1, 3, 3, "t_mil")
+      local d = range.distances(tr)
+      check("a rifleman can attack at 1 and 2 hexes", d[1] and d[2] and not d[3])
+      check("a pistol-armed militiaman only at 1 hex", range.distances(mil)[1] and not range.distances(mil)[2])
+      local direct, moving = range.zones(tr, false)
+      local nd, nm = 0, 0
+      for _k in pairs(direct) do nd = nd + 1 end
+      for _k in pairs(moving) do nm = nm + 1 end
+      check("solid markers cover the 18 hexes within 2", nd == 18, nd)
+      check("dotted markers cover hexes reachable by moving first", nm > 0, nm)
+      wml.variables.x1, wml.variables.y1 = 8, 8
+      local okv, vis = pcall(range.show_menu_visible)
+      wml.variables.x1, wml.variables.y1 = nil, nil
+      check("Show attack range is offered on a visible unit", okv and vis == true, tostring(vis))
+      range.show(tr, 1)
+      local mine = 0
+      for _i, it in ipairs(wesnoth.interface.get_items(9, 8)) do
+        if it.name == "sw_range_direct" and it.team_name == core.team_key(1) then mine = mine + 1 end
+      end
+      check("the range is drawn for the viewer's team only", mine == 1, mine)
+      local st = swt.place("sw_unit_im_stormtrooper", 2, 15, 8, "t_st")
+      range.show(st, 1)
+      local only_st = true
+      for _i, e in ipairs(wml.array_access.get("sw_range_shown")) do if e.unit ~= "t_st" then only_st = false end end
+      check("showing another unit replaces the display", range.shown_unit(core.team_key(1)) == "t_st" and only_st)
+      u("t_st"):to_map(16, 8)
+      wesnoth.game_events.fire("moveto", 16, 8)
+      check("the display clears when that unit moves", range.shown_unit(core.team_key(1)) == nil)
+      range.show(tr, 1)
+      range.hide_menu_command()
+      check("Hide attack range clears it", #wml.array_access.get("sw_range_shown") == 0)
     end
 
     function S.prepare_save()

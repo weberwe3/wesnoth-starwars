@@ -12,7 +12,7 @@ local PHASE = "main"
 
 local STEPS = {
   "fp", "targets", "slam_wall", "check_slam_wall", "slam_occupied", "check_slam_occupied",
-  "push_pull", "world_field", "menu_text", "menu_dialog", "check_menu_dialog", "slam_edge", "check_slam_edge", "fields", "ow_fire", "check_ow_fire",
+  "push_pull", "world_field", "null_outline", "menu_text", "menu_dialog", "check_menu_dialog", "slam_edge", "check_slam_edge", "fields", "ow_fire", "check_ow_fire",
   "multi_fire", "check_multi", "deflect", "check_deflect", "deflect_field", "check_deflect_field",
   "hidden_and_trick", "arcs_and_hooks", "ai_turn", "check_ai_turn", "recursion", "check_recursion", "sense_choke", "check_choke", "prepare_save",
 }
@@ -192,13 +192,45 @@ local function plugin(events, context, info)
       check("in a world null field no power works anywhere", not ok and tostring(why):find("ysalamiri") ~= nil, why)
       check("deflection fails too", not force.try_deflect(u("t_luke"), u("t_v")))
       check("the field covers every hex for WML filters", #wml.array_access.get("sw_ysalamiri_zone") == #wesnoth.map.find{}, #wml.array_access.get("sw_ysalamiri_zone") .. "/" .. #wesnoth.map.find{})
-      check("no tint is drawn for a world field", #wml.array_access.get("sw_force_null_drawn") == 0)
+      local drawn = wml.array_access.get("sw_force_null_drawn")
+      local edges = 0
+      for _i, d in ipairs(drawn) do if (d.edges or "") ~= "" then edges = edges + 1 end end
+      check("a world field shows the faint wash everywhere, with no inner edges", #drawn == #wesnoth.map.find{} and edges == 0,
+        #drawn .. " drawn, " .. edges .. " with edges")
       check("Luke shows the suppression marker", table.concat(u("t_luke").overlays, ","):find("sw%-force%-suppressed") ~= nil)
       local fp = tonumber(u("t_luke").variables.sw_fp)
       force.on_side_turn(1)
       check("no Force Point regeneration inside it", tonumber(u("t_luke").variables.sw_fp) == fp)
       force.set_world_field(false)
       check("turning it off restores the Force", (force.can_use(u("t_luke"), "push")))
+    end
+
+    -- Null fields are drawn as a faint wash plus an outline on the border only.
+    function S.null_outline()
+      clear()
+      force.add_static_source(10, 7, 1)
+      local drawn = {}
+      for _i, d in ipairs(wml.array_access.get("sw_force_null_drawn")) do drawn[d.x .. "," .. d.y] = d.edges or "" end
+      local n = 0
+      for _k in pairs(drawn) do n = n + 1 end
+      check("every hex of a radius-1 field gets the wash", n == 7, n)
+      check("the centre hex has no border edges", drawn["10,7"] == "")
+      check("ring hexes are outlined on their outward edges only", drawn["10,6"] ~= "" and not drawn["10,6"]:find("s", 1, true),
+        drawn["10,6"])
+      local fill, edge = false, false
+      for _i, it in ipairs(wesnoth.interface.get_items(10, 6)) do
+        if it.name == "sw_null_fill" then fill = true end
+        if tostring(it.name):find("^sw_null_edge_") then edge = true end
+      end
+      check("the wash and edge images are on the map", fill and edge)
+      local carrier = place("sw_hero_luke", 1, 4, 4, "t_carrier")
+      carrier:add_modification("object", { T.effect{ apply_to = "new_ability", T.abilities{ T.dummy{ id = "sw_ability_ysalamiri", radius = 1 } } } })
+      force.refresh_fields()
+      u("t_carrier"):to_map(5, 10)
+      force.refresh_fields()
+      local stale = 0
+      for _i, it in ipairs(wesnoth.interface.get_items(4, 4)) do if tostring(it.name):find("^sw_null") then stale = stale + 1 end end
+      check("a moving carrier's old outline is removed", stale == 0, stale)
     end
 
     -- Menu descriptions and the Push/Pull direction preview.
