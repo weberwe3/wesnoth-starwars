@@ -39,9 +39,12 @@ def m01() -> HexMap:
     m.planet = "kashyyyk"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.35)
     m.disc((15, 9), 2, "Iwr")
-    ring(m, (15, 9), "Ke", "Ce", 5)
     for seg in ([(15, 9), (20, 4)], [(15, 9), (21, 15)], [(15, 9), (8, 9)]):
         m.path(seg, "Iwr")
+    # The keep goes down after the walkways: drawn first, the walkways from
+    # its hex painted over it and Leia could never recruit (balance review
+    # 2026-10-04).
+    ring(m, (15, 9), "Ke", "Ce", 5)
     for v in ((20, 4), (21, 15), (8, 9), (17, 13), (12, 5)):
         m.set(*v, "Iwr^Vht")
     m.path([(1, 1), (3, 9), (1, 18)], "Ss")

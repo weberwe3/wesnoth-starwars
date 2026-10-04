@@ -147,10 +147,13 @@ def m04() -> HexMap:
     m.scatter("Ss^Ftr", 0.06)
     # Village platforms and walkways high in the trees.
     m.disc((12, 10), 2, "Iwr")
-    castle_ring(m, (12, 10), "Ke", "Ce", 5)
     walk = [[(12, 10), (5, 5)], [(12, 10), (20, 4)], [(12, 10), (21, 15)], [(12, 10), (6, 16)]]
     for seg in walk:
         m.path(seg, "Iwr")
+    # The keep goes down after the walkways: drawn first, the walkways from
+    # its hex painted over it and Leia could never recruit (balance review
+    # 2026-10-04).
+    castle_ring(m, (12, 10), "Ke", "Ce", 5)
     for v in ((5, 5), (20, 4), (21, 15), (6, 16), (14, 13), (9, 8), (16, 8), (3, 11), (24, 10)):
         m.set(*v, "Iwr^Vht")
     # Deep under-forest gullies.
