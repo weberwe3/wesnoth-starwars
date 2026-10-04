@@ -857,3 +857,30 @@ fog with `wesnoth.sides.place_fog(side, all, true)` + `[redraw] side=` and
 checks what the side can actually see.
 **Prevention:** Test detection by what the player can see (`filter_vision`,
 `is_fogged`), from a freshly refogged state, not by internal state.
+
+### 2026-10-04 — Range specials evaluated from the real position in AI look-ahead
+
+**Symptom:** The AI ranged-fire action never chose a 2-hex shot; its combat
+simulation showed the rifle as useless from candidate hexes.
+**Confirmed cause:** Weapon-special formulas see `attacker` and `defender`
+(not `self`/`other`), and while simulating a moved copy of a unit the engine
+still evaluated the falloff from the unit's real position. Also, `ai.attack`
+refuses non-adjacent targets, and Lua's `simulate_combat` does not apply the
+range disable.
+**Resolution:** Falloff formula uses `distance_between(attacker.loc,
+defender.loc)`. The AI rates shots with its own expected-damage model and
+attacks with the synced `[do_command] [attack]` a player's click issues.
+**Prevention:** Verify engine look-ahead APIs against the real action for
+range-dependent effects; test AI behaviour with a real AI turn.
+
+### 2026-10-04 — Lua unit API pitfalls in the alert system
+
+**Symptom:** Guards spotted intruders on open ground at the cover radius;
+setting `ai_special` raised "invalid property of unit".
+**Confirmed cause:** `unit:defense_on(loc)` returns the unit's defence (chance
+to be hit is 100 minus it); `ai_special=guardian` is the unit status
+`guardian`, not a Lua property.
+**Resolution:** Cover = `defense_on >= 50`; alert guards set
+`status.guardian = false`.
+**Prevention:** Check the meaning of unit API values against core Lua
+before use.

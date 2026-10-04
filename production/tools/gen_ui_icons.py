@@ -409,6 +409,47 @@ def force_arrow(direction: str, blocked: bool) -> Image.Image:
     return done(img)
 
 
+# --- guard alertness (lua/sw_alert.lua) ----------------------------------------
+
+def alert_mark(symbol: str) -> Image.Image:
+    """A bold symbol in a small badge, top centre above the guard's head."""
+    img = canvas()
+    d = ImageDraw.Draw(img)
+    color = (255, 70, 60, 255) if symbol == "!" else (255, 210, 70, 255)
+    cx, cy, r = 36 * S, 9 * S, 7 * S
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=OUTLINE)
+    d.ellipse((cx - r + 1.5 * S, cy - r + 1.5 * S, cx + r - 1.5 * S, cy + r - 1.5 * S), fill=(30, 26, 22, 255))
+    if symbol == "!":
+        d.rounded_rectangle((cx - 1.5 * S, cy - 5 * S, cx + 1.5 * S, cy + 1.5 * S), radius=S, fill=color)
+        d.ellipse((cx - 1.6 * S, cy + 2.6 * S, cx + 1.6 * S, cy + 5.6 * S), fill=color)
+    else:
+        d.arc((cx - 3.5 * S, cy - 5.5 * S, cx + 3.5 * S, cy + 1.5 * S), start=190, end=60, fill=color, width=int(2.5 * S))
+        d.line([(cx + 2.8 * S, cy - 0.5 * S), (cx, cy + 1.5 * S), (cx, cy + 2.5 * S)], fill=color, width=int(2.5 * S))
+        d.ellipse((cx - 1.4 * S, cy + 3.6 * S, cx + 1.4 * S, cy + 6.2 * S), fill=color)
+    return done(img)
+
+
+def alert_sight() -> Image.Image:
+    """Faint amber hex rim: a hex an unaware guard can see."""
+    img = canvas()
+    d = ImageDraw.Draw(img)
+    pts = [(x * S, y * S) for x, y in hex_points(0.08)]
+    d.polygon(pts, fill=(255, 200, 80, 34))
+    for i in range(6):
+        a, b = pts[i], pts[(i + 1) % 6]
+        d.line([a, b], fill=(255, 200, 80, 120), width=int(1.5 * S))
+    return done(img)
+
+
+def menu_takedown() -> Image.Image:
+    img = canvas(64)
+    d = ImageDraw.Draw(img)
+    d.ellipse((6, 14, 34, 42), fill=(220, 200, 170, 255))
+    d.rectangle((26, 20, 58, 36), fill=(220, 200, 170, 255))
+    d.line([(10, 54), (54, 10)], fill=(255, 230, 120, 255), width=5)
+    return img.resize((16, 16), Image.LANCZOS)
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     for n in range(11):
@@ -436,6 +477,10 @@ def main() -> int:
         for n in (1, 2, 3):
             rank_plate(style, n).save(OUT / f"sw-rank-{style}-{n}.png", optimize=True)
     air_inbound().save(OUT / "sw-air-inbound.png", optimize=True)
+    alert_mark("!").save(OUT / "sw-alert-alert.png", optimize=True)
+    alert_mark("?").save(OUT / "sw-alert-suspicious.png", optimize=True)
+    alert_sight().save(OUT / "sw-alert-sight.png", optimize=True)
+    menu_takedown().save(OUT / "sw-menu-takedown.png", optimize=True)
     for direction in HEX_DIRS:
         force_arrow(direction, False).save(OUT / f"sw-force-arrow-{direction}.png", optimize=True)
         force_arrow(direction, True).save(OUT / f"sw-force-arrow-{direction}-blocked.png", optimize=True)

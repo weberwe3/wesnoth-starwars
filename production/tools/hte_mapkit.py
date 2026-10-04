@@ -89,8 +89,24 @@ PLANET_FORESTS = {"kashyyyk": "Fsw", "myrkr": "Fsm", "wayland": "Fsy"}
 FOREST_OVERLAYS = {"Ftr", "Fet", "Fds", "Fp"}
 
 
-def reskin(code: str, planet: str | None = None) -> str:
+# Interiors: the durasteel deck/bulkhead (Isr/Xos -> Qid/Qib) is right for
+# ships, stations and industry; maps whose builder sets HexMap.interior get
+# that place's own floor and wall instead.
+INTERIORS = {
+    "timber": {"Isr": "Qft", "Xos": "Qwt"},   # Karrde's compound on Myrkr
+    "colony": {"Isr": "Qfc", "Xos": "Qwc"},   # colony buildings
+    "palace": {"Isr": "Qfp", "Xos": "Qwp"},   # the Imperial Palace
+    "rock": {"Isr": "Qfr", "Xos": "Qwr"},     # Mount Tantiss
+}
+
+
+def reskin(code: str, planet: str | None = None, interior: str | None = None) -> str:
     base, sep, overlay = code.partition("^")
+    if interior in INTERIORS and base in INTERIORS[interior]:
+        base_code = INTERIORS[interior][base]
+        if overlay in VILLAGE_RESKIN:
+            overlay = VILLAGE_RESKIN[overlay](base)
+        return base_code + sep + overlay
     if overlay in VILLAGE_RESKIN:
         overlay = VILLAGE_RESKIN[overlay](base)
     elif overlay in FOREST_OVERLAYS and planet in PLANET_FORESTS:
@@ -157,7 +173,7 @@ class HexMap:
             row = []
             for x in range(0, self.w + 2):
                 cx, cy = min(max(x, 1), self.w), min(max(y, 1), self.h)
-                code = reskin(self.cells[(cx, cy)], getattr(self, "planet", None))
+                code = reskin(self.cells[(cx, cy)], getattr(self, "planet", None), getattr(self, "interior", None))
                 if (x, y) == (cx, cy):
                     for side, pos in self.starts.items():
                         if pos == (x, y):

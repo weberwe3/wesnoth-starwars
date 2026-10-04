@@ -42,10 +42,11 @@ local ew = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ew.lua")
 local doctrine = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_doctrine.lua")
 local air = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_air.lua")
 local rank = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_rank.lua")
+local alert = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert }
 
 -- Cross-system wiring (hooks are plain Lua tables, rebuilt on every load).
 ew.hooks.bonus = { doctrine.ew_bonus }
@@ -99,11 +100,13 @@ on("moveto", "sw_sys_moveto", function()
 	force.refresh_fields()
 	ew.refresh()
 	doctrine.on_moveto()
+	alert.check()
 end)
 
 on("attack", "sw_sys_attack", function()
 	doctrine.on_attack()
 	ew.on_attack()
+	alert.on_attack()
 end)
 
 on("turn refresh", "sw_sys_turn_refresh", function()
@@ -114,6 +117,7 @@ on("turn refresh", "sw_sys_turn_refresh", function()
 	air.on_side_turn(side)
 	ew.on_side_turn(side)
 	doctrine.on_side_turn(side)
+	alert.on_side_turn(side)
 end)
 
 on("side turn end", "sw_sys_side_turn_end", function()
@@ -143,6 +147,11 @@ on("unit placed", "sw_sys_unit_placed", function()
 	if not u then return end
 	force.init_unit(u)
 	rank.update(u)
+	local acfg = alert.config()
+	if acfg and u.side == acfg.guard_side and u.variables.sw_alert_state == nil then
+		-- Reinforcements arriving after the alarm come in alert.
+		u.variables.sw_alert_state = acfg.alarm and "alert" or "unaware"
+	end
 	doctrine.on_unit_placed(u)
 	if mover_matters(u) then force.refresh_fields() end
 	ew.refresh()
@@ -203,6 +212,20 @@ wesnoth.interface.set_menu_item("sw_air_menu", {
 	image = "misc/sw-menu-air.png",
 	T.show_if{ T.lua{ code = "return sw_systems.air.menu_visible()" } },
 	T.command{ T.lua{ code = "sw_systems.air.menu_command()" } },
+})
+
+wesnoth.interface.set_menu_item("sw_alert_takedown_menu", {
+	description = _ "Silent takedown",
+	image = "misc/sw-menu-takedown.png",
+	T.show_if{ T.lua{ code = "return sw_systems.alert.takedown_menu_visible()" } },
+	T.command{ T.lua{ code = "sw_systems.alert.takedown_menu_command()" } },
+})
+
+wesnoth.interface.set_menu_item("sw_alert_sight_menu", {
+	description = _ "Show or hide guard sight",
+	image = "misc/sw-alert-suspicious.png~SCALE(16,16)",
+	T.show_if{ T.lua{ code = "return sw_systems.alert.sight_menu_visible()" } },
+	T.command{ T.lua{ code = "sw_systems.alert.sight_menu_command()" } },
 })
 
 wesnoth.interface.set_menu_item("sw_doctrine_menu", {
@@ -333,6 +356,30 @@ function wesnoth.wml_actions.sw_air_strike(cfg)
 		damage = tonumber(cfg.damage), strikes = tonumber(cfg.strikes), certain = cfg.certain,
 		enemies_only = cfg.enemies_only, hexes = hexes,
 		x = tonumber(cfg.x), y = tonumber(cfg.y), direction = cfg.direction }
+end
+
+-- [sw_alert] action=enable guard_side= intruder_side= show_sight=yes|no
+-- [sw_alert] action=alarm                         every guard becomes alert
+-- [sw_alert] action=guard [filter]...[/filter] sight=3 patrol=x.y,x.y,...
+function wesnoth.wml_actions.sw_alert(cfg)
+	cfg = wml.parsed(cfg)
+	local action = cfg.action or "enable"
+	if action == "enable" then
+		alert.enable(tonumber(cfg.guard_side) or wml.error("[sw_alert] needs guard_side="),
+			tonumber(cfg.intruder_side) or wml.error("[sw_alert] needs intruder_side="),
+			cfg.show_sight ~= false and cfg.show_sight ~= "no")
+	elseif action == "alarm" then
+		alert.alarm()
+	elseif action == "guard" then
+		local filter = wml.get_child(cfg, "filter") or wml.error("[sw_alert] action=guard needs [filter]")
+		for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map(filter))) do
+			if cfg.sight then u.variables.sw_alert_sight = tonumber(cfg.sight) end
+			if cfg.patrol then u.variables.sw_alert_patrol = cfg.patrol end
+		end
+		alert.refresh()
+	else
+		wml.error("[sw_alert] unknown action=" .. tostring(action))
+	end
 end
 
 -- [sw_ew_settings] thresholds/modifiers, [terrain] rules (see sw_ew.lua)

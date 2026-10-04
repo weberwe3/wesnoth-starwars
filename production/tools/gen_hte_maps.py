@@ -91,6 +91,7 @@ def m01() -> HexMap:
 # 2. Ambush at Bpfassh -- city, 26x18 ------------------------------------------
 def m02() -> HexMap:
     m = HexMap(26, 18, "Rr", seed=202)
+    m.interior = "colony"  # location interior (hte_mapkit.INTERIORS)
     # City blocks: impassable building masses separated by streets.
     blocks = [(3, 2, 5, 4), (9, 2, 11, 3), (15, 2, 17, 4), (3, 7, 4, 9), (8, 6, 10, 8), (14, 7, 16, 8),
               (20, 6, 22, 8), (3, 13, 5, 15), (9, 12, 11, 14), (15, 12, 17, 13), (20, 11, 22, 13),
@@ -185,6 +186,12 @@ def compound(m: HexMap, ox: int, oy: int) -> dict[str, tuple[int, int]]:
     m.set(ox + 15, oy + 6, "Re")
     m.set(ox + 8, oy, "Re")
     m.set(ox, oy + 6, "Re")
+    # Cargo crates: cover in the yard and inside the buildings, so an
+    # intruder can move from shadow to shadow (^Qcr: castle-grade cover).
+    for dx, dy in ((7, 9), (7, 6), (9, 5), (12, 2), (3, 6), (13, 9), (11, 11), (6, 11), (2, 9), (5, 2), (12, 6)):
+        x, y = ox + dx, oy + dy
+        base = m.cells[(x, y)].partition("^")[0]
+        m.set(x, y, base + "^Qcr")
     # Barracks and stores (villages) in the yard.
     for dx, dy in ((8, 3), (8, 9), (12, 10), (2, 2)):
         m.set(ox + dx, oy + dy, "Re^Vhc" if (dx, dy) != (2, 2) else "Isr^Vhc")
@@ -194,6 +201,7 @@ def compound(m: HexMap, ox: int, oy: int) -> dict[str, tuple[int, int]]:
 
 def m05() -> HexMap:
     m = HexMap(24, 18, FOREST, seed=505)
+    m.interior = "timber"  # location interior (hte_mapkit.INTERIORS)
     m.planet = "myrkr"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.3)
     m.scatter(GREAT, 0.05)
@@ -207,6 +215,7 @@ def m05() -> HexMap:
 # 6. Raid on Karrde's Base -- compound and forest, 28x20 ------------------------
 def m06() -> HexMap:
     m = HexMap(28, 20, FOREST, seed=606)
+    m.interior = "timber"  # location interior (hte_mapkit.INTERIORS)
     m.planet = "myrkr"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.25)
     m.scatter(GREAT, 0.04)

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-04 04:04 UTC\n"
+"POT-Creation-Date: 2026-10-04 04:34 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -259,9 +259,11 @@ msgid "Called by"
 msgstr ""
 
 #. [lua]: air.menu_command
+#. [lua]: alert.takedown_menu_command
 #. [lua]: ew.decoy_menu_command
 #. [lua]: force.open_menu
 #: lua/sw_air.lua:567
+#: lua/sw_alert.lua:354
 #: lua/sw_ew.lua:846
 #: lua/sw_force.lua:682
 msgid "Cancel"
@@ -287,6 +289,16 @@ msgstr ""
 #. [lua]: air.status_line
 #: lua/sw_air.lua:582
 msgid "none available"
+msgstr ""
+
+#. [lua]: alert.takedown
+#: lua/sw_alert.lua:324
+msgid "knocked out"
+msgstr ""
+
+#. [lua]: alert.takedown_menu_command
+#: lua/sw_alert.lua:356
+msgid "Knock out an unaware guard next to you. It uses your attack. Any other guard who can see this spot will raise the alarm."
 msgstr ""
 
 #: lua/sw_doctrine.lua:53
@@ -561,7 +573,7 @@ msgstr ""
 #. [lua]: mover_matters
 #. [message]: speaker=narrator
 #: lua/sw_doctrine.lua:861
-#: lua/sw_systems.lua:209
+#: lua/sw_systems.lua:232
 #: utils/hte_macros.cfg:388
 msgid "Thrawn's doctrine"
 msgstr ""
@@ -742,7 +754,7 @@ msgstr ""
 #. [lua]: ew.contact_menu_command
 #. [lua]: mover_matters
 #: lua/sw_ew.lua:908
-#: lua/sw_systems.lua:195
+#: lua/sw_systems.lua:204
 msgid "Sensor contact"
 msgstr ""
 
@@ -967,7 +979,7 @@ msgstr ""
 #. [lua]: force.status_text
 #. [lua]: sw_systems.show_status
 #: lua/sw_force.lua:517
-#: lua/sw_systems.lua:243
+#: lua/sw_systems.lua:266
 msgid "Inside a ysalamiri field: the Force is blocked here."
 msgstr ""
 
@@ -1178,44 +1190,54 @@ msgid "Rank:"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:167
+#: lua/sw_systems.lua:176
 msgid "The Force…"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:174
+#: lua/sw_systems.lua:183
 msgid "Overwatch (commits this turn's attack)"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:181
+#: lua/sw_systems.lua:190
 msgid "Active sensor sweep (commits this turn's attack)"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:188
+#: lua/sw_systems.lua:197
 msgid "Launch sensor decoy…"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:202
+#: lua/sw_systems.lua:211
 msgid "Call air support…"
 msgstr ""
 
 #. [lua]: mover_matters
+#: lua/sw_systems.lua:218
+msgid "Silent takedown"
+msgstr ""
+
+#. [lua]: mover_matters
+#: lua/sw_systems.lua:225
+msgid "Show or hide guard sight"
+msgstr ""
+
+#. [lua]: mover_matters
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:216
-#: lua/sw_systems.lua:259
+#: lua/sw_systems.lua:239
+#: lua/sw_systems.lua:282
 msgid "Tactical status"
 msgstr ""
 
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:246
+#: lua/sw_systems.lua:269
 msgid "On overwatch:"
 msgstr ""
 
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:247
+#: lua/sw_systems.lua:270
 msgid "reaction(s) left, range"
 msgstr ""
 
@@ -1497,7 +1519,7 @@ msgstr ""
 #. [objective]: condition=lose
 #: scenarios/dark_force_rising/03_jomark.cfg:135
 #: scenarios/heir_to_the_empire/03_adrift.cfg:158
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:178
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:200
 msgid "Death of Luke Skywalker"
 msgstr ""
 
@@ -1818,8 +1840,8 @@ msgstr ""
 #. [unit]: id=sw_hte05_mara, type=sw_hero_mara
 #. [message]: speaker=narrator
 #: scenarios/dark_force_rising/06_the_mad_jedi.cfg:152
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:278
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:319
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:307
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:348
 #: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:154
 #: scenarios/the_last_command/02_the_smugglers_council.cfg:112
 #: scenarios/the_last_command/04_landfall_on_wayland.cfg:105
@@ -2702,84 +2724,89 @@ msgid "fists"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:149
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:171
 msgid "Karrde's Office"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:157
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:179
 msgid "Vehicle Shed"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:162
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:184
 msgid "Recover your lightsaber from Karrde's office"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:174
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:196
 msgid "Reach the vehicle shed with your lightsaber"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:183
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:205
 msgid "The whole compound is inside a ysalamiri bubble: Luke's Force abilities and deflection do not work."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:186
-msgid "Guards stay at their posts until something comes within reach."
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:208
+msgid "Karrde's guards have not noticed you yet. They see 3 hexes, one less at night and one less again when you are in cover (forest, crates, buildings); walls block their view. Amber hexes show where they can see. If one spots you, it shouts and every guard nearby joins the hunt."
+msgstr ""
+
+#. [note]
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:211
+msgid "Right-click next to an unaware guard for a <b>Silent takedown</b> (uses your attack). Any other guard who can see that spot will raise the alarm. Drang the vornskr cannot be surprised."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:195
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:220
 msgid "Nothing. It's like going deaf. Karrde's lizards are everywhere in this place."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:199
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:224
 msgid "All right. One guard at the door. My lightsaber will be in Karrde's office. I'm not leaving without it."
 msgstr ""
 
 #. [effect]: type=fire
 #. [attack]: type=fire
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:223
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:248
 #: units/hte_heroes.cfg:1155
 msgid "hold-out blaster"
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:233
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:258
 msgid "Somebody's spare hold-out blaster. Careless of them."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:258
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:287
 msgid "There you are."
 msgstr ""
 
 #. [message]: speaker=sw_hte05_mara
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:289
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:318
 msgid "Skywalker's loose! He's in the main house. Nobody shoots him except me."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:293
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:322
 msgid "She means that. Time to find a vehicle."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:314
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:343
 msgid "A skiff. Fueled, too. Let's see how far it gets me."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:320
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:349
 msgid "Not far, Skywalker. I'm right behind you."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:331
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:360
 msgid "Not without my lightsaber."
 msgstr ""
 
@@ -6340,4 +6367,76 @@ msgstr ""
 #. [terrain_type]: id=sw_wayland_jungle
 #: utils/hte_terrain.cfg:349
 msgid "Wayland Jungle"
+msgstr ""
+
+#. [terrain_type]: id=sw_floor_timber
+#. [terrain_type]: id=sw_floor_colony
+#. [terrain_type]: id=sw_floor_palace
+#. [terrain_type]: id=sw_floor_rock
+#: utils/hte_terrain.cfg:368
+#: utils/hte_terrain.cfg:389
+#: utils/hte_terrain.cfg:410
+#: utils/hte_terrain.cfg:431
+msgid "Floor"
+msgstr ""
+
+#. [terrain_type]: id=sw_floor_timber
+#: utils/hte_terrain.cfg:369
+msgid "Plank Floor"
+msgstr ""
+
+#. [terrain_type]: id=sw_wall_timber
+#. [terrain_type]: id=sw_wall_colony
+#. [terrain_type]: id=sw_wall_palace
+#. [terrain_type]: id=sw_wall_rock
+#: utils/hte_terrain.cfg:377
+#: utils/hte_terrain.cfg:398
+#: utils/hte_terrain.cfg:419
+#: utils/hte_terrain.cfg:440
+msgid "Wall"
+msgstr ""
+
+#. [terrain_type]: id=sw_wall_timber
+#: utils/hte_terrain.cfg:378
+msgid "Timber Wall"
+msgstr ""
+
+#. [terrain_type]: id=sw_floor_colony
+#: utils/hte_terrain.cfg:390
+msgid "Duracrete Floor"
+msgstr ""
+
+#. [terrain_type]: id=sw_wall_colony
+#: utils/hte_terrain.cfg:399
+msgid "Duracrete Wall"
+msgstr ""
+
+#. [terrain_type]: id=sw_floor_palace
+#: utils/hte_terrain.cfg:411
+msgid "Palace Floor"
+msgstr ""
+
+#. [terrain_type]: id=sw_wall_palace
+#: utils/hte_terrain.cfg:420
+msgid "Palace Wall"
+msgstr ""
+
+#. [terrain_type]: id=sw_floor_rock
+#: utils/hte_terrain.cfg:432
+msgid "Hewn Rock Floor"
+msgstr ""
+
+#. [terrain_type]: id=sw_wall_rock
+#: utils/hte_terrain.cfg:441
+msgid "Rock Wall"
+msgstr ""
+
+#. [terrain_type]: id=sw_cover_crates
+#: utils/hte_terrain.cfg:451
+msgid "Cover"
+msgstr ""
+
+#. [terrain_type]: id=sw_cover_crates
+#: utils/hte_terrain.cfg:452
+msgid "Cargo Crates (cover)"
 msgstr ""

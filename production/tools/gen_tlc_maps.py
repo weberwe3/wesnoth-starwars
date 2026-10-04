@@ -53,6 +53,7 @@ def m01() -> HexMap:
 # 2. The Smugglers' Council -- fortress, 26x20 --------------------------------
 def m02() -> HexMap:
     m = HexMap(26, 20, "Hh", seed=3202)
+    m.interior = "colony"  # location interior (hte_mapkit.INTERIORS)
     m.scatter("Dd", 0.3)
     m.scatter("Mm", 0.08)
     m.disc((12, 10), 5, "Xos")
@@ -74,6 +75,7 @@ def m02() -> HexMap:
 # 3. The Palace Infiltrators -- palace interior, 26x18 -------------------------
 def m03() -> HexMap:
     m = HexMap(26, 18, "Isr", seed=3303)
+    m.interior = "palace"  # location interior (hte_mapkit.INTERIORS)
     for x in (6, 12, 18):
         m.rect(x, 1, x, 18, "Xos")
         for y in (4, 9, 14):
@@ -133,6 +135,7 @@ def m05() -> HexMap:
 # 6. The Gates of Mount Tantiss -- mountain base, 28x20 ------------------------
 def m06() -> HexMap:
     m = HexMap(28, 20, "Hh", seed=3606)
+    m.interior = "rock"  # location interior (hte_mapkit.INTERIORS)
     m.planet = "wayland"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter("Mm", 0.22)
     m.scatter(JUNGLE, 0.15)
@@ -151,6 +154,7 @@ def m06() -> HexMap:
 # 7. The Cloning Vats -- interior, 26x18 ---------------------------------------
 def m07() -> HexMap:
     m = HexMap(26, 18, "Xos", seed=3707)
+    m.interior = "rock"  # location interior (hte_mapkit.INTERIORS)
     m.path([(2, 9), (25, 9)], "Isr", width=1)
     m.rect(8, 2, 23, 16, "Isr")
     for x in (11, 15, 19):
@@ -166,6 +170,7 @@ def m07() -> HexMap:
 # 8. The Throne Room -- 20x16 --------------------------------------------------
 def m08() -> HexMap:
     m = HexMap(20, 16, "Isr", seed=3808)
+    m.interior = "rock"  # location interior (hte_mapkit.INTERIORS)
     m.rect(1, 1, 20, 1, "Xos")
     m.rect(1, 16, 20, 16, "Xos")
     for pillar in ((6, 4), (6, 12), (10, 4), (10, 12), (14, 4), (14, 12)):

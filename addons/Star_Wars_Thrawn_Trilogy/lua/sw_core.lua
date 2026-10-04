@@ -112,7 +112,7 @@ function core.set_overlay(u, slot, image)
 	u.variables[key] = image
 end
 
-core.OVERLAY_SLOTS = { "force", "overwatch", "dazed", "ew", "intel" }
+core.OVERLAY_SLOTS = { "force", "overwatch", "dazed", "ew", "intel", "alert" }
 
 -- At mission start (units are at full moves, so a rebuild is harmless):
 -- replace all indicator objects with one per shown image.
