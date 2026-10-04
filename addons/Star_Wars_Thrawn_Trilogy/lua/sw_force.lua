@@ -167,10 +167,6 @@ function force.refresh_fields()
 		end
 	end
 	table.sort(list, function(a, b) if a.x ~= b.x then return a.x < b.x end return a.y < b.y end)
-	-- The tint shows local fields only; a world field covers every hex
-	-- (still listed for WML filters such as find_in=sw_ysalamiri_zone).
-	local tint, tint_list = {}, {}
-	for _i, loc in ipairs(list) do tint[core.key(loc.x, loc.y)] = true table.insert(tint_list, loc) end
 	if force.world_field() then
 		for _i, loc in ipairs(wesnoth.map.find{}) do
 			local x, y = loc[1] or loc.x, loc[2] or loc.y
@@ -181,25 +177,59 @@ function force.refresh_fields()
 	end
 	force.null_set = set
 	wml.array_access.set("sw_ysalamiri_zone", list)
-	-- Redraw the field tint: remove hexes no longer covered, add new ones.
-	local drawn = {}
-	for _i, loc in ipairs(wml.array_access.get("sw_force_null_drawn")) do
-		if not tint[core.key(loc.x, loc.y)] then
-			wesnoth.interface.remove_item(loc.x, loc.y, "misc/sw-ysalamiri-zone.png")
-		else
-			drawn[core.key(loc.x, loc.y)] = true
-		end
-	end
-	for _i, loc in ipairs(tint_list) do
-		if not drawn[core.key(loc.x, loc.y)] then
-			wesnoth.interface.add_item_image(loc.x, loc.y, "misc/sw-ysalamiri-zone.png")
-		end
-	end
-	wml.array_access.set("sw_force_null_drawn", tint_list)
+	force.draw_fields(set, list)
 	for _i, u in ipairs(wesnoth.units.find_on_map{ ability = force.ABILITY }) do
 		force.update_indicator(u)
 	end
 	core.log("force", "null field refreshed: " .. #list .. " hexes")
+end
+
+-- Subtle display of the null field: a faint violet wash on every null hex
+-- and a thin violet line only along the field's outer border, so a bubble
+-- reads as one outlined region (a world field: the wash everywhere). Items
+-- are diffed against what is drawn (sw_force_null_drawn: x, y, edges).
+local EDGE_DIRS = { "n", "ne", "se", "s", "sw", "nw" }
+function force.draw_fields(set, list)
+	local want = {}
+	for _i, loc in ipairs(list) do
+		local edges = {}
+		for _j, dir in ipairs(EDGE_DIRS) do
+			local n = wesnoth.map.get_direction({ loc.x, loc.y }, dir)
+			local nx, ny = n[1] or n.x, n[2] or n.y
+			if wesnoth.current.map:on_board(nx, ny) and not set[core.key(nx, ny)] then table.insert(edges, dir) end
+		end
+		want[core.key(loc.x, loc.y)] = { x = loc.x, y = loc.y, edges = table.concat(edges, ",") }
+	end
+	local changed = false
+	local drawn = {}
+	for _i, d in ipairs(wml.array_access.get("sw_force_null_drawn")) do
+		local k = core.key(d.x, d.y)
+		local w = want[k]
+		if not w or w.edges ~= (d.edges or "") then
+			wesnoth.interface.remove_item(d.x, d.y, "sw_null_fill")
+			for _j, dir in ipairs(core.split(d.edges or "")) do wesnoth.interface.remove_item(d.x, d.y, "sw_null_edge_" .. dir) end
+			-- (legacy tint from earlier versions)
+			wesnoth.interface.remove_item(d.x, d.y, "misc/sw-ysalamiri-zone.png")
+			changed = true
+		else
+			drawn[k] = true
+		end
+	end
+	local out = {}
+	for _i, loc in ipairs(list) do
+		local w = want[core.key(loc.x, loc.y)]
+		if not drawn[core.key(loc.x, loc.y)] then
+			wesnoth.wml_actions.item{ x = w.x, y = w.y, image = "misc/sw-null-fill.png", name = "sw_null_fill", redraw = false }
+			for _j, dir in ipairs(core.split(w.edges)) do
+				wesnoth.wml_actions.item{ x = w.x, y = w.y, image = "misc/sw-null-edge-" .. dir .. ".png",
+					name = "sw_null_edge_" .. dir, redraw = false }
+			end
+			changed = true
+		end
+		table.insert(out, w)
+	end
+	wml.array_access.set("sw_force_null_drawn", out)
+	if changed then wesnoth.wml_actions.redraw{} end
 end
 
 -- Force Points pips, or the suppression icon while inside a null field.

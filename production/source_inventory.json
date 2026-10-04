@@ -6565,11 +6565,15 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_force.lua",
-      "sha256": "9b32f1d1fb0d9eed620740213c9eb06d88e40086a41081364acd6d75f4ad44c7"
+      "sha256": "bc0680f9ae5276d56e88cfcbb85ce5cf31fbe5d56a2f36074cbf7505ce892768"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_overwatch.lua",
       "sha256": "e451c28d646309a44a52429afd3dcbffa1eb6b4b3c9fac6a50c91694190ec00a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_range.lua",
+      "sha256": "4850b5380511075fca3f304122e1c2b0862f8bdbe97cbd8e342ebd98054f56f2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank.lua",
@@ -6581,7 +6585,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "a429b1d3dca04e6aabfed88f0db3c95bc813e22f0de79ccb34a94c9c7af8584c"
+      "sha256": "6f91e7bb15b2f9f98c6b04cbbdec3cdef3c4603730053af5f4c14f89907d7277"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
