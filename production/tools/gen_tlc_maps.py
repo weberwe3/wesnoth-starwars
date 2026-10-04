@@ -97,6 +97,7 @@ def m03() -> HexMap:
 # 4. Landfall on Wayland -- jungle, 28x20 --------------------------------------
 def m04() -> HexMap:
     m = HexMap(28, 20, JUNGLE, seed=3404)
+    m.planet = "wayland"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter("Gg", 0.2)
     m.scatter("Hh^Fp", 0.08)
     m.path([(26, 1), (25, 8), (27, 14), (26, 20)], "Ww", width=1)
@@ -114,6 +115,7 @@ def m04() -> HexMap:
 # 5. The Natives of Wayland -- jungle and hills, 28x20 -------------------------
 def m05() -> HexMap:
     m = HexMap(28, 20, JUNGLE, seed=3505)
+    m.planet = "wayland"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter("Hh", 0.12)
     m.scatter("Gg", 0.2)
     m.disc((22, 10), 2, "Re")
@@ -131,6 +133,7 @@ def m05() -> HexMap:
 # 6. The Gates of Mount Tantiss -- mountain base, 28x20 ------------------------
 def m06() -> HexMap:
     m = HexMap(28, 20, "Hh", seed=3606)
+    m.planet = "wayland"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter("Mm", 0.22)
     m.scatter(JUNGLE, 0.15)
     m.rect(25, 1, 28, 20, "Mm^Xm")

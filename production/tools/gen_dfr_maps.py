@@ -36,6 +36,7 @@ def ring(m: HexMap, keep: tuple[int, int], keep_code: str, castle_code: str, cou
 # 1. The Noghri Prisoner -- Kashyyyk, 24x18 ---------------------------------
 def m01() -> HexMap:
     m = HexMap(24, 18, GREAT, seed=2101)
+    m.planet = "kashyyyk"  # planet forests (hte_mapkit.PLANET_FORESTS)
     m.scatter(RAIN, 0.35)
     m.disc((15, 9), 2, "Iwr")
     ring(m, (15, 9), "Ke", "Ce", 5)

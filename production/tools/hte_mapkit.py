@@ -69,8 +69,32 @@ LORE_RESKIN = {
 }
 
 
-def reskin(code: str) -> str:
+# Settlements: the mainline village overlay is replaced by a lore settlement
+# chosen from what the base terrain says about the place (a village on an
+# interior floor is a supply depot; on Honoghr's dry ground a Noghri dukha).
+# Every replacement aliases _bas, Vt and heals like the original village.
+VILLAGE_RESKIN = {
+    "Vhc": lambda base: "Vsp" if base == "Isr" else "Vsd",
+    "Vht": lambda base: "Vsw" if base == "Iwr" else "Vsy",
+    "Vhh": lambda base: "Vsn" if base in ("Rd", "Rb") else "Vsd",
+    "Vh": lambda base: "Vsf",
+    "Vl": lambda base: "Vso",
+    "Vct": lambda base: "Vsc",
+}
+
+
+# Planet forests replace the mainline forest overlays on maps whose builder
+# sets HexMap.planet; other maps keep mainline forests.
+PLANET_FORESTS = {"kashyyyk": "Fsw", "myrkr": "Fsm", "wayland": "Fsy"}
+FOREST_OVERLAYS = {"Ftr", "Fet", "Fds", "Fp"}
+
+
+def reskin(code: str, planet: str | None = None) -> str:
     base, sep, overlay = code.partition("^")
+    if overlay in VILLAGE_RESKIN:
+        overlay = VILLAGE_RESKIN[overlay](base)
+    elif overlay in FOREST_OVERLAYS and planet in PLANET_FORESTS:
+        overlay = PLANET_FORESTS[planet]
     return LORE_RESKIN.get(base, base) + sep + overlay
 
 
@@ -133,7 +157,7 @@ class HexMap:
             row = []
             for x in range(0, self.w + 2):
                 cx, cy = min(max(x, 1), self.w), min(max(y, 1), self.h)
-                code = reskin(self.cells[(cx, cy)])
+                code = reskin(self.cells[(cx, cy)], getattr(self, "planet", None))
                 if (x, y) == (cx, cy):
                     for side, pos in self.starts.items():
                         if pos == (x, y):
