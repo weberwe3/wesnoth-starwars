@@ -334,6 +334,11 @@ local function flyover_variation(craft)
 	return nil
 end
 
+-- Pacing of the strike effects (display only). A fake unit moves 200 ms per
+-- hex (engine), so approach + strike line + exit is about 2-2.5 s; the
+-- detonations then ripple along the line, one hex every step_ms.
+air.PACING = { approach = 3, exit = 3, step_ms = 160, burst_frame_ms = 90, settle_ms = 350, lead_ms = 250 }
+
 local function flyover(strike, hexes)
 	if strike.craft == "" or not wesnoth.unit_types[strike.craft] or #hexes == 0 then return end
 	if strike.path == "hexes" then
@@ -341,19 +346,19 @@ local function flyover(strike, hexes)
 		wesnoth.wml_actions.move_unit_fake{ type = strike.craft, side = strike.side, variation = flyover_variation(strike.craft), x = strike.xs, y = strike.ys }
 		return
 	end
-	-- Approach from two hexes before the first struck hex, leave two after.
+	-- Approach from a few hexes out, cross the target, leave a few hexes past it.
 	local back = ({ n = "s", ne = "sw", se = "nw", s = "n", sw = "ne", nw = "se" })[strike.dir] or "s"
 	local path = {}
 	local loc = { hexes[1].x, hexes[1].y }
 	local before = {}
-	for _i = 1, 2 do
+	for _i = 1, air.PACING.approach do
 		local p = wesnoth.map.get_direction(loc, back)
 		loc = { p[1] or p.x, p[2] or p.y }
 		if wesnoth.current.map:on_board(loc[1], loc[2]) then table.insert(before, 1, { loc[1], loc[2] }) else break end
 	end
 	for _i, b in ipairs(before) do table.insert(path, b) end
 	loc = { strike.x, strike.y }
-	for _i = 1, 6 do
+	for _i = 1, #hexes + air.PACING.exit do
 		if not wesnoth.current.map:on_board(loc[1], loc[2]) then break end
 		table.insert(path, { loc[1], loc[2] })
 		local p = wesnoth.map.get_direction(loc, strike.dir)
@@ -378,14 +383,19 @@ function air.resolve(strike)
 	-- (the engine's -u test mode has no textures for halos).
 	local effects = wml.variables.sw_air_effects ~= "no" and wml.variables.sw_air_effects ~= false
 	if effects then
-		flyover(strike, hexes)
+		-- Engines first, then the low pass, then the bombs or bolts walk
+		-- along the line one hex at a time behind the craft.
 		if def.sound then wesnoth.audio.play(def.sound) end
+		wesnoth.interface.delay(air.PACING.lead_ms)
+		flyover(strike, hexes)
+		local burst = "halo/flame-burst-[1~8].png:" .. air.PACING.burst_frame_ms .. ",misc/blank-hex.png:1"
 		for _i, h in ipairs(hexes) do
-			wesnoth.wml_actions.item{ x = h.x, y = h.y, halo = "halo/flame-burst-[1~8].png:50,misc/blank-hex.png:1",
-				name = "sw_air_blast", redraw = false }
+			wesnoth.wml_actions.item{ x = h.x, y = h.y, halo = burst, name = "sw_air_blast", redraw = false }
+			wesnoth.wml_actions.redraw{}
+			if def.impact then wesnoth.audio.play(def.impact) end
+			wesnoth.interface.delay(air.PACING.step_ms)
 		end
-		wesnoth.wml_actions.redraw{}
-		wesnoth.interface.delay(250)
+		wesnoth.interface.delay(air.PACING.settle_ms)
 	end
 	local results = {}
 	for _i, u in ipairs(units_in(hexes)) do
@@ -413,7 +423,6 @@ function air.resolve(strike)
 	end
 	if effects then
 		for _i, h in ipairs(hexes) do wesnoth.interface.remove_item(h.x, h.y, "sw_air_blast") end
-		if def.impact then wesnoth.audio.play(def.impact) end
 	end
 	for _i, hook in ipairs(air.hooks.on_strike) do hook(strike, results) end
 	return results

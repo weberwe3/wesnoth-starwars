@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-04 02:52 UTC\n"
+"POT-Creation-Date: 2026-10-04 03:27 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -192,24 +192,24 @@ msgstr ""
 
 #. [lua]: air.describe
 #. [lua]: ew.decoy_menu_command
-#: lua/sw_air.lua:525
+#: lua/sw_air.lua:534
 #: lua/sw_ew.lua:851
 msgid "left"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:527
+#: lua/sw_air.lua:536
 msgid "Accuracy"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:528
+#: lua/sw_air.lua:537
 msgid "bombers"
 msgstr ""
 
 #. [lua]: air.describe
 #. [dummy]: id=sw_ability_anti_air
-#: lua/sw_air.lua:529
+#: lua/sw_air.lua:538
 #: units/hte_imperial.cfg:582
 #: units/hte_new_republic.cfg:444
 #: units/tlc_units.cfg:916
@@ -218,74 +218,74 @@ msgstr ""
 
 #. [lua]: air.describe
 #. [lua]: ew.describe
-#: lua/sw_air.lua:530
+#: lua/sw_air.lua:539
 #: lua/sw_ew.lua:885
 msgid "jamming"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:531
+#: lua/sw_air.lua:540
 msgid "(plus each target's terrain cover)"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:532
+#: lua/sw_air.lua:541
 msgid "In the area:"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:532
+#: lua/sw_air.lua:541
 msgid "enemy"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:533
+#: lua/sw_air.lua:542
 msgid "friendly"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:534
+#: lua/sw_air.lua:543
 msgid "expected damage to enemies / friends:"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:535
+#: lua/sw_air.lua:544
 msgid "Danger close: friendly units in the area!"
 msgstr ""
 
 #. [lua]: air.describe
-#: lua/sw_air.lua:536
+#: lua/sw_air.lua:545
 msgid "Called by"
 msgstr ""
 
 #. [lua]: air.menu_command
 #. [lua]: ew.decoy_menu_command
 #. [lua]: force.open_menu
-#: lua/sw_air.lua:558
+#: lua/sw_air.lua:567
 #: lua/sw_ew.lua:846
-#: lua/sw_force.lua:655
+#: lua/sw_force.lua:682
 msgid "Cancel"
 msgstr ""
 
 #. [lua]: air.menu_command
 #. [message]: speaker=narrator
-#: lua/sw_air.lua:559
-#: utils/hte_macros.cfg:371
+#: lua/sw_air.lua:568
+#: utils/hte_macros.cfg:379
 msgid "Air support"
 msgstr ""
 
 #. [lua]: air.status_line
-#: lua/sw_air.lua:572
+#: lua/sw_air.lua:581
 msgid "Forward observer, range"
 msgstr ""
 
 #. [lua]: air.status_line
-#: lua/sw_air.lua:572
+#: lua/sw_air.lua:581
 msgid "Air support:"
 msgstr ""
 
 #. [lua]: air.status_line
-#: lua/sw_air.lua:573
+#: lua/sw_air.lua:582
 msgid "none available"
 msgstr ""
 
@@ -333,7 +333,7 @@ msgstr ""
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:835
-#: lua/sw_force.lua:499
+#: lua/sw_force.lua:526
 msgid "north"
 msgstr ""
 
@@ -341,7 +341,7 @@ msgstr ""
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:835
-#: lua/sw_force.lua:499
+#: lua/sw_force.lua:526
 msgid "north-east"
 msgstr ""
 
@@ -349,7 +349,7 @@ msgstr ""
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:835
-#: lua/sw_force.lua:499
+#: lua/sw_force.lua:526
 msgid "south-east"
 msgstr ""
 
@@ -357,7 +357,7 @@ msgstr ""
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:835
-#: lua/sw_force.lua:499
+#: lua/sw_force.lua:526
 msgid "south"
 msgstr ""
 
@@ -365,7 +365,7 @@ msgstr ""
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:835
-#: lua/sw_force.lua:499
+#: lua/sw_force.lua:526
 msgid "south-west"
 msgstr ""
 
@@ -373,7 +373,7 @@ msgstr ""
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:835
-#: lua/sw_force.lua:499
+#: lua/sw_force.lua:526
 msgid "north-west"
 msgstr ""
 
@@ -562,7 +562,7 @@ msgstr ""
 #. [message]: speaker=narrator
 #: lua/sw_doctrine.lua:861
 #: lua/sw_systems.lua:201
-#: utils/hte_macros.cfg:375
+#: utils/hte_macros.cfg:383
 msgid "Thrawn's doctrine"
 msgstr ""
 
@@ -705,7 +705,7 @@ msgstr ""
 #. [lua]: ew.describe
 #. [lua]: force.power_summary
 #: lua/sw_ew.lua:884
-#: lua/sw_force.lua:586
+#: lua/sw_force.lua:613
 msgid "range"
 msgstr ""
 
@@ -798,293 +798,293 @@ msgid "Your sensors:"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:197
+#: lua/sw_force.lua:224
 msgid "unknown power"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:200
+#: lua/sw_force.lua:227
 msgid "not known to this unit"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:201
+#: lua/sw_force.lua:228
 msgid "suppressed by a ysalamiri"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:203
+#: lua/sw_force.lua:230
 msgid "not enough Force Points"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:205
+#: lua/sw_force.lua:232
 msgid "already used this turn"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:208
+#: lua/sw_force.lua:235
 msgid "recovering"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:209
+#: lua/sw_force.lua:236
 msgid "no action left"
 msgstr ""
 
 #. [lua]: force.displace
-#: lua/sw_force.lua:277
+#: lua/sw_force.lua:304
 msgid "Force Push"
 msgstr ""
 
 #. [lua]: force.displace
-#: lua/sw_force.lua:278
+#: lua/sw_force.lua:305
 msgid "Hurl an enemy one hex straight away from you. If a unit, a wall or the edge of the battlefield is in the way, it slams into it for 6 impact damage and stays where it is."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:284
+#: lua/sw_force.lua:311
 msgid "pushed"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:294
+#: lua/sw_force.lua:321
 msgid "Force Pull"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:295
+#: lua/sw_force.lua:322
 msgid "Drag an enemy one hex straight toward you. It must be at least two hexes away. Nothing happens if the way is blocked."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:301
+#: lua/sw_force.lua:328
 msgid "pulled"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:306
+#: lua/sw_force.lua:333
 msgid "Force Speed"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:307
+#: lua/sw_force.lua:334
 msgid "Gain 2 extra movement points right away. They can be used until the end of this turn."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:310
+#: lua/sw_force.lua:337
 msgid "Force speed"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:315
+#: lua/sw_force.lua:342
 msgid "Force Sense"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:316
+#: lua/sw_force.lua:343
 msgid "Reveal every living enemy within 4 hexes until your next turn, even in fog or deep forest; hiding creatures such as Noghri lose their stealth. Living presences up to 8 hexes away are marked on the map as unknown contacts. Droids, technological cloaking and anything inside a ysalamiri field cannot be sensed."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:342
+#: lua/sw_force.lua:369
 msgid "presence"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:359
+#: lua/sw_force.lua:386
 msgid "revealed"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:360
+#: lua/sw_force.lua:387
 msgid "felt further out"
 msgstr ""
 
 #. [lua]: force.restore_sensed_fog
-#: lua/sw_force.lua:390
+#: lua/sw_force.lua:417
 msgid "Mind Trick"
 msgstr ""
 
 #. [lua]: force.restore_sensed_fog
-#: lua/sw_force.lua:391
+#: lua/sw_force.lua:418
 msgid "Cloud a weak-minded enemy: on its next turn it cannot move or attack, and it loses overwatch. Leaders, Force users and units above level 2 resist."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:400
+#: lua/sw_force.lua:427
 msgid "these aren't the droids…"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:405
+#: lua/sw_force.lua:432
 msgid "Force Choke"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:407
+#: lua/sw_force.lua:434
 msgid "Crush an enemy's throat from a distance: 10 arcane damage (dark side)."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:416
+#: lua/sw_force.lua:443
 msgid "Blaster Deflection"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:417
+#: lua/sw_force.lua:444
 msgid "Works by itself: turns aside an overwatch volley aimed at this unit, spending 1 Force Point each time. Fails inside a ysalamiri field."
 msgstr ""
 
 #. [lua]: force.try_deflect
-#: lua/sw_force.lua:429
+#: lua/sw_force.lua:456
 msgid "deflected"
 msgstr ""
 
 #. [lua]: force.on_side_turn
 #. [lua]: ow.can_enter
-#: lua/sw_force.lua:456
+#: lua/sw_force.lua:483
 #: lua/sw_overwatch.lua:89
 msgid "dazed"
 msgstr ""
 
 #. [lua]: force.status_text
-#: lua/sw_force.lua:487
+#: lua/sw_force.lua:514
 msgid "Force Points:"
 msgstr ""
 
 #. [lua]: force.status_text
-#: lua/sw_force.lua:488
+#: lua/sw_force.lua:515
 msgid "regenerates"
 msgstr ""
 
 #. [lua]: force.status_text
-#: lua/sw_force.lua:488
+#: lua/sw_force.lua:515
 msgid "turn"
 msgstr ""
 
 #. [lua]: force.status_text
 #. [lua]: sw_systems.show_status
-#: lua/sw_force.lua:490
+#: lua/sw_force.lua:517
 #: lua/sw_systems.lua:235
 msgid "Inside a ysalamiri field: the Force is blocked here."
 msgstr ""
 
 #. [lua]: terrain_label
-#: lua/sw_force.lua:513
+#: lua/sw_force.lua:540
 msgid "terrain"
 msgstr ""
 
 #. [lua]: force.displacement_preview
-#: lua/sw_force.lua:531
+#: lua/sw_force.lua:558
 msgid "the edge of the battlefield"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:556
-#: lua/sw_force.lua:559
+#: lua/sw_force.lua:583
+#: lua/sw_force.lua:586
 msgid "Pushed"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:556
-#: lua/sw_force.lua:564
+#: lua/sw_force.lua:583
+#: lua/sw_force.lua:591
 msgid "to"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:559
+#: lua/sw_force.lua:586
 msgid "into"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:560
+#: lua/sw_force.lua:587
 msgid "slams for"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:560
+#: lua/sw_force.lua:587
 msgid "impact damage"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:561
+#: lua/sw_force.lua:588
 msgid "and stays in place."
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:564
+#: lua/sw_force.lua:591
 msgid "Pulled"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:566
+#: lua/sw_force.lua:593
 msgid "Blocked by"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:566
+#: lua/sw_force.lua:593
 msgid "cannot be pulled"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:567
+#: lua/sw_force.lua:594
 msgid "(no damage)."
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:578
+#: lua/sw_force.lua:605
 msgid "passive"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:579
+#: lua/sw_force.lua:606
 msgid "FP each time"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:581
+#: lua/sw_force.lua:608
 msgid "FP"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:584
+#: lua/sw_force.lua:611
 msgid "self"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:590
+#: lua/sw_force.lua:617
 msgid "recovers in"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:590
+#: lua/sw_force.lua:617
 msgid "turn(s)"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:592
+#: lua/sw_force.lua:619
 msgid "once per turn"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:593
+#: lua/sw_force.lua:620
 msgid "uses your attack"
 msgstr ""
 
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:624
+#: lua/sw_force.lua:651
 msgid "no valid target in range"
 msgstr ""
 
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:631
+#: lua/sw_force.lua:658
 msgid "Close"
 msgstr ""
 
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:632
+#: lua/sw_force.lua:659
 msgid "The Force"
 msgstr ""
 
@@ -1497,7 +1497,7 @@ msgstr ""
 #. [objective]: condition=lose
 #: scenarios/dark_force_rising/03_jomark.cfg:135
 #: scenarios/heir_to_the_empire/03_adrift.cfg:158
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:175
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:178
 msgid "Death of Luke Skywalker"
 msgstr ""
 
@@ -1818,8 +1818,8 @@ msgstr ""
 #. [unit]: id=sw_hte05_mara, type=sw_hero_mara
 #. [message]: speaker=narrator
 #: scenarios/dark_force_rising/06_the_mad_jedi.cfg:152
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:275
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:316
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:278
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:319
 #: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:154
 #: scenarios/the_last_command/02_the_smugglers_council.cfg:112
 #: scenarios/the_last_command/04_landfall_on_wayland.cfg:105
@@ -2702,84 +2702,84 @@ msgid "fists"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:146
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:149
 msgid "Karrde's Office"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:154
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:157
 msgid "Vehicle Shed"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:159
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:162
 msgid "Recover your lightsaber from Karrde's office"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:171
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:174
 msgid "Reach the vehicle shed with your lightsaber"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:180
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:183
 msgid "The whole compound is inside a ysalamiri bubble: Luke's Force abilities and deflection do not work."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:183
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:186
 msgid "Guards stay at their posts until something comes within reach."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:192
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:195
 msgid "Nothing. It's like going deaf. Karrde's lizards are everywhere in this place."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:196
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:199
 msgid "All right. One guard at the door. My lightsaber will be in Karrde's office. I'm not leaving without it."
 msgstr ""
 
 #. [effect]: type=fire
 #. [attack]: type=fire
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:220
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:223
 #: units/hte_heroes.cfg:977
 msgid "hold-out blaster"
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:230
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:233
 msgid "Somebody's spare hold-out blaster. Careless of them."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:255
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:258
 msgid "There you are."
 msgstr ""
 
 #. [message]: speaker=sw_hte05_mara
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:286
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:289
 msgid "Skywalker's loose! He's in the main house. Nobody shoots him except me."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:290
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:293
 msgid "She means that. Time to find a vehicle."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:311
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:314
 msgid "A skiff. Fueled, too. Let's see how far it gets me."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:317
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:320
 msgid "Not far, Skywalker. I'm right behind you."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:328
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:331
 msgid "Not without my lightsaber."
 msgstr ""
 
@@ -5741,30 +5741,30 @@ msgid "Imperial starfighters may strafe or bomb your positions. Bombing runs are
 msgstr ""
 
 #. [note]
-#: utils/hte_macros.cfg:257
+#: utils/hte_macros.cfg:265
 msgid "40% of finishing gold carries over to the next mission."
 msgstr ""
 
 #. [message]: speaker=narrator
 #. [set_menu_item]: id=sw_field_manual
-#: utils/hte_macros.cfg:329
-#: utils/hte_macros.cfg:345
-#: utils/hte_macros.cfg:340
+#: utils/hte_macros.cfg:337
+#: utils/hte_macros.cfg:353
+#: utils/hte_macros.cfg:348
 msgid "Field Manual"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:346
+#: utils/hte_macros.cfg:354
 msgid "Which section of the field manual?"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:347
+#: utils/hte_macros.cfg:355
 msgid "The Force and ysalamiri"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:347
+#: utils/hte_macros.cfg:355
 msgid ""
 "Force users carry Force Points, shown as blue pips beside them. They regain a few each turn. Right-click a Force user and choose <b>The Force…</b> to spend them: Force Push and Pull move an enemy one hex, Force Speed adds movement, Force Sense reveals every living enemy within 4 hexes until your next turn, even hidden Noghri or enemies in fog, and marks presences up to 8 hexes away, Mind Trick dazes a weak-minded enemy for a turn, and Force Choke is the dark side's weapon. Blaster Deflection works by itself, turning aside overwatch fire for one Force Point.\n"
 "\n"
@@ -5772,12 +5772,12 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:350
+#: utils/hte_macros.cfg:358
 msgid "Overwatch"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:350
+#: utils/hte_macros.cfg:358
 msgid ""
 "Right-click a soldier and choose <b>Overwatch</b> to give up this turn's attack and watch instead. A gold crosshair marks the unit, with one bar per reaction left. Until its next turn, an enemy that moves within its range and in plain sight draws reaction fire. The moving unit stops when fired on but keeps its remaining moves.\n"
 "\n"
@@ -5785,12 +5785,12 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:353
+#: utils/hte_macros.cfg:361
 msgid "Blaster fire"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:353
+#: utils/hte_macros.cfg:361
 msgid ""
 "The colour of a bolt tells you who is shooting: red for the Imperial Remnant and other dark forces, blue or green for the New Republic and its allies, orange for independent smugglers.\n"
 "\n"
@@ -5798,12 +5798,12 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:356
+#: utils/hte_macros.cfg:364
 msgid "Space battles"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:356
+#: utils/hte_macros.cfg:364
 msgid ""
 "Open space can only be crossed by starfighters and capital ships; ground troops stay aboard. Asteroid fields cost starfighters extra movement but give them cover, and capital ships cannot enter them.\n"
 "\n"
@@ -5811,12 +5811,12 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:359
+#: utils/hte_macros.cfg:367
 msgid "Bases and settlements"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:359
+#: utils/hte_macros.cfg:367
 msgid ""
 "Command bunkers and shuttle landing pads are keeps: a leader standing on one can call in reinforcements onto the surrounding bunker aprons or landing aprons.\n"
 "\n"
@@ -5824,22 +5824,22 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:362
+#: utils/hte_macros.cfg:370
 msgid "Heroes"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:362
+#: utils/hte_macros.cfg:370
 msgid "Named heroes cannot be replaced. If one of the heroes named in a mission's objectives falls, the mission is lost. Heroes who survive continue to the next mission."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:363
+#: utils/hte_macros.cfg:371
 msgid "Stealth and hidden hazards"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:363
+#: utils/hte_macros.cfg:371
 msgid ""
 "Noghri commandos are invisible in forest or at night, unless an enemy with <i>keen senses</i> is within two hexes of them. They are revealed when an enemy moves next to them.\n"
 "\n"
@@ -5847,12 +5847,12 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:366
+#: utils/hte_macros.cfg:374
 msgid "Sensors and cloaking"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:366
+#: utils/hte_macros.cfg:374
 msgid ""
 "Your sensors build a picture of enemies you cannot see. An amber dashed hex with a question mark is an unknown contact. An amber hex with a symbol is classified by type: capital ship (wedge), starfighter (X), vehicle, infantry, creature, or object. A red hex with corner brackets is identified but out of sight. Red brackets around a visible ship mean you have burned through its cloak. Right-click a marked hex and choose <b>Sensor contact</b> to see the strength of the reading and what it is made of.\n"
 "\n"
@@ -5862,7 +5862,7 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:371
+#: utils/hte_macros.cfg:379
 msgid ""
 "Starfighters support ground battles from off the map. When your side has sorties, right-click a hex that one of your forward observers can see (or tracks on sensors) within range and choose <b>Call air support</b>. Forward observers are commanders such as Han, Leia and Lando, sergeants, commandos and scouts; calling uses the observer's attack, and only one sortie flies per turn.\n"
 "\n"
@@ -5870,17 +5870,17 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:374
+#: utils/hte_macros.cfg:382
 msgid "Ranks"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:374
+#: utils/hte_macros.cfg:382
 msgid "Veterans wear their rank. A unit that rises past its highest level gains a rank — Veteran, Seasoned veteran, Elite — shown as insignia on the unit: gold chevrons for the New Republic, the red-and-blue rank plaque for the Imperial Remnant, brass studs for independents, violet marks for dark Jedi. Promoted units such as sergeants and smuggler veterans start at the first rank. Each rank also brings the usual +3 maximum hit points and a full heal."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:375
+#: utils/hte_macros.cfg:383
 msgid ""
 "Grand Admiral Thrawn learns his enemies. His forces gain Insight from what they observe: how you move, the weapons you use, the targets you choose, your reinforcements, your formations and your tactics. Repeating yourself teaches him faster. Captured art, archives and intelligence can teach him too. Red pips over his commander show how far his doctrine has come.\n"
 "\n"
@@ -5888,7 +5888,7 @@ msgid ""
 msgstr ""
 
 #. [option]
-#: utils/hte_macros.cfg:379
+#: utils/hte_macros.cfg:387
 msgid "Close the manual"
 msgstr ""
 

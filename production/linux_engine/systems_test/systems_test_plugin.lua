@@ -12,7 +12,7 @@ local PHASE = "main"
 
 local STEPS = {
   "fp", "targets", "slam_wall", "check_slam_wall", "slam_occupied", "check_slam_occupied",
-  "push_pull", "menu_text", "menu_dialog", "check_menu_dialog", "slam_edge", "check_slam_edge", "fields", "ow_fire", "check_ow_fire",
+  "push_pull", "world_field", "menu_text", "menu_dialog", "check_menu_dialog", "slam_edge", "check_slam_edge", "fields", "ow_fire", "check_ow_fire",
   "multi_fire", "check_multi", "deflect", "check_deflect", "deflect_field", "check_deflect_field",
   "hidden_and_trick", "arcs_and_hooks", "ai_turn", "check_ai_turn", "recursion", "check_recursion", "sense_choke", "check_choke", "prepare_save",
 }
@@ -179,6 +179,26 @@ local function plugin(events, context, info)
       check("pull moves the target one hex closer", wesnoth.map.distance_between(5, 5, t.x, t.y) == 2, t.x .. "," .. t.y)
       force.on_side_turn(1)
       check("cooldown ticks down at turn start", tonumber(u("t_luke").variables.sw_cd_pull) == 0)
+    end
+
+    -- A whole-map null field (Prisoner of Myrkr: ysalamiri in every tree).
+    function S.world_field()
+      clear()
+      local luke = place("sw_hero_luke", 1, 2, 13, "t_luke")
+      place("sw_unit_im_stormtrooper", 2, 3, 13, "t_v")
+      check("far from any frame, Luke can use the Force", (force.can_use(luke, "push")))
+      force.set_world_field(true)
+      local ok, why = force.can_use(u("t_luke"), "push")
+      check("in a world null field no power works anywhere", not ok and tostring(why):find("ysalamiri") ~= nil, why)
+      check("deflection fails too", not force.try_deflect(u("t_luke"), u("t_v")))
+      check("the field covers every hex for WML filters", #wml.array_access.get("sw_ysalamiri_zone") == #wesnoth.map.find{}, #wml.array_access.get("sw_ysalamiri_zone") .. "/" .. #wesnoth.map.find{})
+      check("no tint is drawn for a world field", #wml.array_access.get("sw_force_null_drawn") == 0)
+      check("Luke shows the suppression marker", table.concat(u("t_luke").overlays, ","):find("sw%-force%-suppressed") ~= nil)
+      local fp = tonumber(u("t_luke").variables.sw_fp)
+      force.on_side_turn(1)
+      check("no Force Point regeneration inside it", tonumber(u("t_luke").variables.sw_fp) == fp)
+      force.set_world_field(false)
+      check("turning it off restores the Force", (force.can_use(u("t_luke"), "push")))
     end
 
     -- Menu descriptions and the Push/Pull direction preview.
