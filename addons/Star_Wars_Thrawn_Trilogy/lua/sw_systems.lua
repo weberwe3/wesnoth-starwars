@@ -75,6 +75,14 @@ on("prestart", "sw_sys_prestart", function()
 	end
 	wml.array_access.set("sw_ow_index", {})
 	air.ensure_scenario()
+	-- The default AI only attacks adjacent targets; give every side the
+	-- stand-off ranged-fire candidate action (lua/sw_ai_ranged.lua). Done at
+	-- prestart only: saved games keep their AI configuration.
+	for _i, side in ipairs(core.active_sides()) do
+		wesnoth.wml_actions.modify_ai{ side = side, action = "add", path = "stage[main_loop].candidate_action",
+			T.candidate_action{ engine = "lua", name = "sw_ranged_fire", id = "sw_ranged_fire", max_score = 100010,
+				location = "~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua" } }
+	end
 	force.refresh_fields()
 	doctrine.on_prestart()
 	ew.on_prestart()
