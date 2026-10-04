@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-04 02:25 UTC\n"
+"POT-Creation-Date: 2026-10-04 02:52 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -193,7 +193,7 @@ msgstr ""
 #. [lua]: air.describe
 #. [lua]: ew.decoy_menu_command
 #: lua/sw_air.lua:525
-#: lua/sw_ew.lua:847
+#: lua/sw_ew.lua:851
 msgid "left"
 msgstr ""
 
@@ -219,7 +219,7 @@ msgstr ""
 #. [lua]: air.describe
 #. [lua]: ew.describe
 #: lua/sw_air.lua:530
-#: lua/sw_ew.lua:881
+#: lua/sw_ew.lua:885
 msgid "jamming"
 msgstr ""
 
@@ -262,8 +262,8 @@ msgstr ""
 #. [lua]: ew.decoy_menu_command
 #. [lua]: force.open_menu
 #: lua/sw_air.lua:558
-#: lua/sw_ew.lua:842
-#: lua/sw_force.lua:604
+#: lua/sw_ew.lua:846
+#: lua/sw_force.lua:655
 msgid "Cancel"
 msgstr ""
 
@@ -332,48 +332,48 @@ msgstr ""
 #. [lua]: ew.decoy_menu_visible
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
-#: lua/sw_ew.lua:831
-#: lua/sw_force.lua:448
+#: lua/sw_ew.lua:835
+#: lua/sw_force.lua:499
 msgid "north"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
-#: lua/sw_ew.lua:831
-#: lua/sw_force.lua:448
+#: lua/sw_ew.lua:835
+#: lua/sw_force.lua:499
 msgid "north-east"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
-#: lua/sw_ew.lua:831
-#: lua/sw_force.lua:448
+#: lua/sw_ew.lua:835
+#: lua/sw_force.lua:499
 msgid "south-east"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
-#: lua/sw_ew.lua:831
-#: lua/sw_force.lua:448
+#: lua/sw_ew.lua:835
+#: lua/sw_force.lua:499
 msgid "south"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
-#: lua/sw_ew.lua:831
-#: lua/sw_force.lua:448
+#: lua/sw_ew.lua:835
+#: lua/sw_force.lua:499
 msgid "south-west"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
 #. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
-#: lua/sw_ew.lua:831
-#: lua/sw_force.lua:448
+#: lua/sw_ew.lua:835
+#: lua/sw_force.lua:499
 msgid "north-west"
 msgstr ""
 
@@ -596,480 +596,495 @@ msgid "false contact"
 msgstr ""
 
 #. [lua]: ew.can_sweep
-#: lua/sw_ew.lua:603
+#: lua/sw_ew.lua:605
 msgid "no active sensors"
 msgstr ""
 
 #. [lua]: ew.can_sweep
-#: lua/sw_ew.lua:604
+#: lua/sw_ew.lua:606
 msgid "already sweeping"
 msgstr ""
 
 #. [lua]: ew.can_sweep
 #. [lua]: ew.can_decoy
 #. [lua]: ow.can_enter
-#: lua/sw_ew.lua:605
-#: lua/sw_ew.lua:631
+#: lua/sw_ew.lua:607
+#: lua/sw_ew.lua:633
 #: lua/sw_overwatch.lua:88
 msgid "no attack left"
 msgstr ""
 
 #. [lua]: ew.sweep
-#: lua/sw_ew.lua:621
+#: lua/sw_ew.lua:623
 msgid "sensor sweep:"
 msgstr ""
 
 #. [lua]: ew.sweep
-#: lua/sw_ew.lua:621
+#: lua/sw_ew.lua:623
 msgid "contact(s)"
 msgstr ""
 
 #. [lua]: ew.can_decoy
-#: lua/sw_ew.lua:629
+#: lua/sw_ew.lua:631
 msgid "no decoys"
 msgstr ""
 
 #. [lua]: ew.can_decoy
-#: lua/sw_ew.lua:630
+#: lua/sw_ew.lua:632
 msgid "decoys expended"
 msgstr ""
 
 #. [lua]: ew.cloak_hides_cfg
 #. [hides]: id=sw_ability_cloaked
-#: lua/sw_ew.lua:798
+#: lua/sw_ew.lua:802
 #: units/tlc_units.cfg:793
 msgid "cloaked"
 msgstr ""
 
 #. [lua]: ew.cloak_hides_cfg
 #. [hides]: id=sw_ability_cloaked
-#: lua/sw_ew.lua:799
+#: lua/sw_ew.lua:803
 #: units/tlc_units.cfg:794
 msgid "A cloaking field hides this unit until an enemy team identifies it (sensor sweeps, close sensors or physical contact) or it fires. Partial sensor contacts are shown to the enemy as markers."
 msgstr ""
 
 #. [lua]: ew.decoy_menu_command
-#: lua/sw_ew.lua:844
+#: lua/sw_ew.lua:848
 msgid "Sensor decoy"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_command
-#: lua/sw_ew.lua:845
+#: lua/sw_ew.lua:849
 msgid "Launch a decoy that enemy sensors read as a"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_command
-#: lua/sw_ew.lua:846
+#: lua/sw_ew.lua:850
 msgid "It lasts until your turn after next, or until enemy sensors see through it. Uses this turn's attack."
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:873
+#: lua/sw_ew.lua:877
 msgid "In physical contact with your forces."
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:875
+#: lua/sw_ew.lua:879
 msgid "Sensor strength"
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:876
+#: lua/sw_ew.lua:880
 msgid "contact"
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:876
+#: lua/sw_ew.lua:880
 msgid "classify"
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:877
+#: lua/sw_ew.lua:881
 msgid "identify"
 msgstr ""
 
 #. [lua]: ew.describe
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:878
-#: lua/sw_ew.lua:912
+#: lua/sw_ew.lua:882
+#: lua/sw_ew.lua:918
 msgid "sensors"
 msgstr ""
 
 #. [lua]: ew.describe
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:879
-#: lua/sw_ew.lua:920
+#: lua/sw_ew.lua:883
+#: lua/sw_ew.lua:926
 msgid "sweep"
 msgstr ""
 
 #. [lua]: ew.describe
 #. [lua]: force.power_summary
-#: lua/sw_ew.lua:880
-#: lua/sw_force.lua:535
+#: lua/sw_ew.lua:884
+#: lua/sw_force.lua:586
 msgid "range"
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:882
+#: lua/sw_ew.lua:886
 msgid "environment"
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:883
+#: lua/sw_ew.lua:887
 msgid "target emissions (net of cloak and cover)"
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:884
+#: lua/sw_ew.lua:888
 msgid "doctrine identification"
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:887
+#: lua/sw_ew.lua:891
 msgid "To identify: an active sweep, closer sensors, ECCM against jamming, or contact."
 msgstr ""
 
 #. [lua]: ew.describe
-#: lua/sw_ew.lua:890
+#: lua/sw_ew.lua:894
+msgid "Felt through the Force: a living presence, not yet seen."
+msgstr ""
+
+#. [lua]: ew.describe
+#: lua/sw_ew.lua:896
 msgid "From intelligence reports."
 msgstr ""
 
 #. [lua]: ew.contact_menu_command
 #. [lua]: mover_matters
-#: lua/sw_ew.lua:902
+#: lua/sw_ew.lua:908
 #: lua/sw_systems.lua:187
 msgid "Sensor contact"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:912
 #: lua/sw_ew.lua:918
+#: lua/sw_ew.lua:924
 msgid "hexes"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:913
+#: lua/sw_ew.lua:919
 msgid "signature"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:915
+#: lua/sw_ew.lua:921
 msgid "cloak"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:916
+#: lua/sw_ew.lua:922
 msgid "active"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:916
+#: lua/sw_ew.lua:922
 msgid "down: fired this turn"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:918
+#: lua/sw_ew.lua:924
 msgid "ECM"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:919
+#: lua/sw_ew.lua:925
 msgid "ECCM"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:921
+#: lua/sw_ew.lua:927
 msgid "Sensors & EW:"
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:922
+#: lua/sw_ew.lua:928
 msgid "Sweeping: sensors boosted, emissions raised until its next turn."
 msgstr ""
 
 #. [lua]: ew.status_lines
-#: lua/sw_ew.lua:926
+#: lua/sw_ew.lua:932
 msgid "Your sensors:"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:196
+#: lua/sw_force.lua:197
 msgid "unknown power"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:199
+#: lua/sw_force.lua:200
 msgid "not known to this unit"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:200
+#: lua/sw_force.lua:201
 msgid "suppressed by a ysalamiri"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:202
+#: lua/sw_force.lua:203
 msgid "not enough Force Points"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:204
+#: lua/sw_force.lua:205
 msgid "already used this turn"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:207
+#: lua/sw_force.lua:208
 msgid "recovering"
 msgstr ""
 
 #. [lua]: force.can_use
-#: lua/sw_force.lua:208
+#: lua/sw_force.lua:209
 msgid "no action left"
 msgstr ""
 
 #. [lua]: force.displace
-#: lua/sw_force.lua:276
+#: lua/sw_force.lua:277
 msgid "Force Push"
 msgstr ""
 
 #. [lua]: force.displace
-#: lua/sw_force.lua:277
+#: lua/sw_force.lua:278
 msgid "Hurl an enemy one hex straight away from you. If a unit, a wall or the edge of the battlefield is in the way, it slams into it for 6 impact damage and stays where it is."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:283
+#: lua/sw_force.lua:284
 msgid "pushed"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:293
+#: lua/sw_force.lua:294
 msgid "Force Pull"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:294
+#: lua/sw_force.lua:295
 msgid "Drag an enemy one hex straight toward you. It must be at least two hexes away. Nothing happens if the way is blocked."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:300
+#: lua/sw_force.lua:301
 msgid "pulled"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:305
+#: lua/sw_force.lua:306
 msgid "Force Speed"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:306
+#: lua/sw_force.lua:307
 msgid "Gain 2 extra movement points right away. They can be used until the end of this turn."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:309
+#: lua/sw_force.lua:310
 msgid "Force speed"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:314
+#: lua/sw_force.lua:315
 msgid "Force Sense"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:315
-msgid "Feel every living being within 4 hexes. Hidden creatures there (such as Noghri) lose their stealth until your next turn. It cannot see through technological cloaking."
+#: lua/sw_force.lua:316
+msgid "Reveal every living enemy within 4 hexes until your next turn, even in fog or deep forest; hiding creatures such as Noghri lose their stealth. Living presences up to 8 hexes away are marked on the map as unknown contacts. Droids, technological cloaking and anything inside a ysalamiri field cannot be sensed."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:333
-msgid "presences"
+#: lua/sw_force.lua:342
+msgid "presence"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:340
+#: lua/sw_force.lua:359
+msgid "revealed"
+msgstr ""
+
+#. [lua]: apply
+#: lua/sw_force.lua:360
+msgid "felt further out"
+msgstr ""
+
+#. [lua]: force.restore_sensed_fog
+#: lua/sw_force.lua:390
 msgid "Mind Trick"
 msgstr ""
 
-#. [lua]: apply
-#: lua/sw_force.lua:341
+#. [lua]: force.restore_sensed_fog
+#: lua/sw_force.lua:391
 msgid "Cloud a weak-minded enemy: on its next turn it cannot move or attack, and it loses overwatch. Leaders, Force users and units above level 2 resist."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:350
+#: lua/sw_force.lua:400
 msgid "these aren't the droids…"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:355
+#: lua/sw_force.lua:405
 msgid "Force Choke"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:357
+#: lua/sw_force.lua:407
 msgid "Crush an enemy's throat from a distance: 10 arcane damage (dark side)."
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:366
+#: lua/sw_force.lua:416
 msgid "Blaster Deflection"
 msgstr ""
 
 #. [lua]: apply
-#: lua/sw_force.lua:367
+#: lua/sw_force.lua:417
 msgid "Works by itself: turns aside an overwatch volley aimed at this unit, spending 1 Force Point each time. Fails inside a ysalamiri field."
 msgstr ""
 
 #. [lua]: force.try_deflect
-#: lua/sw_force.lua:379
+#: lua/sw_force.lua:429
 msgid "deflected"
 msgstr ""
 
 #. [lua]: force.on_side_turn
 #. [lua]: ow.can_enter
-#: lua/sw_force.lua:406
+#: lua/sw_force.lua:456
 #: lua/sw_overwatch.lua:89
 msgid "dazed"
 msgstr ""
 
 #. [lua]: force.status_text
-#: lua/sw_force.lua:436
+#: lua/sw_force.lua:487
 msgid "Force Points:"
 msgstr ""
 
 #. [lua]: force.status_text
-#: lua/sw_force.lua:437
+#: lua/sw_force.lua:488
 msgid "regenerates"
 msgstr ""
 
 #. [lua]: force.status_text
-#: lua/sw_force.lua:437
+#: lua/sw_force.lua:488
 msgid "turn"
 msgstr ""
 
 #. [lua]: force.status_text
 #. [lua]: sw_systems.show_status
-#: lua/sw_force.lua:439
+#: lua/sw_force.lua:490
 #: lua/sw_systems.lua:235
 msgid "Inside a ysalamiri field: the Force is blocked here."
 msgstr ""
 
 #. [lua]: terrain_label
-#: lua/sw_force.lua:462
+#: lua/sw_force.lua:513
 msgid "terrain"
 msgstr ""
 
 #. [lua]: force.displacement_preview
-#: lua/sw_force.lua:480
+#: lua/sw_force.lua:531
 msgid "the edge of the battlefield"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:505
-#: lua/sw_force.lua:508
+#: lua/sw_force.lua:556
+#: lua/sw_force.lua:559
 msgid "Pushed"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:505
-#: lua/sw_force.lua:513
+#: lua/sw_force.lua:556
+#: lua/sw_force.lua:564
 msgid "to"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:508
+#: lua/sw_force.lua:559
 msgid "into"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:509
+#: lua/sw_force.lua:560
 msgid "slams for"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:509
+#: lua/sw_force.lua:560
 msgid "impact damage"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:510
+#: lua/sw_force.lua:561
 msgid "and stays in place."
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:513
+#: lua/sw_force.lua:564
 msgid "Pulled"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:515
+#: lua/sw_force.lua:566
 msgid "Blocked by"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:515
+#: lua/sw_force.lua:566
 msgid "cannot be pulled"
 msgstr ""
 
 #. [lua]: force.displacement_text
-#: lua/sw_force.lua:516
+#: lua/sw_force.lua:567
 msgid "(no damage)."
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:527
+#: lua/sw_force.lua:578
 msgid "passive"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:528
+#: lua/sw_force.lua:579
 msgid "FP each time"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:530
+#: lua/sw_force.lua:581
 msgid "FP"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:533
+#: lua/sw_force.lua:584
 msgid "self"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:539
+#: lua/sw_force.lua:590
 msgid "recovers in"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:539
+#: lua/sw_force.lua:590
 msgid "turn(s)"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:541
+#: lua/sw_force.lua:592
 msgid "once per turn"
 msgstr ""
 
 #. [lua]: force.power_summary
-#: lua/sw_force.lua:542
+#: lua/sw_force.lua:593
 msgid "uses your attack"
 msgstr ""
 
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:573
+#: lua/sw_force.lua:624
 msgid "no valid target in range"
 msgstr ""
 
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:580
+#: lua/sw_force.lua:631
 msgid "Close"
 msgstr ""
 
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:581
+#: lua/sw_force.lua:632
 msgid "The Force"
 msgstr ""
 
@@ -5751,7 +5766,7 @@ msgstr ""
 #. [message]: speaker=narrator
 #: utils/hte_macros.cfg:347
 msgid ""
-"Force users carry Force Points, shown as blue pips beside them. They regain a few each turn. Right-click a Force user and choose <b>The Force…</b> to spend them: Force Push and Pull move an enemy one hex, Force Speed adds movement, Force Sense reveals hidden creatures nearby, Mind Trick dazes a weak-minded enemy for a turn, and Force Choke is the dark side's weapon. Blaster Deflection works by itself, turning aside overwatch fire for one Force Point.\n"
+"Force users carry Force Points, shown as blue pips beside them. They regain a few each turn. Right-click a Force user and choose <b>The Force…</b> to spend them: Force Push and Pull move an enemy one hex, Force Speed adds movement, Force Sense reveals every living enemy within 4 hexes until your next turn, even hidden Noghri or enemies in fog, and marks presences up to 8 hexes away, Mind Trick dazes a weak-minded enemy for a turn, and Force Choke is the dark side's weapon. Blaster Deflection works by itself, turning aside overwatch fire for one Force Point.\n"
 "\n"
 "A ysalamiri pushes the Force back in a bubble around itself, shown as violet hexes. A Force user inside the bubble shows a violet slashed ring: no powers, no deflection, no regeneration, and no Force agility or healing. Nothing inside the bubble can be targeted by a Force power either. A carried ysalamiri moves its bubble with its bearer."
 msgstr ""
