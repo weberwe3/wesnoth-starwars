@@ -67,6 +67,34 @@ action refuses targets further away. The candidate action
 - Each unit is tried once per turn. All iteration is in a fixed order, so
   replays match.
 
+## Flanking
+
+Owner design, 2026-10-04: surrounding a target makes it easier to hit.
+
+- **Rule:** when attacking, each unit hostile to the target that stands next
+  to it on its far side gives +10% chance to hit, up to +20%. Far side means
+  adjacent to the target and farther from the attacker than the target is.
+  - For melee, that is the three hexes behind the target.
+  - For a shot from 2+ hexes, it is the hexes behind the target along the
+    line of fire.
+- **Who counts:** only armed, non-petrified units. The attacker never counts.
+- **Offense only:** flanking never applies to return fire.
+- **Implementation:** the `sw_special_flanking` weapon special lives in the
+  macro `SW_SPECIAL_FLANKING` (generated `units/00_sw_specials.cfg`). Every
+  weapon of every unit type references it.
+  - It uses two tiers (+10% and +20%), each a `[chance_to_hit]` special with a
+    `[filter_opponent]` WFL formula, in the same style as mainline backstab.
+  - The attack dialog therefore names the exact bonus. Both tiers have an
+    empty `name_inactive`, so they are hidden when they do not apply.
+  - WFL details, verified in the engine source:
+    - Inside `filter()`/`map()`, `self`, `loc` and `other` resolve against
+      the list element first, so the target and both hexes are bound up front
+      with `sw_`-named `where` variables.
+    - `and` evaluates both sides, so empty hexes are dropped before unit
+      fields are read.
+- **AI:** the stand-off ranged-fire action adds the same bonus
+  (`flank_bonus`) to its expected-damage model.
+
 ## Tests
 
 `run_systems_tests.py --suite air` checks, using the engine's combat
@@ -82,3 +110,6 @@ simulation and the weapons' range data:
 - the range special being listed with the weapon;
 - the AI's stand-off evaluation, and a real AI turn in which it fires on a
   pistol-armed target from 2 hexes.
+- flanking: +10% for one far-side ally, +20% for two, capped at +20% with
+  three; no bonus from allies beside the attacker or from a petrified unit;
+  no bonus on return fire; +10% on a 2-hex shot; the AI model agrees.

@@ -47,10 +47,30 @@ local function ranged_weapons(u)
 	return out
 end
 
+-- Flanking bonus for an attack on target from hex (x, y), mirroring the
+-- sw_special_flanking weapon special (units/00_sw_specials.cfg): +10% for each
+-- armed, non-petrified unit hostile to the target adjacent to it and farther
+-- from the attacking hex than the target is, at most +20%. mover is the
+-- attacking unit, which leaves its current hex to fire, so it never counts.
+local function flank_bonus(target, x, y, mover)
+	local d = wesnoth.map.distance_between(x, y, target.x, target.y)
+	local n = 0
+	for _i, loc in ipairs(wesnoth.map.find{ T.filter_adjacent_location{ x = target.x, y = target.y } }) do
+		local lx, ly = loc[1] or loc.x, loc[2] or loc.y
+		local f = wesnoth.units.get(lx, ly)
+		if f and f.id ~= mover.id and wesnoth.map.distance_between(lx, ly, x, y) > d
+			and wesnoth.sides.is_enemy(f.side, target.side) and not f.status.petrified and #f.attacks > 0 then
+			n = n + 1
+		end
+	end
+	return math.min(2, n) * 10
+end
+
 -- Expected damage of one weapon from distance d against a target standing on
--- target_loc, honouring its defence and resistance, falloff and aim.
-local function expected(a, falloff, bonus, d, target, target_loc)
-	local cth = 100 - target:defense_on(target_loc) + bonus - falloff * (d - 1)
+-- target_loc, honouring its defence and resistance, falloff, aim and any
+-- flanking bonus (flank; none for return fire, as flanking is offense only).
+local function expected(a, falloff, bonus, d, target, target_loc, flank)
+	local cth = 100 - target:defense_on(target_loc) + bonus + (flank or 0) - falloff * (d - 1)
 	cth = math.max(0, math.min(100, cth))
 	local dmg = a.damage * (100 - target:resistance_against(a.type)) / 100
 	return a.number * dmg * cth / 100
@@ -103,7 +123,8 @@ local function best_attack(side, tried)
 							local d = wesnoth.map.distance_between(x, y, e.x, e.y)
 							for _m, w in ipairs(weapons) do
 								if d >= w.min and d <= w.max then
-									local dealt = math.min(e.hitpoints, expected(w.attack, w.falloff, w.bonus, d, e, e_loc))
+									local dealt = math.min(e.hitpoints,
+										expected(w.attack, w.falloff, w.bonus, d, e, e_loc, flank_bonus(e, x, y, u)))
 									local taken = math.min(u.hitpoints, return_fire(e, u, { x = x, y = y }, d))
 									local kill = dealt >= e.hitpoints * 0.9 and e.max_hitpoints * 0.3 or 0
 									local rating = dealt + kill - taken * 0.8
@@ -159,5 +180,6 @@ end
 
 -- Exposed for the engine tests.
 ca.best_attack = best_attack
+ca.flank_bonus = flank_bonus
 
 return ca
