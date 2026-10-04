@@ -1210,6 +1210,75 @@ def range_special(name: str, max_range: int) -> str:
     )
 
 
+# Flanking (owner design, 2026-10-04): every weapon gets +FLANK_BONUS% chance to
+# hit for each unit hostile to the target standing on the target's far side,
+# up to FLANK_MAX%. Defined once as a WML macro in units/00_sw_specials.cfg
+# (sorted first in the units directory, so it exists before any unit file
+# uses it) and referenced from every attack.
+FLANK_BONUS = 10
+FLANK_MAX = 20
+
+# Hostile, armed, not petrified units adjacent to the target and farther from
+# the attacker than the target is: for a melee attack, the three hexes behind
+# the target; for a shot from range, the hexes behind it along the line of
+# fire. In a special's [filter_opponent] formula, self and loc are the target
+# and other is the attacking unit (installed src/units/filter.cpp).
+# Engine details (src/formula): inside filter()/map(), self, loc and other
+# names resolve against each list element first, so the target, its hex and
+# the attacker's hex are bound up front with sw_-named where variables; WFL
+# "and" evaluates both sides, so empty hexes are dropped before unit fields
+# are read. The count is followed by the tier test, then the where clause.
+FLANKERS_WFL = (
+    "size(filter(filter(map(filter(adjacent_locs(sw_here), 'sw_l', "
+    "distance_between(sw_l, sw_from) > sw_dist), 'sw_l', unit_at(sw_l)), "
+    "'sw_u', sw_u != null()), 'sw_u', enemy_of(sw_target, sw_u) and not sw_u.petrified and size(sw_u.attacks) > 0))"
+)
+FLANKERS_WHERE = ("where sw_target = self, sw_here = loc, sw_from = other.loc, "
+                  "sw_dist = distance_between(loc, other.loc)")
+
+
+def flanking_specials_wml() -> str:
+    """units/00_sw_specials.cfg: the SW_SPECIAL_FLANKING macro."""
+    tiers = []
+    steps = FLANK_MAX // FLANK_BONUS
+    for n in range(1, steps + 1):
+        bonus = n * FLANK_BONUS
+        test = f"= {n}" if n < steps else f">= {n}"
+        tiers.append(
+            "    [chance_to_hit]\n"
+            "        id=sw_special_flanking\n"
+            f"        name= _ \"flanking +{bonus}%\"\n"
+            "        # Empty inactive name and description: shown only while it applies.\n"
+            "        name_inactive=\"\"\n"
+            f"        description= _ \"The target is flanked: allies stand on its far side. +{FLANK_BONUS}% chance to "
+            f"hit for each, up to +{FLANK_MAX}%.\"\n"
+            "        description_inactive=\"\"\n"
+            f"        add={bonus}\n"
+            "        cumulative=yes\n"
+            "        active_on=offense\n"
+            "        [filter_opponent]\n"
+            f"            formula=\"({FLANKERS_WFL} {test}) {FLANKERS_WHERE}\"\n"
+            "        [/filter_opponent]\n"
+            "    [/chance_to_hit]\n"
+        )
+    return (
+        HEADER
+        + "\n"
+        "# Weapon specials shared by every unit file. Named 00_* so the directory\n"
+        "# include loads it first: a macro must be defined before it is used.\n"
+        "\n"
+        "# Flanking: when attacking, +10% chance to hit for each unit hostile to the\n"
+        "# target that stands adjacent to it on its far side -- farther from the\n"
+        "# attacker than the target is (for a melee attack, the three hexes behind\n"
+        "# the target). At most +20%. Petrified and unarmed units do not count, and\n"
+        "# it never applies to return fire. One special per tier, so the attack\n"
+        "# dialog names the exact bonus, and neither is listed when inactive.\n"
+        "#define SW_SPECIAL_FLANKING\n"
+        + "".join(tiers)
+        + "#enddef\n"
+    )
+
+
 def aimed_special() -> str:
     return (
         "[chance_to_hit]\n"
@@ -1263,6 +1332,7 @@ def attack_wml(a: dict, unit_slug: str, unit_id: str = "") -> str:
         blocks.append(range_special(a.get("base", a["name"]), a["max_range"]))
     if a.get("aimed"):
         blocks.append(aimed_special())
+    blocks.append("{SW_SPECIAL_FLANKING}")
     if blocks:
         lines.append("    [specials]")
         for block in blocks:
@@ -1357,7 +1427,7 @@ def movetypes_wml() -> str:
 
 
 def render() -> dict[str, str]:
-    files: dict[str, str] = {"hte_00_movetypes.cfg": movetypes_wml()}
+    files: dict[str, str] = {"00_sw_specials.cfg": flanking_specials_wml(), "hte_00_movetypes.cfg": movetypes_wml()}
     for fname, doc in FILES.items():
         units = [u for u in ROSTER if u["file"] == fname]
         body = [HEADER, f"# {doc}", ""]

@@ -11,7 +11,7 @@ local PHASE = "main"
 local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ai_ranged", "check_ai_ranged",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "flanking", "ai_ranged", "check_ai_ranged",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
@@ -429,6 +429,76 @@ local function plugin(events, context, info)
         if sp[2] and sp[2].id == "sw_special_range" and tostring(sp[2].name) == "range 2" then shown = true end
       end
       check("the range is listed with the weapon's specials", shown)
+    end
+
+    -- Flanking (units/00_sw_specials.cfg): +10% to hit per armed unit hostile
+    -- to the target on its far side as seen from the attacker, max +20%,
+    -- offense only. Engine combat simulation with real unit positions.
+    function S.flanking()
+      swt.clear()
+      local function idx(u, name)
+        for i, a in ipairs(u.attacks) do if a.name == name then return i end end
+      end
+      local function cth(att, name, def)
+        local _a, _d, aw = wesnoth.simulate_combat(att, idx(att, name), def)
+        return aw.chance_to_hit
+      end
+      local function at(dir)
+        local h = wesnoth.map.get_direction({ 10, 8 }, dir)
+        return h[1] or h.x, h[2] or h.y
+      end
+      local function ally(dir, id)
+        local x, y = at(dir)
+        return swt.place("sw_unit_nr_trooper", 1, x, y, id)
+      end
+      local st = swt.place("sw_unit_im_stormtrooper", 2, 10, 8, "t_fl_target")
+      local nx, ny = at("n")
+      local tr = swt.place("sw_unit_nr_trooper", 1, nx, ny, "t_fl_att")
+      local base = cth(tr, "rifle_butt", st)
+      local a1 = ally("s", "t_fl_a1")
+      local c1 = cth(tr, "rifle_butt", st)
+      check("one ally behind the target: +10% to hit", c1 == base + 10, base .. " -> " .. c1)
+      local active = false
+      for _i, sp in ipairs(tr.attacks[idx(tr, "rifle_butt")].specials) do
+        if sp[2] and sp[2].id == "sw_special_flanking" then active = true end
+      end
+      check("the flanking special is on the weapon", active)
+      local a2 = ally("se", "t_fl_a2")
+      local c2 = cth(tr, "rifle_butt", st)
+      check("two allies on the far side: +20%", c2 == base + 20, base .. " -> " .. c2)
+      ally("sw", "t_fl_a3")
+      local c3 = cth(tr, "rifle_butt", st)
+      check("three allies: capped at +20%", c3 == base + 20, base .. " -> " .. c3)
+      for _i, id in ipairs{ "t_fl_a1", "t_fl_a2", "t_fl_a3" } do wesnoth.units.get(id):erase() end
+      ally("ne", "t_fl_side1")
+      ally("nw", "t_fl_side2")
+      local cs = cth(tr, "rifle_butt", st)
+      check("allies beside the attacker do not flank", cs == base, base .. " -> " .. cs)
+      wesnoth.units.get("t_fl_side1"):erase()
+      wesnoth.units.get("t_fl_side2"):erase()
+      local stone = ally("s", "t_fl_stone")
+      stone.status.petrified = true
+      local cp = cth(tr, "rifle_butt", st)
+      check("a petrified unit does not flank", cp == base, base .. " -> " .. cp)
+      stone:erase()
+      -- Return fire is never flanked: a stormtrooper behind the trooper (on
+      -- its far side from the defender) leaves the defender's chance as is.
+      local _a0, _d0, _aw0, dw0 = wesnoth.simulate_combat(tr, idx(tr, "rifle_butt"), st)
+      local bx, by = wesnoth.map.get_direction({ nx, ny }, "n")[1], wesnoth.map.get_direction({ nx, ny }, "n")[2]
+      swt.place("sw_unit_im_stormtrooper", 2, bx, by, "t_fl_behind")
+      local _a1, _d1, _aw1, dw1 = wesnoth.simulate_combat(tr, idx(tr, "rifle_butt"), st)
+      check("flanking never applies to return fire", dw0 and dw1 and dw1.chance_to_hit == dw0.chance_to_hit,
+        dw0 and dw1 and (dw0.chance_to_hit .. " -> " .. dw1.chance_to_hit))
+      wesnoth.units.get("t_fl_behind"):erase()
+      -- A shot from 2 hexes: the hexes behind the target along the line of fire.
+      local fx, fy = wesnoth.map.get_direction({ nx, ny }, "n")[1], wesnoth.map.get_direction({ nx, ny }, "n")[2]
+      tr:to_map(fx, fy)
+      local r0 = cth(tr, "blaster_rifle", st)
+      ally("s", "t_fl_r1")
+      local r1 = cth(tr, "blaster_rifle", st)
+      check("a 2-hex shot is flanked from the far side: +10%", r1 == r0 + 10, r0 .. " -> " .. r1)
+      local ai = wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      check("the AI's ranged model sees the same +10%", ai.flank_bonus(st, fx, fy, tr) == 10)
     end
 
     -- AI fires from range at a target that cannot shoot back that far.
