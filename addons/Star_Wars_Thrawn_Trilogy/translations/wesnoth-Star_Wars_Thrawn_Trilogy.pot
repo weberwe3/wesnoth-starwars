@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-03 03:09 UTC\n"
+"POT-Creation-Date: 2026-10-04 02:25 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -263,7 +263,7 @@ msgstr ""
 #. [lua]: force.open_menu
 #: lua/sw_air.lua:558
 #: lua/sw_ew.lua:842
-#: lua/sw_force.lua:478
+#: lua/sw_force.lua:604
 msgid "Cancel"
 msgstr ""
 
@@ -330,38 +330,50 @@ msgid "front-line"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
+#. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:831
+#: lua/sw_force.lua:448
 msgid "north"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
+#. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:831
+#: lua/sw_force.lua:448
 msgid "north-east"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
+#. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:831
+#: lua/sw_force.lua:448
 msgid "south-east"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
+#. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:831
+#: lua/sw_force.lua:448
 msgid "south"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
+#. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:831
+#: lua/sw_force.lua:448
 msgid "south-west"
 msgstr ""
 
 #. [lua]: ew.decoy_menu_visible
+#. [lua]: force.status_text
 #: lua/sw_doctrine.lua:60
 #: lua/sw_ew.lua:831
+#: lua/sw_force.lua:448
 msgid "north-west"
 msgstr ""
 
@@ -691,7 +703,9 @@ msgid "sweep"
 msgstr ""
 
 #. [lua]: ew.describe
+#. [lua]: force.power_summary
 #: lua/sw_ew.lua:880
+#: lua/sw_force.lua:535
 msgid "range"
 msgstr ""
 
@@ -820,7 +834,7 @@ msgstr ""
 
 #. [lua]: force.displace
 #: lua/sw_force.lua:277
-msgid "Hurl an enemy one hex directly away. If it cannot move, it is slammed for minor damage instead."
+msgid "Hurl an enemy one hex straight away from you. If a unit, a wall or the edge of the battlefield is in the way, it slams into it for 6 impact damage and stays where it is."
 msgstr ""
 
 #. [lua]: apply
@@ -835,7 +849,7 @@ msgstr ""
 
 #. [lua]: apply
 #: lua/sw_force.lua:294
-msgid "Drag an enemy one hex toward you."
+msgid "Drag an enemy one hex straight toward you. It must be at least two hexes away. Nothing happens if the way is blocked."
 msgstr ""
 
 #. [lua]: apply
@@ -850,7 +864,7 @@ msgstr ""
 
 #. [lua]: apply
 #: lua/sw_force.lua:306
-msgid "Gain two extra movement points this turn."
+msgid "Gain 2 extra movement points right away. They can be used until the end of this turn."
 msgstr ""
 
 #. [lua]: apply
@@ -865,7 +879,7 @@ msgstr ""
 
 #. [lua]: apply
 #: lua/sw_force.lua:315
-msgid "Feel living beings within four hexes. Hidden creatures there lose their stealth until your next turn. It cannot see through technological cloaking."
+msgid "Feel every living being within 4 hexes. Hidden creatures there (such as Noghri) lose their stealth until your next turn. It cannot see through technological cloaking."
 msgstr ""
 
 #. [lua]: apply
@@ -880,7 +894,7 @@ msgstr ""
 
 #. [lua]: apply
 #: lua/sw_force.lua:341
-msgid "Cloud a weak-minded enemy: it cannot move, attack or keep overwatch on its next turn. Leaders, Force users and units above level 2 resist."
+msgid "Cloud a weak-minded enemy: on its next turn it cannot move or attack, and it loses overwatch. Leaders, Force users and units above level 2 resist."
 msgstr ""
 
 #. [lua]: apply
@@ -895,7 +909,7 @@ msgstr ""
 
 #. [lua]: apply
 #: lua/sw_force.lua:357
-msgid "Crush an enemy's throat from a distance (dark side)."
+msgid "Crush an enemy's throat from a distance: 10 arcane damage (dark side)."
 msgstr ""
 
 #. [lua]: apply
@@ -905,7 +919,7 @@ msgstr ""
 
 #. [lua]: apply
 #: lua/sw_force.lua:367
-msgid "Reactive: turn aside an overwatch volley aimed at you. Fails inside a ysalamiri field."
+msgid "Works by itself: turns aside an overwatch volley aimed at this unit, spending 1 Force Point each time. Fails inside a ysalamiri field."
 msgstr ""
 
 #. [lua]: force.try_deflect
@@ -942,18 +956,120 @@ msgstr ""
 msgid "Inside a ysalamiri field: the Force is blocked here."
 msgstr ""
 
+#. [lua]: terrain_label
+#: lua/sw_force.lua:462
+msgid "terrain"
+msgstr ""
+
+#. [lua]: force.displacement_preview
+#: lua/sw_force.lua:480
+msgid "the edge of the battlefield"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:505
+#: lua/sw_force.lua:508
+msgid "Pushed"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:505
+#: lua/sw_force.lua:513
+msgid "to"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:508
+msgid "into"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:509
+msgid "slams for"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:509
+msgid "impact damage"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:510
+msgid "and stays in place."
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:513
+msgid "Pulled"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:515
+msgid "Blocked by"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:515
+msgid "cannot be pulled"
+msgstr ""
+
+#. [lua]: force.displacement_text
+#: lua/sw_force.lua:516
+msgid "(no damage)."
+msgstr ""
+
+#. [lua]: force.power_summary
+#: lua/sw_force.lua:527
+msgid "passive"
+msgstr ""
+
+#. [lua]: force.power_summary
+#: lua/sw_force.lua:528
+msgid "FP each time"
+msgstr ""
+
+#. [lua]: force.power_summary
+#: lua/sw_force.lua:530
+msgid "FP"
+msgstr ""
+
+#. [lua]: force.power_summary
+#: lua/sw_force.lua:533
+msgid "self"
+msgstr ""
+
+#. [lua]: force.power_summary
+#: lua/sw_force.lua:539
+msgid "recovers in"
+msgstr ""
+
+#. [lua]: force.power_summary
+#: lua/sw_force.lua:539
+msgid "turn(s)"
+msgstr ""
+
+#. [lua]: force.power_summary
+#: lua/sw_force.lua:541
+msgid "once per turn"
+msgstr ""
+
+#. [lua]: force.power_summary
+#: lua/sw_force.lua:542
+msgid "uses your attack"
+msgstr ""
+
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:461
+#: lua/sw_force.lua:573
 msgid "no valid target in range"
 msgstr ""
 
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:467
+#: lua/sw_force.lua:580
 msgid "Close"
 msgstr ""
 
 #. [lua]: force.open_menu
-#: lua/sw_force.lua:468
+#: lua/sw_force.lua:581
 msgid "The Force"
 msgstr ""
 

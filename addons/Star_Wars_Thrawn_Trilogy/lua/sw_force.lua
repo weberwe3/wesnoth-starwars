@@ -274,7 +274,7 @@ end
 
 force.register_power("push", {
 	name = _ "Force Push", cost = 2, range = 2, cooldown = 1, target = "enemy", needs_action = true,
-	description = _ "Hurl an enemy one hex directly away. If it cannot move, it is slammed for minor damage instead.",
+	description = _ "Hurl an enemy one hex straight away from you. If a unit, a wall or the edge of the battlefield is in the way, it slams into it for 6 impact damage and stays where it is.",
 	slam_damage = 6,
 	apply = function(caster, target, power)
 		local dir = wesnoth.map.get_relative_dir({ caster.x, caster.y }, { target.x, target.y })
@@ -291,7 +291,7 @@ force.register_power("push", {
 
 force.register_power("pull", {
 	name = _ "Force Pull", cost = 2, range = 3, cooldown = 1, target = "enemy", needs_action = true,
-	description = _ "Drag an enemy one hex toward you.",
+	description = _ "Drag an enemy one hex straight toward you. It must be at least two hexes away. Nothing happens if the way is blocked.",
 	valid = function(caster, target)
 		return wesnoth.map.distance_between(caster.x, caster.y, target.x, target.y) > 1
 	end,
@@ -303,7 +303,7 @@ force.register_power("pull", {
 
 force.register_power("speed", {
 	name = _ "Force Speed", cost = 2, range = 0, target = "self", per_turn = true, bonus_moves = 2,
-	description = _ "Gain two extra movement points this turn.",
+	description = _ "Gain 2 extra movement points right away. They can be used until the end of this turn.",
 	apply = function(caster, _target, power)
 		caster.moves = caster.moves + power.bonus_moves
 		core.float(caster.x, caster.y, _ "Force speed", "#a8c8ff")
@@ -312,7 +312,7 @@ force.register_power("speed", {
 
 force.register_power("sense", {
 	name = _ "Force Sense", cost = 1, range = 0, target = "self", per_turn = true, radius = 4,
-	description = _ "Feel living beings within four hexes. Hidden creatures there lose their stealth until your next turn. It cannot see through technological cloaking.",
+	description = _ "Feel every living being within 4 hexes. Hidden creatures there (such as Noghri) lose their stealth until your next turn. It cannot see through technological cloaking.",
 	apply = function(caster, _target, power)
 		local found = 0
 		for _i, t in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{
@@ -338,7 +338,7 @@ force.SENSE_REVEALS = { sw_ability_noghri_stealth = true }
 
 force.register_power("mind_trick", {
 	name = _ "Mind Trick", cost = 3, range = 2, cooldown = 2, target = "enemy", needs_action = true, max_level = 2,
-	description = _ "Cloud a weak-minded enemy: it cannot move, attack or keep overwatch on its next turn. Leaders, Force users and units above level 2 resist.",
+	description = _ "Cloud a weak-minded enemy: on its next turn it cannot move or attack, and it loses overwatch. Leaders, Force users and units above level 2 resist.",
 	valid = function(caster, target, power)
 		return target.level <= power.max_level and not target.canrecruit and not force.is_sensitive(target)
 	end,
@@ -354,7 +354,7 @@ force.register_power("mind_trick", {
 force.register_power("choke", {
 	name = _ "Force Choke", cost = 3, range = 3, cooldown = 1, target = "enemy", needs_action = true, damage = 10,
 	alignment = "dark",
-	description = _ "Crush an enemy's throat from a distance (dark side).",
+	description = _ "Crush an enemy's throat from a distance: 10 arcane damage (dark side).",
 	apply = function(caster, target, power)
 		wesnoth.wml_actions.harm_unit{ T.filter{ id = target.id }, T.filter_second{ id = caster.id },
 			amount = power.damage, damage_type = "arcane", kill = true, fire_event = true,
@@ -364,7 +364,7 @@ force.register_power("choke", {
 
 force.register_power("deflection", {
 	name = _ "Blaster Deflection", cost = 1, target = "self", passive = true,
-	description = _ "Reactive: turn aside an overwatch volley aimed at you. Fails inside a ysalamiri field.",
+	description = _ "Works by itself: turns aside an overwatch volley aimed at this unit, spending 1 Force Point each time. Fails inside a ysalamiri field.",
 	apply = function() end,
 })
 
@@ -443,40 +443,169 @@ end
 
 -- Two synced choices: power, then target. Unavailable powers are listed with
 -- the reason so the player always knows why.
+-- ---------------------------------------------------------------- push / pull preview
+
+force.DIR_NAMES = { n = _ "north", ne = _ "north-east", se = _ "south-east", s = _ "south", sw = _ "south-west", nw = _ "north-west" }
+
+local function unit_label(u)
+	local type_name = wesnoth.unit_types[u.type] and tostring(wesnoth.unit_types[u.type].name) or u.type
+	if u.name ~= "" and tostring(u.name) ~= type_name then return tostring(u.name) .. " (" .. type_name .. ")" end
+	return type_name
+end
+
+local function terrain_label(x, y)
+	local ok, name = pcall(function()
+		local code = wesnoth.current.map[{ x, y }]
+		local info = wesnoth.terrain_types[code]
+		return info and tostring(info.name) or code
+	end)
+	return ok and name or tostring(_ "terrain")
+end
+
+-- What a Push or Pull would do to a target, judged only from what the
+-- caster's side can see (a hidden unit in the way is not revealed; the move
+-- then fails when it is tried). Returns { dir, x, y, blocked, kind, what }:
+-- kind is "edge", "unit" or "terrain" when blocked.
+function force.displacement_preview(caster, target, power_id)
+	local dir
+	if power_id == "pull" then
+		dir = wesnoth.map.get_relative_dir({ target.x, target.y }, { caster.x, caster.y })
+	else
+		dir = wesnoth.map.get_relative_dir({ caster.x, caster.y }, { target.x, target.y })
+	end
+	local d = wesnoth.map.get_direction({ target.x, target.y }, dir)
+	local x, y = d[1] or d.x, d[2] or d.y
+	local p = { dir = dir, x = x, y = y, blocked = false }
+	if not wesnoth.current.map:on_board(x, y) then
+		p.blocked, p.kind, p.what = true, "edge", tostring(_ "the edge of the battlefield")
+		return p
+	end
+	local occupant = wesnoth.units.get(x, y)
+	if occupant and occupant.id ~= caster.id and occupant:matches{ T.filter_vision{ side = caster.side, visible = true } } then
+		p.blocked, p.kind, p.what = true, "unit", unit_label(occupant)
+	elseif occupant and occupant.id == caster.id then
+		p.blocked, p.kind, p.what = true, "unit", unit_label(occupant)
+	elseif target:movement_on({ x = x, y = y }) >= 99 then
+		p.blocked, p.kind, p.what = true, "terrain", terrain_label(x, y)
+	end
+	return p
+end
+
+function force.arrow_image(p)
+	return "misc/sw-force-arrow-" .. p.dir .. (p.blocked and "-blocked" or "") .. ".png"
+end
+
+-- The outcome line shown under a Push or Pull target.
+function force.displacement_text(caster, target, power_id, cfg)
+	cfg = cfg or force.config(caster)
+	local p = force.displacement_preview(caster, target, power_id)
+	local dir = tostring(force.DIR_NAMES[p.dir] or p.dir)
+	if power_id == "push" then
+		if not p.blocked then
+			return tostring(_ "Pushed") .. " " .. dir .. " " .. tostring(_ "to") .. " " .. p.x .. "," .. p.y .. ".", p
+		end
+		local dmg = force.power_value(caster, cfg, force.powers.push, "slam_damage")
+		return "<b>" .. tostring(_ "Pushed") .. " " .. dir .. " " .. tostring(_ "into") .. " " .. p.what .. ": " ..
+			tostring(_ "slams for") .. " " .. dmg .. " " .. tostring(_ "impact damage") .. "</b> " ..
+			tostring(_ "and stays in place."), p
+	end
+	if not p.blocked then
+		return tostring(_ "Pulled") .. " " .. dir .. " " .. tostring(_ "to") .. " " .. p.x .. "," .. p.y .. ".", p
+	end
+	return "<b>" .. tostring(_ "Blocked by") .. " " .. p.what .. ": " .. tostring(_ "cannot be pulled") .. "</b> " ..
+		tostring(_ "(no damage)."), p
+end
+
+-- ---------------------------------------------------------------- menu
+
+-- Second line for a power in the menu: what it does and what it costs.
+function force.power_summary(caster, power_id, cfg)
+	cfg = cfg or force.config(caster)
+	local power = force.powers[power_id]
+	local parts = {}
+	if power.passive then
+		table.insert(parts, tostring(_ "passive"))
+		table.insert(parts, force.power_value(caster, cfg, power, "cost") .. " " .. tostring(_ "FP each time"))
+	else
+		table.insert(parts, force.power_value(caster, cfg, power, "cost") .. " " .. tostring(_ "FP"))
+		local range = force.power_value(caster, cfg, power, "range")
+		if power.target == "self" then
+			table.insert(parts, tostring(_ "self"))
+		elseif range then
+			table.insert(parts, tostring(_ "range") .. " " .. range)
+		end
+		local cooldown = force.power_value(caster, cfg, power, "cooldown")
+		if cooldown and cooldown > 0 then
+			table.insert(parts, tostring(_ "recovers in") .. " " .. cooldown .. " " .. tostring(_ "turn(s)"))
+		end
+		if power.per_turn then table.insert(parts, tostring(_ "once per turn")) end
+		if power.needs_action then table.insert(parts, tostring(_ "uses your attack")) end
+	end
+	return tostring(power.description) .. "\n<small>" .. table.concat(parts, " · ") .. "</small>"
+end
+
+local function power_known(cfg, id)
+	for _i, p in ipairs(cfg.powers) do if p == id then return true end end
+	return false
+end
+
+-- Two synced choices: power, then target. Every power shows what it does;
+-- unavailable ones are greyed with the reason. Push and Pull always ask for
+-- the target, showing the direction (arrow in the list and on the map) and
+-- whether the target would slam into something.
 function force.open_menu()
 	local ctx = core.menu_context()
 	local caster = wesnoth.units.get(ctx.x1, ctx.y1)
 	if not caster then return end
 	local cfg = force.config(caster)
 	if not cfg then return end
-	local labels, ids = {}, {}
+	local options, ids = {}, {}
 	for _i, id in ipairs(force.power_order) do
 		local power = force.powers[id]
-		local known = false
-		for _i, p in ipairs(cfg.powers) do if p == id then known = true end end
-		if known and not power.passive then
-			local ok, why = force.can_use(caster, id, cfg)
-			local cost = force.power_value(caster, cfg, power, "cost")
-			local label = tostring(power.name) .. " (" .. cost .. " FP)"
-			if ok and #force.valid_targets(caster, id, cfg) == 0 then ok, why = false, _ "no valid target in range" end
-			if not ok then label = "<span color='#888888'>" .. label .. " — " .. tostring(why) .. "</span>" end
-			table.insert(labels, label)
+		if power_known(cfg, id) then
+			local label, ok, why
+			if power.passive then
+				ok = false
+				label = "<span color='#a8c8ff'>" .. tostring(power.name) .. "</span>"
+			else
+				ok, why = force.can_use(caster, id, cfg)
+				label = tostring(power.name) .. " (" .. force.power_value(caster, cfg, power, "cost") .. " FP)"
+				if ok and #force.valid_targets(caster, id, cfg) == 0 then ok, why = false, _ "no valid target in range" end
+				if not ok then label = "<span color='#888888'>" .. label .. " — " .. tostring(why) .. "</span>" end
+			end
+			table.insert(options, { label = label, description = force.power_summary(caster, id, cfg) })
 			table.insert(ids, { id = id, ok = ok })
 		end
 	end
-	table.insert(labels, tostring(_ "Close"))
-	local pick = core.choose(_ "The Force", force.status_text(caster, cfg), labels)
+	table.insert(options, tostring(_ "Close"))
+	local pick = core.choose(_ "The Force", force.status_text(caster, cfg), options)
 	local chosen = ids[pick]
 	if not chosen or not chosen.ok then return end
+	local power = force.powers[chosen.id]
 	local targets = force.valid_targets(caster, chosen.id, cfg)
 	local target = targets[1]
-	if force.powers[chosen.id].target ~= "self" and #targets > 1 then
-		local tlabels = {}
+	local directional = chosen.id == "push" or chosen.id == "pull"
+	if power.target ~= "self" and (#targets > 1 or directional) then
+		local toptions, marks = {}, {}
 		for _i, t in ipairs(targets) do
-			table.insert(tlabels, tostring(t.name ~= "" and t.name or t.type) .. " (" .. t.x .. "," .. t.y .. ")")
+			local opt = { label = unit_label(t) .. " (" .. t.x .. "," .. t.y .. ")" }
+			if directional then
+				local text, p = force.displacement_text(caster, t, chosen.id, cfg)
+				opt.description = text
+				opt.image = force.arrow_image(p) .. "~SCALE(48,48)"
+				-- The same arrow on the target's hex, for the caster's team only.
+				local name = "sw_force_arrow|" .. t.id
+				wesnoth.wml_actions.item{ x = t.x, y = t.y, image = force.arrow_image(p), name = name,
+					team_name = core.team_key(caster.side), redraw = false }
+				table.insert(marks, { x = t.x, y = t.y, name = name })
+			end
+			table.insert(toptions, opt)
 		end
-		table.insert(tlabels, tostring(_ "Cancel"))
-		local tpick = core.choose(force.powers[chosen.id].name, force.powers[chosen.id].description, tlabels)
+		table.insert(toptions, tostring(_ "Cancel"))
+		if #marks > 0 then wesnoth.wml_actions.redraw{} end
+		local tpick = core.choose(power.name, power.description, toptions)
+		for _i, m in ipairs(marks) do wesnoth.interface.remove_item(m.x, m.y, m.name) end
+		if #marks > 0 then wesnoth.wml_actions.redraw{} end
 		target = targets[tpick]
 	end
 	if target then force.use(caster, chosen.id, target) end

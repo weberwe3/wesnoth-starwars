@@ -178,8 +178,20 @@ Ysalamiri carrier: the field moves with the unit. It can be given by an
 | Swirl above the head | Dazed by Mind Trick |
 
 - **Right-click menus:**
-  - **The Force…** (powers with cost, and why a power is unavailable),
-    shown only on your own Force users.
+  - **The Force…**, shown only on your own Force users. Every power has a
+    description line: what it does, its Force Point cost, range, recovery
+    time, and whether it uses the attack. Unavailable powers are greyed
+    with the reason; passive powers (Blaster Deflection) are listed for
+    information.
+  - **Push and Pull targets** always ask for a target, even when there is
+    only one. Each target shows a direction arrow, in the list and on the
+    target's hex (team-only, removed after the choice). The arrow is blue
+    for a clear move and red with a bar when blocked. The outcome line names
+    the destination, or in **bold** what the target would slam into (another
+    unit, impassable terrain or the battlefield edge) and the 6 impact
+    damage; a blocked Pull says it does nothing. The preview uses only what
+    the caster's side can see: a hidden unit in the way is not revealed (the
+    push then slams when tried).
   - **Overwatch** (commits this turn's attack), shown only when allowed.
   - **Tactical status**, the text summary.
 - Short floating labels report pushes, deflections and reaction fire. There

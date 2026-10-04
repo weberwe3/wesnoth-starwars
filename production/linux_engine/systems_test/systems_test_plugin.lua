@@ -12,7 +12,7 @@ local PHASE = "main"
 
 local STEPS = {
   "fp", "targets", "slam_wall", "check_slam_wall", "slam_occupied", "check_slam_occupied",
-  "push_pull", "slam_edge", "check_slam_edge", "fields", "ow_fire", "check_ow_fire",
+  "push_pull", "menu_text", "menu_dialog", "check_menu_dialog", "slam_edge", "check_slam_edge", "fields", "ow_fire", "check_ow_fire",
   "multi_fire", "check_multi", "deflect", "check_deflect", "deflect_field", "check_deflect_field",
   "hidden_and_trick", "arcs_and_hooks", "ai_turn", "check_ai_turn", "recursion", "check_recursion", "sense_choke", "check_choke", "prepare_save",
 }
@@ -43,6 +43,8 @@ local function plugin(events, context, info)
     local T = wml.tag
     local force, ow = sw_systems.force, sw_systems.overwatch
     swt = { mem = {} }
+    -- Events flush the engine's visibility cache.
+    wesnoth.game_events.add{ name = "sw_test_noop", id = "sw_test_noop", first_time_only = false, action = function() end }
     function swt.check(name, cond, detail)
       std_print("SW_TEST: " .. (cond and "PASS " or "FAIL ") .. name ..
         ((not cond and detail ~= nil) and (" -- " .. tostring(detail)) or ""))
@@ -177,6 +179,110 @@ local function plugin(events, context, info)
       check("pull moves the target one hex closer", wesnoth.map.distance_between(5, 5, t.x, t.y) == 2, t.x .. "," .. t.y)
       force.on_side_turn(1)
       check("cooldown ticks down at turn start", tonumber(u("t_luke").variables.sw_cd_pull) == 0)
+    end
+
+    -- Menu descriptions and the Push/Pull direction preview.
+    function S.menu_text()
+      clear()
+      local function have(img)
+        local ok, res = pcall(filesystem.have_file, "~add-ons/Star_Wars_Thrawn_Trilogy/images/" .. img)
+        return ok and res
+      end
+      local luke = place("sw_hero_luke", 1, 10, 6, "t_luke")
+      local v = place("sw_unit_im_stormtrooper", 2, 11, 6, "t_v")
+      local dx, dy = swt.push_dest(luke, v)
+      local p = force.displacement_preview(luke, v, "push")
+      check("push preview matches the real push direction", p.x == dx and p.y == dy and not p.blocked)
+      local text = force.displacement_text(luke, v, "push")
+      check("clear push: names the destination, not bold", text:find(dx .. "," .. dy, 1, true) ~= nil and not text:find("<b>"), text)
+      check("direction arrow image exists", have(force.arrow_image(p)), force.arrow_image(p))
+      place("sw_unit_im_stormtrooper", 2, dx, dy, "t_blocker")
+      p = force.displacement_preview(luke, v, "push")
+      text = force.displacement_text(luke, v, "push")
+      check("push into a unit: bold slam warning with the damage", p.blocked and p.kind == "unit" and
+        text:find("<b>", 1, true) ~= nil and text:find("6 ", 1, true) ~= nil, text)
+      check("blocked arrow image exists", force.arrow_image(p):find("blocked") ~= nil and have(force.arrow_image(p)))
+      u("t_blocker"):erase()
+      wesnoth.wml_actions.terrain{ x = dx, y = dy, terrain = "Xu" }
+      p = force.displacement_preview(luke, v, "push")
+      check("push into impassable terrain: blocked by terrain", p.blocked and p.kind == "terrain" and
+        force.displacement_text(luke, v, "push"):find("<b>", 1, true) ~= nil)
+      wesnoth.wml_actions.terrain{ x = dx, y = dy, terrain = "Gg" }
+      -- A hidden (cloaked) unit in the way is not revealed by the preview.
+      place("sw_unit_ob_cloaked_asteroid", 2, dx, dy, "t_hidden")
+      sw_systems.ew.refresh()
+      wesnoth.game_events.fire("sw_test_noop")
+      p = force.displacement_preview(luke, v, "push")
+      check("a hidden unit behind the target is not revealed", not u("t_hidden"):matches{ T.filter_vision{ side = 1, visible = true } } and
+        not p.blocked)
+      u("t_hidden"):erase()
+      -- Map edge.
+      v:to_map(22, 6)
+      luke:to_map(21, 6)
+      p = force.displacement_preview(luke, v, "push")
+      check("push off the battlefield: blocked by the edge", p.blocked and p.kind == "edge")
+      -- Pull blocked by a unit between.
+      luke:to_map(10, 6)
+      v:to_map(13, 6)
+      local pp = force.displacement_preview(luke, v, "pull")
+      place("sw_unit_im_stormtrooper", 2, pp.x, pp.y, "t_between")
+      text = force.displacement_text(luke, v, "pull")
+      check("blocked pull: bold, no damage", force.displacement_preview(luke, v, "pull").blocked and
+        text:find("<b>", 1, true) ~= nil and text:find("no damage", 1, true) ~= nil, text)
+      local summary = force.power_summary(luke, "push")
+      check("power description lists effect, cost, range, recovery and attack use",
+        summary:find("Hurl", 1, true) and summary:find("2 FP", 1, true) and summary:find("range 2", 1, true) and
+        summary:find("recovers", 1, true) and summary:find("attack", 1, true), summary)
+      check("passive powers are described as passive", force.power_summary(luke, "deflection"):find("passive", 1, true) ~= nil)
+      check("self powers say self", force.power_summary(luke, "speed"):find("self", 1, true) ~= nil)
+    end
+
+    -- Open the real Force menu (the harness dismisses dialogs) to prove the
+    -- options with descriptions and arrow icons are accepted by the engine.
+    function S.menu_dialog()
+      clear()
+      place("sw_hero_luke", 1, 10, 6, "t_luke")
+      place("sw_unit_im_stormtrooper", 2, 11, 6, "t_v")
+      swt.mem.menu_ok = nil
+      local ok, err = pcall(function() wesnoth.game_events.fire("menu item sw_force_menu", 10, 6) end)
+      swt.mem.menu_ok = ok
+      swt.mem.menu_err = err
+      -- (Dismissing the first menu picks its first option, Push, so reset Luke.)
+      local l = u("t_luke")
+      l.variables.sw_cd_push = nil
+      l.variables.sw_fp = 8
+      l.attacks_left = 1
+      -- Then the Push target dialog: the first choice is answered with Push,
+      -- the second (targets with arrows) is the real dialog.
+      local core = sw_systems.core
+      local real = core.choose
+      local calls = 0
+      swt.mem.target_options = nil
+      core.choose = function(caption, text, labels, image)
+        calls = calls + 1
+        if calls == 1 then
+          for i, opt in ipairs(labels) do
+            if type(opt) == "table" and tostring(opt.label):find("Force Push", 1, true) then swt.mem.push_label = tostring(opt.label) return i end
+          end
+          return 0
+        end
+        swt.mem.target_options = labels
+        return real(caption, text, labels, image)
+      end
+      local ok2, err2 = pcall(function() wesnoth.game_events.fire("menu item sw_force_menu", 10, 6) end)
+      core.choose = real
+      swt.mem.target_ok, swt.mem.target_err = ok2, err2
+      swt.mem.calls = calls
+    end
+    function S.check_menu_dialog()
+      check("the Force menu opens with descriptions without errors", swt.mem.menu_ok == true, swt.mem.menu_err)
+      check("no arrow marks left on the map after the menu", #wesnoth.interface.get_items(11, 6) == 0)
+      check("the Push target dialog opens without errors", swt.mem.target_ok == true, swt.mem.target_err)
+      local first = swt.mem.target_options and swt.mem.target_options[1]
+      check("the Push target option shows the direction arrow and outcome", type(first) == "table" and
+        tostring(first.image):find("sw%-force%-arrow%-") ~= nil and tostring(first.description):find("Pushed", 1, true) ~= nil,
+        (first and (tostring(first.image) .. " " .. tostring(first.description)) or "") .. " calls=" .. tostring(swt.mem.calls) .. " push=" .. tostring(swt.mem.push_label) ..
+        " opts=" .. tostring(swt.mem.target_options and #swt.mem.target_options))
     end
 
     function S.slam_edge()

@@ -63,11 +63,14 @@ end
 -- Deterministic player choice. [message] options are synced choices in
 -- Wesnoth, so the selected index is recorded in replays and identical on
 -- every multiplayer client. Returns the 1-based index, or 0 if dismissed.
+-- Each entry of labels is a string, or a table { label =, description =,
+-- image = } for an option with a second line of text and an icon.
 function core.choose(caption, text, labels, image)
 	local options = {}
-	for i, label in ipairs(labels) do
+	for i, entry in ipairs(labels) do
+		local opt = type(entry) == "table" and entry or { label = entry }
 		table.insert(options, T.option{
-			label = label,
+			label = opt.label, description = opt.description, image = opt.image,
 			T.command{ T.set_variable{ name = "sw_systems_choice", value = i } },
 		})
 	end
