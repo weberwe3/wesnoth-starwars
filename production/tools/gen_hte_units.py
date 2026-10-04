@@ -905,10 +905,10 @@ def animations(u: dict) -> str:
     ]
     # The melee and ranged frames are always wired so the art contract stays
     # complete; the range filter keeps an absent attack range from using them.
-    melee = [a for a in u["attacks"] if a["range"] == "melee"]
+    melee = [a for a in expanded_attacks(u) if a["range"] == "melee"]
     for a in melee or [None]:
         blocks.append(melee_anim(base, u["id"], a))
-    ranged = [a for a in u["attacks"] if a["range"] == "ranged"]
+    ranged = [a for a in expanded_attacks(u) if a["range"] == "ranged"]
     # One animation per ranged attack, each firing its own projectile. A unit
     # without a ranged attack keeps one plain ranged block so its art set is
     # still fully referenced.
@@ -1097,7 +1097,9 @@ def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
     filter_lines = "        range=ranged\n" if attack is None else f"        name={attack['name']}\n"
     lines = ["[attack_anim]", "    [filter_attack]", filter_lines.rstrip("\n"), "    [/filter_attack]",
              "    start_time=-300"]
-    missile = projectile(unit_id, attack["name"]) if attack else None
+    # Aimed variants reuse their base weapon's projectile and sounds.
+    key = attack.get("base", attack["name"]) if attack else None
+    missile = projectile(unit_id, key) if attack else None
     if missile:
         image, diagonal = missile
         lines += ["    missile_start_time=-150", "    [missile_frame]", "        duration=150",
@@ -1106,13 +1108,13 @@ def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
             lines.append(f"        image_diagonal={diagonal}")
         lines.append("    [/missile_frame]")
     fire = frame(f"{base}/ranged-2.png", 150)
-    sound = ranged_sound(attack["name"]) if attack else None
-    if attack and attack["name"] == "bow":
+    sound = ranged_sound(key) if attack else None
+    if attack and key == "bow":
         lines.append("    {SOUND:HIT_AND_MISS bow.ogg bow-miss.ogg -150}")
         sound = None
-    elif attack and attack["name"].startswith("concussion_"):
+    elif attack and key.startswith("concussion_"):
         lines.append("    {SOUND:HIT_AND_MISS sw-explosion.wav sw-bomb-miss.wav -10}")
-    elif attack and attack["name"] == "deflection":
+    elif attack and key == "deflection":
         lines.append("    {SOUND:HIT_AND_MISS sw-deflect.wav sw-blaster-miss.wav -10}")
     elif sound in RANGED_IMPACTS:
         hit, miss = RANGED_IMPACTS[sound]
@@ -1148,24 +1150,123 @@ UNIT_ICONS = {("sw_hero_luke", "lightsaber"): "sw-lightsaber-green",
               ("sw_hero_luuke", "lightsaber"): "sw-lightsaber-green"}
 
 
+# --- weapon ranges and aimed shots (owner design, 2026-10-03) ---------------
+# Ranged attacks reach targets up to max_range hexes away (native 1.19
+# min_range/max_range). Accuracy falls 10% per hex beyond the first. The
+# range is shown as a weapon special ("range N") so it appears with damage
+# and strikes in the weapon information.
+#   pistols 1, rifles and long arms 2, heavy and crew-served 3; Han Solo's
+#   DL-44 heavy blaster pistol is the exception at 2. Bombs drop on the hex
+#   beneath (1); guided torpedoes reach 3 without falloff.
+WEAPON_RANGES = {
+    # infantry
+    "blaster_pistol": 1, "hold_out_blaster": 1, "stun_blaster": 1, "sprayer": 1,
+    "heavy_blaster_pistol": 2,   # Han Solo's DL-44 (only Han carries it)
+    "blaster_rifle": 2, "blaster_carbine": 2, "bowcaster": 2, "bike_blaster": 2, "bow": 2,
+    "concussion_grenade": 2, "force_lightning": 2, "deflection": 1,
+    "eweb_repeater": 3, "twin_blaster_cannon": 3,
+    # craft
+    "laser_cannons": 2, "ion_cannon": 2, "point_defense": 1, "concussion_bombs": 1,
+    "proton_torpedoes": 3, "turbolasers": 3, "ion_cannons": 3,
+}
+NO_FALLOFF = {"proton_torpedoes"}       # guided
+RANGE_FALLOFF = 10                      # % to hit lost per hex beyond the first
+# Aimed shot: one strike fewer, +20% to hit, needs 2+ hexes, attack only.
+AIMED_WEAPONS = {"blaster_rifle", "blaster_carbine", "bowcaster", "bow", "heavy_blaster_pistol"}
+AIMED_BONUS = 20
+
+
+def range_special(name: str, max_range: int) -> str:
+    if max_range <= 1:
+        return (
+            "[chance_to_hit]\n"
+            "    id=sw_special_range\n"
+            "    name= _ \"range 1\"\n"
+            "    description= _ \"Close range: only adjacent targets.\"\n"
+            "    add=0\n"
+            "    cumulative=yes\n"
+            "[/chance_to_hit]"
+        )
+    if name in NO_FALLOFF:
+        return (
+            "[chance_to_hit]\n"
+            "    id=sw_special_range\n"
+            f"    name= _ \"range {max_range}, guided\"\n"
+            f"    description= _ \"Reaches targets up to {max_range} hexes away. Guided: no accuracy lost with distance.\"\n"
+            "    add=0\n"
+            "    cumulative=yes\n"
+            "[/chance_to_hit]"
+        )
+    return (
+        "[chance_to_hit]\n"
+        "    id=sw_special_range\n"
+        f"    name= _ \"range {max_range}\"\n"
+        f"    description= _ \"Reaches targets up to {max_range} hexes away. Each hex beyond the first lowers the "
+        f"chance to hit by {RANGE_FALLOFF}%.\"\n"
+        # Special formulas see the combatants as attacker and defender.
+        f"    sub=\"({RANGE_FALLOFF} * (distance_between(attacker.loc, defender.loc) - 1))\"\n"
+        "    cumulative=yes\n"
+        "[/chance_to_hit]"
+    )
+
+
+def aimed_special() -> str:
+    return (
+        "[chance_to_hit]\n"
+        "    id=sw_special_aimed\n"
+        "    name= _ \"aimed shot\"\n"
+        f"    description= _ \"Taking a moment to aim: one shot fewer, +{AIMED_BONUS}% chance to hit. Needs at least two "
+        "hexes of distance (no time to aim at point-blank range) and can only be used when attacking.\"\n"
+        f"    add={AIMED_BONUS}\n"
+        "    cumulative=yes\n"
+        "[/chance_to_hit]\n"
+        "[disable]\n"
+        "    id=sw_special_aimed_attack_only\n"
+        "    active_on=defense\n"
+        "[/disable]"
+    )
+
+
+def expanded_attacks(u: dict) -> list[dict]:
+    """The unit's attacks with ranges applied and aimed-shot variants added
+    right after the weapons that have one."""
+    out = []
+    for a in u["attacks"]:
+        a = dict(a)
+        if a["range"] == "ranged":
+            a["max_range"] = WEAPON_RANGES.get(a["name"], a.get("max_range") or 1)
+        out.append(a)
+        if a["range"] == "ranged" and a["name"] in AIMED_WEAPONS and a["max_range"] >= 2 and a["number"] >= 2:
+            aimed = dict(a)
+            aimed.update(name=a["name"] + "_aimed", desc=a["desc"] + " (aimed)", number=a["number"] - 1,
+                         base=a["name"], min_range=2, aimed=True)
+            out.append(aimed)
+    return out
+
+
 def attack_wml(a: dict, unit_slug: str, unit_id: str = "") -> str:
     lines = [
         "[attack]",
         f"    name={a['name']}",
         f"    description= _ \"{a['desc']}\"",
-        f"    icon=attacks/{UNIT_ICONS.get((unit_id, a['name']), ICONS.get(a['name'], 'blank-attack'))}.png",
+        f"    icon=attacks/{UNIT_ICONS.get((unit_id, a.get('base', a['name'])), ICONS.get(a.get('base', a['name']), 'blank-attack'))}.png",
         f"    type={a['type']}",
         f"    range={a['range']}",
         f"    damage={a['damage']}",
         f"    number={a['number']}",
     ]
     if a.get("max_range"):
-        lines.append("    min_range=1")
+        lines.append(f"    min_range={a.get('min_range', 1)}")
         lines.append(f"    max_range={a['max_range']}")
-    if a["specials"]:
+    blocks = [SPECIALS[sp] for sp in a["specials"]]
+    if a["range"] == "ranged" and a.get("max_range"):
+        blocks.append(range_special(a.get("base", a["name"]), a["max_range"]))
+    if a.get("aimed"):
+        blocks.append(aimed_special())
+    if blocks:
         lines.append("    [specials]")
-        for sp in a["specials"]:
-            lines.append(indent(SPECIALS[sp], 8))
+        for block in blocks:
+            lines.append(indent(block, 8))
         lines.append("    [/specials]")
     lines.append("[/attack]")
     del unit_slug
@@ -1213,7 +1314,7 @@ def unit_wml(u: dict) -> str:
         for block in system_abilities:
             lines.append(indent(block, 8))
         lines.append("    [/abilities]")
-    for a in u["attacks"]:
+    for a in expanded_attacks(u):
         lines.append(indent(attack_wml(a, s, u["id"]), 4))
     lines.append(indent(animations(u), 4))
     if u["id"] in FLYOVER_CRAFT:

@@ -11,9 +11,9 @@ local PHASE = "main"
 local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "prepare_save",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ai_ranged", "check_ai_ranged", "prepare_save",
 }
-local END_TURN_AFTER = { ai_avoid = true, ai_air = true }
+local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true }
 
 local function plugin(events, context, info)
   local function pump()
@@ -361,6 +361,93 @@ local function plugin(events, context, info)
       local s = swt.mem.strikes[1]
       check("AI strike hit the visible enemies", s ~= nil and s.strike.side == 2 and #s.results >= 1)
       wesnoth.sides[2].controller = "human"
+    end
+
+    -- Weapon ranges, accuracy falloff and aimed shots (engine combat simulation).
+    function S.weapon_ranges()
+      swt.clear()
+      local function idx(u, name)
+        for i, a in ipairs(u.attacks) do if a.name == name then return i end end
+      end
+      -- Chance to hit, and strikes that can actually land (0 when the weapon
+      -- is out of range: the simulation then deals no damage).
+      local function cth(att, name, def)
+        local _a, d, aw = wesnoth.simulate_combat(att, idx(att, name), def)
+        local landed = (def.hitpoints - d.average_hp) > 0.001 and aw.num_blows or 0
+        return aw.chance_to_hit, landed
+      end
+      local tr = swt.place("sw_unit_nr_trooper", 1, 5, 8, "t_tr")
+      local st = swt.place("sw_unit_im_stormtrooper", 2, 6, 8, "t_st")
+      local c1, n1 = cth(tr, "blaster_rifle", st)
+      st:to_map(7, 8)
+      local c2, n2 = cth(tr, "blaster_rifle", st)
+      check("rifle reaches 2 hexes with -10% to hit", n2 == 3 and c2 == c1 - 10, c1 .. "% -> " .. c2 .. "%")
+      local rifle = tr.attacks[idx(tr, "blaster_rifle")]
+      check("rifle range is 1-2 (the engine refuses targets beyond max_range)", rifle.min_range == 1 and rifle.max_range == 2)
+      st:to_map(7, 8)
+      local ca, na = cth(tr, "blaster_rifle_aimed", st)
+      check("aimed shot: one strike fewer, +20% (net +10% at 2 hexes)", na == 2 and ca == c1 + 10, ca .. "% x" .. na)
+      local aimed = tr.attacks[idx(tr, "blaster_rifle_aimed")]
+      check("aimed shot needs 2 hexes (min_range 2)", aimed.min_range == 2 and aimed.max_range == 2)
+      st:to_map(7, 8)
+      local _a, _d, _aw, dw = wesnoth.simulate_combat(st, idx(st, "blaster_rifle"), tr)
+      check("aimed shot is never used to retaliate", dw and dw.name ~= "blaster_rifle_aimed", dw and dw.name)
+      local mil = swt.place("sw_unit_nr_militia", 1, 5, 6, "t_mil")
+      st:to_map(7, 6)
+      local pistol = mil.attacks[idx(mil, "blaster_pistol")]
+      check("pistols reach only adjacent targets (max_range 1)", pistol.max_range == 1)
+      local han = swt.place("sw_hero_han", 1, 3, 10, "t_han")
+      st:to_map(5, 10)
+      local _ch, nh = cth(han, "heavy_blaster_pistol", st)
+      check("Han's DL-44 is the exception: 2 hexes", nh > 0, nh)
+      local ew_ = swt.place("sw_unit_nr_eweb_team", 1, 3, 12, "t_eweb")
+      st:to_map(4, 12)
+      local e1 = cth(ew_, "eweb_repeater", st)
+      st:to_map(6, 12)
+      local e3, ne3 = cth(ew_, "eweb_repeater", st)
+      check("E-Web reaches 3 hexes at -20%", ne3 == 3 and e3 == e1 - 20, e1 .. " -> " .. e3)
+      local xw = swt.place("sw_unit_nr_xwing", 1, 12, 4, "t_xw")
+      local tie = swt.place("sw_unit_im_tie_fighter", 2, 13, 4, "t_tie")
+      local t1 = cth(xw, "proton_torpedoes", tie)
+      tie:to_map(15, 4)
+      local t3, nt3 = cth(xw, "proton_torpedoes", tie)
+      check("guided torpedoes reach 3 hexes without falloff", nt3 > 0 and t3 == t1, t1 .. " -> " .. t3)
+      local shown = false
+      for _i, sp in ipairs(tr.attacks[idx(tr, "blaster_rifle")].specials) do
+        if sp[2] and sp[2].id == "sw_special_range" and tostring(sp[2].name) == "range 2" then shown = true end
+      end
+      check("the range is listed with the weapon's specials", shown)
+    end
+
+    -- AI fires from range at a target that cannot shoot back that far.
+    function S.ai_ranged()
+      swt.clear()
+      swt.mem.shots = {}
+      wesnoth.game_events.add{ name = "attack", id = "sw_test_shots", first_time_only = false, action = function()
+        local ec = wesnoth.current.event_context
+        local a = wesnoth.units.get(ec.x1, ec.y1)
+        if a and a.side == 2 then
+          table.insert(swt.mem.shots, { d = wesnoth.map.distance_between(ec.x1, ec.y1, ec.x2, ec.y2),
+            w = (wml.get_child(ec, "weapon") or {}).name })
+        end
+      end }
+      wml.variables.sw_systems_debug = true
+      swt.place("sw_unit_nr_militia", 1, 10, 8, "t_mil")
+      swt.place("sw_unit_im_stormtrooper", 2, 15, 8, "t_ai_st")
+      local ok, best = pcall(function()
+        return wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua").best_attack(2, {})
+      end)
+      check("the AI's stand-off evaluation finds a 2-hex shot", ok and type(best) == "table" and
+        wesnoth.map.distance_between(best.x, best.y, 10, 8) == 2, tostring(best))
+      wesnoth.sides[2].controller = "ai"
+    end
+    function S.check_ai_ranged()
+      wesnoth.game_events.remove("sw_test_shots")
+      wesnoth.sides[2].controller = "human"
+      local shot = swt.mem.shots[1]
+      check("the AI attacked", shot ~= nil)
+      check("the AI fired from 2 hexes, out of the pistol's reach", shot and shot.d == 2,
+        shot and (shot.d .. " " .. tostring(shot.w)))
     end
 
     function S.prepare_save()

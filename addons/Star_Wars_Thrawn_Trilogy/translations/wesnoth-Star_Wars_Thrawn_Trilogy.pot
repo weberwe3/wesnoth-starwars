@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-04 03:27 UTC\n"
+"POT-Creation-Date: 2026-10-04 04:04 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -210,9 +210,9 @@ msgstr ""
 #. [lua]: air.describe
 #. [dummy]: id=sw_ability_anti_air
 #: lua/sw_air.lua:538
-#: units/hte_imperial.cfg:582
-#: units/hte_new_republic.cfg:444
-#: units/tlc_units.cfg:916
+#: units/hte_imperial.cfg:732
+#: units/hte_new_republic.cfg:636
+#: units/tlc_units.cfg:1021
 msgid "anti-air"
 msgstr ""
 
@@ -270,7 +270,7 @@ msgstr ""
 #. [lua]: air.menu_command
 #. [message]: speaker=narrator
 #: lua/sw_air.lua:568
-#: utils/hte_macros.cfg:379
+#: utils/hte_macros.cfg:384
 msgid "Air support"
 msgstr ""
 
@@ -561,8 +561,8 @@ msgstr ""
 #. [lua]: mover_matters
 #. [message]: speaker=narrator
 #: lua/sw_doctrine.lua:861
-#: lua/sw_systems.lua:201
-#: utils/hte_macros.cfg:383
+#: lua/sw_systems.lua:209
+#: utils/hte_macros.cfg:388
 msgid "Thrawn's doctrine"
 msgstr ""
 
@@ -637,14 +637,14 @@ msgstr ""
 #. [lua]: ew.cloak_hides_cfg
 #. [hides]: id=sw_ability_cloaked
 #: lua/sw_ew.lua:802
-#: units/tlc_units.cfg:793
+#: units/tlc_units.cfg:898
 msgid "cloaked"
 msgstr ""
 
 #. [lua]: ew.cloak_hides_cfg
 #. [hides]: id=sw_ability_cloaked
 #: lua/sw_ew.lua:803
-#: units/tlc_units.cfg:794
+#: units/tlc_units.cfg:899
 msgid "A cloaking field hides this unit until an enemy team identifies it (sensor sweeps, close sensors or physical contact) or it fires. Partial sensor contacts are shown to the enemy as markers."
 msgstr ""
 
@@ -742,7 +742,7 @@ msgstr ""
 #. [lua]: ew.contact_menu_command
 #. [lua]: mover_matters
 #: lua/sw_ew.lua:908
-#: lua/sw_systems.lua:187
+#: lua/sw_systems.lua:195
 msgid "Sensor contact"
 msgstr ""
 
@@ -967,7 +967,7 @@ msgstr ""
 #. [lua]: force.status_text
 #. [lua]: sw_systems.show_status
 #: lua/sw_force.lua:517
-#: lua/sw_systems.lua:235
+#: lua/sw_systems.lua:243
 msgid "Inside a ysalamiri field: the Force is blocked here."
 msgstr ""
 
@@ -1107,50 +1107,50 @@ msgstr ""
 #. [dummy]: id=sw_ability_overwatch
 #: lua/sw_overwatch.lua:113
 #: units/dfr_units.cfg:59
-#: units/dfr_units.cfg:373
-#: units/dfr_units.cfg:511
-#: units/dfr_units.cfg:651
-#: units/dfr_units.cfg:894
-#: units/dfr_units.cfg:1022
-#: units/dfr_units.cfg:1142
-#: units/hte_heroes.cfg:227
-#: units/hte_heroes.cfg:399
-#: units/hte_heroes.cfg:538
-#: units/hte_heroes.cfg:680
-#: units/hte_heroes.cfg:814
-#: units/hte_heroes.cfg:962
-#: units/hte_heroes.cfg:1099
-#: units/hte_heroes.cfg:1245
-#: units/hte_heroes.cfg:1409
-#: units/hte_heroes.cfg:1554
+#: units/dfr_units.cfg:393
+#: units/dfr_units.cfg:540
+#: units/dfr_units.cfg:744
+#: units/dfr_units.cfg:1060
+#: units/dfr_units.cfg:1199
+#: units/dfr_units.cfg:1330
+#: units/hte_heroes.cfg:236
+#: units/hte_heroes.cfg:428
+#: units/hte_heroes.cfg:578
+#: units/hte_heroes.cfg:783
+#: units/hte_heroes.cfg:981
+#: units/hte_heroes.cfg:1140
+#: units/hte_heroes.cfg:1286
+#: units/hte_heroes.cfg:1441
+#: units/hte_heroes.cfg:1625
+#: units/hte_heroes.cfg:1781
 #: units/hte_imperial.cfg:30
-#: units/hte_imperial.cfg:160
-#: units/hte_imperial.cfg:295
-#: units/hte_imperial.cfg:440
-#: units/hte_imperial.cfg:575
-#: units/hte_imperial.cfg:767
+#: units/hte_imperial.cfg:224
+#: units/hte_imperial.cfg:423
+#: units/hte_imperial.cfg:579
+#: units/hte_imperial.cfg:725
+#: units/hte_imperial.cfg:939
 #: units/hte_new_republic.cfg:30
-#: units/hte_new_republic.cfg:160
-#: units/hte_new_republic.cfg:296
-#: units/hte_new_republic.cfg:437
-#: units/hte_new_republic.cfg:576
-#: units/hte_new_republic.cfg:694
-#: units/hte_new_republic.cfg:823
-#: units/hte_new_republic.cfg:957
+#: units/hte_new_republic.cfg:224
+#: units/hte_new_republic.cfg:424
+#: units/hte_new_republic.cfg:629
+#: units/hte_new_republic.cfg:777
+#: units/hte_new_republic.cfg:906
+#: units/hte_new_republic.cfg:1046
+#: units/hte_new_republic.cfg:1244
 #: units/hte_smugglers.cfg:30
-#: units/hte_smugglers.cfg:159
+#: units/hte_smugglers.cfg:170
 #: units/hte_space.cfg:31
-#: units/hte_space.cfg:197
-#: units/hte_space.cfg:334
-#: units/hte_space.cfg:532
-#: units/hte_space.cfg:661
-#: units/hte_space.cfg:788
-#: units/hte_space.cfg:924
-#: units/hte_space.cfg:1192
-#: units/tlc_units.cfg:400
-#: units/tlc_units.cfg:533
-#: units/tlc_units.cfg:671
-#: units/tlc_units.cfg:1121
+#: units/hte_space.cfg:217
+#: units/hte_space.cfg:363
+#: units/hte_space.cfg:592
+#: units/hte_space.cfg:732
+#: units/hte_space.cfg:870
+#: units/hte_space.cfg:1015
+#: units/hte_space.cfg:1305
+#: units/tlc_units.cfg:472
+#: units/tlc_units.cfg:616
+#: units/tlc_units.cfg:765
+#: units/tlc_units.cfg:1226
 msgid "overwatch"
 msgstr ""
 
@@ -1178,44 +1178,44 @@ msgid "Rank:"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:159
+#: lua/sw_systems.lua:167
 msgid "The Force…"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:166
+#: lua/sw_systems.lua:174
 msgid "Overwatch (commits this turn's attack)"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:173
+#: lua/sw_systems.lua:181
 msgid "Active sensor sweep (commits this turn's attack)"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:180
+#: lua/sw_systems.lua:188
 msgid "Launch sensor decoy…"
 msgstr ""
 
 #. [lua]: mover_matters
-#: lua/sw_systems.lua:194
+#: lua/sw_systems.lua:202
 msgid "Call air support…"
 msgstr ""
 
 #. [lua]: mover_matters
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:208
-#: lua/sw_systems.lua:251
+#: lua/sw_systems.lua:216
+#: lua/sw_systems.lua:259
 msgid "Tactical status"
 msgstr ""
 
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:238
+#: lua/sw_systems.lua:246
 msgid "On overwatch:"
 msgstr ""
 
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:239
+#: lua/sw_systems.lua:247
 msgid "reaction(s) left, range"
 msgstr ""
 
@@ -1706,7 +1706,7 @@ msgstr ""
 #. [label]
 #. [unit_type]: id=sw_unit_ob_shield_generator, race=mechanical
 #: scenarios/dark_force_rising/05_peregrines_nest.cfg:116
-#: units/tlc_units.cfg:886
+#: units/tlc_units.cfg:991
 msgid "Shield Generator"
 msgstr ""
 
@@ -2688,16 +2688,16 @@ msgstr ""
 #. [effect]: type=impact
 #. [attack]: type=impact
 #: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:131
-#: units/dfr_units.cfg:385
-#: units/hte_heroes.cfg:411
-#: units/hte_heroes.cfg:550
-#: units/hte_heroes.cfg:826
-#: units/hte_heroes.cfg:1114
-#: units/hte_heroes.cfg:1421
-#: units/hte_heroes.cfg:1560
-#: units/hte_imperial.cfg:452
-#: units/hte_new_republic.cfg:450
-#: units/hte_new_republic.cfg:700
+#: units/dfr_units.cfg:405
+#: units/hte_heroes.cfg:440
+#: units/hte_heroes.cfg:590
+#: units/hte_heroes.cfg:993
+#: units/hte_heroes.cfg:1301
+#: units/hte_heroes.cfg:1637
+#: units/hte_heroes.cfg:1787
+#: units/hte_imperial.cfg:591
+#: units/hte_new_republic.cfg:642
+#: units/hte_new_republic.cfg:912
 msgid "fists"
 msgstr ""
 
@@ -2744,7 +2744,7 @@ msgstr ""
 #. [effect]: type=fire
 #. [attack]: type=fire
 #: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:223
-#: units/hte_heroes.cfg:977
+#: units/hte_heroes.cfg:1155
 msgid "hold-out blaster"
 msgstr ""
 
@@ -3954,7 +3954,7 @@ msgstr ""
 #. [unit_type]: id=sw_hero_khabarakh, race=sw_noghri, gender=male
 #. [unit_type]: id=sw_unit_im_noghri, race=sw_noghri
 #: units/dfr_units.cfg:8
-#: units/hte_imperial.cfg:720
+#: units/hte_imperial.cfg:892
 msgid "Noghri Commando"
 msgstr ""
 
@@ -3965,254 +3965,392 @@ msgstr ""
 
 #. [hides]: id=sw_ability_noghri_stealth
 #: units/dfr_units.cfg:30
-#: units/hte_imperial.cfg:738
+#: units/hte_imperial.cfg:910
 msgid "Noghri stealth"
 msgstr ""
 
 #. [hides]: id=sw_ability_noghri_stealth
 #: units/dfr_units.cfg:31
-#: units/hte_imperial.cfg:739
+#: units/hte_imperial.cfg:911
 msgid "This unit is invisible to enemies while in forest or under cover of night, unless an enemy with keen senses is within two hexes. It is revealed when an enemy moves next to it."
 msgstr ""
 
 #. [dummy]: id=sw_ability_overwatch
 #: units/dfr_units.cfg:60
-#: units/dfr_units.cfg:374
-#: units/hte_heroes.cfg:400
-#: units/hte_heroes.cfg:539
-#: units/hte_heroes.cfg:815
-#: units/hte_heroes.cfg:963
-#: units/hte_heroes.cfg:1100
-#: units/hte_heroes.cfg:1410
-#: units/hte_heroes.cfg:1555
-#: units/hte_imperial.cfg:441
-#: units/hte_imperial.cfg:768
-#: units/hte_new_republic.cfg:577
-#: units/hte_new_republic.cfg:695
+#: units/dfr_units.cfg:394
+#: units/hte_heroes.cfg:429
+#: units/hte_heroes.cfg:579
+#: units/hte_heroes.cfg:982
+#: units/hte_heroes.cfg:1141
+#: units/hte_heroes.cfg:1287
+#: units/hte_heroes.cfg:1626
+#: units/hte_heroes.cfg:1782
+#: units/hte_imperial.cfg:580
+#: units/hte_imperial.cfg:940
+#: units/hte_new_republic.cfg:778
+#: units/hte_new_republic.cfg:907
 #: units/hte_smugglers.cfg:31
-#: units/hte_smugglers.cfg:160
-#: units/tlc_units.cfg:401
-#: units/tlc_units.cfg:534
+#: units/hte_smugglers.cfg:171
+#: units/tlc_units.cfg:473
+#: units/tlc_units.cfg:617
 msgid "Can hold overwatch (right-click menu), committing this turn's attack. Until its next turn, it fires 1 reaction volley(s) at enemies that move within 1 hex(es) in sight. Hidden units cannot be targeted; a moving unit that is fired on stops but keeps its remaining moves."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
 #: units/dfr_units.cfg:65
-#: units/dfr_units.cfg:517
-#: units/dfr_units.cfg:902
-#: units/hte_heroes.cfg:233
-#: units/hte_heroes.cfg:1108
-#: units/hte_heroes.cfg:1251
-#: units/hte_imperial.cfg:303
-#: units/hte_imperial.cfg:773
-#: units/hte_new_republic.cfg:302
-#: units/hte_new_republic.cfg:965
+#: units/dfr_units.cfg:546
+#: units/dfr_units.cfg:1068
+#: units/hte_heroes.cfg:242
+#: units/hte_heroes.cfg:1295
+#: units/hte_heroes.cfg:1447
+#: units/hte_imperial.cfg:431
+#: units/hte_imperial.cfg:945
+#: units/hte_new_republic.cfg:430
+#: units/hte_new_republic.cfg:1252
 #: units/hte_space.cfg:37
-#: units/hte_space.cfg:204
-#: units/hte_space.cfg:340
-#: units/hte_space.cfg:541
-#: units/hte_space.cfg:794
-#: units/hte_space.cfg:1079
-#: units/hte_space.cfg:1203
-#: units/tlc_units.cfg:539
-#: units/tlc_units.cfg:677
-#: units/tlc_units.cfg:807
-#: units/tlc_units.cfg:909
-#: units/tlc_units.cfg:1018
-#: units/tlc_units.cfg:1130
+#: units/hte_space.cfg:224
+#: units/hte_space.cfg:369
+#: units/hte_space.cfg:601
+#: units/hte_space.cfg:876
+#: units/hte_space.cfg:1192
+#: units/hte_space.cfg:1316
+#: units/tlc_units.cfg:622
+#: units/tlc_units.cfg:771
+#: units/tlc_units.cfg:912
+#: units/tlc_units.cfg:1014
+#: units/tlc_units.cfg:1123
+#: units/tlc_units.cfg:1235
 msgid "sensors & EW"
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
 #: units/dfr_units.cfg:66
-#: units/dfr_units.cfg:518
-#: units/hte_imperial.cfg:774
-#: units/hte_new_republic.cfg:303
-#: units/tlc_units.cfg:540
+#: units/dfr_units.cfg:547
+#: units/hte_imperial.cfg:946
+#: units/hte_new_republic.cfg:431
+#: units/tlc_units.cfg:623
 msgid "Sensors and electronic warfare: signature 1. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [attack]: type=blade
 #: units/dfr_units.cfg:71
-#: units/hte_imperial.cfg:779
+#: units/hte_imperial.cfg:951
 msgid "Noghri knives"
 msgstr ""
 
 #. [attack]: type=fire
 #: units/dfr_units.cfg:83
-#: units/hte_imperial.cfg:791
+#: units/hte_imperial.cfg:963
 msgid "stun blaster"
 msgstr ""
 
+#. [chance_to_hit]: id=sw_special_range
+#: units/dfr_units.cfg:94
+#: units/dfr_units.cfg:426
+#: units/dfr_units.cfg:943
+#: units/hte_heroes.cfg:110
+#: units/hte_heroes.cfg:460
+#: units/hte_heroes.cfg:1013
+#: units/hte_heroes.cfg:1167
+#: units/hte_heroes.cfg:1322
+#: units/hte_heroes.cfg:1657
+#: units/hte_heroes.cfg:1807
+#: units/hte_imperial.cfg:611
+#: units/hte_imperial.cfg:974
+#: units/hte_new_republic.cfg:794
+#: units/hte_new_republic.cfg:932
+#: units/hte_smugglers.cfg:56
+#: units/hte_smugglers.cfg:197
+#: units/hte_space.cfg:618
+#: units/hte_space.cfg:1052
+#: units/tlc_units.cfg:501
+#: units/tlc_units.cfg:651
+#: units/tlc_units.cfg:1252
+msgid "range 1"
+msgstr ""
+
+#. [chance_to_hit]: id=sw_special_range
+#: units/dfr_units.cfg:95
+#: units/dfr_units.cfg:427
+#: units/dfr_units.cfg:944
+#: units/hte_heroes.cfg:111
+#: units/hte_heroes.cfg:461
+#: units/hte_heroes.cfg:1014
+#: units/hte_heroes.cfg:1168
+#: units/hte_heroes.cfg:1323
+#: units/hte_heroes.cfg:1658
+#: units/hte_heroes.cfg:1808
+#: units/hte_imperial.cfg:612
+#: units/hte_imperial.cfg:975
+#: units/hte_new_republic.cfg:795
+#: units/hte_new_republic.cfg:933
+#: units/hte_smugglers.cfg:57
+#: units/hte_smugglers.cfg:198
+#: units/hte_space.cfg:619
+#: units/hte_space.cfg:1053
+#: units/tlc_units.cfg:502
+#: units/tlc_units.cfg:652
+#: units/tlc_units.cfg:1253
+msgid "Close range: only adjacent targets."
+msgstr ""
+
 #. [unit_type]: id=sw_hero_cbaoth, race=human, gender=male
-#: units/dfr_units.cfg:174
+#: units/dfr_units.cfg:185
 msgid "Jedi Master"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_cbaoth, race=human, gender=male
-#: units/dfr_units.cfg:188
+#: units/dfr_units.cfg:199
 msgid "Joruus C'baoth claims to be a Jedi Master of the Old Republic. His power is immense; his judgment is not. His Force abilities fail inside a ysalamiri bubble."
 msgstr ""
 
 #. [skirmisher]: id=sw_ability_force_agility
-#: units/dfr_units.cfg:196
+#: units/dfr_units.cfg:207
 #: units/hte_heroes.cfg:30
 #: units/tlc_units.cfg:30
 msgid "Force agility"
 msgstr ""
 
 #. [skirmisher]: id=sw_ability_force_agility
-#: units/dfr_units.cfg:197
+#: units/dfr_units.cfg:208
 #: units/hte_heroes.cfg:31
 #: units/tlc_units.cfg:31
 msgid "female^Force agility"
 msgstr ""
 
 #. [skirmisher]: id=sw_ability_force_agility
-#: units/dfr_units.cfg:198
+#: units/dfr_units.cfg:209
 #: units/hte_heroes.cfg:32
 #: units/tlc_units.cfg:32
 msgid "Guided by the Force, this unit ignores enemy zones of control. The ability fails inside a ysalamiri bubble."
 msgstr ""
 
 #. [heals]: id=sw_ability_force_healing
-#: units/dfr_units.cfg:217
+#: units/dfr_units.cfg:228
 #: units/hte_heroes.cfg:51
 msgid "Force healing"
 msgstr ""
 
 #. [heals]: id=sw_ability_force_healing
-#: units/dfr_units.cfg:218
+#: units/dfr_units.cfg:229
 #: units/hte_heroes.cfg:52
 msgid "Through the Force this unit restores up to 6 HP per turn to adjacent allies and slows poison. The ability fails inside a ysalamiri bubble."
 msgstr ""
 
 #. [dummy]: id=sw_ability_force
-#: units/dfr_units.cfg:236
+#: units/dfr_units.cfg:247
 #: units/hte_heroes.cfg:70
-#: units/hte_heroes.cfg:217
-#: units/hte_heroes.cfg:389
-#: units/hte_heroes.cfg:952
+#: units/hte_heroes.cfg:226
+#: units/hte_heroes.cfg:418
+#: units/hte_heroes.cfg:1130
 #: units/tlc_units.cfg:49
 msgid "the Force"
 msgstr ""
 
 #. [dummy]: id=sw_ability_force
-#: units/dfr_units.cfg:237
+#: units/dfr_units.cfg:248
 msgid "Force Points: 10, regaining 3 each turn. Powers: Force Push, Force Pull, Force Choke, Force Sense, Mind Trick, Blaster Deflection. Use them from the right-click menu (The Force…). Inside a ysalamiri field the Force is blocked: no powers, no deflection, no regeneration."
 msgstr ""
 
 #. [attack]: type=arcane
-#: units/dfr_units.cfg:242
+#: units/dfr_units.cfg:253
 #: units/hte_heroes.cfg:76
 #: units/tlc_units.cfg:55
 msgid "lightsaber"
 msgstr ""
 
 #. [attack]: type=fire
-#: units/dfr_units.cfg:251
+#: units/dfr_units.cfg:262
 #: units/tlc_units.cfg:64
 msgid "Force lightning"
 msgstr ""
 
+#. [chance_to_hit]: id=sw_special_range
+#: units/dfr_units.cfg:274
+#: units/dfr_units.cfg:578
+#: units/dfr_units.cfg:598
+#: units/dfr_units.cfg:770
+#: units/dfr_units.cfg:790
+#: units/dfr_units.cfg:1216
+#: units/dfr_units.cfg:1347
+#: units/hte_heroes.cfg:259
+#: units/hte_heroes.cfg:611
+#: units/hte_heroes.cfg:632
+#: units/hte_heroes.cfg:809
+#: units/hte_heroes.cfg:829
+#: units/hte_heroes.cfg:1464
+#: units/hte_imperial.cfg:56
+#: units/hte_imperial.cfg:76
+#: units/hte_imperial.cfg:256
+#: units/hte_imperial.cfg:276
+#: units/hte_imperial.cfg:463
+#: units/hte_imperial.cfg:778
+#: units/hte_new_republic.cfg:56
+#: units/hte_new_republic.cfg:76
+#: units/hte_new_republic.cfg:256
+#: units/hte_new_republic.cfg:276
+#: units/hte_new_republic.cfg:462
+#: units/hte_new_republic.cfg:482
+#: units/hte_new_republic.cfg:1072
+#: units/hte_new_republic.cfg:1092
+#: units/hte_new_republic.cfg:1278
+#: units/hte_new_republic.cfg:1298
+#: units/hte_space.cfg:54
+#: units/hte_space.cfg:242
+#: units/hte_space.cfg:386
+#: units/hte_space.cfg:407
+#: units/hte_space.cfg:749
+#: units/hte_space.cfg:894
+#: units/hte_space.cfg:1032
+#: units/tlc_units.cfg:76
+#: units/tlc_units.cfg:207
+#: units/tlc_units.cfg:227
+#: units/tlc_units.cfg:788
+msgid "range 2"
+msgstr ""
+
+#. [chance_to_hit]: id=sw_special_range
+#: units/dfr_units.cfg:275
+#: units/dfr_units.cfg:579
+#: units/dfr_units.cfg:599
+#: units/dfr_units.cfg:771
+#: units/dfr_units.cfg:791
+#: units/dfr_units.cfg:1217
+#: units/dfr_units.cfg:1348
+#: units/hte_heroes.cfg:260
+#: units/hte_heroes.cfg:612
+#: units/hte_heroes.cfg:633
+#: units/hte_heroes.cfg:810
+#: units/hte_heroes.cfg:830
+#: units/hte_heroes.cfg:1465
+#: units/hte_imperial.cfg:57
+#: units/hte_imperial.cfg:77
+#: units/hte_imperial.cfg:257
+#: units/hte_imperial.cfg:277
+#: units/hte_imperial.cfg:464
+#: units/hte_imperial.cfg:779
+#: units/hte_new_republic.cfg:57
+#: units/hte_new_republic.cfg:77
+#: units/hte_new_republic.cfg:257
+#: units/hte_new_republic.cfg:277
+#: units/hte_new_republic.cfg:463
+#: units/hte_new_republic.cfg:483
+#: units/hte_new_republic.cfg:1073
+#: units/hte_new_republic.cfg:1093
+#: units/hte_new_republic.cfg:1279
+#: units/hte_new_republic.cfg:1299
+#: units/hte_space.cfg:55
+#: units/hte_space.cfg:243
+#: units/hte_space.cfg:387
+#: units/hte_space.cfg:408
+#: units/hte_space.cfg:750
+#: units/hte_space.cfg:895
+#: units/hte_space.cfg:1033
+#: units/tlc_units.cfg:77
+#: units/tlc_units.cfg:208
+#: units/tlc_units.cfg:228
+#: units/tlc_units.cfg:789
+msgid "Reaches targets up to 2 hexes away. Each hex beyond the first lowers the chance to hit by 10%."
+msgstr ""
+
 #. [unit_type]: id=sw_hero_bel_iblis, race=human, gender=male
-#: units/dfr_units.cfg:345
+#: units/dfr_units.cfg:365
 msgid "Senator-General"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_bel_iblis, race=human, gender=male
-#: units/dfr_units.cfg:359
+#: units/dfr_units.cfg:379
 msgid "Garm Bel Iblis, a founder of the Rebellion who broke with its leaders and fought on alone with his own private army."
 msgstr ""
 
 #. [dummy]: id=sw_ability_forward_observer
-#: units/dfr_units.cfg:379
-#: units/dfr_units.cfg:523
-#: units/hte_heroes.cfg:405
-#: units/hte_heroes.cfg:544
-#: units/hte_heroes.cfg:820
-#: units/hte_heroes.cfg:1415
-#: units/hte_imperial.cfg:166
-#: units/hte_imperial.cfg:309
-#: units/hte_imperial.cfg:446
-#: units/hte_new_republic.cfg:166
-#: units/hte_new_republic.cfg:308
+#: units/dfr_units.cfg:399
+#: units/dfr_units.cfg:552
+#: units/hte_heroes.cfg:434
+#: units/hte_heroes.cfg:584
+#: units/hte_heroes.cfg:987
+#: units/hte_heroes.cfg:1631
+#: units/hte_imperial.cfg:230
+#: units/hte_imperial.cfg:437
+#: units/hte_imperial.cfg:585
+#: units/hte_new_republic.cfg:230
+#: units/hte_new_republic.cfg:436
 msgid "forward observer"
 msgstr ""
 
 #. [dummy]: id=sw_ability_forward_observer
-#: units/dfr_units.cfg:380
-#: units/dfr_units.cfg:524
-#: units/hte_imperial.cfg:310
-#: units/hte_new_republic.cfg:309
+#: units/dfr_units.cfg:400
+#: units/dfr_units.cfg:553
+#: units/hte_imperial.cfg:438
+#: units/hte_new_republic.cfg:437
 msgid "Can call the side's air sorties (right-click a hex within 7 hexes that your side can see or track on sensors, then Call air support). Calling uses this unit's attack. Strafing runs hit a line of hexes at once; bombing runs hit an area at the start of your next turn. Sorties never finish off a unit."
 msgstr ""
 
 #. [attack]: type=fire
 #. [attack]: type=impact
-#: units/dfr_units.cfg:394
+#: units/dfr_units.cfg:414
 #: units/heroes.cfg:95
-#: units/hte_heroes.cfg:420
-#: units/hte_heroes.cfg:835
-#: units/hte_heroes.cfg:1123
-#: units/hte_heroes.cfg:1430
-#: units/hte_heroes.cfg:1569
-#: units/hte_imperial.cfg:461
-#: units/hte_new_republic.cfg:582
-#: units/hte_new_republic.cfg:709
+#: units/hte_heroes.cfg:449
+#: units/hte_heroes.cfg:1002
+#: units/hte_heroes.cfg:1310
+#: units/hte_heroes.cfg:1646
+#: units/hte_heroes.cfg:1796
+#: units/hte_imperial.cfg:600
+#: units/hte_new_republic.cfg:783
+#: units/hte_new_republic.cfg:921
 #: units/hte_smugglers.cfg:45
-#: units/hte_smugglers.cfg:174
+#: units/hte_smugglers.cfg:185
 #: units/infantry.cfg:201
 #: units/infantry.cfg:746
 #: units/infantry.cfg:895
-#: units/tlc_units.cfg:418
-#: units/tlc_units.cfg:557
+#: units/tlc_units.cfg:490
+#: units/tlc_units.cfg:640
 msgid "blaster pistol"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_bi_commando, race=human
-#: units/dfr_units.cfg:488
+#: units/dfr_units.cfg:517
 msgid "Corellian Commando"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_bi_commando, race=human
-#: units/dfr_units.cfg:501
+#: units/dfr_units.cfg:530
 msgid "Veterans of Bel Iblis's private army: disciplined, well equipped, and fiercely loyal to their Senator."
 msgstr ""
 
 #. [dummy]: id=sw_ability_overwatch
-#: units/dfr_units.cfg:512
-#: units/dfr_units.cfg:652
-#: units/dfr_units.cfg:1023
-#: units/dfr_units.cfg:1143
-#: units/hte_heroes.cfg:228
-#: units/hte_heroes.cfg:681
-#: units/hte_heroes.cfg:1246
+#: units/dfr_units.cfg:541
+#: units/dfr_units.cfg:745
+#: units/dfr_units.cfg:1200
+#: units/dfr_units.cfg:1331
+#: units/hte_heroes.cfg:237
+#: units/hte_heroes.cfg:784
+#: units/hte_heroes.cfg:1442
 #: units/hte_imperial.cfg:31
-#: units/hte_imperial.cfg:161
-#: units/hte_imperial.cfg:296
+#: units/hte_imperial.cfg:225
+#: units/hte_imperial.cfg:424
 #: units/hte_new_republic.cfg:31
-#: units/hte_new_republic.cfg:161
-#: units/hte_new_republic.cfg:297
-#: units/hte_new_republic.cfg:824
-#: units/hte_new_republic.cfg:958
+#: units/hte_new_republic.cfg:225
+#: units/hte_new_republic.cfg:425
+#: units/hte_new_republic.cfg:1047
+#: units/hte_new_republic.cfg:1245
 #: units/hte_space.cfg:32
-#: units/hte_space.cfg:198
-#: units/hte_space.cfg:335
-#: units/hte_space.cfg:662
-#: units/hte_space.cfg:789
-#: units/hte_space.cfg:925
-#: units/tlc_units.cfg:672
+#: units/hte_space.cfg:218
+#: units/hte_space.cfg:364
+#: units/hte_space.cfg:733
+#: units/hte_space.cfg:871
+#: units/hte_space.cfg:1016
+#: units/tlc_units.cfg:766
 msgid "Can hold overwatch (right-click menu), committing this turn's attack. Until its next turn, it fires 1 reaction volley(s) at enemies that move within 2 hex(es) in sight. Hidden units cannot be targeted; a moving unit that is fired on stops but keeps its remaining moves."
 msgstr ""
 
 #. [attack]: type=impact
-#: units/dfr_units.cfg:529
-#: units/dfr_units.cfg:657
+#: units/dfr_units.cfg:558
+#: units/dfr_units.cfg:750
 #: units/hte_imperial.cfg:36
-#: units/hte_imperial.cfg:172
+#: units/hte_imperial.cfg:236
 #: units/hte_new_republic.cfg:36
-#: units/hte_new_republic.cfg:172
+#: units/hte_new_republic.cfg:236
 #: units/infantry.cfg:86
 msgid "rifle butt"
 msgstr ""
@@ -4220,13 +4358,13 @@ msgstr ""
 #. [attack]: type=fire
 #. [attack]: type=impact
 #. [attack]: type=pierce
-#: units/dfr_units.cfg:538
-#: units/dfr_units.cfg:666
+#: units/dfr_units.cfg:567
+#: units/dfr_units.cfg:759
 #: units/heroes.cfg:103
 #: units/hte_imperial.cfg:45
-#: units/hte_imperial.cfg:181
+#: units/hte_imperial.cfg:245
 #: units/hte_new_republic.cfg:45
-#: units/hte_new_republic.cfg:181
+#: units/hte_new_republic.cfg:245
 #: units/infantry.cfg:94
 #: units/infantry.cfg:135
 #: units/infantry.cfg:966
@@ -4234,96 +4372,156 @@ msgstr ""
 msgid "blaster rifle"
 msgstr ""
 
+#. [attack]: type=fire
+#: units/dfr_units.cfg:587
+#: units/dfr_units.cfg:779
+#: units/hte_imperial.cfg:65
+#: units/hte_imperial.cfg:265
+#: units/hte_new_republic.cfg:65
+#: units/hte_new_republic.cfg:265
+msgid "blaster rifle (aimed)"
+msgstr ""
+
+#. [chance_to_hit]: id=sw_special_aimed
+#: units/dfr_units.cfg:605
+#: units/dfr_units.cfg:797
+#: units/hte_heroes.cfg:639
+#: units/hte_heroes.cfg:836
+#: units/hte_imperial.cfg:83
+#: units/hte_imperial.cfg:283
+#: units/hte_new_republic.cfg:83
+#: units/hte_new_republic.cfg:283
+#: units/hte_new_republic.cfg:489
+#: units/hte_new_republic.cfg:1099
+#: units/hte_new_republic.cfg:1305
+#: units/tlc_units.cfg:234
+msgid "aimed shot"
+msgstr ""
+
+#. [chance_to_hit]: id=sw_special_aimed
+#: units/dfr_units.cfg:606
+#: units/dfr_units.cfg:798
+#: units/hte_heroes.cfg:640
+#: units/hte_heroes.cfg:837
+#: units/hte_imperial.cfg:84
+#: units/hte_imperial.cfg:284
+#: units/hte_new_republic.cfg:84
+#: units/hte_new_republic.cfg:284
+#: units/hte_new_republic.cfg:490
+#: units/hte_new_republic.cfg:1100
+#: units/hte_new_republic.cfg:1306
+#: units/tlc_units.cfg:235
+msgid "Taking a moment to aim: one shot fewer, +20% chance to hit. Needs at least two hexes of distance (no time to aim at point-blank range) and can only be used when attacking."
+msgstr ""
+
 #. [unit_type]: id=sw_unit_im_clone_trooper, race=human
-#: units/dfr_units.cfg:629
+#: units/dfr_units.cfg:722
 msgid "Clone Stormtrooper"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_clone_trooper, race=human
-#: units/dfr_units.cfg:642
+#: units/dfr_units.cfg:735
 msgid "Soldiers grown in the Grand Admiral's new cloning cylinders and sealed inside stormtrooper armor. They fight without hesitation."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_decon_droid, race=mechanical
-#: units/dfr_units.cfg:757
+#: units/dfr_units.cfg:914
 msgid "Decontamination Droid"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_decon_droid, race=mechanical
-#: units/dfr_units.cfg:770
+#: units/dfr_units.cfg:927
 msgid "Slow, heavily built droids that have worked Honoghr's poisoned soil for a generation."
 msgstr ""
 
 #. [attack]: type=cold
-#: units/dfr_units.cfg:774
+#: units/dfr_units.cfg:931
 msgid "chemical sprayer"
 msgstr ""
 
 #. [attack]: type=impact
-#: units/dfr_units.cfg:786
+#: units/dfr_units.cfg:952
 msgid "manipulator arm"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_dreadnaught, race=mechanical
-#: units/dfr_units.cfg:870
+#: units/dfr_units.cfg:1036
 msgid "Katana Dreadnaught"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_dreadnaught, race=mechanical
-#: units/dfr_units.cfg:883
+#: units/dfr_units.cfg:1049
 msgid "One of two hundred heavy cruisers lost before the Clone Wars, its systems slaved together and its crews long dead."
 msgstr ""
 
 #. [dummy]: id=sw_ability_overwatch
-#: units/dfr_units.cfg:895
-#: units/hte_new_republic.cfg:438
-#: units/hte_space.cfg:1193
+#: units/dfr_units.cfg:1061
+#: units/hte_new_republic.cfg:630
+#: units/hte_space.cfg:1306
 msgid "Can hold overwatch (right-click menu), committing this turn's attack. Until its next turn, it fires 2 reaction volley(s) at enemies that move within 3 hex(es) in sight. Hidden units cannot be targeted; a moving unit that is fired on stops but keeps its remaining moves."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/dfr_units.cfg:903
+#: units/dfr_units.cfg:1069
 msgid "Sensors and electronic warfare: sensors 4 out to 6 hexes; signature 9. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [attack]: type=fire
-#: units/dfr_units.cfg:908
-#: units/hte_space.cfg:1209
+#: units/dfr_units.cfg:1074
+#: units/hte_space.cfg:1322
 msgid "turbolasers"
 msgstr ""
 
+#. [chance_to_hit]: id=sw_special_range
+#: units/dfr_units.cfg:1085
+#: units/hte_imperial.cfg:758
+#: units/hte_new_republic.cfg:662
+#: units/hte_space.cfg:1333
+#: units/hte_space.cfg:1354
+msgid "range 3"
+msgstr ""
+
+#. [chance_to_hit]: id=sw_special_range
+#: units/dfr_units.cfg:1086
+#: units/hte_imperial.cfg:759
+#: units/hte_new_republic.cfg:663
+#: units/hte_space.cfg:1334
+#: units/hte_space.cfg:1355
+msgid "Reaches targets up to 3 hexes away. Each hex beyond the first lowers the chance to hit by 10%."
+msgstr ""
+
 #. [unit_type]: id=sw_unit_nr_boarding_shuttle, race=mechanical
-#: units/dfr_units.cfg:999
+#: units/dfr_units.cfg:1176
 msgid "Boarding Shuttle"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_boarding_shuttle, race=mechanical
-#: units/dfr_units.cfg:1012
+#: units/dfr_units.cfg:1189
 msgid "An armored shuttle carrying a boarding crew. It secures a derelict ship by docking beside it."
 msgstr ""
 
 #. [attack]: type=fire
-#: units/dfr_units.cfg:1028
-#: units/dfr_units.cfg:1148
-#: units/hte_heroes.cfg:239
-#: units/hte_heroes.cfg:1257
+#: units/dfr_units.cfg:1205
+#: units/dfr_units.cfg:1336
+#: units/hte_heroes.cfg:248
+#: units/hte_heroes.cfg:1453
 #: units/hte_space.cfg:43
-#: units/hte_space.cfg:210
-#: units/hte_space.cfg:346
-#: units/hte_space.cfg:667
-#: units/hte_space.cfg:800
-#: units/hte_space.cfg:930
-#: units/tlc_units.cfg:683
+#: units/hte_space.cfg:230
+#: units/hte_space.cfg:375
+#: units/hte_space.cfg:738
+#: units/hte_space.cfg:882
+#: units/hte_space.cfg:1021
+#: units/tlc_units.cfg:777
 msgid "laser cannons"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_boarding_shuttle, race=mechanical
-#: units/dfr_units.cfg:1119
+#: units/dfr_units.cfg:1307
 msgid "Imperial Assault Shuttle"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_boarding_shuttle, race=mechanical
-#: units/dfr_units.cfg:1132
+#: units/dfr_units.cfg:1320
 msgid "An Imperial boarding craft packed with clone stormtroopers."
 msgstr ""
 
@@ -4445,191 +4643,219 @@ msgid "deflected bolts"
 msgstr ""
 
 #. [disable]: id=sw_special_deflection
-#: units/hte_heroes.cfg:94
+#: units/hte_heroes.cfg:96
 msgid "deflection"
 msgstr ""
 
 #. [disable]: id=sw_special_deflection
-#: units/hte_heroes.cfg:95
+#: units/hte_heroes.cfg:97
 msgid "A Jedi can turn blaster bolts back at the shooter but cannot start an attack this way. Deflection fails inside a ysalamiri bubble."
 msgstr ""
 
 #. [unit_type]: id=sw_hero_xwing_luke, race=mechanical, gender=male
-#: units/hte_heroes.cfg:192
+#: units/hte_heroes.cfg:201
 msgid "X-wing Pilot (Jedi)"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_xwing_luke, race=mechanical, gender=male
-#: units/hte_heroes.cfg:206
+#: units/hte_heroes.cfg:215
 msgid "Luke Skywalker at the controls of his X-wing, with his astromech droid riding behind the cockpit."
 msgstr ""
 
 #. [dummy]: id=sw_ability_force
-#: units/hte_heroes.cfg:218
+#: units/hte_heroes.cfg:227
 msgid "Force Points: 6, regaining 2 each turn. Powers: Force Sense. Use them from the right-click menu (The Force…). Inside a ysalamiri field the Force is blocked: no powers, no deflection, no regeneration."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_heroes.cfg:234
-#: units/hte_heroes.cfg:1252
+#: units/hte_heroes.cfg:243
+#: units/hte_heroes.cfg:1448
 #: units/hte_space.cfg:38
 msgid "Sensors and electronic warfare: counter-jamming 1. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [attack]: type=impact
 #. [attack]: type=pierce
-#: units/hte_heroes.cfg:248
-#: units/hte_heroes.cfg:1266
-#: units/hte_space.cfg:52
-#: units/hte_space.cfg:367
+#: units/hte_heroes.cfg:268
+#: units/hte_heroes.cfg:1473
+#: units/hte_space.cfg:63
+#: units/hte_space.cfg:416
 #: units/spacecraft.cfg:40
 msgid "proton torpedoes"
 msgstr ""
 
+#. [chance_to_hit]: id=sw_special_range
+#: units/hte_heroes.cfg:280
+#: units/hte_heroes.cfg:1485
+#: units/hte_space.cfg:75
+#: units/hte_space.cfg:427
+msgid "range 3, guided"
+msgstr ""
+
+#. [chance_to_hit]: id=sw_special_range
+#: units/hte_heroes.cfg:281
+#: units/hte_heroes.cfg:1486
+#: units/hte_space.cfg:76
+#: units/hte_space.cfg:428
+msgid "Reaches targets up to 3 hexes away. Guided: no accuracy lost with distance."
+msgstr ""
+
 #. [unit_type]: id=sw_hero_leia, race=human, gender=female
-#: units/hte_heroes.cfg:363
+#: units/hte_heroes.cfg:392
 msgid "Chief of State"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_leia, race=human, gender=female
-#: units/hte_heroes.cfg:377
+#: units/hte_heroes.cfg:406
 msgid "Leia Organa Solo, a leader of the New Republic, a veteran of the Rebellion, and Force-sensitive herself. The Noghri want her alive."
 msgstr ""
 
 #. [dummy]: id=sw_ability_force
-#: units/hte_heroes.cfg:390
+#: units/hte_heroes.cfg:419
 msgid "Force Points: 4, regaining 1 each turn. Powers: Force Sense, Force Push. Use them from the right-click menu (The Force…). Inside a ysalamiri field the Force is blocked: no powers, no deflection, no regeneration."
 msgstr ""
 
 #. [dummy]: id=sw_ability_forward_observer
-#: units/hte_heroes.cfg:406
-#: units/hte_heroes.cfg:545
-#: units/hte_heroes.cfg:821
-#: units/hte_heroes.cfg:1416
-#: units/hte_imperial.cfg:447
-#: units/hte_new_republic.cfg:167
+#: units/hte_heroes.cfg:435
+#: units/hte_heroes.cfg:585
+#: units/hte_heroes.cfg:988
+#: units/hte_heroes.cfg:1632
+#: units/hte_imperial.cfg:586
+#: units/hte_new_republic.cfg:231
 msgid "Can call the side's air sorties (right-click a hex within 6 hexes that your side can see or track on sensors, then Call air support). Calling uses this unit's attack. Strafing runs hit a line of hexes at once; bombing runs hit an area at the start of your next turn. Sorties never finish off a unit."
 msgstr ""
 
 #. [unit_type]: id=sw_hero_han, race=human, gender=male
-#: units/hte_heroes.cfg:511
+#: units/hte_heroes.cfg:551
 msgid "Smuggler General"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_han, race=human, gender=male
-#: units/hte_heroes.cfg:525
+#: units/hte_heroes.cfg:565
 msgid "Han Solo, captain of the Millennium Falcon and a general of the New Republic, is quicker on the draw than anyone he has met."
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_heroes.cfg:559
+#: units/hte_heroes.cfg:599
 msgid "heavy blaster pistol"
 msgstr ""
 
+#. [attack]: type=fire
+#: units/hte_heroes.cfg:620
+msgid "heavy blaster pistol (aimed)"
+msgstr ""
+
 #. [unit_type]: id=sw_hero_chewbacca, race=sw_wookiee, gender=male
-#: units/hte_heroes.cfg:653
+#: units/hte_heroes.cfg:756
 msgid "Wookiee Copilot"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_chewbacca, race=sw_wookiee, gender=male
-#: units/hte_heroes.cfg:667
+#: units/hte_heroes.cfg:770
 msgid "Chewbacca, Han Solo's Wookiee partner and copilot, has sworn a life debt and defends his friends with ferocious strength."
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_heroes.cfg:686
+#: units/hte_heroes.cfg:789
 msgid "Wookiee strength"
 msgstr ""
 
 #. [attack]: type=pierce
-#: units/hte_heroes.cfg:695
-#: units/hte_new_republic.cfg:838
-#: units/hte_new_republic.cfg:980
+#: units/hte_heroes.cfg:798
+#: units/hte_new_republic.cfg:1061
+#: units/hte_new_republic.cfg:1267
 msgid "bowcaster"
 msgstr ""
 
+#. [attack]: type=pierce
+#: units/hte_heroes.cfg:818
+#: units/hte_new_republic.cfg:1081
+#: units/hte_new_republic.cfg:1287
+msgid "bowcaster (aimed)"
+msgstr ""
+
 #. [unit_type]: id=sw_hero_lando, race=human, gender=male
-#: units/hte_heroes.cfg:786
+#: units/hte_heroes.cfg:953
 msgid "Baron Administrator"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_lando, race=human, gender=male
-#: units/hte_heroes.cfg:800
+#: units/hte_heroes.cfg:967
 msgid "Lando Calrissian, gambler, general, and businessman, runs the mobile mining city on Nkllon and still enjoys long odds."
 msgstr ""
 
 #. [unit_type]: id=sw_hero_mara, race=human, gender=female
-#: units/hte_heroes.cfg:926
+#: units/hte_heroes.cfg:1104
 msgid "Karrde's Second"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_mara, race=human, gender=female
-#: units/hte_heroes.cfg:940
+#: units/hte_heroes.cfg:1118
 msgid "Mara Jade, Talon Karrde's second-in-command, is a superb pilot and fighter. She has unexplained reasons to want Luke Skywalker dead."
 msgstr ""
 
 #. [dummy]: id=sw_ability_force
-#: units/hte_heroes.cfg:953
+#: units/hte_heroes.cfg:1131
 msgid "Force Points: 5, regaining 1 each turn. Powers: Force Speed, Force Sense, Force Push. Use them from the right-click menu (The Force…). Inside a ysalamiri field the Force is blocked: no powers, no deflection, no regeneration."
 msgstr ""
 
 #. [attack]: type=blade
-#: units/hte_heroes.cfg:968
+#: units/hte_heroes.cfg:1146
 msgid "vibroblade"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_karrde, race=human, gender=male
-#: units/hte_heroes.cfg:1071
+#: units/hte_heroes.cfg:1258
 msgid "Smuggler Chief"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_karrde, race=human, gender=male
-#: units/hte_heroes.cfg:1085
+#: units/hte_heroes.cfg:1272
 msgid "Talon Karrde leads the galaxy's most capable smuggling organization and values information and neutrality above everything else."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_heroes.cfg:1109
+#: units/hte_heroes.cfg:1296
 msgid "Sensors and electronic warfare: jammer 1 over 2 hexes (it is loud: +2 signature); active sweep +2 (right-click menu); 2 sensor decoy(s). See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [unit_type]: id=sw_hero_wedge, race=mechanical, gender=male
-#: units/hte_heroes.cfg:1217
+#: units/hte_heroes.cfg:1413
 msgid "Rogue Leader"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_wedge, race=mechanical, gender=male
-#: units/hte_heroes.cfg:1231
+#: units/hte_heroes.cfg:1427
 msgid "Wedge Antilles, commander of Rogue Squadron, is one of the finest starfighter pilots in the New Republic."
 msgstr ""
 
 #. [unit_type]: id=sw_hero_pellaeon, race=human, gender=male
-#: units/hte_heroes.cfg:1381
+#: units/hte_heroes.cfg:1597
 msgid "Imperial Captain"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_pellaeon, race=human, gender=male
-#: units/hte_heroes.cfg:1395
+#: units/hte_heroes.cfg:1611
 msgid "Captain Gilad Pellaeon commands the Star Destroyer Chimaera. A career officer, he has come to trust the Grand Admiral completely."
 msgstr ""
 
 #. [unit_type]: id=sw_hero_thrawn, race=human, gender=male
-#: units/hte_heroes.cfg:1521
+#: units/hte_heroes.cfg:1748
 msgid "Grand Admiral"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_thrawn, race=human, gender=male
-#: units/hte_heroes.cfg:1535
+#: units/hte_heroes.cfg:1762
 msgid "Grand Admiral Thrawn, the only alien to reach the Empire's highest rank, has returned from the Unknown Regions to lead the Imperial Remnant."
 msgstr ""
 
 #. [dummy]: id=sw_ability_tactical_genius
-#: units/hte_heroes.cfg:1544
+#: units/hte_heroes.cfg:1771
 msgid "tactical genius"
 msgstr ""
 
 #. [dummy]: id=sw_ability_tactical_genius
-#: units/hte_heroes.cfg:1545
+#: units/hte_heroes.cfg:1772
 msgid "The Grand Admiral studies his opponents' art and culture to anticipate their tactics. Scenario events may grant his forces foreknowledge."
 msgstr ""
 
@@ -4644,93 +4870,93 @@ msgid "The Empire's armored infantry. Their plastoid armor turns blades and glan
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_stormtrooper_sergeant, race=human
-#: units/hte_imperial.cfg:136
+#: units/hte_imperial.cfg:200
 msgid "Stormtrooper Sergeant"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_stormtrooper_sergeant, race=human
-#: units/hte_imperial.cfg:149
+#: units/hte_imperial.cfg:213
 msgid "Squad leaders marked by their pauldrons, who drive their troopers forward with harsh efficiency."
 msgstr ""
 
 #. [dummy]: id=sw_ability_forward_observer
-#: units/hte_imperial.cfg:167
+#: units/hte_imperial.cfg:231
 msgid "Can call the side's air sorties (right-click a hex within 5 hexes that your side can see or track on sensors, then Call air support). Calling uses this unit's attack. Strafing runs hit a line of hexes at once; bombing runs hit an area at the start of your next turn. Sorties never finish off a unit."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_scout_trooper, race=human
-#: units/hte_imperial.cfg:272
+#: units/hte_imperial.cfg:400
 msgid "Scout Trooper"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_scout_trooper, race=human
-#: units/hte_imperial.cfg:285
+#: units/hte_imperial.cfg:413
 msgid "Lightly armored scouts on speeder bikes: very fast in the open, dangerous among trees."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_imperial.cfg:304
+#: units/hte_imperial.cfg:432
 msgid "Sensors and electronic warfare: active sweep +2 (right-click menu); sensors 3 out to 5 hexes. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_imperial.cfg:315
+#: units/hte_imperial.cfg:443
 msgid "ram"
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_imperial.cfg:324
+#: units/hte_imperial.cfg:452
 msgid "bike blaster cannon"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_officer, race=human
-#: units/hte_imperial.cfg:416
+#: units/hte_imperial.cfg:555
 msgid "Imperial Officer"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_officer, race=human
-#: units/hte_imperial.cfg:429
+#: units/hte_imperial.cfg:568
 msgid "Field officers of the Imperial Remnant, trained to coordinate infantry, walkers, and air support."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_at_st, race=mechanical
-#: units/hte_imperial.cfg:552
+#: units/hte_imperial.cfg:702
 msgid "AT-ST Walker"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_at_st, race=mechanical
-#: units/hte_imperial.cfg:565
+#: units/hte_imperial.cfg:715
 msgid "All Terrain Scout Transports: two-legged walkers with chin-mounted blaster cannons and a grenade launcher. Weak to ion fire and lightsabers."
 msgstr ""
 
 #. [dummy]: id=sw_ability_overwatch
-#: units/hte_imperial.cfg:576
+#: units/hte_imperial.cfg:726
 msgid "Can hold overwatch (right-click menu), committing this turn's attack. Until its next turn, it fires 2 reaction volley(s) at enemies that move within 2 hex(es) in sight. Hidden units cannot be targeted; a moving unit that is fired on stops but keeps its remaining moves."
 msgstr ""
 
 #. [dummy]: id=sw_ability_anti_air
-#: units/hte_imperial.cfg:583
-#: units/hte_new_republic.cfg:445
+#: units/hte_imperial.cfg:733
+#: units/hte_new_republic.cfg:637
 msgid "Fires on enemy air sorties striking within 2 hexes: each such unit lowers the sortie's accuracy by 20% (up to 40% in all)."
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_imperial.cfg:588
+#: units/hte_imperial.cfg:738
 msgid "stomp"
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_imperial.cfg:597
+#: units/hte_imperial.cfg:747
 msgid "twin blaster cannon"
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_imperial.cfg:606
+#: units/hte_imperial.cfg:767
 msgid "concussion grenade launcher"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_noghri, race=sw_noghri
-#: units/hte_imperial.cfg:733
+#: units/hte_imperial.cfg:905
 msgid "Silent Noghri killers who move unseen through forest and darkness. They serve the Grand Admiral without question."
 msgstr ""
 
@@ -4745,113 +4971,118 @@ msgid "The backbone of the New Republic Army: volunteers from a hundred worlds, 
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_sergeant, race=human
-#: units/hte_new_republic.cfg:136
+#: units/hte_new_republic.cfg:200
 msgid "New Republic Sergeant"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_sergeant, race=human
-#: units/hte_new_republic.cfg:149
+#: units/hte_new_republic.cfg:213
 msgid "Sergeants hold New Republic squads together under fire. Their calm example steadies nearby troopers."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_commando, race=human
-#: units/hte_new_republic.cfg:272
+#: units/hte_new_republic.cfg:400
 msgid "New Republic Commando"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_commando, race=human
-#: units/hte_new_republic.cfg:285
+#: units/hte_new_republic.cfg:413
 msgid "Lightly equipped specialists trained to slip between enemy positions, strike, and vanish before a response can form."
 msgstr ""
 
 #. [attack]: type=blade
-#: units/hte_new_republic.cfg:314
+#: units/hte_new_republic.cfg:442
 #: units/hte_smugglers.cfg:36
-#: units/hte_smugglers.cfg:165
-#: units/tlc_units.cfg:545
+#: units/hte_smugglers.cfg:176
+#: units/tlc_units.cfg:628
 msgid "vibroknife"
 msgstr ""
 
 #. [attack]: type=fire
 #. [attack]: type=impact
-#: units/hte_new_republic.cfg:323
+#: units/hte_new_republic.cfg:451
 #: units/infantry.cfg:145
 msgid "blaster carbine"
 msgstr ""
 
+#. [attack]: type=fire
+#: units/hte_new_republic.cfg:471
+msgid "blaster carbine (aimed)"
+msgstr ""
+
 #. [unit_type]: id=sw_unit_nr_eweb_team, race=human
-#: units/hte_new_republic.cfg:414
+#: units/hte_new_republic.cfg:606
 msgid "E-Web Heavy Weapons Team"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_eweb_team, race=human
-#: units/hte_new_republic.cfg:427
+#: units/hte_new_republic.cfg:619
 msgid "A two-person crew with a tripod-mounted heavy repeating blaster. Slow to redeploy, but its fire reaches two hexes and shreds anything caught in the open."
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_new_republic.cfg:459
+#: units/hte_new_republic.cfg:651
 msgid "E-Web repeating blaster"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_field_medic, race=human
-#: units/hte_new_republic.cfg:552
+#: units/hte_new_republic.cfg:753
 msgid "Field Medic"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_field_medic, race=human
-#: units/hte_new_republic.cfg:565
+#: units/hte_new_republic.cfg:766
 msgid "New Republic medics carry bacta patches and stim kits into the thick of the fighting to keep soldiers on their feet."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_militia, race=human
-#: units/hte_new_republic.cfg:672
+#: units/hte_new_republic.cfg:884
 msgid "Planetary Militia"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_militia, race=human
-#: units/hte_new_republic.cfg:685
+#: units/hte_new_republic.cfg:897
 msgid "Local defense volunteers with little training and older weapons, fighting for their own homes."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wk_warrior, race=sw_wookiee
-#: units/hte_new_republic.cfg:800
+#: units/hte_new_republic.cfg:1023
 msgid "Wookiee Warrior"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wk_warrior, race=sw_wookiee
-#: units/hte_new_republic.cfg:813
+#: units/hte_new_republic.cfg:1036
 msgid "Wookiee warriors defend Kashyyyk's great wroshyr trees with ryyk blades and powerful bowcasters."
 msgstr ""
 
 #. [attack]: type=blade
-#: units/hte_new_republic.cfg:829
-#: units/hte_new_republic.cfg:971
+#: units/hte_new_republic.cfg:1052
+#: units/hte_new_republic.cfg:1258
 msgid "ryyk blade"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wk_lookout, race=sw_wookiee
-#: units/hte_new_republic.cfg:929
+#: units/hte_new_republic.cfg:1216
 msgid "Wookiee Lookout"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wk_lookout, race=sw_wookiee
-#: units/hte_new_republic.cfg:942
+#: units/hte_new_republic.cfg:1229
 msgid "Lookouts keep watch from the high branches. Few intruders escape their senses, even Noghri."
 msgstr ""
 
 #. [dummy]: id=sw_ability_keen_senses
-#: units/hte_new_republic.cfg:947
+#: units/hte_new_republic.cfg:1234
 msgid "keen senses"
 msgstr ""
 
 #. [dummy]: id=sw_ability_keen_senses
-#: units/hte_new_republic.cfg:948
+#: units/hte_new_republic.cfg:1235
 msgid "Enemy Noghri within two hexes of this unit cannot hide."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_new_republic.cfg:966
+#: units/hte_new_republic.cfg:1253
 msgid "Sensors and electronic warfare: active sweep +2 (right-click menu); sensors 4 out to 5 hexes. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
@@ -4866,42 +5097,42 @@ msgid "Members of Talon Karrde's organization: pilots, slicers, and gunhands, lo
 msgstr ""
 
 #. [unit_type]: id=sw_unit_sm_veteran, race=human
-#: units/hte_smugglers.cfg:136
+#: units/hte_smugglers.cfg:147
 msgid "Smuggler Veteran"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_sm_veteran, race=human
-#: units/hte_smugglers.cfg:149
+#: units/hte_smugglers.cfg:160
 msgid "Hardened fringe fighters who make every shot count."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wl_vornskr, race=sw_vornskr
-#: units/hte_smugglers.cfg:268
+#: units/hte_smugglers.cfg:288
 msgid "Vornskr"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wl_vornskr, race=sw_vornskr
-#: units/hte_smugglers.cfg:281
+#: units/hte_smugglers.cfg:301
 msgid "Whip-tailed Myrkr predators that hunt by sensing the Force and attack Force-sensitives on sight."
 msgstr ""
 
 #. [attack]: type=blade
-#: units/hte_smugglers.cfg:285
+#: units/hte_smugglers.cfg:305
 msgid "fangs"
 msgstr ""
 
 #. [damage]: id=sw_special_force_hunter
-#: units/hte_smugglers.cfg:294
+#: units/hte_smugglers.cfg:314
 msgid "Force hunter"
 msgstr ""
 
 #. [damage]: id=sw_special_force_hunter
-#: units/hte_smugglers.cfg:295
+#: units/hte_smugglers.cfg:315
 msgid "Vornskrs sense the Force and attack Force-sensitive prey with extra ferocity: +50% damage against units with Force abilities."
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_smugglers.cfg:305
+#: units/hte_smugglers.cfg:325
 msgid "whip tail"
 msgstr ""
 
@@ -4916,154 +5147,154 @@ msgid "The New Republic's workhorse starfighter: four laser cannons, proton torp
 msgstr ""
 
 #. [variation]
-#: units/hte_space.cfg:165
-#: units/hte_space.cfg:302
-#: units/hte_space.cfg:499
-#: units/hte_space.cfg:756
-#: units/hte_space.cfg:892
-#: units/hte_space.cfg:1050
+#: units/hte_space.cfg:185
+#: units/hte_space.cfg:331
+#: units/hte_space.cfg:559
+#: units/hte_space.cfg:838
+#: units/hte_space.cfg:983
+#: units/hte_space.cfg:1163
 msgid "flyover"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_awing, race=mechanical
-#: units/hte_space.cfg:174
+#: units/hte_space.cfg:194
 msgid "A-wing Interceptor"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_awing, race=mechanical
-#: units/hte_space.cfg:187
+#: units/hte_space.cfg:207
 msgid "Small, very fast interceptors built to catch enemy fighters and bombers before they reach their targets."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_space.cfg:205
+#: units/hte_space.cfg:225
 msgid "Sensors and electronic warfare: jammer 2 over 2 hexes (it is loud: +2 signature). See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_ywing, race=mechanical
-#: units/hte_space.cfg:311
+#: units/hte_space.cfg:340
 msgid "Y-wing Bomber"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_ywing, race=mechanical
-#: units/hte_space.cfg:324
+#: units/hte_space.cfg:353
 msgid "Rugged, slow assault bombers whose ion cannons can disable a target's systems."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_space.cfg:341
+#: units/hte_space.cfg:370
 msgid "Sensors and electronic warfare: active sweep +3 (right-click menu). See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [attack]: type=cold
-#: units/hte_space.cfg:355
+#: units/hte_space.cfg:395
 msgid "ion cannon"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_docked_warship, race=mechanical
-#: units/hte_space.cfg:508
+#: units/hte_space.cfg:568
 msgid "Docked Warship"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_docked_warship, race=mechanical
-#: units/hte_space.cfg:521
+#: units/hte_space.cfg:581
 msgid "A New Republic warship tied up at the shipyards for refit, with only a skeleton crew aboard and its point-defense guns manned."
 msgstr ""
 
 #. [dummy]: id=sw_ability_overwatch
-#: units/hte_space.cfg:533
-#: units/tlc_units.cfg:1122
+#: units/hte_space.cfg:593
+#: units/tlc_units.cfg:1227
 msgid "Can hold overwatch (right-click menu), committing this turn's attack. Until its next turn, it fires 2 reaction volley(s) at enemies that move within 1 hex(es) in sight. Hidden units cannot be targeted; a moving unit that is fired on stops but keeps its remaining moves."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_space.cfg:542
+#: units/hte_space.cfg:602
 msgid "Sensors and electronic warfare: counter-jamming 2; active sweep +3 (right-click menu); sensors 5 out to 7 hexes. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_space.cfg:547
-#: units/tlc_units.cfg:1136
+#: units/hte_space.cfg:607
+#: units/tlc_units.cfg:1241
 msgid "point-defense lasers"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_tie_fighter, race=mechanical
-#: units/hte_space.cfg:638
+#: units/hte_space.cfg:709
 msgid "TIE Fighter"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_tie_fighter, race=mechanical
-#: units/hte_space.cfg:651
+#: units/hte_space.cfg:722
 msgid "Mass-produced, unshielded short-range fighters. They are fast and numerous and do not last long once hit."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_tie_interceptor, race=mechanical
-#: units/hte_space.cfg:765
+#: units/hte_space.cfg:847
 msgid "TIE Interceptor"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_tie_interceptor, race=mechanical
-#: units/hte_space.cfg:778
+#: units/hte_space.cfg:860
 msgid "A faster, more heavily armed TIE design flown by the Remnant's best pilots."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_space.cfg:795
+#: units/hte_space.cfg:877
 msgid "Sensors and electronic warfare: sensors 4 out to ? hexes. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_tie_bomber, race=mechanical
-#: units/hte_space.cfg:901
+#: units/hte_space.cfg:992
 msgid "TIE Bomber"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_tie_bomber, race=mechanical
-#: units/hte_space.cfg:914
+#: units/hte_space.cfg:1005
 msgid "Double-hulled TIE bombers carry concussion bombs for stations and capital ships."
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_space.cfg:939
+#: units/hte_space.cfg:1041
 msgid "concussion bombs"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_mole_miner, race=mechanical
-#: units/hte_space.cfg:1059
+#: units/hte_space.cfg:1172
 msgid "Hijacked Mole Miner"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_mole_miner, race=mechanical
-#: units/hte_space.cfg:1072
+#: units/hte_space.cfg:1185
 msgid "A stolen asteroid-mining craft with plasma jets that can cut through hull plating. Imperial crews use them to board ships."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_space.cfg:1080
+#: units/hte_space.cfg:1193
 msgid "Sensors and electronic warfare: reads as object until identified; signature 2. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_space.cfg:1085
+#: units/hte_space.cfg:1198
 msgid "plasma jets"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_star_destroyer, race=mechanical
-#: units/hte_space.cfg:1169
+#: units/hte_space.cfg:1282
 msgid "Imperial Star Destroyer"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_star_destroyer, race=mechanical
-#: units/hte_space.cfg:1182
+#: units/hte_space.cfg:1295
 msgid "A wedge-shaped capital ship sixteen hundred meters long, bristling with turbolasers and ion cannons."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_space.cfg:1204
+#: units/hte_space.cfg:1317
 msgid "Sensors and electronic warfare: jammer 2 over 3 hexes (it is loud: +2 signature); active sweep +3 (right-click menu); 1 sensor decoy(s); sensors 6 out to 8 hexes. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [attack]: type=cold
-#: units/hte_space.cfg:1218
+#: units/hte_space.cfg:1342
 msgid "ion cannons"
 msgstr ""
 
@@ -5461,137 +5692,142 @@ msgid "Force Points: 6, regaining 2 each turn. Powers: Force Push, Force Choke, 
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wy_myneyrshi, race=sw_myneyrshi
-#: units/tlc_units.cfg:158
+#: units/tlc_units.cfg:167
 msgid "Myneyrshi Warrior"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wy_myneyrshi, race=sw_myneyrshi
-#: units/tlc_units.cfg:171
+#: units/tlc_units.cfg:180
 msgid "Four-armed Wayland hunters who fight with long spears and short bows at once."
 msgstr ""
 
 #. [attack]: type=pierce
-#: units/tlc_units.cfg:175
+#: units/tlc_units.cfg:184
 msgid "spear"
 msgstr ""
 
 #. [attack]: type=pierce
-#: units/tlc_units.cfg:187
+#: units/tlc_units.cfg:196
 msgid "bow"
 msgstr ""
 
+#. [attack]: type=pierce
+#: units/tlc_units.cfg:216
+msgid "bow (aimed)"
+msgstr ""
+
 #. [unit_type]: id=sw_unit_wy_psadan, race=sw_psadan
-#: units/tlc_units.cfg:277
+#: units/tlc_units.cfg:349
 msgid "Psadan Elder"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wy_psadan, race=sw_psadan
-#: units/tlc_units.cfg:290
+#: units/tlc_units.cfg:362
 msgid "Slow, armored Psadans who wade into a fight and do not leave it."
 msgstr ""
 
 #. [attack]: type=impact
-#: units/tlc_units.cfg:294
+#: units/tlc_units.cfg:366
 msgid "war club"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_royal_guard, race=human
-#: units/tlc_units.cfg:377
+#: units/tlc_units.cfg:449
 msgid "Imperial Guard"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_royal_guard, race=human
-#: units/tlc_units.cfg:390
+#: units/tlc_units.cfg:462
 msgid "Crimson-robed elite guards who once served the Emperor and still hold his storehouse at Mount Tantiss."
 msgstr ""
 
 #. [attack]: type=blade
-#: units/tlc_units.cfg:406
+#: units/tlc_units.cfg:478
 msgid "force pike"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_infiltrator, race=human
-#: units/tlc_units.cfg:509
+#: units/tlc_units.cfg:592
 msgid "Imperial Infiltrator"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_infiltrator, race=human
-#: units/tlc_units.cfg:522
+#: units/tlc_units.cfg:605
 msgid "Commandos trained to move unseen through cities and palaces."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_minelayer, race=mechanical
-#: units/tlc_units.cfg:648
+#: units/tlc_units.cfg:742
 msgid "Imperial Minelayer"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_minelayer, race=mechanical
-#: units/tlc_units.cfg:661
+#: units/tlc_units.cfg:755
 msgid "A converted bulk freighter that releases cloaked asteroids into planetary orbit."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/tlc_units.cfg:678
+#: units/tlc_units.cfg:772
 msgid "Sensors and electronic warfare: active sweep +2 (right-click menu). See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_cloaked_asteroid, race=mechanical
-#: units/tlc_units.cfg:774
+#: units/tlc_units.cfg:879
 msgid "Cloaked Asteroid"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_cloaked_asteroid, race=mechanical
-#: units/tlc_units.cfg:787
+#: units/tlc_units.cfg:892
 msgid "A rock in orbit, hidden by a stealth field. Ships that stray next to one are damaged."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/tlc_units.cfg:808
+#: units/tlc_units.cfg:913
 msgid "Sensors and electronic warfare: cloak 6 (drops after firing); signature 1. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_shield_generator, race=mechanical
-#: units/tlc_units.cfg:899
+#: units/tlc_units.cfg:1004
 msgid "A planetary shield generator protecting the mountain's entrance."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/tlc_units.cfg:910
+#: units/tlc_units.cfg:1015
 msgid "Sensors and electronic warfare: signature 6. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [dummy]: id=sw_ability_anti_air
-#: units/tlc_units.cfg:917
+#: units/tlc_units.cfg:1022
 msgid "Fires on enemy air sorties striking within 3 hexes: each such unit lowers the sortie's accuracy by 20% (up to 40% in all)."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_cloning_cylinder, race=mechanical
-#: units/tlc_units.cfg:995
+#: units/tlc_units.cfg:1100
 msgid "Cloning Cylinder"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_cloning_cylinder, race=mechanical
-#: units/tlc_units.cfg:1008
+#: units/tlc_units.cfg:1113
 msgid "One of the Emperor's Spaarti cloning cylinders, now growing soldiers for the Grand Admiral."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/tlc_units.cfg:1019
+#: units/tlc_units.cfg:1124
 msgid "Sensors and electronic warfare: signature 4. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_shipyard_platform, race=mechanical
-#: units/tlc_units.cfg:1097
+#: units/tlc_units.cfg:1202
 msgid "Shipyard Platform"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_ob_shipyard_platform, race=mechanical
-#: units/tlc_units.cfg:1110
+#: units/tlc_units.cfg:1215
 msgid "An orbital construction platform at the Bilbringi shipyards."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/tlc_units.cfg:1131
+#: units/tlc_units.cfg:1236
 msgid "Sensors and electronic warfare: sensors 4 out to 5 hexes; signature 8. See the Field Manual: Sensors and cloaking."
 msgstr ""
 
@@ -5863,6 +6099,21 @@ msgstr ""
 
 #. [message]: speaker=narrator
 #: utils/hte_macros.cfg:379
+msgid "Weapon ranges and aimed shots"
+msgstr ""
+
+#. [message]: speaker=narrator
+#: utils/hte_macros.cfg:379
+msgid ""
+"Ranged weapons reach beyond the next hex. Each weapon shows its reach as a special, such as <i>range 2</i>, beside its damage and strikes. Pistols and other close weapons reach only adjacent targets. Rifles, carbines, bowcasters and Han Solo's DL-44 reach 2 hexes. E-Web repeaters, AT-ST cannons, guided torpedoes and capital-ship batteries reach 3. Every hex beyond the first costs 10% chance to hit, except for guided torpedoes.\n"
+"\n"
+"To attack from range, select your unit and click an enemy within reach. A defender can only shoot back if its own weapon reaches that far, so a rifleman two hexes from a pistol-armed enemy fires without reply.\n"
+"\n"
+"Rifles, carbines, bowcasters, bows and the DL-44 also offer an <b>aimed shot</b>: one shot fewer, but +20% to hit. Aiming takes a moment, so it needs at least two hexes of distance and only works when you attack. Choose it in the attack dialog when the target is in cover or far away."
+msgstr ""
+
+#. [message]: speaker=narrator
+#: utils/hte_macros.cfg:384
 msgid ""
 "Starfighters support ground battles from off the map. When your side has sorties, right-click a hex that one of your forward observers can see (or tracks on sensors) within range and choose <b>Call air support</b>. Forward observers are commanders such as Han, Leia and Lando, sergeants, commandos and scouts; calling uses the observer's attack, and only one sortie flies per turn.\n"
 "\n"
@@ -5870,17 +6121,17 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:382
+#: utils/hte_macros.cfg:387
 msgid "Ranks"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:382
+#: utils/hte_macros.cfg:387
 msgid "Veterans wear their rank. A unit that rises past its highest level gains a rank — Veteran, Seasoned veteran, Elite — shown as insignia on the unit: gold chevrons for the New Republic, the red-and-blue rank plaque for the Imperial Remnant, brass studs for independents, violet marks for dark Jedi. Promoted units such as sergeants and smuggler veterans start at the first rank. Each rank also brings the usual +3 maximum hit points and a full heal."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:383
+#: utils/hte_macros.cfg:388
 msgid ""
 "Grand Admiral Thrawn learns his enemies. His forces gain Insight from what they observe: how you move, the weapons you use, the targets you choose, your reinforcements, your formations and your tactics. Repeating yourself teaches him faster. Captured art, archives and intelligence can teach him too. Red pips over his commander show how far his doctrine has come.\n"
 "\n"
@@ -5888,7 +6139,7 @@ msgid ""
 msgstr ""
 
 #. [option]
-#: utils/hte_macros.cfg:387
+#: utils/hte_macros.cfg:392
 msgid "Close the manual"
 msgstr ""
 
@@ -6006,4 +6257,87 @@ msgstr ""
 #. [terrain_type]: id=sw_duracrete_plaza
 #: utils/hte_terrain.cfg:191
 msgid "Duracrete Plaza"
+msgstr ""
+
+#. [terrain_type]: id=sw_prefab_domes
+#. [terrain_type]: id=sw_supply_depot
+#. [terrain_type]: id=sw_wookiee_dwelling
+#. [terrain_type]: id=sw_wayland_village
+#. [terrain_type]: id=sw_noghri_dukha
+#. [terrain_type]: id=sw_farmstead
+#. [terrain_type]: id=sw_hunters_outpost
+#. [terrain_type]: id=sw_field_camp
+#: utils/hte_terrain.cfg:211
+#: utils/hte_terrain.cfg:224
+#: utils/hte_terrain.cfg:237
+#: utils/hte_terrain.cfg:250
+#: utils/hte_terrain.cfg:263
+#: utils/hte_terrain.cfg:276
+#: utils/hte_terrain.cfg:289
+#: utils/hte_terrain.cfg:302
+msgid "Settlement"
+msgstr ""
+
+#. [terrain_type]: id=sw_prefab_domes
+#: utils/hte_terrain.cfg:212
+msgid "Prefab Domes"
+msgstr ""
+
+#. [terrain_type]: id=sw_supply_depot
+#: utils/hte_terrain.cfg:225
+msgid "Supply Depot"
+msgstr ""
+
+#. [terrain_type]: id=sw_wookiee_dwelling
+#: utils/hte_terrain.cfg:238
+msgid "Wookiee Dwelling"
+msgstr ""
+
+#. [terrain_type]: id=sw_wayland_village
+#: utils/hte_terrain.cfg:251
+msgid "Native Village"
+msgstr ""
+
+#. [terrain_type]: id=sw_noghri_dukha
+#: utils/hte_terrain.cfg:264
+msgid "Noghri Dukha"
+msgstr ""
+
+#. [terrain_type]: id=sw_farmstead
+#: utils/hte_terrain.cfg:277
+msgid "Colonist Farmstead"
+msgstr ""
+
+#. [terrain_type]: id=sw_hunters_outpost
+#: utils/hte_terrain.cfg:290
+msgid "Hunter's Outpost"
+msgstr ""
+
+#. [terrain_type]: id=sw_field_camp
+#: utils/hte_terrain.cfg:303
+msgid "Imperial Field Camp"
+msgstr ""
+
+#. [terrain_type]: id=sw_wroshyr_forest
+#. [terrain_type]: id=sw_myrkr_forest
+#. [terrain_type]: id=sw_wayland_jungle
+#: utils/hte_terrain.cfg:322
+#: utils/hte_terrain.cfg:335
+#: utils/hte_terrain.cfg:348
+msgid "Forest"
+msgstr ""
+
+#. [terrain_type]: id=sw_wroshyr_forest
+#: utils/hte_terrain.cfg:323
+msgid "Wroshyr Forest (Kashyyyk)"
+msgstr ""
+
+#. [terrain_type]: id=sw_myrkr_forest
+#: utils/hte_terrain.cfg:336
+msgid "Myrkr Forest"
+msgstr ""
+
+#. [terrain_type]: id=sw_wayland_jungle
+#: utils/hte_terrain.cfg:349
+msgid "Wayland Jungle"
 msgstr ""
