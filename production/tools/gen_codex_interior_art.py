@@ -54,6 +54,14 @@ TEXTURES = {
     "wall-rock": "solid raw mountain rock: jagged dark gray stone with deep cracks and shadows, seen straight "
                  "from above, clearly impassable",
 }
+# Small ground decorations scattered at random over dirt (no gameplay
+# effect): drawn small, centred in the hex.
+DECALS = {
+    "decal-pebbles": "a small scatter of six or seven gray and brown pebbles on bare ground, no ground drawn",
+    "decal-rock": "one fist-sized weathered gray rock with a patch of pale lichen, no ground drawn",
+    "decal-weed": "a single small stray tuft of wiry green weeds with two tiny pale flowers, no ground drawn",
+    "decal-stones": "three flat stones of different sizes half-sunk at odd angles, no ground drawn",
+}
 OBJECTS = {
     "cover-crates": "a waist-high stack of four or five battered cargo crates of mixed sizes, some metal, some "
                     "wooden, the kind of cover a soldier crouches behind",
@@ -109,9 +117,16 @@ img = fit(remove_flat_background(Image.open({src!r})), 72, margin=10, anchor_bot
 reason = degenerate_reason(img)
 if reason:
     raise SystemExit("degenerate interior art rejected: " + reason)
+if {margin}:
+    # Decals: checked at full size above, then shrunk into the middle of the
+    # hex so they read as small ground clutter.
+    small = img.resize((72 - 2 * {margin}, 72 - 2 * {margin}), Image.LANCZOS)
+    img = Image.new("RGBA", (72, 72))
+    img.alpha_composite(small, ({margin}, {margin}))
 img.save({dst!r}, optimize=True)
 """
 
+OBJECTS.update(DECALS)
 KINDS = {**TEXTURES, **OBJECTS}
 
 
@@ -128,8 +143,10 @@ def generate(kind: str, style: str) -> dict:
             return {"kind": kind, "state": "quota_paused"}
         return {"kind": kind, "state": "failed", "reason": "no image produced"}
     fit = FIT_TEXTURE if kind in TEXTURES else FIT_OBJECT
+    # Decals are shrunk to the middle 28 px; cover objects fill most of the hex.
+    margin = 22 if kind.startswith("decal-") else 0
     script = fit.format(tools=str(ROOT / "production/tools"), src=str(target), mask=str(ALPHAMASK),
-                        dst=str(OUT / f"{kind}.png"))
+                        dst=str(OUT / f"{kind}.png"), margin=margin)
     done = subprocess.run([str(codex_art.art_python()), "-c", script], capture_output=True, text=True,
                           timeout=300, check=False)
     if done.returncode:
