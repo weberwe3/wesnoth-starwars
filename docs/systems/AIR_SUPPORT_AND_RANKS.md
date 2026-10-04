@@ -109,7 +109,7 @@ and the Field Manual has an "Air support" page.
   `FLYOVER_CRAFT`). The engine warns that it has no ordinary route over
   enemy-held hexes, then uses its emergency path as intended; the soak
   ignores that warning.
-- **Blasts:** core flame-burst halos.
+- **Blasts:** core flame-burst halos, rippling along the strike line one hex at a time (`air.PACING`: approach and exit hexes, 160 ms between detonations, 90 ms burst frames). A strike takes about 3–3.5 s at normal speed.
 
 ## Rank insignia (`lua/sw_rank.lua`)
 

@@ -115,6 +115,7 @@ function force.ensure_scenario()
 	if wml.variables.sw_force_null_scenario ~= id then
 		wml.array_access.set("sw_force_null_sources", {})
 		wml.array_access.set("sw_force_sense_lifted", {})
+		wml.variables.sw_force_null_world = nil
 		wml.variables.sw_force_null_scenario = id
 		force.null_set = nil
 	end
@@ -126,6 +127,20 @@ function force.add_static_source(x, y, radius)
 	table.insert(sources, { x = x, y = y, radius = radius })
 	wml.array_access.set("sw_force_null_sources", sources)
 	force.refresh_fields()
+end
+
+-- A world-wide null field: the whole battlefield is saturated with
+-- ysalamiri (e.g. Karrde's compound on Myrkr, where they live in every
+-- tree). No tint is drawn; Force users show the suppression marker.
+function force.set_world_field(on)
+	force.ensure_scenario()
+	wml.variables.sw_force_null_world = on and true or nil
+	force.null_set = nil
+	force.refresh_fields()
+end
+
+function force.world_field()
+	return wml.variables.sw_force_null_world == true
 end
 
 function force.is_suppressed_at(x, y)
@@ -152,23 +167,35 @@ function force.refresh_fields()
 		end
 	end
 	table.sort(list, function(a, b) if a.x ~= b.x then return a.x < b.x end return a.y < b.y end)
+	-- The tint shows local fields only; a world field covers every hex
+	-- (still listed for WML filters such as find_in=sw_ysalamiri_zone).
+	local tint, tint_list = {}, {}
+	for _i, loc in ipairs(list) do tint[core.key(loc.x, loc.y)] = true table.insert(tint_list, loc) end
+	if force.world_field() then
+		for _i, loc in ipairs(wesnoth.map.find{}) do
+			local x, y = loc[1] or loc.x, loc[2] or loc.y
+			local k = core.key(x, y)
+			if not set[k] then set[k] = true table.insert(list, { x = x, y = y }) end
+		end
+		table.sort(list, function(a, b) if a.x ~= b.x then return a.x < b.x end return a.y < b.y end)
+	end
 	force.null_set = set
 	wml.array_access.set("sw_ysalamiri_zone", list)
 	-- Redraw the field tint: remove hexes no longer covered, add new ones.
 	local drawn = {}
 	for _i, loc in ipairs(wml.array_access.get("sw_force_null_drawn")) do
-		if not set[core.key(loc.x, loc.y)] then
+		if not tint[core.key(loc.x, loc.y)] then
 			wesnoth.interface.remove_item(loc.x, loc.y, "misc/sw-ysalamiri-zone.png")
 		else
 			drawn[core.key(loc.x, loc.y)] = true
 		end
 	end
-	for _i, loc in ipairs(list) do
+	for _i, loc in ipairs(tint_list) do
 		if not drawn[core.key(loc.x, loc.y)] then
 			wesnoth.interface.add_item_image(loc.x, loc.y, "misc/sw-ysalamiri-zone.png")
 		end
 	end
-	wml.array_access.set("sw_force_null_drawn", list)
+	wml.array_access.set("sw_force_null_drawn", tint_list)
 	for _i, u in ipairs(wesnoth.units.find_on_map{ ability = force.ABILITY }) do
 		force.update_indicator(u)
 	end
