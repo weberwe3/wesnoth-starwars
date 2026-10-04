@@ -59,9 +59,33 @@ FORESTS = {
     "wayland": "the jungle of the planet Wayland: a tangle of thick tropical trees with huge leaves, hanging "
                "vines and dense undergrowth, steamy and overgrown",
 }
+# Variants 3 and 4: other tree types and sizes of the same biome, so a
+# forest is not one repeated clump.
+FOREST_VARIANTS = {
+    "wroshyr": {
+        3: "one colossal wroshyr tree of the planet Kashyyyk: a single enormous gray-brown trunk with huge root "
+           "buttresses and a broad flat crown of deep green leaves, a few hanging vines",
+        4: "a cluster of younger, thinner wroshyr saplings of the planet Kashyyyk with broad-leaved green "
+           "undergrowth and ferns around their feet, smaller and lower than a mature forest",
+    },
+    "myrkr": {
+        3: "one towering pale-barked tree of the planet Myrkr with a wide dark blue-green crown, and two small "
+           "saplings at its foot",
+        4: "a low dense thicket of young pale-barked Myrkr trees and dark blue-green ferns, shorter than a mature "
+           "forest",
+    },
+    "wayland": {
+        3: "one huge tropical tree of the jungle planet Wayland with wide buttress roots, a dense crown of large "
+           "leaves and long hanging vines",
+        4: "dense low jungle undergrowth of the planet Wayland: giant ferns, broad leaves, a fallen mossy log and "
+           "one young tree",
+    },
+}
 for _name, _subject in FORESTS.items():
     for _variant in (1, 2):
         KINDS[f"forest-{_name}-{_variant}"] = _subject + (", seen from a slightly different side" if _variant == 2 else "")
+    for _variant, _text in FOREST_VARIANTS[_name].items():
+        KINDS[f"forest-{_name}-{_variant}"] = _text
 
 PROMPT = """Use your image generation tool to create exactly ONE original image: {subject}. Seen from above at a three-quarter angle, like a building in a turn-based strategy game, the whole object centered with an empty margin on a TRANSPARENT background. A single object group only; no ground plane, no shadow outside the object, no people. Save it as village.png in the current working directory. Do not create any other files.
 
