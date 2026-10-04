@@ -26,6 +26,8 @@ Rank insignia (lua/sw_rank.lua) and air support (lua/sw_air.lua):
                                  at (37,61); each higher rank covers the lower
   misc/sw-air-inbound.png        hex marker: bombing run inbound (seen by all)
   misc/sw-menu-air.png           menu icon
+  misc/sw-force-arrow-<dir>[-blocked].png  Force Push/Pull direction on the
+                                 target hex: blue = moves, red = blocked/slam
 
 Usage: python3 production/tools/gen_ui_icons.py   (requires Pillow)
 """
@@ -377,6 +379,36 @@ def menu_air() -> Image.Image:
     return img.resize((16, 16), Image.LANCZOS)
 
 
+# Hex neighbour directions in pixel space (flat-topped hexes, 72 px).
+HEX_DIRS = {"n": (0, -72), "ne": (54, -36), "se": (54, 36), "s": (0, 72), "sw": (-54, 36), "nw": (-54, -36)}
+
+
+def force_arrow(direction: str, blocked: bool) -> Image.Image:
+    img = canvas()
+    d = ImageDraw.Draw(img)
+    dx, dy = HEX_DIRS[direction]
+    length = math.hypot(dx, dy)
+    ux, uy = dx / length, dy / length
+    px, py = -uy, ux
+    cx, cy = 36 * S, 36 * S
+    tail = (cx - ux * 14 * S, cy - uy * 14 * S)
+    neck = (cx + ux * 14 * S, cy + uy * 14 * S)
+    tip = (cx + ux * 31 * S, cy + uy * 31 * S)
+    color = (255, 80, 70, 255) if blocked else (120, 196, 255, 255)
+    for fill, width, grow in ((OUTLINE, 11 * S, 3.5 * S), (color, 6 * S, 0)):
+        d.line([tail, neck], fill=fill, width=int(width))
+        w = 11 * S + grow
+        d.polygon([(tip[0] + ux * grow, tip[1] + uy * grow),
+                   (neck[0] + px * w - ux * grow, neck[1] + py * w - uy * grow),
+                   (neck[0] - px * w - ux * grow, neck[1] - py * w - uy * grow)], fill=fill)
+    if blocked:
+        # a bar across the tip: the target cannot go there
+        bx, by = tip[0] + ux * 3 * S, tip[1] + uy * 3 * S
+        for fill, width in ((OUTLINE, 7 * S), ((255, 230, 120, 255), 3 * S)):
+            d.line([(bx + px * 12 * S, by + py * 12 * S), (bx - px * 12 * S, by - py * 12 * S)], fill=fill, width=int(width))
+    return done(img)
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     for n in range(11):
@@ -404,6 +436,9 @@ def main() -> int:
         for n in (1, 2, 3):
             rank_plate(style, n).save(OUT / f"sw-rank-{style}-{n}.png", optimize=True)
     air_inbound().save(OUT / "sw-air-inbound.png", optimize=True)
+    for direction in HEX_DIRS:
+        force_arrow(direction, False).save(OUT / f"sw-force-arrow-{direction}.png", optimize=True)
+        force_arrow(direction, True).save(OUT / f"sw-force-arrow-{direction}-blocked.png", optimize=True)
     menu_air().save(OUT / "sw-menu-air.png", optimize=True)
     print("wrote tactical-system UI icons")
     return 0
