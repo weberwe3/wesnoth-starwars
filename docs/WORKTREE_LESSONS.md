@@ -884,3 +884,16 @@ to be hit is 100 minus it); `ai_special=guardian` is the unit status
 `status.guardian = false`.
 **Prevention:** Check the meaning of unit API values against core Lua
 before use.
+
+### 2026-10-04 — Map walkways painted over the player's keep
+
+**Symptom:** In Shadows of Kashyyyk and The Noghri Prisoner, Leia never
+recruited: her 100–110 gold stayed unspent all mission (balance soak trace).
+**Confirmed cause:** The map generators placed the keep ring first, then drew
+walkway paths starting from the keep hex. The paths overwrote the keep, so the
+committed maps had no keep anywhere.
+**Resolution:** Place the keep ring after the paths (`gen_hte_maps.py` m04,
+`gen_dfr_maps.py` m01); regenerate the two maps.
+**Prevention:** `mission_balance_report.py` warns when side 1 has gold and a
+recruit list but does not start on a keep. Draw keeps and other key hexes
+last in map generators.

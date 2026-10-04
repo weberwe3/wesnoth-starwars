@@ -12,7 +12,7 @@ local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "flanking", "ai_ranged", "check_ai_ranged",
-  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "attack_range", "prepare_save",
+  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
 
@@ -674,6 +674,43 @@ local function plugin(events, context, info)
       check("the attacked guard is alert", g == nil or not sw_systems.alert.is_unaware(g))
       check("an alerted guard's sight hexes vanish when the fight ends", drawn_near(10, 4) == 0
         and #wml.array_access.get("sw_alert_drawn") == 0, drawn_near(10, 4))
+    end
+
+    -- Hero withdrawal (utils/hte_macros.cfg SW_HERO_WITHDRAWS): a falling
+    -- secondary hero leaves the map healed and is kept in sw_stashed_heroes;
+    -- the scenario goes on.
+    local function stashed(id)
+      for _i, u in ipairs(wml.array_access.get("sw_stashed_heroes")) do
+        if u.id == id then return u end
+      end
+    end
+    function S.hero_withdraw()
+      swt.clear()
+      wml.variables.sw_stashed_heroes = nil
+      swt.place("sw_hero_lando", 1, 10, 8, "sw_test_withdrawer")
+      -- Outside combat (Force power, hazard): [harm_unit] kill.
+      wesnoth.wml_actions.harm_unit{ T.filter{ id = "sw_test_withdrawer" }, amount = 999, kill = true,
+        fire_event = true, animate = false }
+      local s1 = stashed("sw_test_withdrawer")
+      check("a hero killed outside combat withdraws: off the map", wesnoth.units.get("sw_test_withdrawer") == nil)
+      check("and is kept, healed, to return after victory", s1 ~= nil and s1.hitpoints == s1.max_hitpoints,
+        s1 and (s1.hitpoints .. "/" .. s1.max_hitpoints))
+      -- In combat: a 1 HP hero attacks a Noghri whose return strikes always
+      -- hit (a test-only 100% special), so the counterattack fells her.
+      local h = swt.place("sw_hero_leia", 1, 12, 8, "sw_test_withdrawer2")
+      h.hitpoints = 1
+      local ng = swt.place("sw_unit_im_noghri", 2, 13, 8, "t_wd_ng")
+      ng:add_modification("object", { T.effect{ apply_to = "attack", range = "melee",
+        T.set_specials{ mode = "append", T.chance_to_hit{ id = "t_sure", value = 100 } } } })
+      wesnoth.wml_actions.do_command{ T.attack{ weapon = 0, T.source{ x = 12, y = 8 }, T.destination{ x = 13, y = 8 } } }
+    end
+    function S.check_hero_withdraw()
+      local gone = wesnoth.units.get("sw_test_withdrawer2") == nil
+      local s2 = stashed("sw_test_withdrawer2")
+      check("a hero struck down in combat withdraws instead of dying", gone and s2 ~= nil,
+        tostring(gone) .. " " .. tostring(s2 ~= nil))
+      check("the scenario goes on", wesnoth.current.turn >= 1)
+      wml.variables.sw_stashed_heroes = nil
     end
 
     -- Attack range display (lua/sw_range.lua).

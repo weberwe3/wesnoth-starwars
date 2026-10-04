@@ -123,6 +123,10 @@ def soak_one(engine: Path, campaign: str, scenario: str, workdir: Path, timeout:
         "seconds": round(time.time() - started, 1),
         "failures": failures,
         "intel": next((line[len("intel "):] for line in reversed(lines) if line.startswith("intel ")), None),
+        # Balance trace: per-turn units/HP/gold per side and side 1's heroes.
+        "trace": [line[len("trace "):] for line in lines if line.startswith("trace ")],
+        "all_deaths": deaths[:60],
+        "threat": [line[len("threat "):] for line in lines if line.startswith("threat ")],
     }
 
 

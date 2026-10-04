@@ -1158,12 +1158,14 @@ UNIT_ICONS = {("sw_hero_luke", "lightsaber"): "sw-lightsaber-green",
 #   pistols 1, rifles and long arms 2, heavy and crew-served 3; Han Solo's
 #   DL-44 heavy blaster pistol is the exception at 2. Bombs drop on the hex
 #   beneath (1); guided torpedoes reach 3 without falloff.
+#   Jedi blaster deflection reaches 2 (balance review 2026-10-04): it only
+#   returns fire, and at 1 a rifleman 2 hexes away shot a Jedi without reply.
 WEAPON_RANGES = {
     # infantry
     "blaster_pistol": 1, "hold_out_blaster": 1, "stun_blaster": 1, "sprayer": 1,
     "heavy_blaster_pistol": 2,   # Han Solo's DL-44 (only Han carries it)
     "blaster_rifle": 2, "blaster_carbine": 2, "bowcaster": 2, "bike_blaster": 2, "bow": 2,
-    "concussion_grenade": 2, "force_lightning": 2, "deflection": 1,
+    "concussion_grenade": 2, "force_lightning": 2, "deflection": 2,
     "eweb_repeater": 3, "twin_blaster_cannon": 3,
     # craft
     "laser_cannons": 2, "ion_cannon": 2, "point_defense": 1, "concussion_bombs": 1,

@@ -56,9 +56,31 @@ local function plugin(events, context, info)
         local ec = wesnoth.current.event_context
         local u = wesnoth.units.get(ec.x1, ec.y1)
         if u then
+          local k = ec.x2 and wesnoth.units.get(ec.x2, ec.y2)
           std_print("SW_SOAK: died " .. tostring(u.id) .. " side " .. u.side .. " type " .. u.type
-            .. " turn " .. wesnoth.current.turn)
+            .. " turn " .. wesnoth.current.turn .. (k and (" by " .. k.type) or ""))
         end
+      end,
+    }
+    -- Balance trace: units and hit points per side, and side 1's heroes.
+    wesnoth.game_events.add{
+      name = "new turn", first_time_only = false,
+      action = function()
+        local parts = {}
+        for _i, side in ipairs(wesnoth.sides) do
+          local n, hp = 0, 0
+          for _j, u in ipairs(wesnoth.units.find_on_map{ side = side.side }) do n = n + 1; hp = hp + u.hitpoints end
+          table.insert(parts, "s" .. side.side .. "=" .. n .. "u/" .. hp .. "hp/" .. side.gold .. "g")
+        end
+        local heroes = {}
+        for _i, u in ipairs(wesnoth.units.find_on_map{ side = 1 }) do
+          if u.id:match("^sw_hero") or u.canrecruit then
+            table.insert(heroes, u.id:gsub("^sw_hero_", "") .. ":" .. u.hitpoints .. "/" .. u.max_hitpoints)
+          end
+        end
+        table.sort(heroes)
+        std_print("SW_SOAK: trace turn " .. wesnoth.current.turn .. " " .. table.concat(parts, " ") ..
+          " heroes " .. table.concat(heroes, ","))
       end,
     }
     -- Evidence that the intelligence systems are live in this mission.
@@ -86,6 +108,31 @@ local function plugin(events, context, info)
           end)())
       end,
     }
+    -- Opening threat: for each side-1 hero, the enemy units that could
+    -- attack it on the first enemy turn (move reach plus weapon range) and
+    -- their summed best single-attack damage (strikes x damage).
+    for _i, h in ipairs(wesnoth.units.find_on_map{ side = 1 }) do
+      if h.id:match("^sw_hero") then
+        local n, dmg = 0, 0
+        for _j, e in ipairs(wesnoth.units.find_on_map{ { "filter_side", { { "enemy_of", { side = 1 } } } } }) do
+          local best, reach_r = 0, 0
+          for _k, a in ipairs(e.attacks) do
+            best = math.max(best, a.damage * a.number)
+            reach_r = math.max(reach_r, a.max_range or 1)
+          end
+          if best > 0 then
+            local can = false
+            for _k, r in ipairs(wesnoth.paths.find_reach(e, { moves = "max", ignore_units = false })) do
+              local rx, ry = r[1] or r.x, r[2] or r.y
+              if wesnoth.map.distance_between(rx, ry, h.x, h.y) <= reach_r then can = true break end
+            end
+            if can then n = n + 1; dmg = dmg + best end
+          end
+        end
+        std_print("SW_SOAK: threat " .. h.id:gsub("^sw_hero_", "") .. " hp " .. h.hitpoints .. " attackers " .. n ..
+          " potential " .. dmg)
+      end
+    end
     wesnoth.sides[1].controller = "ai"
     if PLAYER_STYLE == "careful" then
       -- Negative aggression weighs own losses above damage dealt; high
