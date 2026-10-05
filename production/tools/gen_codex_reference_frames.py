@@ -141,9 +141,11 @@ def _codex_with_refs(prompt: str, refs: list[Path], target: Path, label: str) ->
         local = workspace / f"reference-{i + 1}.png"
         shutil.copyfile(ref, local)
         attached += ["-i", codex_art._windows_path(local)]
-    command = [executable, "exec", "--skip-git-repo-check", "-C", codex_art._windows_path(workspace),
+    # -i takes several files, so the images go before another option: placed
+    # last, the "-" (prompt on stdin) would be read as one more image.
+    command = [executable, "exec", *attached, "--skip-git-repo-check", "-C", codex_art._windows_path(workspace),
                "-m", "gpt-6-luna", "-c", 'model_reasoning_effort="low"', "-c", 'web_search="disabled"',
-               "--approve-for-me", "--ephemeral", "--color", "never", *attached, "-"]
+               "--approve-for-me", "--ephemeral", "--color", "never", "-"]
     started = time.time()
     try:
         done = subprocess.run(command, cwd=workspace, env=environment, input=prompt, text=True,
