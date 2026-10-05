@@ -135,6 +135,8 @@ CRAFT_FRAMING = ("a single game unit sprite of the craft for a turn-based tactic
                  "view from above, angled toward the lower right")
 CRAFT_VIEW = (" (it is drawn there from directly above; show the same craft from the three-quarter view "
               "described)")
+CRAFT_BACKGROUND = (" (it may be a detailed render or sit on a scenic background; keep only the craft, "
+                    "simplified into pixel art)")
 REFERENCES = Path.home() / "art-references"   # licensed reference images, kept out of the repository
 REFERENCE_MAP = Path(__file__).resolve().parent / "reference_sprite_map.json"
 
@@ -415,7 +417,8 @@ def reference_standing(unit_id: str, entry: dict, subject: str, style_refs: list
 
     def prompt_for(name: str, corrections: str) -> str:
         return RESTYLE_PROMPT.format(framing=CRAFT_FRAMING if craft else CHARACTER_FRAMING, name=name,
-                                     view=CRAFT_VIEW if craft else "", subject=scrub(subject),
+                                     view=(CRAFT_VIEW if entry.get("view") == "top" else CRAFT_BACKGROUND) if craft else "",
+                                     subject=scrub(subject),
                                      corrections=corrections)
     return _redraw_loop(unit_id, prompt_for, [big, *styles], crop, workspace, dest, attempts,
                         colours=False, upright=not craft)

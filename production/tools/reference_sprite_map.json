@@ -29,6 +29,51 @@
    "artist": "Codemus",
    "title": "Noghri",
    "url": "https://www.deviantart.com/codemus/art/Noghri-596303698"
+  },
+  "danyelon-ships.jpg": {
+   "artist": "danyelon",
+   "title": "Star Wars Ships Pixel Art 8Bit",
+   "url": "https://www.deviantart.com/danyelon/art/Star-Wars-Ships-Pixel-Art-8Bit-622959756"
+  },
+  "aet-obli-tie.jpg": {
+   "artist": "Aet-Obli",
+   "title": "Star Wars TIE Fighter - Pixel art animation",
+   "url": "https://www.deviantart.com/aet-obli/art/Star-Wars-TIE-Fighter-Pixel-art-animation-891753455"
+  },
+  "kyleandreigames-xwing.jpg": {
+   "artist": "kyleandreigames",
+   "title": "Pixel X-Wing (Star Wars Fanart)",
+   "url": "https://www.deviantart.com/kyleandreigames/art/Pixel-X-Wing-Star-Wars-Fanart-915165018"
+  },
+  "rockyfirewolf-xwing.png": {
+   "artist": "RockyFirewolf",
+   "title": "X-Wing Fighter Pixel Art",
+   "url": "https://www.deviantart.com/rockyfirewolf/art/X-Wing-Fighter-Pixel-Art-678898823"
+  },
+  "interdictorssd-xwing.png": {
+   "artist": "Interdictorssd",
+   "title": "X-Wing Sprite",
+   "url": "https://www.deviantart.com/interdictorssd/art/X-Wing-Sprite-853667979"
+  },
+  "interdictorssd-awing.png": {
+   "artist": "Interdictorssd",
+   "title": "A-Wing Sprite",
+   "url": "https://www.deviantart.com/interdictorssd/art/A-Wing-Sprite-853668071"
+  },
+  "x-tender-tie.png": {
+   "artist": "x-tender",
+   "title": "Pixel Tie Fighter",
+   "url": "https://www.deviantart.com/x-tender/art/Pixel-Tie-Fighter-17778282"
+  },
+  "x-tender-vader-tie.png": {
+   "artist": "x-tender",
+   "title": "Pixel Darth Vaders Tie Fighter (CC BY-SA 3.0)",
+   "url": "https://www.deviantart.com/x-tender/art/Pixel-Darth-Vaders-Tie-Fighter-31774138"
+  },
+  "turbosquid-ywing.jpg": {
+   "artist": "TurboSquid model (artist named on the product page)",
+   "title": "Y-wing 3D model render",
+   "url": "https://p.turbosquid.com/ts-thumb/5S/hjMnUl/Fn/0/jpg/1680255740/1920x1080/fit_q87/ec81ac99aed04cdd89abbe7677733af7b2a05786/0.jpg"
   }
  },
  "units": {
@@ -83,76 +128,71 @@
    "how": "restyle"
   },
   "sw_unit_im_tie_fighter": {
-   "source": "silent-drew-ships.png",
+   "source": "danyelon-ships.jpg",
    "box": [
-    55,
-    180,
-    115,
-    234
+    40,
+    5,
+    250,
+    248
    ],
    "how": "restyle",
-   "craft": true,
-   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+   "craft": true
   },
   "sw_unit_nr_awing": {
-   "source": "silent-drew-ships.png",
+   "source": "interdictorssd-awing.png",
    "box": [
-    112,
-    165,
-    160,
-    234
+    0,
+    0,
+    284,
+    357
    ],
    "how": "restyle",
    "craft": true,
-   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+   "view": "top"
   },
   "sw_unit_nr_xwing": {
-   "source": "silent-drew-ships.png",
+   "source": "danyelon-ships.jpg",
    "box": [
-    158,
-    150,
-    232,
-    234
+    335,
+    5,
+    600,
+    130
    ],
    "how": "restyle",
-   "craft": true,
-   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+   "craft": true
   },
   "sw_hero_wedge": {
-   "source": "silent-drew-ships.png",
+   "source": "danyelon-ships.jpg",
    "box": [
-    158,
-    150,
-    232,
-    234
+    335,
+    5,
+    600,
+    130
    ],
    "how": "restyle",
-   "craft": true,
-   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+   "craft": true
   },
   "sw_hero_xwing_luke": {
-   "source": "silent-drew-ships.png",
+   "source": "danyelon-ships.jpg",
    "box": [
-    158,
-    150,
-    232,
-    234
+    335,
+    5,
+    600,
+    130
    ],
    "how": "restyle",
-   "craft": true,
-   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+   "craft": true
   },
   "sw_unit_nr_ywing": {
-   "source": "silent-drew-ships.png",
+   "source": "turbosquid-ywing.jpg",
    "box": [
-    505,
-    100,
-    605,
-    234
+    60,
+    240,
+    1040,
+    820
    ],
    "how": "restyle",
-   "craft": true,
-   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+   "craft": true
   }
  }
 }

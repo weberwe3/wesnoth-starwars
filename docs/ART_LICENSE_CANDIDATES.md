@@ -41,7 +41,14 @@ No fan sprites were found for the vornskr, Myneyrshi, Psadan, the
 decontamination droid, the E-Web team, the infiltrator or the remaining ships
 and objects.
 
-## Ship references awaiting licence confirmation (2026-10-04)
+## Ship references (owner-confirmed permission, 2026-10-04)
+
+**Status:** the owner reports permission for every ship candidate below, and
+for a Y-wing 3D model render from TurboSquid (stored as `turbosquid-ywing.jpg`)
+as a pixel-art template. Queued: TIE fighter (danyelon), X-wing for
+`sw-unit-nr-xwing`, `sw-hero-wedge` and `sw-hero-xwing-luke` (danyelon), A-wing
+(Interdictorssd) and Y-wing (TurboSquid render). The others are stored in
+`~/art-references/` as alternatives.
 
 The owner judged the silent-Drew top-down ships too low quality, so the craft
 units (`reference_sprite_map.json`, marked "hold") are on hold. These

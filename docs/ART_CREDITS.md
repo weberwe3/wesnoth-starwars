@@ -58,6 +58,11 @@ credit goes into the add-on when its art is installed.
 - MiddytheKnight (sprites by zerorunner67): `sw-unit-im-clone-trooper`.
 - Milosh--Andrich: `sw-unit-im-scout-trooper`.
 - Codemus: `sw-unit-im-noghri`, `sw-hero-khabarakh`.
-- silent-Drew: `sw-unit-im-tie-fighter`, `sw-unit-nr-awing`, `sw-unit-nr-xwing`,
-  `sw-hero-wedge`, `sw-hero-xwing-luke`, `sw-unit-nr-ywing`.
+- danyelon: `sw-unit-im-tie-fighter`, `sw-unit-nr-xwing`, `sw-hero-wedge`,
+  `sw-hero-xwing-luke`.
+- Interdictorssd: `sw-unit-nr-awing`.
+- TurboSquid Y-wing model render (template; credit the model's author named on
+  its product page): `sw-unit-nr-ywing`.
+- Stored as alternatives, no unit yet: silent-Drew, Aet-Obli, kyleandreigames,
+  RockyFirewolf, x-tender.
 - mudkat101: stored as a reference; no unit uses it yet.
