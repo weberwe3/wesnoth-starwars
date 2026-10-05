@@ -11,7 +11,8 @@ branding and hundreds of characters we do not use. Only the extracted
 sprites of the mapped units are written.
 
 For each unit in sheet_sprite_map.json ({unit_id: {"at": [x, y], ...}};
-optional "keep_radius", "close" and "erase", see extract and closed_background;
+optional "keep_radius", "close", "erase" and "outline", see extract,
+closed_background and traced;
 "skip" lists a unit whose cut-out is not yet clean enough to import):
   1. crop around the given point on the sheet;
   2. remove the background: the light, unsaturated marble and the grey
@@ -126,8 +127,32 @@ def components(mask: np.ndarray) -> np.ndarray:
     return labels
 
 
+def traced(crop: np.ndarray, outline: list[list[int]], origin: tuple[int, int], trim: int = 2) -> Image.Image:
+    """A sprite cut out along a hand-traced outline (sheet coordinates): the
+    white figures whose dark outline has gaps the background fill leaks
+    through. Pale marble pixels just inside the trace are trimmed, up to
+    `trim` px in from the outside; the figure's darker outline stops the trim."""
+    poly = Image.new("L", (crop.shape[1], crop.shape[0]), 0)
+    ImageDraw.Draw(poly).polygon([(x - origin[0], y - origin[1]) for x, y in outline], fill=255, outline=255)
+    keep = np.asarray(poly) > 0
+    rgb = crop[..., :3].astype(int)
+    pale = ((rgb.max(-1) - rgb.min(-1)) <= 26) & (rgb.max(-1) >= 205)
+    for _ in range(trim):
+        outside = ~keep
+        edge = np.zeros_like(keep)
+        edge[1:] |= outside[:-1]
+        edge[:-1] |= outside[1:]
+        edge[:, 1:] |= outside[:, :-1]
+        edge[:, :-1] |= outside[:, 1:]
+        keep &= ~(edge & pale)
+    out = crop.copy()
+    out[~keep, 3] = 0
+    img = Image.fromarray(out.astype(np.uint8), "RGBA")
+    return img.crop(img.getbbox())
+
+
 def extract(sheet: Image.Image, at: tuple[int, int], keep_radius: int = 2, close: int = 0,
-            erase: list[list[int]] = ()) -> Image.Image:
+            erase: list[list[int]] = (), outline: list[list[int]] | None = None) -> Image.Image:
     x, y = at
     box = (max(0, x - CROP), max(0, y - CROP), min(sheet.width, x + CROP), min(sheet.height, y + CROP))
     crop = np.asarray(sheet.crop(box).convert("RGBA")).copy()
@@ -135,6 +160,8 @@ def extract(sheet: Image.Image, at: tuple[int, int], keep_radius: int = 2, close
     # character (a set-down helmet, a pet) and would otherwise be kept with it.
     for x0, y0, x1, y1 in erase:
         crop[max(0, y0 - box[1]):max(0, y1 - box[1]), max(0, x0 - box[0]):max(0, x1 - box[0]), 3] = 0
+    if outline:
+        return traced(crop, outline, box[:2])
     candidate = background_mask(crop[..., :3].astype(int))
     removed = closed_background(candidate, close) if close else flood_from_border(candidate)
     labels = components(~removed & (crop[..., 3] > 0))
@@ -178,7 +205,7 @@ def main() -> int:
             print(f"{unit_id}: skipped: {entry['skip']}")
             continue
         base = fit(extract(sheet, tuple(entry["at"]), entry.get("keep_radius", 2), entry.get("close", 0),
-                           entry.get("erase", [])))
+                           entry.get("erase", []), entry.get("outline")))
         reason = degenerate_reason(base, PIXEL_ART_MIN_COLORS)
         if args.preview:
             if reason:

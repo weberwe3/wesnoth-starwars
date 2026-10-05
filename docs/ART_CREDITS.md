@@ -16,6 +16,8 @@ their 12 unit frames. Portraits are not from the sheet.
 
 Units whose sprite frames come from the sheet:
 
+- `sw-unit-im-stormtrooper-sergeant` (hand-traced)
+- `sw-unit-im-clone-trooper` (hand-traced)
 - `sw-hero-luke`
 - `sw-hero-leia`
 - `sw-hero-han`
@@ -41,11 +43,9 @@ Units whose sprite frames come from the sheet:
 - `sw-unit-wk-warrior`
 - `sw-unit-wk-lookout`
 
-Mapped but not imported yet (their earlier art is kept):
-
-- `sw-hero-thrawn`: white figure on the white marble with a broken outline; the cut-out loses most of the body
-- `sw-unit-im-stormtrooper-sergeant`: white armour on the white marble; the cut-out loses the legs
-- `sw-unit-im-clone-trooper`: white figure on the white marble with a broken outline; the cut-out loses most of the body
+Also from the sheet, but not cut out by the importer: `sw-hero-thrawn`. The
+cut-out lost most of the body (white figure on the white marble), so Codex
+redrew the standing sprite from its sheet crop.
 
 ## Other fan sprite references (owner-confirmed permission, 2026-10-04)
 
@@ -56,8 +56,8 @@ Codex redraws or restyles each one in the SacraiCross house style. Installed
 
 - SacraiCross: `sw-hero-thrawn` was redrawn from the v6 sheet (the Tarot card
   version was not used).
-- MiddytheKnight (sprites by zerorunner67): stored, not used (the clone trooper
-  keeps its earlier art; image generation was blocked).
+- MiddytheKnight (sprites by zerorunner67): stored, not used. The clone trooper
+  comes from the v6 sheet instead (hand-traced, below).
 - Milosh--Andrich: `sw-unit-im-scout-trooper`.
 - Codemus: `sw-unit-im-noghri`, `sw-hero-khabarakh`.
 - danyelon: `sw-unit-im-tie-fighter`, `sw-unit-nr-xwing`, `sw-hero-wedge`,
@@ -78,3 +78,12 @@ standing sprite. OpenAI's image safety system blocked some animations for
 `sw-hero-chewbacca` (move, melee, death) and `sw-unit-im-stormtrooper` (melee,
 defend, death), so those keep frames derived from the standing sprite. Ship
 frames are all derived from their standing sprite.
+
+## Hand-traced sheet sprites
+
+`sw-unit-im-stormtrooper-sergeant` and `sw-unit-im-clone-trooper` are white
+figures on the sheet's white marble, which the automatic cut-out could not
+separate, and OpenAI's image safety system blocked Codex redraws. Their sprites
+are cut out of the v6 sheet along hand-traced outlines (`outline` in
+`sheet_sprite_map.json`), and all their frames are derived from that standing
+sprite. Both are SacraiCross art under CC BY-SA, like the other sheet units.
