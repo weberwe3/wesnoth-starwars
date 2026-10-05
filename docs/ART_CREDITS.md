@@ -46,3 +46,18 @@ Mapped but not imported yet (their earlier art is kept):
 - `sw-hero-thrawn`: white figure on the white marble with a broken outline; the cut-out loses most of the body
 - `sw-unit-im-stormtrooper-sergeant`: white armour on the white marble; the cut-out loses the legs
 - `sw-unit-im-clone-trooper`: white figure on the white marble with a broken outline; the cut-out loses most of the body
+
+## Other fan sprite references (owner-confirmed permission, 2026-10-04)
+
+The sources are listed in `production/tools/reference_sprite_map.json` and
+`docs/ART_LICENSE_CANDIDATES.md`. The images are kept outside the repository.
+Codex redraws or restyles each one in the SacraiCross house style. A unit's
+credit goes into the add-on when its art is installed.
+
+- SacraiCross, "Tarot Star Wars": `sw-hero-thrawn` (redrawn from the card).
+- MiddytheKnight (sprites by zerorunner67): `sw-unit-im-clone-trooper`.
+- Milosh--Andrich: `sw-unit-im-scout-trooper`.
+- Codemus: `sw-unit-im-noghri`, `sw-hero-khabarakh`.
+- silent-Drew: `sw-unit-im-tie-fighter`, `sw-unit-nr-awing`, `sw-unit-nr-xwing`,
+  `sw-hero-wedge`, `sw-hero-xwing-luke`, `sw-unit-nr-ywing`.
+- mudkat101: stored as a reference; no unit uses it yet.
