@@ -190,12 +190,19 @@ if len(runs) >= want:
     names = {names!r}
     lying = {lying!r}
     masks = []
-    for name, (x0, x1) in zip(names, runs):
-        fig = strip.crop((x0, 0, x1, strip.height)); fig = fig.crop(fig.getbbox())
+    figs = []
+    for x0, x1 in runs:
+        fig = strip.crop((x0, 0, x1, strip.height)); figs.append(fig.crop(fig.getbbox()))
+    # One scale for the whole strip, so the poses keep the sizes Codex drew them
+    # at relative to each other. The scale matches the figures' average body
+    # area to the reference's: unlike height, area is not thrown off by a
+    # raised blade, a crouch or a fall.
+    def area(im):
+        return int((np.asarray(im.getchannel("A")) > 110).sum())
+    scale = (area(ref_fig) / (sum(area(f) for f in figs) / len(figs))) ** 0.5
+    scale = min([scale] + [min(70 / f.width, 70 / f.height) for f in figs])
+    for name, fig in zip(names, figs):
         source_aspect = fig.width / fig.height
-        # Upright poses match the reference height; a lying pose matches its width to that height.
-        scale = (ref_h / fig.width) if name in lying else (ref_h / fig.height)
-        scale = min(scale, 70 / fig.width, 70 / fig.height)
         fig = fig.resize((max(1, round(fig.width * scale)), max(1, round(fig.height * scale))), Image.LANCZOS)
         alpha = fig.getchannel("A").point(lambda v: 255 if v >= 110 else 0)
         px = np.asarray(fig.convert("RGB"), dtype=float)[np.asarray(alpha) > 0]
@@ -273,6 +280,8 @@ def _codex_with_refs(prompt: str, refs: list[Path], target: Path, label: str) ->
         output = done.stdout or ""
     except subprocess.TimeoutExpired:
         output = ""
+    # Keep Codex's reply for diagnosis (a refusal or tool error leaves no image).
+    (workspace / f"codex-output-{target.stem}.txt").write_text(output, encoding="utf-8")
     if not codex_art._valid_png(target):
         home = Path(environment["CODEX_HOME"]) if environment.get("CODEX_HOME") else None
         made = [p for p in codex_art.harvest_generated(home, started, time.time()) if codex_art._valid_png(p)]
