@@ -128,6 +128,10 @@ class CodexArtTests(unittest.TestCase):
         self.assertNotIn("four-winged starfighter", prompt)
         sprite = codex_art.build_prompt(direction, "sw_hero_wedge", "Wedge Antilles", "sprite")
         self.assertIn("four-winged starfighter", sprite)
+        # Owner rule: no character or franchise names in any prompt.
+        for text in (prompt, sprite):
+            self.assertNotIn("Wedge Antilles", text)
+            self.assertNotIn("Star Wars", text)
 
     def test_portrait_only_generation_fits_the_portrait_and_keeps_sprites(self) -> None:
         def runner(command, **kwargs):

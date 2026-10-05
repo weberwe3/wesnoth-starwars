@@ -39,10 +39,11 @@ difficulty.
 
 ## Originality
 
-All code, maps, story text, dialogue, art, sound effects, and music in this
-add-on were made for it. The sounds and music are synthesized from code. Names
-and broad story concepts come from the Legends continuity; no prose, film or
-game dialogue, copyrighted art, music, sound, or game assets are copied.
+All code, maps, story text, dialogue, sound effects, and music in this add-on
+were made for it, and so was the art except the character sprites credited
+below. The sounds and music are synthesized from code. Names and broad story
+concepts come from the Legends continuity; no prose, film or game dialogue,
+music, sound, or game assets are copied.
 
 ## Credits and license
 
@@ -50,3 +51,10 @@ Created for the Battle for Wesnoth community. Distributed through the
 official add-on server under the GNU GPL version 2 or later. Star Wars and
 related names are trademarks of their owners; this free fan project is not
 affiliated with or endorsed by them.
+
+Many character unit sprites are by **SacraiCross**, from the "Star Wars
+Collection - Complete v6" sheet
+(https://www.deviantart.com/sacraicross/art/Star-Wars-Collection---Complete-v6-941875516),
+used with the artist's permission under CC BY-SA. The sprites were cut out
+of the sheet and animated for this add-on; docs/ART_CREDITS.md in the source
+repository lists the units.
