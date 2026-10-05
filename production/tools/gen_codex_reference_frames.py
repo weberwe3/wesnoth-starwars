@@ -499,6 +499,9 @@ def main() -> int:
         results = []
         for unit_id in args.only or sorted(refmap):
             entry = refmap[unit_id]
+            if entry.get("hold"):
+                print(json.dumps({"unit": unit_id, "state": "held", "reason": entry["hold"]}), flush=True)
+                continue
             dest = args.preview_dir / f"{unit_id}@{Path(entry['source']).stem}"
             dest.mkdir(parents=True, exist_ok=True)
             if (dest / "standing.png").exists() and not args.force:

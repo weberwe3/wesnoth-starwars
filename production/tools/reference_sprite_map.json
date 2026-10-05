@@ -1,23 +1,158 @@
 {
  "sources": {
-  "sacraicross-tarot.png": {"artist": "SacraiCross", "title": "Tarot Star Wars", "url": "https://www.deviantart.com/sacraicross/art/Tarot-Star-Wars-852691763"},
-  "middytheknight-ph1-clones.jpg": {"artist": "MiddytheKnight (sprites by zerorunner67)", "title": "Ph 1 Clone troopers sheet", "url": "https://www.deviantart.com/middytheknight/art/READ-THE-DESC-Ph-1-Clone-troopers-sheet-PD-714368412"},
-  "milosh-andrich-scout-trooper.png": {"artist": "Milosh--Andrich", "title": "Star wars- Imperial Scout Trooper", "url": "https://www.deviantart.com/milosh--andrich/art/Star-wars-Imperial-Scout-Trooper-511887221"},
-  "mudkat101-ot-part1.jpg": {"artist": "mudkat101", "title": "Pixel Star Wars Original Trilogy sprites PART 1", "url": "https://www.deviantart.com/mudkat101/art/Pixel-Star-Wars-Original-Trilogy-sprites-PART-1-611895035"},
-  "silent-drew-ships.png": {"artist": "silent-Drew", "title": "Star Wars Ship sprites (1 px = 1 Meter)", "url": "https://www.deviantart.com/silent-drew/art/Star-Wars-Ship-sprites-1-px-1-Meter-819078778"},
-  "codemus-noghri.jpg": {"artist": "Codemus", "title": "Noghri", "url": "https://www.deviantart.com/codemus/art/Noghri-596303698"}
+  "sacraicross-tarot.png": {
+   "artist": "SacraiCross",
+   "title": "Tarot Star Wars",
+   "url": "https://www.deviantart.com/sacraicross/art/Tarot-Star-Wars-852691763"
+  },
+  "middytheknight-ph1-clones.jpg": {
+   "artist": "MiddytheKnight (sprites by zerorunner67)",
+   "title": "Ph 1 Clone troopers sheet",
+   "url": "https://www.deviantart.com/middytheknight/art/READ-THE-DESC-Ph-1-Clone-troopers-sheet-PD-714368412"
+  },
+  "milosh-andrich-scout-trooper.png": {
+   "artist": "Milosh--Andrich",
+   "title": "Star wars- Imperial Scout Trooper",
+   "url": "https://www.deviantart.com/milosh--andrich/art/Star-wars-Imperial-Scout-Trooper-511887221"
+  },
+  "mudkat101-ot-part1.jpg": {
+   "artist": "mudkat101",
+   "title": "Pixel Star Wars Original Trilogy sprites PART 1",
+   "url": "https://www.deviantart.com/mudkat101/art/Pixel-Star-Wars-Original-Trilogy-sprites-PART-1-611895035"
+  },
+  "silent-drew-ships.png": {
+   "artist": "silent-Drew",
+   "title": "Star Wars Ship sprites (1 px = 1 Meter)",
+   "url": "https://www.deviantart.com/silent-drew/art/Star-Wars-Ship-sprites-1-px-1-Meter-819078778"
+  },
+  "codemus-noghri.jpg": {
+   "artist": "Codemus",
+   "title": "Noghri",
+   "url": "https://www.deviantart.com/codemus/art/Noghri-596303698"
+  }
  },
  "units": {
-  "sw_hero_thrawn": {"source": "sacraicross-tarot.png", "box": [378, 425, 470, 572], "how": "redraw"},
-  "sw_unit_im_clone_trooper": {"source": "middytheknight-ph1-clones.jpg", "box": [0, 235, 30, 291], "how": "restyle"},
-  "sw_unit_im_scout_trooper": {"source": "milosh-andrich-scout-trooper.png", "box": [0, 30, 304, 1016], "how": "restyle"},
-  "sw_unit_im_noghri": {"source": "codemus-noghri.jpg", "box": [0, 150, 604, 1106], "how": "restyle"},
-  "sw_hero_khabarakh": {"source": "codemus-noghri.jpg", "box": [0, 150, 604, 1106], "how": "restyle"},
-  "sw_unit_im_tie_fighter": {"source": "silent-drew-ships.png", "box": [55, 180, 115, 234], "how": "restyle", "craft": true},
-  "sw_unit_nr_awing": {"source": "silent-drew-ships.png", "box": [112, 165, 160, 234], "how": "restyle", "craft": true},
-  "sw_unit_nr_xwing": {"source": "silent-drew-ships.png", "box": [158, 150, 232, 234], "how": "restyle", "craft": true},
-  "sw_hero_wedge": {"source": "silent-drew-ships.png", "box": [158, 150, 232, 234], "how": "restyle", "craft": true},
-  "sw_hero_xwing_luke": {"source": "silent-drew-ships.png", "box": [158, 150, 232, 234], "how": "restyle", "craft": true},
-  "sw_unit_nr_ywing": {"source": "silent-drew-ships.png", "box": [505, 100, 605, 234], "how": "restyle", "craft": true}
+  "sw_hero_thrawn": {
+   "source": "sacraicross-tarot.png",
+   "box": [
+    378,
+    425,
+    470,
+    572
+   ],
+   "how": "redraw"
+  },
+  "sw_unit_im_clone_trooper": {
+   "source": "middytheknight-ph1-clones.jpg",
+   "box": [
+    0,
+    235,
+    30,
+    291
+   ],
+   "how": "restyle"
+  },
+  "sw_unit_im_scout_trooper": {
+   "source": "milosh-andrich-scout-trooper.png",
+   "box": [
+    0,
+    30,
+    304,
+    1016
+   ],
+   "how": "restyle"
+  },
+  "sw_unit_im_noghri": {
+   "source": "codemus-noghri.jpg",
+   "box": [
+    0,
+    150,
+    604,
+    1106
+   ],
+   "how": "restyle"
+  },
+  "sw_hero_khabarakh": {
+   "source": "codemus-noghri.jpg",
+   "box": [
+    0,
+    150,
+    604,
+    1106
+   ],
+   "how": "restyle"
+  },
+  "sw_unit_im_tie_fighter": {
+   "source": "silent-drew-ships.png",
+   "box": [
+    55,
+    180,
+    115,
+    234
+   ],
+   "how": "restyle",
+   "craft": true,
+   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+  },
+  "sw_unit_nr_awing": {
+   "source": "silent-drew-ships.png",
+   "box": [
+    112,
+    165,
+    160,
+    234
+   ],
+   "how": "restyle",
+   "craft": true,
+   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+  },
+  "sw_unit_nr_xwing": {
+   "source": "silent-drew-ships.png",
+   "box": [
+    158,
+    150,
+    232,
+    234
+   ],
+   "how": "restyle",
+   "craft": true,
+   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+  },
+  "sw_hero_wedge": {
+   "source": "silent-drew-ships.png",
+   "box": [
+    158,
+    150,
+    232,
+    234
+   ],
+   "how": "restyle",
+   "craft": true,
+   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+  },
+  "sw_hero_xwing_luke": {
+   "source": "silent-drew-ships.png",
+   "box": [
+    158,
+    150,
+    232,
+    234
+   ],
+   "how": "restyle",
+   "craft": true,
+   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+  },
+  "sw_unit_nr_ywing": {
+   "source": "silent-drew-ships.png",
+   "box": [
+    505,
+    100,
+    605,
+    234
+   ],
+   "how": "restyle",
+   "craft": true,
+   "hold": "owner 2026-10-04: reference too low quality; find a better one"
+  }
  }
 }

@@ -40,3 +40,23 @@ generic sci-fi soldiers and ships.
 No fan sprites were found for the vornskr, Myneyrshi, Psadan, the
 decontamination droid, the E-Web team, the infiltrator or the remaining ships
 and objects.
+
+## Ship references awaiting licence confirmation (2026-10-04)
+
+The owner judged the silent-Drew top-down ships too low quality, so the craft
+units (`reference_sprite_map.json`, marked "hold") are on hold. These
+higher-quality candidates are waiting for the owner to confirm their licences.
+Local previews are in `~/art-preview/ship-candidates/` (`preview.png` is
+numbered to match this table).
+
+| # | Ships | Candidate | Artist | Stated terms |
+|---|---|---|---|---|
+| 1 | TIE fighter, X-wing (Millennium Falcon also shown) | [Star Wars Ships Pixel Art 8Bit](https://www.deviantart.com/danyelon/art/Star-Wars-Ships-Pixel-Art-8Bit-622959756) | danyelon | None on the page; another work by the artist is CC BY-NC-ND 3.0. The best fit: detailed three-quarter views. |
+| 2 | TIE fighter | [TIE Fighter pixel art animation](https://www.deviantart.com/aet-obli/art/Star-Wars-TIE-Fighter-Pixel-art-animation-891753455) | Aet-Obli | CC BY-NC-SA 3.0. The server cannot accept the NonCommercial condition, so ask for CC BY-SA. Three-quarter view, animated. |
+| 3 | X-wing | [Pixel X-Wing](https://www.deviantart.com/kyleandreigames/art/Pixel-X-Wing-Star-Wars-Fanart-915165018) | kyleandreigames | None (all rights reserved). Three-quarter view, inside a poster. |
+| 4 | X-wing | [X-Wing Fighter Pixel Art](https://www.deviantart.com/rockyfirewolf/art/X-Wing-Fighter-Pixel-Art-678898823) | RockyFirewolf | None (all rights reserved). Large and detailed, rear and above view. |
+| 5 | X-wing | [X-Wing Sprite](https://www.deviantart.com/interdictorssd/art/X-Wing-Sprite-853667979) | Interdictorssd | None (all rights reserved). Detailed, top-down. |
+| 6 | A-wing | [A-Wing Sprite](https://www.deviantart.com/interdictorssd/art/A-Wing-Sprite-853668071) | Interdictorssd | None (all rights reserved). Detailed, top-down. |
+| 7 | TIE fighter | [Pixel Tie Fighter](https://www.deviantart.com/x-tender/art/Pixel-Tie-Fighter-17778282) | x-tender | None on this piece. Detailed front view. |
+| 8 | TIE Advanced (Vader's) | [Pixel Darth Vaders Tie Fighter](https://www.deviantart.com/x-tender/art/Pixel-Darth-Vaders-Tie-Fighter-31774138) | x-tender | CC BY-SA 3.0, usable with credit. It is not a standard TIE fighter, so it is a reference only. |
+| - | Y-wing | [Star Wars - Y-Wing](https://pixeljoint.com/pixelart/14475.htm) | Darth Mandarb | Not checked; PixelJoint blocks automated access. An isometric 49-colour piece, not in the preview. |
