@@ -7,8 +7,7 @@ the exact art-queue paths.
 
 Every frame is a transform of the same master, so the character's outfit and
 equipment stay identical across the set (owner rule, 2026-10-02). Only effects
-that a specific action needs differ: the muzzle flash on the firing frame, the
-lean of a melee swing, the hit tint when defending, and the fall when dying.
+that a specific action needs differ: the lean of a melee swing, the hit tint when defending, and the fall when dying.
 
 Usage:
   derive_unit_frames.py --sprite master.png --portrait portrait.png \
@@ -87,7 +86,11 @@ def with_alpha(img: Image.Image, factor: float) -> Image.Image:
 
 
 def muzzle_flash(img: Image.Image) -> Image.Image:
-    """Add a blaster flash at the leading (right) edge of the figure."""
+    """Add a blaster flash at the leading (right) edge of the figure.
+
+    No longer baked into derived sets (the flash is drawn per weapon colour at
+    runtime); kept as the reference for the muzzle placement rule that
+    scan_muzzle_flashes.muzzle_point reproduces."""
     bbox = img.split()[3].point(lambda a: 255 if a > 24 else 0).getbbox() or (0, 0, SPRITE, SPRITE)
     x = min(SPRITE - 6, bbox[2] + 1)
     y = bbox[1] + int((bbox[3] - bbox[1]) * 0.38)
@@ -152,7 +155,10 @@ def derive(base: Image.Image) -> dict[str, Image.Image]:
         "melee-1": shifted(base, dx=-2, angle=5),
         "melee-2": swing_arc(shifted(base, dx=4, angle=-7)),
         "ranged-1": base,
-        "ranged-2": muzzle_flash(base),
+        # No flash baked in: the unit WML blits a muzzle flash in each weapon's
+        # own bolt colour onto this frame (gen_hte_units.flash_overlay, owner
+        # rule 2026-10-04), so the flash always matches the laser.
+        "ranged-2": base,
         "defend": hit_tint(base),
         "death-1": with_alpha(shifted(base, angle=-30), 0.8),
         "death-2": with_alpha(shifted(shifted(base, angle=-80), dx=14, dy=4), 0.45),

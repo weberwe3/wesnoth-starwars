@@ -12,7 +12,7 @@ local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "flanking", "ai_ranged", "check_ai_ranged",
-  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "attack_range", "prepare_save",
+  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "muzzle_flashes", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
 
@@ -711,6 +711,43 @@ local function plugin(events, context, info)
         tostring(gone) .. " " .. tostring(s2 ~= nil))
       check("the scenario goes on", wesnoth.current.turn >= 1)
       wml.variables.sw_stashed_heroes = nil
+    end
+
+    -- Muzzle flashes match the shot (owner rule 2026-10-04): every ranged
+    -- animation's firing-frame flash is the colour of the bolt it fires, and
+    -- the composed frame image actually builds in the engine.
+    function S.muzzle_flashes()
+      local frames, mismatched, broken, painted, painted_ids = 0, {}, {}, 0, {}
+      local family = { ["sw-ion"] = "ion", ["sw-force-lightning"] = "lightning", ["sw-torpedo"] = "torpedo",
+        ["sw-stun"] = "blue" }
+      for _i, id in ipairs(core.sorted_keys(wesnoth.unit_types)) do
+        local cfg = wesnoth.unit_types[id].__cfg
+        for _j, anim in ipairs(wml.child_array(cfg, "attack_anim")) do
+          local missile = wml.get_child(anim, "missile_frame")
+          local bolt = missile and missile.image or ""
+          for _k, fr in ipairs(wml.child_array(anim, "frame")) do
+            local img = fr.image or ""
+            local flash = img:match("~BLIT%(projectiles/sw%-flash%-(%a+)%.png")
+            if flash then
+              frames = frames + 1
+              local want = bolt:match("sw%-heavy%-bolt%-(%a+)%-n") or bolt:match("sw%-bolt%-(%a+)%-n")
+              for prefix, c in pairs(family) do
+                if bolt:find(prefix, 1, true) then want = c end
+              end
+              if want ~= flash then table.insert(mismatched, id .. ":" .. flash .. "/" .. tostring(want)) end
+              local w, h = filesystem.image_size(img)
+              if w ~= 72 or h ~= 72 then table.insert(broken, img) end
+            elseif img:find("ranged%-2%.png$") and bolt:find("bolt-", 1, true) then
+              painted = painted + 1
+              table.insert(painted_ids, id)
+            end
+          end
+        end
+      end
+      check("firing frames carry a coloured muzzle flash", frames > 60, frames)
+      check("every flash is the colour of its shot", #mismatched == 0, table.concat(mismatched, " "))
+      check("every flashed frame builds in the engine (72x72)", #broken == 0, table.concat(broken, " "))
+      check("hand-painted flashes fire bolts too", painted >= 6, painted .. " " .. table.concat(painted_ids, ","))
     end
 
     -- Attack range display (lua/sw_range.lua).

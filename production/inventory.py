@@ -115,6 +115,14 @@ def _scenario_files(root: Path) -> list[str]:
 
 def _asset_reference(root: Path, raw: str) -> tuple[str, str] | None:
     raw = raw.strip().strip('"')
+    # Image path functions (units/x/ranged-2.png~BLIT(projectiles/y.png,4,5))
+    # modify the file before it; check the file itself, and that any add-on
+    # image a ~BLIT overlays exists too.
+    if not raw.startswith("~add-ons/") and "~" in raw:
+        raw, functions = raw.split("~", 1)
+        for overlay in re.findall(r"BLIT\(([^,)]+)", functions):
+            if overlay.startswith(("projectiles/sw-", "misc/sw-")):
+                _safe_file(root, "addons/Star_Wars_Thrawn_Trilogy/images/" + overlay)
     if raw.startswith("~add-ons/"):
         rel = "addons/" + raw[len("~add-ons/"):]
     elif raw.startswith("data/add-ons/"):

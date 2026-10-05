@@ -15,6 +15,7 @@ Usage: python3 production/tools/gen_hte_units.py [--check]
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -948,6 +949,50 @@ REPUBLIC_STARFIGHTERS = {"sw_unit_nr_xwing", "sw_unit_nr_ywing", "sw_unit_nr_awi
                          "sw_hero_wedge"}
 
 
+# Muzzle flashes (owner rule 2026-10-04): a ranged attack's laser colour
+# matches the muzzle flash of the sprite that fires it. Measured from the art
+# by production/tools/scan_muzzle_flashes.py:
+#   painted  the flash is part of a hand-drawn firing frame; bolts take its colour.
+#   derived  the sprite has no flash colour of its own; the faction/lore logic
+#            below picks the bolt colour, and each attack's firing frame blits
+#            a flash of that same colour at the muzzle point.
+MUZZLE_FLASHES_PATH = Path(__file__).resolve().parent / "muzzle_flashes.json"
+MUZZLE_FLASHES: dict[str, dict] = (json.loads(MUZZLE_FLASHES_PATH.read_text(encoding="utf-8"))
+                                   if MUZZLE_FLASHES_PATH.exists() else {})
+
+
+def painted_flash(unit_id: str) -> str | None:
+    entry = MUZZLE_FLASHES.get(slug(unit_id), {})
+    return entry.get("color") if entry.get("kind") == "painted" else None
+
+
+def flash_overlay(unit_id: str, attack_name: str, missile: tuple[str, str | None] | None) -> str:
+    """Image-path suffix that draws this attack's muzzle flash on the firing
+    frame, in the colour of its projectile; "" when none is drawn (no
+    projectile, bows and bombs, or a hand-drawn flash already in the art)."""
+    entry = MUZZLE_FLASHES.get(slug(unit_id))
+    if not missile or not entry or entry.get("kind") != "derived":
+        return ""
+    if attack_name == "bow" or attack_name.startswith("concussion_"):
+        return ""
+    image = missile[0]
+    if "sw-ion" in image:
+        color = "ion"
+    elif "sw-force-lightning" in image:
+        color = "lightning"
+    elif "sw-torpedo" in image:
+        color = "torpedo"
+    elif "sw-stun" in image:
+        color = "blue"
+    else:
+        found = re.search(r"sw-(?:heavy-)?bolt-([a-z]+)-n\.png", image)
+        if not found:
+            return ""
+        color = found.group(1)
+    x, y = entry["blit"]
+    return f"~BLIT(projectiles/sw-flash-{color}.png,{x},{y})"
+
+
 def faction_color(unit_id: str) -> str:
     if (unit_id.startswith(("sw_unit_im_", "sw_unit_irm_")) or unit_id in IMPERIAL_HEROES
             or unit_id in IMPERIAL_OBJECTIVES):
@@ -975,7 +1020,8 @@ def projectile(unit_id: str, attack_name: str) -> tuple[str, str | None] | None:
         return "projectiles/sw-force-lightning-n.png", "projectiles/sw-force-lightning-ne.png"
     if attack_name == "stun_blaster":
         return "projectiles/sw-stun-n.png", "projectiles/sw-stun-ne.png"
-    color = LORE_COLORS.get((unit_id, attack_name))
+    # A flash painted into the sprite's own firing frame decides first.
+    color = painted_flash(unit_id) or LORE_COLORS.get((unit_id, attack_name))
     if color is None and attack_name.endswith("laser_cannons"):
         if unit_id.startswith("sw_unit_im_tie_"):
             color = "green"
@@ -1107,7 +1153,7 @@ def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
         if diagonal:
             lines.append(f"        image_diagonal={diagonal}")
         lines.append("    [/missile_frame]")
-    fire = frame(f"{base}/ranged-2.png", 150)
+    fire = frame(f"{base}/ranged-2.png" + (flash_overlay(unit_id, key, missile) if attack else ""), 150)
     sound = ranged_sound(key) if attack else None
     if attack and key == "bow":
         lines.append("    {SOUND:HIT_AND_MISS bow.ogg bow-miss.ogg -150}")

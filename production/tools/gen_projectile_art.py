@@ -163,6 +163,29 @@ def bomb(diagonal: bool) -> Image.Image:
     return _finish(img, diagonal)
 
 
+# Muzzle flashes (owner rule 2026-10-04: the flash matches the bolt). Small
+# overlays blitted onto a unit's firing frame at its muzzle (unit WML
+# ~BLIT, placement from production/tools/muzzle_flashes.json), one per
+# projectile colour: the bolt colours above, plus ion, Force lightning and
+# proton torpedo flashes in their own projectiles' colours.
+FLASH_SIZE = (14, 10)
+FLASH_COLORS = {**BOLT_COLORS, "ion": (150, 210, 255), "lightning": (170, 170, 255), "torpedo": (110, 160, 255)}
+
+
+def muzzle_flash(color: tuple[int, int, int]) -> Image.Image:
+    """A soft coloured glow with a hot, slightly tinted core (the shape of the
+    flash derive_unit_frames.py used to bake in, now in the weapon's colour)."""
+    w, h = FLASH_SIZE
+    big = Image.new("RGBA", (w * SCALE, h * SCALE), (0, 0, 0, 0))
+    d = ImageDraw.Draw(big)
+    cx, cy = w * SCALE // 2, h * SCALE // 2
+    d.ellipse((cx - 6 * SCALE, cy - 4 * SCALE, cx + 6 * SCALE, cy + 4 * SCALE), fill=color + (170,))
+    core = tuple(int(c + (255 - c) * 0.75) for c in color)
+    d.ellipse((cx - 3 * SCALE, cy - 2 * SCALE, cx + 3 * SCALE, cy + 2 * SCALE), fill=core + (255,))
+    big = big.filter(ImageFilter.GaussianBlur(0.8 * SCALE))
+    return big.resize(FLASH_SIZE, Image.LANCZOS)
+
+
 def assets() -> dict[str, Image.Image]:
     out: dict[str, Image.Image] = {}
     for name, rgb in BOLT_COLORS.items():
@@ -176,6 +199,8 @@ def assets() -> dict[str, Image.Image]:
         out[f"sw-bomb-{suffix}.png"] = bomb(diag)
     # Proton torpedoes read as a bright blue-white sphere in the films.
     out["sw-torpedo.png"] = glow_ball((240, 248, 255), (110, 160, 255), 4)
+    for name, rgb in FLASH_COLORS.items():
+        out[f"sw-flash-{name}.png"] = muzzle_flash(rgb)
     return out
 
 
