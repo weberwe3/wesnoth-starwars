@@ -44,7 +44,7 @@ and objects.
 ## Ship references (owner-confirmed permission, 2026-10-04)
 
 **Status:** the owner reports permission for every ship candidate below, and
-for a Y-wing 3D model render from TurboSquid (stored as `turbosquid-ywing.jpg`)
+for a Y-wing 3D model render by Welljinco on TurboSquid (stored as `turbosquid-ywing.jpg`)
 as a pixel-art template. Queued: TIE fighter (danyelon), X-wing for
 `sw-unit-nr-xwing`, `sw-hero-wedge` and `sw-hero-xwing-luke` (danyelon), A-wing
 (Interdictorssd) and Y-wing (TurboSquid render). The others are stored in
