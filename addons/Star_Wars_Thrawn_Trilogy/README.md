@@ -58,3 +58,8 @@ Collection - Complete v6" sheet
 used with the artist's permission under CC BY-SA. The sprites were cut out
 of the sheet and animated for this add-on; docs/ART_CREDITS.md in the source
 repository lists the units.
+
+Further unit sprites were redrawn in the same style from fan art used with
+the artists' permission: the scout trooper from Milosh--Andrich; the Noghri
+and Khabarakh from Codemus; the TIE fighter and X-wings from danyelon; the
+A-wing from Interdictorssd; and the Y-wing from a 3D model by Welljinco.

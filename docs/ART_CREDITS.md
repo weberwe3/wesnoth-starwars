@@ -51,11 +51,13 @@ Mapped but not imported yet (their earlier art is kept):
 
 The sources are listed in `production/tools/reference_sprite_map.json` and
 `docs/ART_LICENSE_CANDIDATES.md`. The images are kept outside the repository.
-Codex redraws or restyles each one in the SacraiCross house style. A unit's
-credit goes into the add-on when its art is installed.
+Codex redraws or restyles each one in the SacraiCross house style. Installed
+2026-10-05 and credited in the README and every campaign's credits:
 
-- SacraiCross, "Tarot Star Wars": `sw-hero-thrawn` (redrawn from the card).
-- MiddytheKnight (sprites by zerorunner67): `sw-unit-im-clone-trooper`.
+- SacraiCross: `sw-hero-thrawn` was redrawn from the v6 sheet (the Tarot card
+  version was not used).
+- MiddytheKnight (sprites by zerorunner67): stored, not used (the clone trooper
+  keeps its earlier art; image generation was blocked).
 - Milosh--Andrich: `sw-unit-im-scout-trooper`.
 - Codemus: `sw-unit-im-noghri`, `sw-hero-khabarakh`.
 - danyelon: `sw-unit-im-tie-fighter`, `sw-unit-nr-xwing`, `sw-hero-wedge`,
@@ -66,3 +68,13 @@ credit goes into the add-on when its art is installed.
 - Stored as alternatives, no unit yet: silent-Drew, Aet-Obli, kyleandreigames,
   RockyFirewolf, x-tender.
 - mudkat101: stored as a reference; no unit uses it yet.
+
+## Animation frames
+
+The move, melee, ranged, defend and death frames of the sheet and reference
+units were drawn by Codex from each unit's standing sprite
+(`gen_codex_reference_frames.py`). The idle frames are derived from the
+standing sprite. OpenAI's image safety system blocked some animations for
+`sw-hero-chewbacca` (move, melee, death) and `sw-unit-im-stormtrooper` (melee,
+defend, death), so those keep frames derived from the standing sprite. Ship
+frames are all derived from their standing sprite.
