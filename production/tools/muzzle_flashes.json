@@ -1,0 +1,442 @@
+{
+ "sw-hero-bel-iblis": {
+  "blit": [
+   52,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-cbaoth": {
+  "blit": [
+   52,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-chewbacca": {
+  "blit": [
+   47,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-han": {
+  "blit": [
+   44,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-karrde": {
+  "blit": [
+   46,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-khabarakh": {
+  "blit": [
+   58,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-lando": {
+  "blit": [
+   48,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-leia": {
+  "blit": [
+   49,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-luke": {
+  "blit": [
+   51,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-luuke": {
+  "blit": [
+   58,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-mara": {
+  "blit": [
+   52,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-pellaeon": {
+  "blit": [
+   46,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-thrawn": {
+  "blit": [
+   41,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-wedge": {
+  "blit": [
+   58,
+   41
+  ],
+  "kind": "derived"
+ },
+ "sw-hero-xwing-luke": {
+  "blit": [
+   58,
+   39
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-bi-commando": {
+  "blit": [
+   54,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-at-st": {
+  "blit": [
+   58,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-boarding-shuttle": {
+  "blit": [
+   58,
+   37
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-clone-trooper": {
+  "blit": [
+   47,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-decon-droid": {
+  "blit": [
+   58,
+   27
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-infiltrator": {
+  "blit": [
+   58,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-minelayer": {
+  "blit": [
+   58,
+   47
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-mole-miner": {
+  "blit": [
+   58,
+   37
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-noghri": {
+  "blit": [
+   58,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-officer": {
+  "blit": [
+   44,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-recon-squad": {
+  "blit": [
+   56,
+   22
+  ],
+  "color": "blue",
+  "kind": "painted"
+ },
+ "sw-unit-im-royal-guard": {
+  "blit": [
+   43,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-scout-trooper": {
+  "blit": [
+   58,
+   35
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-signal-jammer-team": {
+  "blit": [
+   52,
+   22
+  ],
+  "color": "blue",
+  "kind": "painted"
+ },
+ "sw-unit-im-star-destroyer": {
+  "blit": [
+   58,
+   43
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-stormtrooper": {
+  "blit": [
+   48,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-stormtrooper-sergeant": {
+  "blit": [
+   48,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-tie-bomber": {
+  "blit": [
+   58,
+   37
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-tie-fighter": {
+  "blit": [
+   58,
+   29
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-im-tie-interceptor": {
+  "blit": [
+   58,
+   39
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-awing": {
+  "blit": [
+   58,
+   42
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-boarding-shuttle": {
+  "blit": [
+   58,
+   42
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-commando": {
+  "blit": [
+   55,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-docked-warship": {
+  "blit": [
+   58,
+   44
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-engineer-squad": {
+  "blit": [
+   54,
+   22
+  ],
+  "color": "blue",
+  "kind": "painted"
+ },
+ "sw-unit-nr-eweb-team": {
+  "blit": [
+   58,
+   29
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-field-medic": {
+  "blit": [
+   50,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-heavy-weapons-squad": {
+  "blit": [
+   58,
+   25
+  ],
+  "color": "blue",
+  "kind": "painted"
+ },
+ "sw-unit-nr-hero-commander": {
+  "blit": [
+   57,
+   22
+  ],
+  "color": "blue",
+  "kind": "painted"
+ },
+ "sw-unit-nr-militia": {
+  "blit": [
+   48,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-sergeant": {
+  "blit": [
+   56,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-slicer-team": {
+  "blit": [
+   52,
+   22
+  ],
+  "color": "blue",
+  "kind": "painted"
+ },
+ "sw-unit-nr-trooper": {
+  "blit": [
+   49,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-xwing": {
+  "blit": [
+   58,
+   35
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-nr-ywing": {
+  "blit": [
+   58,
+   43
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-ob-cloaked-asteroid": {
+  "blit": [
+   58,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-ob-cloning-cylinder": {
+  "blit": [
+   45,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-ob-dreadnaught": {
+  "blit": [
+   58,
+   37
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-ob-shield-generator": {
+  "blit": [
+   58,
+   29
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-ob-shipyard-platform": {
+  "blit": [
+   58,
+   23
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-sm-smuggler": {
+  "blit": [
+   45,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-sm-veteran": {
+  "blit": [
+   50,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-wk-lookout": {
+  "blit": [
+   53,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-wk-warrior": {
+  "blit": [
+   57,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-wl-vornskr": {
+  "blit": [
+   58,
+   30
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-wy-myneyrshi": {
+  "blit": [
+   58,
+   22
+  ],
+  "kind": "derived"
+ },
+ "sw-unit-wy-psadan": {
+  "blit": [
+   58,
+   22
+  ],
+  "kind": "derived"
+ }
+}
