@@ -18,7 +18,7 @@ Units whose sprite frames come from the sheet:
 
 - `sw-unit-im-stormtrooper-sergeant` (hand-traced)
 - `sw-unit-im-clone-trooper` (hand-traced)
-- `sw-hero-luke`
+- `sw-hero-luke` (replaced by an owner-supplied sheet, below)
 - `sw-hero-leia`
 - `sw-hero-han`
 - `sw-hero-chewbacca`
@@ -26,7 +26,7 @@ Units whose sprite frames come from the sheet:
 - `sw-hero-mara`
 - `sw-hero-pellaeon`
 - `sw-hero-cbaoth`
-- `sw-hero-luuke`
+- `sw-hero-luuke` (replaced by an owner-supplied sheet, below)
 - `sw-hero-karrde`
 - `sw-hero-bel-iblis`
 - `sw-unit-im-stormtrooper` (replaced by an owner-supplied sheet, below)
@@ -105,3 +105,9 @@ day, an owner-supplied on-foot sheet (`owner-scout-trooper.webp`, kept for a
 possible dismounted unit), which had replaced the frames restyled from
 Milosh--Andrich's reference. The painted flash is orange, so the unit's bolts
 are orange.
+
+`sw-hero-luke` and `sw-hero-luuke`: all 12 frames come from an owner-supplied
+Luke sheet (2026-10-06, `~/art-references/owner-luke.webp`, palette from all
+frames). Their firing frame paints a Force wave instead of a muzzle flash, so
+no flash is blitted; Luke's deflected bolts stay red and Luuke's Force
+lightning keeps its lightning projectile.

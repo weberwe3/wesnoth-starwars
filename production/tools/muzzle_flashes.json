@@ -60,14 +60,16 @@
    58,
    29
   ],
-  "kind": "posed"
+  "color": null,
+  "kind": "painted"
  },
  "sw-hero-luuke": {
   "blit": [
    56,
    25
   ],
-  "kind": "posed"
+  "color": null,
+  "kind": "painted"
  },
  "sw-hero-mara": {
   "blit": [

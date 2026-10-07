@@ -24,7 +24,7 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from import_sheet_sprites import MAX_H, MAX_W, SPRITE, UNITS  # noqa: E402
+from import_sheet_sprites import MAX_H, MAX_W, SPRITE, UNITS, components  # noqa: E402
 
 NAMES = ["standing", "idle-1", "idle-2", "move-1", "move-2", "melee-1",
          "melee-2", "ranged-1", "ranged-2", "defend", "death-1", "death-2"]
@@ -90,9 +90,20 @@ def figures(img: Image.Image) -> list[Image.Image]:
             cells = sorted(sorted((r for r in _runs(fg[y0:y1].sum(0) > 2) if r[1] - r[0] >= 8),
                                   key=lambda r: r[0] - r[1])[:6])
         for x0, x1 in cells:
+            mask = fg[y0:y1, x0:x1].copy()
+            if starts:
+                # Small pieces touching the cell's side edge spill over from the
+                # neighbouring frame (the tip of a sword slash): drop them.
+                parts = components(mask)
+                total = int(mask.sum())
+                edge = set(np.unique(parts[:, 0])) | set(np.unique(parts[:, -1]))
+                for i in edge - {0}:
+                    piece = parts == i
+                    if piece.sum() < 0.03 * total:
+                        mask &= ~piece
             rgba = np.zeros((y1 - y0, x1 - x0, 4), dtype=np.uint8)
             rgba[..., :3] = a[y0:y1, x0:x1]
-            rgba[..., 3] = np.where(fg[y0:y1, x0:x1], 255, 0)
+            rgba[..., 3] = np.where(mask, 255, 0)
             fig = Image.fromarray(rgba, "RGBA")
             out.append(fig.crop(fig.getbbox()))
     if len(out) != 12:

@@ -6497,7 +6497,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "c7d40f0cecb7159817d61270e37627a37ac4daeacfb43f7b00c8b2720aea5612"
+      "sha256": "7ff2043ed3bcadec9102f2054ad635476768466ec01031b7097bb06feda3a475"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
@@ -6525,7 +6525,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "f5dc45980a2314f273e455e7adf9ca21f9d919ef1cf97e673ab1fbffe0dc33d4"
+      "sha256": "485ff6a442013ec895225bb0ddddc84e21dc4aa753ac0c9d883850bd56fc728b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
@@ -7265,99 +7265,99 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/death-1.png",
-      "sha256": "46b2957fb247fd51b3a7ee9a24ebbcbe4cad0cb013c2a08e373a5e0633b19c1e"
+      "sha256": "6e55789a57612bd62897c225a4b45b2d33e6c16ac92f76ec450ed5a833bb99c5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/death-2.png",
-      "sha256": "9385b86ffda36d3d5aa6af1acf808a484633c2f8b9a3bdc821fd1a371de39c6d"
+      "sha256": "fa01793d3f1cdd00b1b4d05a73b5dcec53edfc7f17c255d8835e3454222b912c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/defend.png",
-      "sha256": "3d733bf1f3f2384f4bd1e20301c50009ee84b339d8d715e01d4745e737502e27"
+      "sha256": "d7d6fc71e3a68be81cb5f35e4c74905a01a546009a4433b5aa0ef8c623f071f1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/idle-1.png",
-      "sha256": "3a36a6970ff57a48e402245d98e77e10fb70eba0a45e8b5953deec3f11357d98"
+      "sha256": "4f0e01c76bc7fa1f61e0665091560d999796799358221c86a1084e95bd116b2f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/idle-2.png",
-      "sha256": "9c0fc49d2940311970680fe731b09dd89775b4c3ae6313e0092e026e62c0fd8b"
+      "sha256": "9c94dae7fc4b3f115807ccccc4de73202c80a447ffde18ebff9b1c915707387e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/melee-1.png",
-      "sha256": "29b3f078eb5db51cf18cbfa222329865be1bd57d24a1c88dac7ad391c8d82465"
+      "sha256": "916e747182141dbd341119649fce54b30c00d7d7a834bb01ce13e4373e01ef14"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/melee-2.png",
-      "sha256": "9afbbd8d3233edc52533f95c28a6096fb3cb92688e6133cc70fa6fbc42bd6d24"
+      "sha256": "3d8caf5f0ab4d4904cd0dee2193c7cd51c6ecc7a0b6247a66f4fbd1a4fa12c16"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/move-1.png",
-      "sha256": "7e0369dababe80d80f0f6c9d5f3c3c5f11d425ede00849cb72e1eb860c948472"
+      "sha256": "a86f17576da17e69e0f78662932ee0c4b3eba6eef2b1f8a684b7c74b17c766d5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/move-2.png",
-      "sha256": "9f1b494137163cdf7d0b7bb24f62ed430b815757ccd7736872c38ed3e20ab59a"
+      "sha256": "df629e20d7131c6c15353de0965dd2db30aecbe2afe65638dff46191926731c5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/ranged-1.png",
-      "sha256": "03056112e0c1e75f2c82229ab08c14ffb25301b322410cdc348dea4a6645a23c"
+      "sha256": "2c6cf1270ec56ab8b83a88b3ab11bc78c62923563aa5b2ca2a31c3f244f74477"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/ranged-2.png",
-      "sha256": "448bcc38689c02e12ebcceb8253d86951da65035e8a351809340e6a30079b8cf"
+      "sha256": "557cc30e8f9622fb1c367ce6491a4d1b6673013dfb54506ec3324c7b53d23222"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/standing.png",
-      "sha256": "ace544197544c5231c108452251032f3cb6d32618e7d74ae93480a31b5691892"
+      "sha256": "0c3f8a80fdfcb593bba3ce21adb4d9ab918da21303440073bcddbfda9d584cb6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/death-1.png",
-      "sha256": "ac77251941927b9cb3d447c020534ae717cb7a75c18c0acffe2cef8741f29763"
+      "sha256": "6e55789a57612bd62897c225a4b45b2d33e6c16ac92f76ec450ed5a833bb99c5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/death-2.png",
-      "sha256": "e8a9643e39c8858c6699fe388d1b93c2517aeaeb43b14fd06b522b1876ab0b18"
+      "sha256": "fa01793d3f1cdd00b1b4d05a73b5dcec53edfc7f17c255d8835e3454222b912c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/defend.png",
-      "sha256": "0ab114ad093bc36a2fc9a9a7b2d211dafdb3c9e45c6e580027884e110bde8d03"
+      "sha256": "d7d6fc71e3a68be81cb5f35e4c74905a01a546009a4433b5aa0ef8c623f071f1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/idle-1.png",
-      "sha256": "e2d7718817b6d034911d9d6e31172bb58e1baa1e4eb631b14b49782cbccce9dd"
+      "sha256": "4f0e01c76bc7fa1f61e0665091560d999796799358221c86a1084e95bd116b2f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/idle-2.png",
-      "sha256": "d4a687030100cff641047918e6814ebcd307bb02296f9b6bb0e0b624cffaf048"
+      "sha256": "9c94dae7fc4b3f115807ccccc4de73202c80a447ffde18ebff9b1c915707387e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/melee-1.png",
-      "sha256": "58a07f1a0885b1da213745edef7d72a1091cf9a0b0c56c756a8a91c24a394d41"
+      "sha256": "916e747182141dbd341119649fce54b30c00d7d7a834bb01ce13e4373e01ef14"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/melee-2.png",
-      "sha256": "c85d9b0530dc3676bdde0c6f1df71e88f7b6eeb89d4a5e891a96bdc62932a2e4"
+      "sha256": "3d8caf5f0ab4d4904cd0dee2193c7cd51c6ecc7a0b6247a66f4fbd1a4fa12c16"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/move-1.png",
-      "sha256": "5c10c4db358e57eb504ec456072fbff341c9c659380da6dbe47365ea2b47374f"
+      "sha256": "a86f17576da17e69e0f78662932ee0c4b3eba6eef2b1f8a684b7c74b17c766d5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/move-2.png",
-      "sha256": "0aae3a967b50bb9dc30f3c3fd55c981dc24a9c467dc5d9c6ef9fed07129932f5"
+      "sha256": "df629e20d7131c6c15353de0965dd2db30aecbe2afe65638dff46191926731c5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/ranged-1.png",
-      "sha256": "82a593d6ff28674ec80c213fbf2e5ad475a0f4151df924b5d6efd616a087123b"
+      "sha256": "2c6cf1270ec56ab8b83a88b3ab11bc78c62923563aa5b2ca2a31c3f244f74477"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/ranged-2.png",
-      "sha256": "8e9050c691b4f8a1c3294113fa7c0af2f12cc887a3a2157041491b9c302d4332"
+      "sha256": "557cc30e8f9622fb1c367ce6491a4d1b6673013dfb54506ec3324c7b53d23222"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luuke/standing.png",
-      "sha256": "fa29a0a727808fae3d2db8f3cbc6adaf936ce9db1f378c24e26fd88929bb933c"
+      "sha256": "0c3f8a80fdfcb593bba3ce21adb4d9ab918da21303440073bcddbfda9d584cb6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-mara/death-1.png",
@@ -8205,7 +8205,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-scout-trooper/move-1.png",
-      "sha256": "1edf9803527db517f7ffbdfb0755a38ea793ff9b60ec7f25b1aa302f35995e8c"
+      "sha256": "8b6183b2f71e2822a33149c3ec49333e00692f87d07f9c9099dd497e8bc11d58"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-scout-trooper/move-2.png",

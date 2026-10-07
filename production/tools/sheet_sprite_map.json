@@ -1,5 +1,5 @@
 {
- "sw_hero_luke": {"at": [2280, 2510], "character": "Luke Skywalker (black Jedi outfit)"},
+ "sw_hero_luke": {"at": [2280, 2510], "character": "Luke Skywalker (black Jedi outfit)", "skip": "replaced by an owner-supplied sprite sheet (docs/ART_CREDITS.md); do not re-import"},
  "sw_hero_leia": {"at": [80, 2250], "character": "Leia Organa (white gown)", "close": 2},
  "sw_hero_han": {"at": [1540, 2250], "character": "Han Solo"},
  "sw_hero_chewbacca": {"at": [1620, 2230], "character": "Chewbacca"},
@@ -8,7 +8,7 @@
  "sw_hero_mara": {"at": [1190, 1980], "character": "Mara Jade", "erase": [[1204, 2000, 1265, 2060]]},
  "sw_hero_pellaeon": {"at": [410, 2380], "character": "grey-haired Imperial officer"},
  "sw_hero_cbaoth": {"at": [1390, 1720], "character": "white-haired dark Jedi"},
- "sw_hero_luuke": {"at": [1960, 2380], "character": "cloaked Luke (the clone Luuke)"},
+ "sw_hero_luuke": {"at": [1960, 2380], "character": "cloaked Luke (the clone Luuke)", "skip": "replaced by an owner-supplied sprite sheet (docs/ART_CREDITS.md); do not re-import"},
  "sw_hero_karrde": {"at": [1190, 2120], "character": "bearded smuggler in a dark coat"},
  "sw_hero_bel_iblis": {"at": [1080, 2900], "character": "grey-haired officer"},
  "sw_unit_im_stormtrooper": {"at": [1730, 2250], "character": "stormtrooper", "close": 3, "skip": "replaced by an owner-supplied sprite sheet (docs/ART_CREDITS.md); do not re-import"},
