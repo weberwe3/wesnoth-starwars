@@ -62,4 +62,7 @@ repository lists the units.
 Further unit sprites were redrawn in the same style from fan art used with
 the artists' permission: the scout trooper from Milosh--Andrich; the Noghri
 and Khabarakh from Codemus; the TIE fighter and X-wings from danyelon; the
-A-wing from Interdictorssd; and the Y-wing from a 3D model by Welljinco.
+A-wing from Interdictorssd; and the Y-wing from a 3D model by Welljinco. The
+Myneyrsh is drawn after Codemus and the vornskr after Tactical-Sandwiches,
+also with permission. Further unit sprite sheets and portraits were supplied
+by the project owner or drawn with Codex in the same style.

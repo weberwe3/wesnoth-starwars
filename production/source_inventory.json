@@ -4526,6 +4526,78 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-sergeant/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg"
@@ -5976,7 +6048,9 @@
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
     {
@@ -5986,6 +6060,7 @@
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
@@ -6006,9 +6081,7 @@
     {
       "path": "projectiles/sw-heavy-bolt-blue-n.png",
       "source_paths": [
-        "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-        "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg"
       ]
     },
     {
@@ -6018,10 +6091,17 @@
       ]
     },
     {
+      "path": "projectiles/sw-heavy-bolt-orange-n.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg"
+      ]
+    },
+    {
       "path": "projectiles/sw-heavy-bolt-red-n.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
+        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
@@ -6043,12 +6123,6 @@
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg"
-      ]
-    },
-    {
-      "path": "units/human-peasants/peasant.png",
-      "source_paths": [
-        "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg"
       ]
     }
   ],
@@ -6429,7 +6503,7 @@
   "source_files": [
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
-      "sha256": "610f21576627cd183736056b4cfda0b3950273d3258965b4569c240920c2328b"
+      "sha256": "c1407de3dafc1c0f88fa98cc6097c89a832073fa82ca77b96488bcced0f8d410"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/01_the_noghri_prisoner.cfg",
@@ -6577,7 +6651,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "sha256": "bff44b568bf70554d045d4bbfcdeca420446e8fbbf7baaaeff9ef7b87116d0de"
+      "sha256": "6d772f1ab61441df9c8521ed39d6a64a203b5cfadf33ecd6e1ef0eca65633391"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
@@ -6589,7 +6663,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
-      "sha256": "a6652a19165bbe7f6448de8de2613a7e3abe25f482528c61163e590cb2685c91"
+      "sha256": "c6aeaa8cffa8237d092a5b725f27da9b5476aeeda0545f3512d101ce2b373814"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg",
@@ -6597,7 +6671,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "485ff6a442013ec895225bb0ddddc84e21dc4aa753ac0c9d883850bd56fc728b"
+      "sha256": "4ab7ca0f2f3817c62dd4b7645bfef3feeaa5b122bb585808e001cd368708cd15"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
@@ -6785,7 +6859,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-infiltrator.png",
-      "sha256": "36e85ff54d9286321a31ec118a82d7d72f95752b9f55665f311f2f7b0599f5fa"
+      "sha256": "b73586593b2f6a50607267aebb2b2e302ffbf037ec28f818a558b2a4d8829a55"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-minelayer.png",
@@ -7913,99 +7987,99 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/death-1.png",
-      "sha256": "ce148c61be8dcba20229ec4aa519fb78bf8e9fa04fe9098101050f3b616f98ac"
+      "sha256": "38dedf3afd51d2e1d9c283728b2a870c0d197144aef067201f1b83d7a28e8a5f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/death-2.png",
-      "sha256": "992bc6de7ca7553ed9ee8924bd51238c22292f7e631db5023513061b3177d1db"
+      "sha256": "7b00bcc1b48d51e0f05ad68dfcec0779b8736e076d66066f29729868609c113e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/defend.png",
-      "sha256": "bc0c59874538e9e83b1d065b2d556cdc5d384c92773c10757715cc43f972ed4b"
+      "sha256": "085ae378b29f76a679e91ce3a2966f78e9532304f88e9be50facd85c7db61a8a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/idle-1.png",
-      "sha256": "ac63cea718b3fbc514529312fd826c262300702fbd9602f944cfe5adce42cee8"
+      "sha256": "6384beb815cd254dd51bca2ced5f13030d8c6c1a885f0a34f904453ce83c5916"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/idle-2.png",
-      "sha256": "eca87f35c3da5e5e2a72bf2c43674b5171cc720d5e6ecf48f59a2d53677bd9a1"
+      "sha256": "fb2bb77bb6d93fbed0864c540d912b8879348c91dc4523d951e126fe68275b29"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/melee-1.png",
-      "sha256": "0cceeb4c064c411d14dc04166afbc89c3caf94d1b5fff0587f46d66eb7352465"
+      "sha256": "021ce10c7d481b59b00481a0e93141bb79d9449afa1e6cbf619b90ac51432aa1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/melee-2.png",
-      "sha256": "a42f193e5522fd6b0e287f620d12c49e44c31c20426b4f8be84a7671ab585173"
+      "sha256": "06f79a38b1fb5c7fedeb77aa90cec829840260544602454bd80a0c2306160ef5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/move-1.png",
-      "sha256": "66c520a1b914bc91fa8ee2705687826f1968fd51021a83859feb732fe6dbfde6"
+      "sha256": "63768c1a7cd6107fedd585eb7e016fe82cbf12024d830bc1701cc49e407c07e2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/move-2.png",
-      "sha256": "7f7991b1170b6339d4c52572eb32ae1bd12a51f9f23c8e5b70a068a89a6a0abb"
+      "sha256": "56f76e3aca9185d3805470609b7f4bbfd284bb7284c47c43d764f16004e29814"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/ranged-1.png",
-      "sha256": "802a3be51b01e889352bfb40a892a9fe5382bff6f7fb9e2be8306df9e1e63987"
+      "sha256": "3074df6813d58a3283084db20986a7d472be7ca51bfe39d6146f232ee7e54c33"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/ranged-2.png",
-      "sha256": "802a3be51b01e889352bfb40a892a9fe5382bff6f7fb9e2be8306df9e1e63987"
+      "sha256": "acfb99e4d304d895a28442236bd1f4a148dc155a8289902706964603d9742469"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-decon-droid/standing.png",
-      "sha256": "802a3be51b01e889352bfb40a892a9fe5382bff6f7fb9e2be8306df9e1e63987"
+      "sha256": "60e56b1fe5c2eff9a4bf939e9296865d1d05b5b4460f48a390dc0da06036b761"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/death-1.png",
-      "sha256": "105c9a19ec8ca782da48637f90ddc8289d485bfce526825df060ea3f6f211717"
+      "sha256": "c713818160c4b8d49b4a655d999c97c0df66b0e0701d778d4f322888245dba63"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/death-2.png",
-      "sha256": "fd84f7580c147403d42ee651f191b884c39e2de0df4ec2409dff916f0add7f80"
+      "sha256": "97998ffcc31b3e5d6b4df0a5e89547462d5a1d34b2535e906b979cc32e5b0457"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/defend.png",
-      "sha256": "b2c4440b2cbc7819795f499ad11c6be221e35b533b4785a8333afdbd8085238f"
+      "sha256": "432f0f71e3308e6a70681605c02d105c300497cd7fcd7aa384c696cbd1fd0109"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/idle-1.png",
-      "sha256": "1aee4beaf2483978d875c89b9e692c6d8256b9d26fdd15908f2f8cff76cdd042"
+      "sha256": "73c504e196cb2b6a52c98fed7a81292e4c6ca823f9d01945e8d2c829b425cb6d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/idle-2.png",
-      "sha256": "9a0edd7bf01cd11d527040530647c4bfcf660f29c29e84e6e6de23cb5d0f0771"
+      "sha256": "4ddb5120731c873e2036558cf2511e8118939236d971488faa53722f34633ae3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/melee-1.png",
-      "sha256": "a1a3c1e9734cacea79413f43234e378818dff68d3a71e8c66c507dddc031f4ce"
+      "sha256": "9c2a7f96671526537a3f5cf50a055590fad4b65bdcb34e67c90cd98c176cf22f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/melee-2.png",
-      "sha256": "d7dcf69d5ed605ebf75d9bcbeb0f620460aecd395692108cbb795c219db168dd"
+      "sha256": "6d94ea055c18924b168bd6a82989a838a380b7108db8a7a9a52006dc978832b3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/move-1.png",
-      "sha256": "c16f0aa7671d638f2a7356bf4ebf76d9ed84a19ec67abc77942b6f77a98f62c7"
+      "sha256": "c7906068bed78e2cbc3d6c21eb70866bcafd445f974e6400ed2df8d2b9db8a44"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/move-2.png",
-      "sha256": "79dc55ade86ef89347ab66af60680b723025b8fad5393ca02194c06122da7404"
+      "sha256": "37594e9a737f886fcab99d8f1ed6b0bac5b884e25f3daefb1d7bff872cf23831"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/ranged-1.png",
-      "sha256": "acb9fac1206ed051975151ab7b778ee9dcd80098d4143d5abf95be9993d772b5"
+      "sha256": "6ea1eac93b3801856498c570f9c08c80124bf2a6e90fc244e7ef91ff179b519b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/ranged-2.png",
-      "sha256": "acb9fac1206ed051975151ab7b778ee9dcd80098d4143d5abf95be9993d772b5"
+      "sha256": "e261c797a3da3921a5a5d60a01ec1ebf9d5e019d6caf0c2632bcff95677cde5b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-infiltrator/standing.png",
-      "sha256": "acb9fac1206ed051975151ab7b778ee9dcd80098d4143d5abf95be9993d772b5"
+      "sha256": "c05d9cbea11108db937dfdb30c5d2f21da6df82b59562226fda0a3050dc30366"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-minelayer/death-1.png",
@@ -8201,51 +8275,51 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/death-1.png",
-      "sha256": "0e54e54809843b9ba4b579cce297da9f162e9f16ad8e1c8d059f4204ee5a67c5"
+      "sha256": "392820f7ce670133c188b305053302ac01b84a890eb10040e22a527de768e257"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/death-2.png",
-      "sha256": "0e54e54809843b9ba4b579cce297da9f162e9f16ad8e1c8d059f4204ee5a67c5"
+      "sha256": "53df3b936d5a5a104528d94e5233a17ef401288515f40108167ebf5d6379c9b1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/defend.png",
-      "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+      "sha256": "ed37ff5c0e45266b2d3c0b12fc169f7f1fcef9d42b30830cb99b059a3b2d35bd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/idle-1.png",
-      "sha256": "851b7e2376e1e7fcdfb0d944fcc8827e88af295685d9ca9a8764d1ef39f439a2"
+      "sha256": "88a57e87e105092d2b25feb92f3239589335af6452de3bc16cde5b47b30ee631"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/idle-2.png",
-      "sha256": "9a217795d22df4bd0d9e60a4900df89e0bd5a1e658447496a85de9fe966b33c3"
+      "sha256": "76dac876f5069ad4a8eda5b62b8bd954e91e688e1f09553f6b0d3fe056a94129"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/melee-1.png",
-      "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+      "sha256": "51281b4dfff6e99b7696e510137aea832e93bcf267c44c9ffa9a164cb8be2f3d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/melee-2.png",
-      "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+      "sha256": "1cbfed933b78dd9dfc7bb510bd9d82547ac7820aabe10158cc03dcfabe53dad7"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/move-1.png",
-      "sha256": "7bebb1e0a03daef7f9a39c1dafcf5f3398e51956e90684eda3b6bd2ea5292d93"
+      "sha256": "4aa50bbcdb688ed633e36c3051943a069442251a2c8dc86b9e9ee8a82bb454dd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/move-2.png",
-      "sha256": "7bebb1e0a03daef7f9a39c1dafcf5f3398e51956e90684eda3b6bd2ea5292d93"
+      "sha256": "135b5816801fc92da855da396dbbe190a6ba52a87defed3a966b6f93b53202ed"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/ranged-1.png",
-      "sha256": "c43b25828187a613f69658a59ec83c6c9e1af5927467daa463372e289c9ccd24"
+      "sha256": "ee8902a0c2bf5724ef6fa2f802995773e7a77be638dc09322e6e2cc475a5590a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/ranged-2.png",
-      "sha256": "c43b25828187a613f69658a59ec83c6c9e1af5927467daa463372e289c9ccd24"
+      "sha256": "f29fa7722f465546997ec177e85a827d2ef7f687943a794b4e9106ddefb24032"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-recon-squad/standing.png",
-      "sha256": "9e4918450b5a2b9205c510d6663c00ced11471a652b2be477583431b66c0a5e5"
+      "sha256": "d3fb34f562eb4d2f83eb348e141c2d084dd4a6951cd3b185bc7abbcf8ff9323b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-royal-guard/death-1.png",
@@ -8345,51 +8419,51 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/death-1.png",
-      "sha256": "051b0b6699b60697039e44f80d83b941ce3ad56af38e874700391e65e4f4331d"
+      "sha256": "6f8f7983ef1d393822789585a4bea161be857740a7ef1266735a30d77527d1bd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/death-2.png",
-      "sha256": "b1e3d01a38393cb372b7db7adb399dd2ff158bfdb20ccbdd2b31810c31c6d7e7"
+      "sha256": "2272c56e54565b3afd3ea8a4e3a9ee50b1661000f88473e07ce33a5d6ff6ac81"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/defend.png",
-      "sha256": "11cdbd775b519302a1520afb32ea4b283930dca4b8bdf2acae05fd0bd3435235"
+      "sha256": "1bd461d3dca29fe8885ef37946d7b8ef34b5b4dd1ec37289569b6aad44a91e26"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/idle-1.png",
-      "sha256": "ca0860efc3a97d7788220e596c7d57adf2db040ded514b170114e80cc9ec80da"
+      "sha256": "284bf3fb6bcd41f88bb7347ebca334815d605f5522c2cda3e5c9c5c88d0baf89"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/idle-2.png",
-      "sha256": "e02f18741556ef1efd5de2eee52cc99abc7ff6803058a3852f861c3d295e78cc"
+      "sha256": "7df003a773c3812c1d2006ac70638e454373d95b2bde99e586f911dbd342b969"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/melee-1.png",
-      "sha256": "de37ba306860712efd04c45a6de0f60d0eddfe35672d41499f8e94abc8bd78fa"
+      "sha256": "011237e515030744b9888c7737e6e48822835889ffe801455bc259027439708d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/melee-2.png",
-      "sha256": "20b6a15a217a3c72590ffa52b8ab1538b20a3d2059a29aa7e9e690790b8e8644"
+      "sha256": "50b0ec42dbd9ff9dc9a01061e045f044bc96b8eb04367a531ecc52d401e7a804"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/move-1.png",
-      "sha256": "e82d4fe2f259f81792c65f9a712f8f9cd954cfe171e5781a190499beebe41c69"
+      "sha256": "ec8e7156ea7f130c7eac17f0ef28f2ce62dabdcd7b6bfa5ba8f6593200bb0f1a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/move-2.png",
-      "sha256": "10a634052fdcf9e7af7cb2b3808b4b6b25577390d27dc373293c79d715594084"
+      "sha256": "c8d94456cde879a00907fbb19c900cbe15261308743fc82567911bda34a7af61"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/ranged-1.png",
-      "sha256": "49107a9c93a980de25a06c4a71eb310a8281a80a24118a1ef0e461cef379e671"
+      "sha256": "855f4ca474b70a4dda011cc1e5377325ec3bec44d636e9b1dafce13bba5298cc"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/ranged-2.png",
-      "sha256": "099e5654d0e1660480159f61c42bf940b7217ebc646146b81fb44da6eba620a9"
+      "sha256": "abbef620adca05b67ed5c0d666a44e017306e61be0dd76e0176f79b8f30499d8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-signal-jammer-team/standing.png",
-      "sha256": "dad57d1c83826f5006b90f1eef96898d044695470849fe0363d38648eff86ce6"
+      "sha256": "35153a553bffa38d0128be02201b0bc66d14bea145c850533dffa84ecc2fc9de"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-star-destroyer/death-1.png",
@@ -8873,99 +8947,99 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/death-1.png",
-      "sha256": "a8fdd14c0b181622410b35b02f51d0e4f70d2d6cf2c678fd42c6b456ff18a93a"
+      "sha256": "659c1c8aee5a86c059cd93822355627533d5f1a43d0f0e33a3b52ddbfd348500"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/death-2.png",
-      "sha256": "beb06fd95d6312f93e11cd24f54c055334c1d2b25c28ae5c29afb83f95923b4e"
+      "sha256": "e0d3067edd83c282a5a3b154d2ebb4c376e0cbba0ef89ad832974c0006caf481"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/defend.png",
-      "sha256": "302a00ef131df5e6bdcd466c0e86fe0badab4c0b1abb5b15183aea00228d4219"
+      "sha256": "7accd78dacf6e3fd9c980169851706f746e9f3bc59d3a1758420b72c206a916e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/idle-1.png",
-      "sha256": "7efda86f8f5364c31d21d1d11dbbcaed6c6f7872084192f955140809161ca69e"
+      "sha256": "680fc3fb39d1fe3fa5bd4f74127326925917cf276c238d0877b7ec7c6831fa6c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/idle-2.png",
-      "sha256": "db48cb00a5494d684e4258ebc21143bc8a824cb1118da96a61aa20184080cf99"
+      "sha256": "74d370b420f2fecbb399625b7c10116f1167cf5b9801ebeb580193fb839e8fb3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/melee-1.png",
-      "sha256": "e5b44129070a3940b0777c13c90fbe0c1a02c357b2b10eb69818ca8477cb56a9"
+      "sha256": "43ad34755a69ec2399505662342befac2c07b6f2b36dc4f8dc796e8d91f1bc4b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/melee-2.png",
-      "sha256": "d86fe07d4b1d11575481864c3a19be818704b74dfc40a1a5a52b786806cdb978"
+      "sha256": "fe5f0ef4984c4fdd3ac18e30b23da70bd990c5d560ea7a3d24b814c350f472e5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/move-1.png",
-      "sha256": "52a56dad63aae1574df17f7d2ef4a9b87b0554efb590371c6621e21163b28e26"
+      "sha256": "3529276d01fcc2a90525c0aa248502fc82ab3fe5426c8fa47bfa5728ea63d1f8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/move-2.png",
-      "sha256": "4748df23d85f9dc9cd35c12d89ec98d5a015241a58ab0bf378315f4c28a634c4"
+      "sha256": "49568da32a94bc6edd638cc8fe974eeb5824f526847b0a1762b258c92249482a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/ranged-1.png",
-      "sha256": "59831f35b0a599e01b89497ce1c9823c6cb183f783f12af36952cebc52082aa9"
+      "sha256": "e2346f3c43f4562c836a760a03a2a9174e0205433bc4c87c48fba25d7f8fe025"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/ranged-2.png",
-      "sha256": "0979128081bfe72cb68113e0e0a16560b32b7d0956659ebb5d0e6a5451416881"
+      "sha256": "ca9e3ffcd5571f860230170c9b18c4c208f1dba807be5127c5d014a5e026ae9e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-engineer-squad/standing.png",
-      "sha256": "d4957c54ca94a97a5d1cbc3f5bdd8837a1521998d23c627fa2ed28ec0c983b14"
+      "sha256": "115f14de57ce4646e3cb6076bf11186b02620ff268b672e05bc790a44b70e1bb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/death-1.png",
-      "sha256": "f974f50db8d6ec40991b9f1ca7f17638e4ce75478487cc600be2d13777dc3df4"
+      "sha256": "d8e02e9b989847a4fa6eb64cdbb2e8c53e36f253a4ff270f5a79534562afe1e2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/death-2.png",
-      "sha256": "28c355029188b628d55f454db2a8ac745f1adc9f474ff732be339653602f3cb0"
+      "sha256": "85a49c810f0e7d0f6ef5f2547dc411141b941a6e336f73e114e1841a16546aa3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/defend.png",
-      "sha256": "4a39aae16930ad845c2d82a93dcf7cd4a6b0d1b1e51296d2e73c526852c7b9ec"
+      "sha256": "7c4edca72eb0adcf458bb11f6dba1d7486009c6f3761f5fe3aefb719eb014c21"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/idle-1.png",
-      "sha256": "2e2fa7e71f66160a2e7f8566fad639d7570777d36058577389b0c61944cc5e75"
+      "sha256": "2976a074fd1dcf0c847f2f0facafdc44147e6163f6b5d9215c64d59b6b914ed2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/idle-2.png",
-      "sha256": "24e22c6ab3eefadd94104a12a0dfff0810b64ef763ea76d3519bb2d9dd6ef276"
+      "sha256": "afefc0c22640e7033db6d614642af25b2698210a3e92cdb29a8727891b13fe83"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/melee-1.png",
-      "sha256": "cee93cd883f50d43550f0738e580a29057894d61ed96dd9f302370876f60bab4"
+      "sha256": "974ed29b557108371dfcca6ed56144d387995118317c0e5cfb69c34d99763705"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/melee-2.png",
-      "sha256": "4f9699e364d1222eb336091781d9b458994ef58177e06ed7d683ad61f1118fd8"
+      "sha256": "cc1c3e2e04320a7377e32ece14a6033aba173d403068c4b6d92e2b449faa5c5c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/move-1.png",
-      "sha256": "6100685a9805cec1e1738ca8b99abdd45cce4c40a98ec18d743e57f42d77542b"
+      "sha256": "723d74dc32a427451f3ee660fdc0a821ca3899863e957f2ee74c81ddb7d1ed3c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/move-2.png",
-      "sha256": "4da2c955a7f080414d74bdf56b817de7abba47f140d0febe1e26594874e0e11e"
+      "sha256": "888228292abd4e1f45dc4a3c13e9efd364036296408841dcdb9d81007e933863"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/ranged-1.png",
-      "sha256": "011484bd2f5ec32aa625d5a761dc23667a866f8706ab2e7f9034f8518b1d79bf"
+      "sha256": "54c672ff252eed67df6fcb3f5143a0da736fc28a22690fdb30393d553bda6c2e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/ranged-2.png",
-      "sha256": "011484bd2f5ec32aa625d5a761dc23667a866f8706ab2e7f9034f8518b1d79bf"
+      "sha256": "d9ebccb333ca8d0a6675927904335c54080f98ae6ea6e226baa8784d97e1b048"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-eweb-team/standing.png",
-      "sha256": "011484bd2f5ec32aa625d5a761dc23667a866f8706ab2e7f9034f8518b1d79bf"
+      "sha256": "2976a074fd1dcf0c847f2f0facafdc44147e6163f6b5d9215c64d59b6b914ed2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-field-medic/death-1.png",
@@ -9017,99 +9091,99 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/death-1.png",
-      "sha256": "05c1ea55026e7251d496482510b05fefda8fc9f8f12d0aa571adbba7ae1d57b7"
+      "sha256": "f46f81b76a57f8e0065e8068b49fb42a2831097530d8d29b20861191a15a5020"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/death-2.png",
-      "sha256": "87980f529e5fe988787392a093f5ef2786e6604a461f597df2644e579be71aa7"
+      "sha256": "84d17e1d3f6c0be12ddab95321470f3173404abb6b13d32698e77cde975b0afb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/defend.png",
-      "sha256": "c1aa4faebfef59b1ac6dc4a59c8363110af3c82c299bb78e98dc85c615808c32"
+      "sha256": "b3434bf01eb03a9b27ce6d021878ea0dcd7ad554996b9b23e6c2c572b92e260a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/idle-1.png",
-      "sha256": "40608b4c301ffa56e6ea0f87c710cb88aa12dafa597d909fcd73d2144c253dc3"
+      "sha256": "0d53b8ded08b38a36e0b8ddaf99b17858fa1c28e1340b27dfedb13b4e19337f6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/idle-2.png",
-      "sha256": "7b231f7183a24b4b2f34c5ba72d65f956b2d65b24964a5094ab52928cd046a9f"
+      "sha256": "fdc47ee61d67bcb438cf3d6cb66d8f1c7ed1e6b1d2b2448a82bf28f0b28900b9"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/melee-1.png",
-      "sha256": "d9b8f3b8c766dbdd3a1407859164472f00d1c8672a0b86dea87c69d6461d864d"
+      "sha256": "acd2d5e9a6f96858b9119b033a827e7f6c4e597ae994240adb69bbb5cbe9ad51"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/melee-2.png",
-      "sha256": "a309785323e8b7aa1dcc0df73ea7ab8604d0cbfefa6b6b6999fd6820bd2519cc"
+      "sha256": "84139fbb5f832b885358d7c6bc186279098f168c5aaa2461f4b4937b319db1d3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/move-1.png",
-      "sha256": "bd541a3fac67ac596325e5961f28a2bfbc5417ccab021436eb3e600b4a05a630"
+      "sha256": "5a783b3b2ab6b31157ac09fcfe5bc57dc2b156154815c9f68d98c547131315f9"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/move-2.png",
-      "sha256": "6084ba695934ed522877304ef608652709f494ff903f5c75337ffd476fc4f3fe"
+      "sha256": "9cba27ba42764c13fbdd861c4aec0c076bde307ff999a6126a04d1568d24724a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/ranged-1.png",
-      "sha256": "531706ccde81e1977db972a128dd9c0d8557fc480dad6fefb1faad5d60211d68"
+      "sha256": "de8af3ef20ccabd4613e4a56893dc735170cc9357496a9b9bfc18f77420cdbbb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/ranged-2.png",
-      "sha256": "07ced363cd903d4d6752a2c618e64cc80f9b8d3b4672841cd06aabec14397b1c"
+      "sha256": "f7ebf2631624e436ffdccb83932da9a6eeac9543b525d9d016c7e75cc3071f8c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-heavy-weapons-squad/standing.png",
-      "sha256": "d5b04a05aae76d0dd53c238070180aec54c93a05fd6f7c59304bc6ea153ac8f5"
+      "sha256": "c55e0e90555be2c33c1698374108be15a01acf7136d4f737740faf20fe1cd241"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/death-1.png",
-      "sha256": "7d764eea72605085cc1b25fdcbb43dc36a55955ce4d388685cfba0ab0cba6722"
+      "sha256": "fef70374e693148a13c9c213301d7d97439558d2d3180a2440d8cf9e12b7a92c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/death-2.png",
-      "sha256": "2a4599b60686a0885ed0f7f5405cc75141652830593edbc68511d07f0fb3651a"
+      "sha256": "9d13f50c6499a222d053e57787297e34b4ec9782b52894708a2c96aba138efdf"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/defend.png",
-      "sha256": "67b2028ce53c666c756c32c5ab2953f303c6aec84cb01b3023c872f97b992fb2"
+      "sha256": "c1c721ed3a1b478beb0e0c76b2f19733d9e9ccac003ad8ccfb56ce150873a725"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/idle-1.png",
-      "sha256": "856d0125414c0a6be3cddabc008abd0512d1b2388e99009d180b32c565758fee"
+      "sha256": "2854bb5ed19924febfc8c57eb4011eea6425efdf02a37b8a4a4c2459e2bf3027"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/idle-2.png",
-      "sha256": "41833fc4ba16391e6ca55641eee013589a88c953e9c9a833eed9e06cbaeee281"
+      "sha256": "a7f24e214082b14dcbfbfef98dd9caaf06687505d0cf90b8124505a2bafe2c39"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/melee-1.png",
-      "sha256": "9d9fbc7c952bfa9dbb6c62677c7c1e8d142a77218af5f4b0abaea2fc7642b0c2"
+      "sha256": "e1ec6c5463d9c374aef66054f1dfb73311e44b548e2c2ee8aff378ba0501cc2d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/melee-2.png",
-      "sha256": "d31ab2b8e495bcd054682cea381844442a85ae738bdb1e551af89b931b421251"
+      "sha256": "453bd1624d17abec00d9c718bd773278bc7ec9b349e4228829c6e32510cec004"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/move-1.png",
-      "sha256": "b4f544826659296e7034b59b225c6ae14a61ffe9bb8ca0454879f24946014c6d"
+      "sha256": "b3cf595129f22fdfac12199a45a1b305224f8f329bf2d04851717430775907c7"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/move-2.png",
-      "sha256": "022b88a4d21cd2ac9291d1c9dba9ee7b9229c629f7b0ae38e126d81e837f0411"
+      "sha256": "b9ee1d7d5a711153c3c2b19d06d737401fed96ec23c18cfb21dc67d1ea3a1b95"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/ranged-1.png",
-      "sha256": "69ab52fcc6597fa02732746b65632f08f54d44dba8e2f1a10bd89e7a00750146"
+      "sha256": "4a65dcd6473e23c757b4c102cc4860e25aca6d4d66276453e9f528c9e2ce9f5c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/ranged-2.png",
-      "sha256": "79ebc39da4fe7d55b4b0dbd830467063e3598aac9120ef5045e7371791319378"
+      "sha256": "48e816bf4c4956ceb8a9acc7db437e7655a722e9dc5fa3aa0a8cdb3d24b4d8dd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-hero-commander/standing.png",
-      "sha256": "f7035ee06190796c739835098e2c5e7bd0d049d2ccba360f670953a6b7f08c6c"
+      "sha256": "a4d9b157c235ac567e1f535fc05c632160bab2d5575f312abea7cd2faf5d60db"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-militia/death-1.png",
@@ -9158,6 +9232,54 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-militia/standing.png",
       "sha256": "038b6b63092993a0db4c3214e9e1ad0a0e81f8effdbc46275abc56fef5ea3ea2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/death-1.png",
+      "sha256": "7e3e9abac5e06ee14105531bb71208dbb6d637e4131ca57a48fe53b72157f808"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/death-2.png",
+      "sha256": "ac52023135a6bfad17c117032487eb9fa5820e9760dc46dc63df9364670bfee6"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/defend.png",
+      "sha256": "cf171f8ffeb7985c7fc7080fbdccdcdcbdce0b7e40ecb6523432772a3be7f73b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/idle-1.png",
+      "sha256": "fac900691fe90077db872f22fa80e17f38f22c924829b71adc3bb12ff429e3d6"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/idle-2.png",
+      "sha256": "27a3a5db12e3d009c07e0a60e5a7ee5796000d3d171fd45249ce2581c62d3c89"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/melee-1.png",
+      "sha256": "2f0562bd108857ad9f55cc261a7cc70a7f35d902dddf592bd956d6796b779a94"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/melee-2.png",
+      "sha256": "5c9e05c7c15b1267f9745319859cefdf5065d873e83bba055e662ac834e60605"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/move-1.png",
+      "sha256": "e62f773238573e8f323182f0195cc3b90950085d5f6743a6be13f3c7309c3ef2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/move-2.png",
+      "sha256": "74c97cb5b7a72e3642751afd5eb065110186d93a60ab3fd6f16e8909181958ef"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/ranged-1.png",
+      "sha256": "e69b4760cceec1054181e98427ba864406125f92943e45ad28b9c6cee0ff78d0"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/ranged-2.png",
+      "sha256": "521dd279edae5212966e900f7927d1ed8408486e232403dc620d1d415259f513"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-rifle-squad/standing.png",
+      "sha256": "2983dce9e353a6fdd801d4022fa541c283509e707a1bafb2cfd574d96ff81b6a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-sergeant/death-1.png",
@@ -9209,51 +9331,51 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/death-1.png",
-      "sha256": "6eaba364b2bdc37ab0da4dfc7e693644952aa902207763cf9574b00b82cea94b"
+      "sha256": "6b29a238949946c02abc8c6500cd1404d8998283a6ad0c5d6a94ff918d38c174"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/death-2.png",
-      "sha256": "70322b415c41ca2ac859a242a6ee48e5fe9c4450febe64cbec70a9519531c91e"
+      "sha256": "4ff04b1bf70dc1e51083f69dc64e7f1ae7e21b3faf175b05fb46985695911636"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/defend.png",
-      "sha256": "3f8ab271e7f79cd0201e31a7865f251f1eed05bc516d4fa7c1d055ee225ce747"
+      "sha256": "5a6abbeabd59d8c60abd7bea2f144b0b0a3ae493e5c57145a84fa721ca90c8ed"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/idle-1.png",
-      "sha256": "eecec877daf6b94fc8d09cce9fcf9b61ad218e502686b2f9fd0915820ad2f1a4"
+      "sha256": "606a1bdf145f734724223ab4d24db5c927ec054b549e3e60fae298ac16d4f984"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/idle-2.png",
-      "sha256": "fabca0d1cbfa1c52ad9942a2ae43d98d4afa67e2f19ae070732f2c8fb950a7f7"
+      "sha256": "6d80661428d62f3154afb63dc786fdd8ddf3244d51d8f44cb13e51d438ad74fe"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/melee-1.png",
-      "sha256": "fd5825dc7dc357b7be9f298b0f937a47776c9d91d1bbfcf3425ffc985532f70e"
+      "sha256": "dfae4f398fbbdf458103becb47a9d848161a43c3f35be86a8b1281a5deb2a5c0"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/melee-2.png",
-      "sha256": "402cd28a9bfadd4c3de8dba80e7e7fbe7c3f6ed03228a72458902e06c9d118d4"
+      "sha256": "afa77912d515f0ff266e7668d70ffe47c8f17de7c60b0731abc7fa8e1e8c0e55"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/move-1.png",
-      "sha256": "bc488f9a7de4c3a7c8496f89f07db961e599a129402bcab2e1eeb6eb99d37801"
+      "sha256": "1f5d014b37f11988d7cd70f68858fc7badda42d561e1843c6a1aabdadcf58591"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/move-2.png",
-      "sha256": "f655bc8017be26d992bce51af9409cc065a517aab359a0067c50bde6c389a93d"
+      "sha256": "14fb1656781bd0e44554703c3e9f35a0206da08784e4688ddbd3c94c8e4b05ae"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/ranged-1.png",
-      "sha256": "424db7679166bbc3942712643f2718e5be49a92816b53c6707f2680aca084f83"
+      "sha256": "39a8711ac71bf730cc842efb1902f3fa25f5ff8766ba808e47b8b116e976ab6e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/ranged-2.png",
-      "sha256": "1a55e72f4de64a4825585282b537df142df3fa3c51d219f9ea7c8577f3ae408c"
+      "sha256": "4143cbbbd0be57cb344f6d8a1720dfc8fcf4653ec8305919b96e3b49760212ed"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-slicer-team/standing.png",
-      "sha256": "d27d833e8ba94fb1e1d8f1f8bc12f1e2801b6875ac8a36ffb7025fdd426ea7f2"
+      "sha256": "20247e8cb4e83534fa67691bbb2adb30f7d917e1e68f4381b64f9c47e510391e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-trooper/death-1.png",
@@ -9833,147 +9955,147 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/death-1.png",
-      "sha256": "8e2baaf4aea5bd7d4f723832bbd853526239aded05efaf8881c1d41ca4d470aa"
+      "sha256": "0109888cf24a8809923c9bec29e4e5dba322cd5391c6b460f8e690f71d37a084"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/death-2.png",
-      "sha256": "90cc6703be06d18d364c5a0c26240760ca0a2922f71973ee66178260ab3c240f"
+      "sha256": "e0618838fef580d1d3b3e05bd0c95af96d49496f13781d0aa51441e255fa1afb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/defend.png",
-      "sha256": "c9582cce0b9ed3a9b65fdab52df62156be414b4e3e7f958376274f5bd52f1cb7"
+      "sha256": "6c1dc6c669182e7a9c64eb9ac5b4748a25c5ee078d3873f91719c3e215680af1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/idle-1.png",
-      "sha256": "ea17e108ca1b781b29f363d9f4bafe29fab216f65d16b6ceb59c0cdce94a85be"
+      "sha256": "87ba5051f6b3f5597dfa22f2bc75295d331b055ad7dae53bd842ea8ce30dbc87"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/idle-2.png",
-      "sha256": "3a15d8c7ac47b8469969b2735022e26912913bd5bcbe89fd8cca0604c3e08615"
+      "sha256": "2d24d9c1a9ed3cbba9f9295cb22179cc21a107533019e003301cdda4b3b48385"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/melee-1.png",
-      "sha256": "49e89df5195ab8e4f4ff5660926c33944cb0281dc01846a4d841d4c6d2958d95"
+      "sha256": "07bc6f4376a788fde7c2474c6d3934d4ee5efb0d9953fcb5919bf011183a4408"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/melee-2.png",
-      "sha256": "49496313d996b32aee2e20d5f590b53e574802abcbae416b2757ba6380e2a626"
+      "sha256": "76cfda6d879ece9069d41462d60fa211eba92e6eeec5b4895695c963045f6186"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/move-1.png",
-      "sha256": "debf502497cb99245635433f2c76022430c69538d5572fd7ce3ef3c784058549"
+      "sha256": "f1b5954966b347e3f32612ebd48ada62d6fb19e9ce24d01b3649bb19e9e599bd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/move-2.png",
-      "sha256": "3b4c4b8ec517b6c4f8eaccf5d3dcdd02f71c080335fc1b151ea26e3a24f041f4"
+      "sha256": "4bd7ca68a9d47f6332d6633254f33810ac765f6368adae701b35b1a1e5eda798"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/ranged-1.png",
-      "sha256": "367d245d0ad3f3daf25e4d63ef95bcd313e3511991ef255c05a087de6bd11d7e"
+      "sha256": "d6f3313bc39184abc89689bf85bffe6ed52d08df4325331180db64f26c5ec3ae"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/ranged-2.png",
-      "sha256": "367d245d0ad3f3daf25e4d63ef95bcd313e3511991ef255c05a087de6bd11d7e"
+      "sha256": "7a12de8134169254c569726f4058fd16a3207c03221becf4c9841c5ed3dedf48"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/standing.png",
-      "sha256": "367d245d0ad3f3daf25e4d63ef95bcd313e3511991ef255c05a087de6bd11d7e"
+      "sha256": "13585977f2c237df73ed574a7ee150dab0e37b55314dd5aca7b34226d15a8f2d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/death-1.png",
-      "sha256": "ab4533325303298357ca730805a8ccc23bbfd2ca4167d2748741b9b3bdf994e2"
+      "sha256": "a01bd6fc38b387b67b2e65b8b12f75a3d5d7b6156c2e8ed535f37b0bd33b3dc2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/death-2.png",
-      "sha256": "22c64d1f30f8992ef656968456bbbdc19535bf6e6b3932d11a5b3415ac224e2e"
+      "sha256": "531150626d06bdcef98b307ba0eab54b179a2355c10986fddd56fd68c492a1a7"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/defend.png",
-      "sha256": "6fa37f6d5ccc54c4a13a93e3f4308e97c6b12a55349164f2188e9910fc88a495"
+      "sha256": "ceb21592d00011f8bd580c1dbd6b68c6bfc86b707d1c2d9bbf611b32c74a57cf"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/idle-1.png",
-      "sha256": "df3b72bdc7eb7086dea82788be51ef1e2d0f519379bdc6fdd4dbfd66d9310903"
+      "sha256": "b18dd58268834dfcee874bd9211e44bb4719809ac7bc69bb62a6d20234634aef"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/idle-2.png",
-      "sha256": "00226e58ca0a6eeb74e395d2cb646f4cd91ae78742d2dae174d171122be34350"
+      "sha256": "6b72b02935c10f28892443b4c1df478ef0890347a0b7b3ad7d622820c9444ce3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/melee-1.png",
-      "sha256": "035330de3a1263d6987c11261dd2d98f684be37151b4e2e7a36d96f4bc6525b7"
+      "sha256": "3dae9652ce3b6256cc5386eaf30bc956f4ce1a68596a627f0be373127f45a908"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/melee-2.png",
-      "sha256": "b6f79b25de424416f8e950e47e4e66df9081bc9f83f765a813a229666958f3cb"
+      "sha256": "74e44d72407e9464c7b311eb1dea6594d297d843285a7deefc379d9e4b72cff4"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/move-1.png",
-      "sha256": "b321100153a8079a611a2a681d407b15c0faba6b94d5cb5a2ae56a1bddfec6b2"
+      "sha256": "60a353dbc58140c1d19e5e72c02f93aaf3657daa99b036e2b054baae8048a278"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/move-2.png",
-      "sha256": "996bad4bf08bb89855da731f9adcb08e1a8704aa3c6e1b42c9a763b3ae6849de"
+      "sha256": "84165e3ee918421535a4f5d5a533489a1c0c7c32fc81795ca3fd2f029b5f7653"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/ranged-1.png",
-      "sha256": "4a3550d2c8d2af9fac10e9b2bfddf88ec6661c249427193a755337f4afd6d75f"
+      "sha256": "bdaac188f502e781a20c7b8ad66ef3f5c347437e2b52495158876a11af0c5cf2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/ranged-2.png",
-      "sha256": "4a3550d2c8d2af9fac10e9b2bfddf88ec6661c249427193a755337f4afd6d75f"
+      "sha256": "c9e091e47fa0b8e2983492d931e91581f8a98c2e7e8f9a07c0562d386c42d074"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/standing.png",
-      "sha256": "4a3550d2c8d2af9fac10e9b2bfddf88ec6661c249427193a755337f4afd6d75f"
+      "sha256": "248369308a9829a07e435887d34aebae9efb6ffde593ccca4381f508e56fc926"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/death-1.png",
-      "sha256": "e9a48031b82773b612b5361e3511566f6a5a0c5f0a62db6f30008a80a41658f3"
+      "sha256": "82e6f09a3d262cbf36d81d4ab83a2266b9b06e4f9f5f4eb9f7beaa3697a08ef3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/death-2.png",
-      "sha256": "03694f8ea576e88e22dc2a1a3a708eedf8458f68defb79c97f4f1b725b7c711d"
+      "sha256": "197c505af75028000c429f7374fe05447221526cab55f8fe9454b513734a2aad"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/defend.png",
-      "sha256": "d7cdb9ac1b143866a91d213df09383167429e1d551ed0fbde66efb873b7ac98c"
+      "sha256": "0d4eb000b59eae928954512a7b0b595c30a675155b2cb9352d383906e82b5533"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/idle-1.png",
-      "sha256": "bbe708b07508f7da86c1d9e4fadfb97f1b7ab8a496225e9721295ef7fdedd678"
+      "sha256": "3995f2a232caee90b6e76eb650a4df563ff5ff18d5518655785dd1e00c22c46d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/idle-2.png",
-      "sha256": "c2924c63a5169af073a51db923abfcbd4ea26deac313cedab6f039173102981c"
+      "sha256": "ca548af4bdd75ae55a30f6df77df8832e8e2b7fc1903673758252e655948f0a6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/melee-1.png",
-      "sha256": "692c086f7dd1fc688eca8f81b0c01141b35e8b6a4015f24784a0cee6f98aeb3e"
+      "sha256": "b4dd95bd0a5af7a17590b34ec42a85d0f6215df9ed6d42d240acb89a3ca12e3c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/melee-2.png",
-      "sha256": "fa344e8e873ffbbb8c65e6579f4f84bbe4f5766591401e78fac68c400c1cd432"
+      "sha256": "8305319dfd42b8e7e5cf8796129bae496d5de2f49f96e9009c60bdffc0d94db2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/move-1.png",
-      "sha256": "b49edcbdb5b854b00e54c4eef2d4cea9713dc0c1199199911d9ff86d0e8a6688"
+      "sha256": "cb98dfb8853268af1473488af69dc23faa4faebab88edb2172c3f11b4e42ff65"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/move-2.png",
-      "sha256": "793538a50cbbfd85fae91bccbb346d6935816c08f6751ff723d0f8ba11fd0d94"
+      "sha256": "89d0344849bec10b3c8e804da7ce35144df082e937d864afccd4560500832315"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/ranged-1.png",
-      "sha256": "4a115ebd043e5ca0c8a16034a6d2f7bd09f06f0efbf8b6b44c102df0bc3929dc"
+      "sha256": "488b905baa493cd5d2b27c4bef9050782a38c494ec129ff2339692b182a9b7fa"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/ranged-2.png",
-      "sha256": "4a115ebd043e5ca0c8a16034a6d2f7bd09f06f0efbf8b6b44c102df0bc3929dc"
+      "sha256": "972e166c0420e8eb932348974f3796f941ff74ad1f81749f6cff63724dcf12ff"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-psadan/standing.png",
-      "sha256": "4a115ebd043e5ca0c8a16034a6d2f7bd09f06f0efbf8b6b44c102df0bc3929dc"
+      "sha256": "3d4720468bf8616f20b8080d1aa1d140853ee38ca2a41c08e32070f93e7227e6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_01_the_noghri_prisoner.map",

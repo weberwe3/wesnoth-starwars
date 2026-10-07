@@ -49,8 +49,9 @@ def _runs(mask: np.ndarray, merge_gap: int = 0) -> list[tuple[int, int]]:
 
 
 LABEL_MAX_H = 40      # a band this short is a row of frame labels
-LABEL_MARGIN = 12     # a cut may fall this far right of the next frame's label
+LABEL_MARGIN = 12     # a cut may fall this far right of a left-aligned label (and is preferred this far left)
 LABEL_REACH = 80      # ... or this far left of it
+LABEL_LEFT_EDGE = 40  # labels starting further in than this are centred under their frames
 
 
 def figures(img: Image.Image) -> list[Image.Image]:
@@ -64,27 +65,55 @@ def figures(img: Image.Image) -> list[Image.Image]:
     corners = np.array([a[2, 2], a[2, w - 3], a[h - 3, 2], a[h - 3, w - 3]])
     bg = np.median(corners, axis=0)
     fg = np.sqrt(((a - bg) ** 2).sum(-1)) > 40
-    bands = _runs(fg.any(1))
-    labels = [b for b in bands if b[1] - b[0] <= LABEL_MAX_H]
+    # Label rows: yellow text spread across the sheet (in at least four
+    # places along the row); a painted muzzle flash is yellow too, but only in
+    # one frame. The text (and its anti-aliased edge) is removed from those
+    # rows, so a figure reaching up into a label row keeps its own pixels.
+    yellow = (a[..., 0] > 170) & (a[..., 1] > 160) & (a[..., 2] < 110) & (np.abs(a[..., 0] - a[..., 1]) < 70)
+    label_row = np.array([len(_runs(yellow[y], merge_gap=40)) >= 4 for y in range(h)])
+    label_bands = _runs(label_row, merge_gap=3)
+    text = np.zeros_like(fg)
+    for ly0, ly1 in label_bands:
+        lo, hi = max(0, ly0 - 2), min(h, ly1 + 2)
+        near = yellow[lo:hi].copy()
+        for _ in range(2):
+            grown = near.copy()
+            grown[1:] |= near[:-1]
+            grown[:-1] |= near[1:]
+            grown[:, 1:] |= near[:, :-1]
+            grown[:, :-1] |= near[:, 1:]
+            near = grown
+        text[lo:hi] |= near
+    figure = fg & ~text
+    bands = _runs(figure.any(1))
     rows = sorted(sorted((b for b in bands if b[1] - b[0] > LABEL_MAX_H), key=lambda b: b[0] - b[1])[:2])
+    fg = figure
     out = []
     for y0, y1 in rows:
-        above = [lb for lb in labels if lb[1] <= y0]
+        # The row's labels: the nearest label band, above (usual) or below.
+        nearest = sorted(label_bands, key=lambda lb: min(abs(lb[1] - y0), abs(lb[0] - y1)))
         starts = []
-        if above:
-            ly0, ly1 = above[-1]
-            words = _runs(fg[ly0:ly1].any(0), merge_gap=20)
+        if nearest:
+            ly0, ly1 = nearest[0]
+            words = _runs(yellow[ly0:ly1].any(0), merge_gap=20)
             if len(words) == 6:
                 # Cut between frames at the emptiest column near each label:
                 # a figure may reach a little past its own label to the left.
                 occupancy = fg[y0:y1].sum(0)
                 starts = [0]
-                for x0, _ in words[1:]:
-                    lo, hi = max(starts[-1] + 1, x0 - LABEL_REACH), min(w, x0 + LABEL_MARGIN)
+                # Left-aligned labels (the first one at the sheet's left edge)
+                # start their frame: cut just left of the next label. Centred
+                # labels: cut anywhere between two labels' centres.
+                centred = words[0][0] > LABEL_LEFT_EDGE
+                for (p0, p1), (x0, x1) in zip(words, words[1:]):
+                    if centred:
+                        lo, hi = max(starts[-1] + 1, (p0 + p1) // 2), min(w, (x0 + x1) // 2)
+                    else:
+                        lo, hi = max(starts[-1] + 1, x0 - LABEL_REACH), min(w, x0 + LABEL_MARGIN)
                     window = occupancy[lo:hi]
                     best = window.min()
                     candidates = [lo + i for i, v in enumerate(window) if v == best]
-                    starts.append(min(candidates, key=lambda c: abs(c - x0)))
+                    starts.append(min(candidates, key=lambda c: abs(c - (x0 - LABEL_MARGIN))))
         if starts:
             cells = list(zip(starts, starts[1:] + [w]))
         else:

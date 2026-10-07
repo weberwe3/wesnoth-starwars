@@ -118,3 +118,29 @@ armed Luke sheet with `import_owner_sheet.py --match-scale`). Missions where
 Luke has lost his lightsaber switch to it with `{SW_UNARMED sw_hero_luke}` and
 back with `{SW_ARMED sw_hero_luke}` (utils/hte_macros.cfg); currently HTE 5,
 Prisoner of Myrkr.
+
+## Codex sheets from licensed references (2026-10-07)
+
+Made with `production/tools/gen_codex_owner_sheets.py` (jobs in
+`owner_sheet_jobs.json`): Codex gets the owner's on-foot scout trooper sheet as a
+house-style template plus the unit's reference crop, and redraws all 12 frames
+for that unit. The sheets are kept as `~/art-references/codex-<unit>.png` and
+installed with `import_owner_sheet.py --palette-from-all`.
+
+- SacraiCross references (gallery permission): `sw-unit-im-recon-squad`,
+  `sw-unit-im-signal-jammer-team` (Fan Art 121), `sw-unit-nr-engineer-squad`
+  (Fan Art 210), `sw-unit-nr-eweb-team`, `sw-unit-nr-rifle-squad` (Fan Art 60),
+  `sw-unit-nr-heavy-weapons-squad`, `sw-unit-nr-slicer-team` (Fan Art 99),
+  `sw-unit-nr-hero-commander` (Fan Art 179), `sw-unit-im-decon-droid` (Fan Art
+  214, recoloured to its ochre tracked design).
+- Codemus: `sw-unit-wy-myneyrshi`. Tactical-Sandwiches: `sw-unit-wl-vornskr`.
+- No reference: `sw-unit-wy-psadan` (from its written description).
+- `sw-unit-nr-eweb-team`'s standing frame is its crouched idle-1 (behind the
+  gun), so standing and idle do not alternate with and without the gun.
+- `sw-unit-nr-rifle-squad` previously used a mainline image; it now has its own
+  art folder and animations (units/infantry.cfg).
+
+`sw-unit-im-infiltrator`: all 12 frames from an owner-supplied sheet
+(`~/art-references/owner-infiltrator.webp`) and its portrait from an
+owner-supplied image (`owner-infiltrator-portrait.webp`, fitted with
+`fit_portrait.py`).
