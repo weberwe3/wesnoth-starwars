@@ -8,80 +8,80 @@
  },
  "sw-hero-cbaoth": {
   "blit": [
-   52,
-   22
+   58,
+   18
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-chewbacca": {
   "blit": [
-   47,
-   22
+   57,
+   27
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-han": {
   "blit": [
-   44,
-   22
+   54,
+   23
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-karrde": {
   "blit": [
-   46,
-   22
+   53,
+   25
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-khabarakh": {
   "blit": [
-   58,
-   22
+   51,
+   15
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-lando": {
   "blit": [
-   48,
-   22
+   58,
+   17
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-leia": {
   "blit": [
-   49,
-   22
+   50,
+   25
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-luke": {
   "blit": [
-   51,
-   22
+   58,
+   29
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-luuke": {
   "blit": [
-   58,
-   22
+   56,
+   25
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-mara": {
   "blit": [
-   52,
-   22
+   54,
+   26
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-pellaeon": {
   "blit": [
-   46,
+   53,
    22
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-thrawn": {
   "blit": [
@@ -107,9 +107,9 @@
  "sw-unit-bi-commando": {
   "blit": [
    54,
-   22
+   24
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-at-st": {
   "blit": [
@@ -162,17 +162,17 @@
  },
  "sw-unit-im-noghri": {
   "blit": [
-   58,
-   22
+   49,
+   10
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-officer": {
   "blit": [
-   44,
-   22
+   53,
+   27
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-recon-squad": {
   "blit": [
@@ -184,10 +184,10 @@
  },
  "sw-unit-im-royal-guard": {
   "blit": [
-   43,
-   22
+   58,
+   21
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-scout-trooper": {
   "blit": [
@@ -262,10 +262,10 @@
  },
  "sw-unit-nr-commando": {
   "blit": [
-   55,
-   22
+   53,
+   27
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-docked-warship": {
   "blit": [
@@ -291,10 +291,10 @@
  },
  "sw-unit-nr-field-medic": {
   "blit": [
-   50,
-   22
+   53,
+   30
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-heavy-weapons-squad": {
   "blit": [
@@ -314,17 +314,17 @@
  },
  "sw-unit-nr-militia": {
   "blit": [
-   48,
-   22
+   51,
+   21
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-sergeant": {
   "blit": [
-   56,
-   22
+   49,
+   21
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-slicer-team": {
   "blit": [
@@ -336,10 +336,10 @@
  },
  "sw-unit-nr-trooper": {
   "blit": [
-   49,
-   22
+   48,
+   25
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-xwing": {
   "blit": [
@@ -399,24 +399,24 @@
  },
  "sw-unit-sm-veteran": {
   "blit": [
-   50,
-   22
+   57,
+   32
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-wk-lookout": {
   "blit": [
-   53,
-   22
+   57,
+   26
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-wk-warrior": {
   "blit": [
-   57,
-   22
+   58,
+   29
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-wl-vornskr": {
   "blit": [
