@@ -956,6 +956,8 @@ REPUBLIC_STARFIGHTERS = {"sw_unit_nr_xwing", "sw_unit_nr_ywing", "sw_unit_nr_awi
 #   derived  the sprite has no flash colour of its own; the faction/lore logic
 #            below picks the bolt colour, and each attack's firing frame blits
 #            a flash of that same colour at the muzzle point.
+#   posed    hand-posed firing frames drawn without a flash: handled like
+#            derived, with the flash blitted at the weapon tip.
 MUZZLE_FLASHES_PATH = Path(__file__).resolve().parent / "muzzle_flashes.json"
 MUZZLE_FLASHES: dict[str, dict] = (json.loads(MUZZLE_FLASHES_PATH.read_text(encoding="utf-8"))
                                    if MUZZLE_FLASHES_PATH.exists() else {})
@@ -971,7 +973,7 @@ def flash_overlay(unit_id: str, attack_name: str, missile: tuple[str, str | None
     frame, in the colour of its projectile; "" when none is drawn (no
     projectile, bows and bombs, or a hand-drawn flash already in the art)."""
     entry = MUZZLE_FLASHES.get(slug(unit_id))
-    if not missile or not entry or entry.get("kind") != "derived":
+    if not missile or not entry or entry.get("kind") not in ("derived", "posed"):
         return ""
     if attack_name == "bow" or attack_name.startswith("concussion_"):
         return ""

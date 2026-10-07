@@ -1,0 +1,7 @@
+{
+ "_note": "Units whose ranged frames are hand-posed without a muzzle flash; scan_muzzle_flashes.py treats them as 'posed' and blits the flash at the weapon tip. Only units whose tip was checked by eye are listed (2026-10-06); the other units with generated firing frames still use their earlier flash points.",
+ "units": [
+  "sw-unit-im-scout-trooper",
+  "sw-unit-im-stormtrooper"
+ ]
+}

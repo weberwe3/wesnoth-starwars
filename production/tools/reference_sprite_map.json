@@ -105,7 +105,8 @@
     304,
     1016
    ],
-   "how": "restyle"
+   "how": "restyle",
+   "hold": "replaced by an owner-supplied sprite sheet (docs/ART_CREDITS.md); do not regenerate"
   },
   "sw_unit_im_noghri": {
    "source": "codemus-noghri.jpg",

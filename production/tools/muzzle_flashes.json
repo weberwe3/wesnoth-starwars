@@ -191,10 +191,10 @@
  },
  "sw-unit-im-scout-trooper": {
   "blit": [
-   58,
-   35
+   50,
+   22
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-signal-jammer-team": {
   "blit": [
@@ -213,10 +213,10 @@
  },
  "sw-unit-im-stormtrooper": {
   "blit": [
-   48,
-   22
+   51,
+   17
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-stormtrooper-sergeant": {
   "blit": [

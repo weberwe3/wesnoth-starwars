@@ -29,7 +29,7 @@ Units whose sprite frames come from the sheet:
 - `sw-hero-luuke`
 - `sw-hero-karrde`
 - `sw-hero-bel-iblis`
-- `sw-unit-im-stormtrooper`
+- `sw-unit-im-stormtrooper` (replaced by an owner-supplied sheet, below)
 - `sw-unit-im-officer`
 - `sw-unit-im-royal-guard`
 - `sw-unit-nr-trooper`
@@ -58,7 +58,8 @@ Codex redraws or restyles each one in the SacraiCross house style. Installed
   version was not used).
 - MiddytheKnight (sprites by zerorunner67): stored, not used. The clone trooper
   comes from the v6 sheet instead (hand-traced, below).
-- Milosh--Andrich: `sw-unit-im-scout-trooper`.
+- Milosh--Andrich: the first `sw-unit-im-scout-trooper` design; replaced
+  2026-10-06 by an owner-supplied sheet (below).
 - Codemus: `sw-unit-im-noghri`, `sw-hero-khabarakh`.
 - danyelon: `sw-unit-im-tie-fighter`, `sw-unit-nr-xwing`, `sw-hero-wedge`,
   `sw-hero-xwing-luke`.
@@ -75,8 +76,8 @@ The move, melee, ranged, defend and death frames of the sheet and reference
 units were drawn by Codex from each unit's standing sprite
 (`gen_codex_reference_frames.py`). The idle frames are derived from the
 standing sprite. OpenAI's image safety system blocked some animations for
-`sw-hero-chewbacca` (move, melee, death) and `sw-unit-im-stormtrooper` (melee,
-defend, death), so those keep frames derived from the standing sprite. Ship
+`sw-hero-chewbacca` (move, melee, death), so those keep frames derived from the
+standing sprite. Ship
 frames are all derived from their standing sprite.
 
 ## Hand-traced sheet sprites
@@ -87,3 +88,15 @@ separate, and OpenAI's image safety system blocked Codex redraws. Their sprites
 are cut out of the v6 sheet along hand-traced outlines (`outline` in
 `sheet_sprite_map.json`), and all their frames are derived from that standing
 sprite. Both are SacraiCross art under CC BY-SA, like the other sheet units.
+
+## Owner-supplied sprite sheets
+
+`sw-unit-im-stormtrooper`: all 12 frames come from a sprite sheet the project
+owner supplied on 2026-10-06 (kept outside the repository as
+`~/art-references/owner-stormtrooper.webp`), installed with
+`production/tools/import_owner_sheet.py`. This replaces its SacraiCross sheet
+sprite and the earlier generated frames.
+
+`sw-unit-im-scout-trooper`: all 12 frames come from an owner-supplied sprite
+sheet (2026-10-06, `~/art-references/owner-scout-trooper.webp`), replacing the
+frames restyled from Milosh--Andrich's reference.
