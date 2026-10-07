@@ -1393,7 +1393,26 @@ def attack_wml(a: dict, unit_slug: str, unit_id: str = "") -> str:
     return "\n".join(lines)
 
 
-def unit_wml(u: dict) -> str:
+# Unarmed variations (owner direction 2026-10-06): a hero who loses his weapon
+# in a mission shows his own unarmed sprite set until he recovers it. The
+# variation is the full unit (inherit=no, so no positional merging of
+# animations) with its art in units/<slug>-unarmed/ and an animation for the
+# fists the mission's object gives him. Scenarios switch it with the
+# SW_UNARMED / SW_ARMED macros (utils/hte_macros.cfg).
+UNARMED_VARIATIONS = {"sw_hero_luke": "fists"}
+
+
+def unarmed_variation(u: dict) -> str:
+    s = slug(u["id"])
+    art = f"{s}-unarmed"
+    body = unit_wml(u, with_variations=False).replace(f"units/{s}/", f"units/{art}/").split("\n")
+    body = [line for line in body[1:-1] if not line.startswith("    id=")]
+    melee = melee_anim(f"units/{art}", u["id"], {"name": UNARMED_VARIATIONS[u["id"]]})
+    return "\n".join(["[variation]", "    variation_id=unarmed", "    variation_name= _ \"unarmed\"",
+                      "    hide_help=yes", "    inherit=no"] + body + [indent(melee, 4), "[/variation]"])
+
+
+def unit_wml(u: dict, with_variations: bool = True) -> str:
     s = slug(u["id"])
     lines = [
         "[unit_type]",
@@ -1437,8 +1456,10 @@ def unit_wml(u: dict) -> str:
     for a in expanded_attacks(u):
         lines.append(indent(attack_wml(a, s, u["id"]), 4))
     lines.append(indent(animations(u), 4))
-    if u["id"] in FLYOVER_CRAFT:
+    if u["id"] in FLYOVER_CRAFT and with_variations:
         lines.append(indent(flyover_variation(), 4))
+    if u["id"] in UNARMED_VARIATIONS and with_variations:
+        lines.append(indent(unarmed_variation(u), 4))
     lines.append("[/unit_type]")
     return "\n".join(lines)
 

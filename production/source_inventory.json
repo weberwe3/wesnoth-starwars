@@ -1783,6 +1783,78 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
@@ -6417,7 +6489,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg",
-      "sha256": "d0a3c5d17054f66c8f57cc44797b4e1d74689dc4e77996636c5e48114f09373a"
+      "sha256": "e973c63dd63f18b20adb433fe1dd32c97eb35d925ecd6dc3767f59635b813722"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg",
@@ -6497,7 +6569,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "7ff2043ed3bcadec9102f2054ad635476768466ec01031b7097bb06feda3a475"
+      "sha256": "8245863761ba59e17dc0770a04be76cf145741604ff579166d5ce41ec8f9166b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
@@ -6533,7 +6605,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "d80fa4143e2a4b2f57cba31e8c77f95179b04d651bbd12c23c968480f8482f01"
+      "sha256": "3eed58639ae6b74e0ee119e8cd22a1b00fb234dd5da7e1f177427711fabf13f8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -7262,6 +7334,54 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-leia/standing.png",
       "sha256": "ed17759155143634ec7c92c0fad49f78c61759feed1bb20d286bc67b6b2d9251"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/death-1.png",
+      "sha256": "17fc19eebde27cf22d0ecbeb96dc14d03d59a8506315b0d6df6a3d7996113ba8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/death-2.png",
+      "sha256": "896273472dc75cdadb86fba6480b23f45d090957153d75ff3aab8f7ee5ab7d3c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/defend.png",
+      "sha256": "6f04acc8149595fe17ca0182d0e6d027a1336a1a3f8c079053d5d5f8825bd900"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/idle-1.png",
+      "sha256": "c316bc063d465cfc7c9252801b4af8241c7248b018331e8bc264f73ddd847261"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/idle-2.png",
+      "sha256": "8a76a20f418c4c36e5d1bfe9b9139513c841963992b47f3d890e57a9a83439a5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/melee-1.png",
+      "sha256": "1aebc7ccb75b01b1e7f6d58ac6e9b4a896aa5f7ea58aa770393f471623391aa6"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/melee-2.png",
+      "sha256": "30ae3699a084dbf7e42954e16956c0655c639598708f09d542eebc00ecf230e7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/move-1.png",
+      "sha256": "28a2d84af8fd36fccc064f06ebfd2bcc28148d17780ae870ec3f0fb9a9f669f8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/move-2.png",
+      "sha256": "8bad2d7a47e9066ab869787f71bc4e84183b2db4d9c576a802cc9e693ab702b1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/ranged-1.png",
+      "sha256": "e22f33ba6814e44df786738eb5a08110be2155ea128244855bc864e9eaf6b185"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/ranged-2.png",
+      "sha256": "cbba3f104a219e87f7fb925bdd202fd0800587aef8d614de55e3809d073d53f4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke-unarmed/standing.png",
+      "sha256": "9eaedfe652c8bd2efd2d33a26943f61f16d761ac277e78227b061a850e8ab77a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-luke/death-1.png",

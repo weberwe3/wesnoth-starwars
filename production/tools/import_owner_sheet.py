@@ -13,6 +13,7 @@ MAX_H px tall), bottom-anchored and centred in the 72x72 unit frame like
 the other unit art, and reduced to the standing figure's own palette.
 
 Usage (art Python): import_owner_sheet.py SHEET UNIT_ID [--preview OUT.png] [--palette-from-all]
+       [--match-scale OTHER_SHEET]
 """
 from __future__ import annotations
 
@@ -111,11 +112,22 @@ def figures(img: Image.Image) -> list[Image.Image]:
     return out
 
 
-def frames(figs: list[Image.Image], palette_from_all: bool = False) -> dict[str, Image.Image]:
+def sheet_scale(figs: list[Image.Image]) -> float:
+    """One factor for the whole sheet: the standing figure MAX_H px tall, unless
+    a wider or taller frame needs less to fit the 72x72 frame."""
+    return min([MAX_H / figs[0].height] + [min(MAX_W / f.width, MAX_H / f.height) for f in figs])
+
+
+def frames(figs: list[Image.Image], palette_from_all: bool = False,
+           scale: float | None = None) -> dict[str, Image.Image]:
     """The 72x72 frames. The palette comes from the standing figure, or with
     palette_from_all from every frame (for sheets whose effects -- a fire
     burst, a muzzle flash -- use colours the standing pose does not)."""
-    scale = min([MAX_H / figs[0].height] + [min(MAX_W / f.width, MAX_H / f.height) for f in figs])
+    fit = sheet_scale(figs)
+    if scale is None:
+        scale = fit
+    elif scale > fit:
+        raise SystemExit(f"--match-scale {scale:.3f} is too large for this sheet (at most {fit:.3f})")
     sources = figs if palette_from_all else figs[:1]
     pal_src = Image.new("RGB", (sum(f.width for f in sources), max(f.height for f in sources)), (0, 0, 0))
     x = 0
@@ -145,8 +157,12 @@ def main() -> int:
     parser.add_argument("--preview", type=Path, help="write a 4x review strip instead of installing")
     parser.add_argument("--palette-from-all", action="store_true",
                         help="build the palette from every frame (effects in colours the standing pose lacks)")
+    parser.add_argument("--match-scale", type=Path, metavar="OTHER_SHEET",
+                        help="use the scale of another sheet of the same character drawn at the same size "
+                             "(e.g. an unarmed set matching the armed one), so the unit keeps its size")
     args = parser.parse_args()
-    made = frames(figures(Image.open(args.sheet)), args.palette_from_all)
+    scale = sheet_scale(figures(Image.open(args.match_scale))) if args.match_scale else None
+    made = frames(figures(Image.open(args.sheet)), args.palette_from_all, scale)
     if args.preview:
         strip = Image.new("RGBA", (12 * SPRITE * 4, SPRITE * 4), (70, 90, 60, 255))
         for i, name in enumerate(NAMES):

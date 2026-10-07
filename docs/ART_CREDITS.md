@@ -111,3 +111,10 @@ Luke sheet (2026-10-06, `~/art-references/owner-luke.webp`, palette from all
 frames). Their firing frame paints a Force wave instead of a muzzle flash, so
 no flash is blitted; Luke's deflected bolts stay red and Luuke's Force
 lightning keeps its lightning projectile.
+
+`sw-hero-luke-unarmed`: Luke's unarmed variation (owner-supplied sheet,
+2026-10-06, `~/art-references/owner-luke-unarmed.webp`, scaled to match the
+armed Luke sheet with `import_owner_sheet.py --match-scale`). Missions where
+Luke has lost his lightsaber switch to it with `{SW_UNARMED sw_hero_luke}` and
+back with `{SW_ARMED sw_hero_luke}` (utils/hte_macros.cfg); currently HTE 5,
+Prisoner of Myrkr.
