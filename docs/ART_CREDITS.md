@@ -97,6 +97,11 @@ owner supplied on 2026-10-06 (kept outside the repository as
 `production/tools/import_owner_sheet.py`. This replaces its SacraiCross sheet
 sprite and the earlier generated frames.
 
-`sw-unit-im-scout-trooper`: all 12 frames come from an owner-supplied sprite
-sheet (2026-10-06, `~/art-references/owner-scout-trooper.webp`), replacing the
-frames restyled from Milosh--Andrich's reference.
+`sw-unit-im-scout-trooper` (the speeder-bike scout unit): all 12 frames come
+from an owner-supplied speeder-bike sheet (2026-10-06,
+`~/art-references/owner-scout-speeder.webp`, palette from all frames so its
+painted muzzle flash and explosion keep their colours). It replaced, the same
+day, an owner-supplied on-foot sheet (`owner-scout-trooper.webp`, kept for a
+possible dismounted unit), which had replaced the frames restyled from
+Milosh--Andrich's reference. The painted flash is orange, so the unit's bolts
+are orange.

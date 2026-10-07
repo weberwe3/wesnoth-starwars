@@ -191,10 +191,11 @@
  },
  "sw-unit-im-scout-trooper": {
   "blit": [
-   50,
-   22
+   58,
+   43
   ],
-  "kind": "posed"
+  "color": "orange",
+  "kind": "painted"
  },
  "sw-unit-im-signal-jammer-team": {
   "blit": [
