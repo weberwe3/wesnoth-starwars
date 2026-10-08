@@ -6647,7 +6647,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "sha256": "12ef42f5d55dcf2e04f4cdc1d5868c426045cf295ec2ef4ebf75ac66136da1ae"
+      "sha256": "91b07e357d57070ba1a50b1dc4ef46d2c50b9ddb1b843a7f17af1b28f0b3829b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
@@ -8515,51 +8515,51 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/death-1.png",
-      "sha256": "ea8addb4c5220d9fe5120f6259da14bb0f94d7dcd3a0842a1f878a94ae78dd32"
+      "sha256": "25bbc9ca25cfb2672bc45e360509c02f5fd21c5c3a60ae21c0dc4e492c283f49"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/death-2.png",
-      "sha256": "c5e82fe44a112122c75bf9388c3b39c210ef8a5240b3c6164185f56177efde3d"
+      "sha256": "0a2bcc54142e587f0815384f6e2a52aba89004bf4caa45c565f1b4fd308df4ec"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/defend.png",
-      "sha256": "2da1608d2dd07c9c2bd25364fc8f2b3fb41adad801c5b6778b8ff4253ccbdbda"
+      "sha256": "8dc899008462de7b71dc4fc71656b64b553ffadab7dde19739f85f7d7934f507"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/idle-1.png",
-      "sha256": "7ad06cdcf56a838dd7587bca5fe1ee022dbb24bcfd0cd8b80b3350557a2519bf"
+      "sha256": "3ca54d9c04af1d13cd3c13c7737711f543222a2a52d944db2a2b08a14156a610"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/idle-2.png",
-      "sha256": "fef0327f8c3167016dac3c21607012c9adedd92f4a97e365c69b4fbf646987be"
+      "sha256": "ebb0f4aae4aab8ecf6bf6c749f95cfb1c4e90c4c5d072cfb9565d37f8f6e245d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/melee-1.png",
-      "sha256": "2666e917d212d5545a662993b1adfa9d7bc916074eae37d956dfa3e866a5c8f0"
+      "sha256": "aa9286402a4ae88ce05e193731ea404915aceea5f99b5563518515a5ed9f6bcb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/melee-2.png",
-      "sha256": "83537017e62e08a69e08ba4222e491f66d9a4fd08bc735e7a5f90ca0f5300d88"
+      "sha256": "6e37c2c3609f942d9f1b3d2e8257db8ed133d4d53b1c8a563b0fa2ba47bc3049"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/move-1.png",
-      "sha256": "3b7f5eb079b46c8741504b1599b21087c48e750e95e6fefd1e2309eb07c0549f"
+      "sha256": "1087919de9a129626b17849491e08d44011716fb63f045b58405d9eb94a25c6e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/move-2.png",
-      "sha256": "88e621bead5ebec76069a9760d9dade40ed601eff86366cc641bbef68081896a"
+      "sha256": "11a740dd392e3d3f0573a184af06c73fd335362939eb8994647c45601c80b2b7"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/ranged-1.png",
-      "sha256": "377aa3621f50a6a866eb33693246e59c05b9b34868a49f41030bdd00ea176929"
+      "sha256": "c78710eeeb604d3a8272437a180438f58446bb011eda5dbf6ac9f0d3976d95ab"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/ranged-2.png",
-      "sha256": "377aa3621f50a6a866eb33693246e59c05b9b34868a49f41030bdd00ea176929"
+      "sha256": "569a86d24274822ab48cefe8cfcf492556139fb6275fe858cf41358f57622cf8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper-sergeant/standing.png",
-      "sha256": "377aa3621f50a6a866eb33693246e59c05b9b34868a49f41030bdd00ea176929"
+      "sha256": "819168924cd871c470ca9feea5557fcd6f18489f024fecad379253af8be6e579"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-im-stormtrooper/death-1.png",

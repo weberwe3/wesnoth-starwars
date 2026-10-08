@@ -16,7 +16,7 @@ their 12 unit frames. Portraits are not from the sheet.
 
 Units whose sprite frames come from the sheet:
 
-- `sw-unit-im-stormtrooper-sergeant` (hand-traced)
+- `sw-unit-im-stormtrooper-sergeant` (hand-traced; replaced by an owner-supplied sheet, below)
 - `sw-unit-im-clone-trooper` (hand-traced)
 - `sw-hero-luke` (replaced by an owner-supplied sheet, below)
 - `sw-hero-leia`
@@ -144,3 +144,8 @@ installed with `import_owner_sheet.py --palette-from-all`.
 (`~/art-references/owner-infiltrator.webp`) and its portrait from an
 owner-supplied image (`owner-infiltrator-portrait.webp`, fitted with
 `fit_portrait.py`).
+
+`sw-unit-im-stormtrooper-sergeant`: all 12 frames from an owner-supplied sheet
+(2026-10-07, `~/art-references/owner-stormtrooper-sergeant.webp`), replacing
+the hand-traced sheet sprite. Its firing frame paints an orange flash, so its
+bolts are orange.
