@@ -116,12 +116,33 @@ def figures(img: Image.Image) -> list[Image.Image]:
                     starts.append(min(candidates, key=lambda c: abs(c - (x0 - LABEL_MARGIN))))
         if starts:
             cells = list(zip(starts, starts[1:] + [w]))
+            # A piece that straddles a cut (a prop set down beside a figure,
+            # under the next frame's carried weapon) goes whole to the frame
+            # its centre lies in.
+            band_parts = components(fg[y0:y1])
+            straddling = {}
+            for i in range(1, int(band_parts.max()) + 1):
+                xs = np.nonzero((band_parts == i).any(axis=0))[0]
+                if len(xs) and any(xs.min() < c0 <= xs.max() for c0 in starts[1:]):
+                    centre = (xs.min() + xs.max()) / 2
+                    straddling[i] = sum(1 for c0 in starts if c0 <= centre) - 1
         else:
             cells = sorted(sorted((r for r in _runs(fg[y0:y1].sum(0) > 2) if r[1] - r[0] >= 8),
                                   key=lambda r: r[0] - r[1])[:6])
-        for x0, x1 in cells:
+        for k, (x0, x1) in enumerate(cells):
             mask = fg[y0:y1, x0:x1].copy()
             if starts:
+                # Everything in the cell, minus straddling pieces owned by a
+                # neighbour, plus straddling pieces this frame owns.
+                inside = np.zeros_like(fg[y0:y1])
+                inside[:, x0:x1] = fg[y0:y1, x0:x1]
+                foreign = np.isin(band_parts, [i for i, o in straddling.items() if o != k])
+                own = np.isin(band_parts, [i for i, o in straddling.items() if o == k])
+                mine = (inside & ~foreign) | own
+                cols = np.nonzero(mine.any(axis=0))[0]
+                if len(cols):
+                    x0, x1 = min(x0, int(cols.min())), max(x1, int(cols.max()) + 1)
+                mask = mine[:, x0:x1]
                 # Small pieces touching the cell's side edge spill over from the
                 # neighbouring frame (the tip of a sword slash): drop them.
                 parts = components(mask)

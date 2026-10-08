@@ -285,7 +285,7 @@
    54,
    22
   ],
-  "color": "orange",
+  "color": "blue",
   "kind": "painted"
  },
  "sw-unit-nr-eweb-team": {
@@ -308,7 +308,7 @@
    58,
    25
   ],
-  "color": "red",
+  "color": "orange",
   "kind": "painted"
  },
  "sw-unit-nr-hero-commander": {
@@ -316,7 +316,7 @@
    57,
    22
   ],
-  "color": null,
+  "color": "red",
   "kind": "painted"
  },
  "sw-unit-nr-militia": {
@@ -346,7 +346,7 @@
    52,
    22
   ],
-  "color": null,
+  "color": "orange",
   "kind": "painted"
  },
  "sw-unit-nr-trooper": {
