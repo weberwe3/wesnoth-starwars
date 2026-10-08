@@ -187,3 +187,11 @@ are painted, so no flash is blitted.
 `--colors 128 --alpha-cut 40` so its thin green turbolaser bolts keep their
 colour (bright effect colours get their own palette entries per hue band, and
 dim green background spill on the outline is removed).
+
+`sw-unit-im-tie-bomber`: all 12 frames from an owner-supplied sheet
+(2026-10-08, `~/art-references/owner-tie-bomber.webp`). Its blue energy bomb
+(cut from the sheet's ranged frames) is the bombing-run ordnance: the
+off-map bombing sortie flown by the TIE bomber drops it on each hex
+(`images/misc/sw-energy-bomb-1..12.png`, `air.CRAFT_BURST` in lua/sw_air.lua):
+four frames of the ball falling, then the blue blast mixed with mainline's
+`halo/flame-burst` fire and smoke.
