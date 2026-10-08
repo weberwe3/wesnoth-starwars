@@ -90,8 +90,11 @@ def figures(img: Image.Image) -> list[Image.Image]:
     fg = figure
     out = []
     for y0, y1 in rows:
-        # The row's labels: the nearest label band, above (usual) or below.
-        nearest = sorted(label_bands, key=lambda lb: min(abs(lb[1] - y0), abs(lb[0] - y1)))
+        # The row's labels: the nearest label band on the sheet's label side
+        # (all labels sit above their frames, or all below).
+        above_side = bool(label_bands) and bool(rows) and label_bands[0][0] < rows[0][0]
+        side = [lb for lb in label_bands if (lb[1] <= y0 if above_side else lb[0] >= y1)]
+        nearest = sorted(side or label_bands, key=lambda lb: min(abs(lb[1] - y0), abs(lb[0] - y1)))
         starts = []
         if nearest:
             ly0, ly1 = nearest[0]
@@ -123,7 +126,11 @@ def figures(img: Image.Image) -> list[Image.Image]:
             straddling = {}
             for i in range(1, int(band_parts.max()) + 1):
                 xs = np.nonzero((band_parts == i).any(axis=0))[0]
-                if len(xs) and any(xs.min() < c0 <= xs.max() for c0 in starts[1:]):
+                # Only small pieces (a prop, a spark) move whole; a large piece that
+                # spans two frames (a shield dome touching the next frame's arc) is cut.
+                cell_w = w / 6
+                if len(xs) and xs.max() - xs.min() < 0.6 * cell_w and \
+                        any(xs.min() < c0 <= xs.max() for c0 in starts[1:]):
                     centre = (xs.min() + xs.max()) / 2
                     straddling[i] = sum(1 for c0 in starts if c0 <= centre) - 1
         else:
@@ -169,11 +176,13 @@ def sheet_scale(figs: list[Image.Image]) -> float:
 
 
 def frames(figs: list[Image.Image], palette_from_all: bool = False,
-           scale: float | None = None) -> dict[str, Image.Image]:
+           scale: float | None = None, only: list[str] | None = None) -> dict[str, Image.Image]:
     """The 72x72 frames. The palette comes from the standing figure, or with
     palette_from_all from every frame (for sheets whose effects -- a fire
     burst, a muzzle flash -- use colours the standing pose does not)."""
-    fit = sheet_scale(figs)
+    # With only=, just those frames are made (and must fit the 72x72 frame).
+    picked = [f for n, f in zip(NAMES, figs) if only is None or n in only]
+    fit = sheet_scale(figs) if only is None else min(min(MAX_W / f.width, MAX_H / f.height) for f in picked)
     if scale is None:
         scale = fit
     elif scale > fit:
@@ -188,6 +197,8 @@ def frames(figs: list[Image.Image], palette_from_all: bool = False,
                                dither=Image.Dither.NONE)
     out = {}
     for name, fig in zip(NAMES, figs):
+        if only is not None and name not in only:
+            continue
         small = fig.resize((max(1, round(fig.width * scale)), max(1, round(fig.height * scale))), Image.LANCZOS)
         alpha = small.getchannel("A").point(lambda v: 255 if v >= 110 else 0)
         rgb = Image.new("RGB", small.size, (0, 0, 0))

@@ -149,3 +149,22 @@ owner-supplied image (`owner-infiltrator-portrait.webp`, fitted with
 (2026-10-07, `~/art-references/owner-stormtrooper-sergeant.webp`), replacing
 the hand-traced sheet sprite. Its firing frame paints an orange flash, so its
 bolts are orange.
+
+## Walk and idle pass (2026-10-08)
+
+Owner direction: walk frames alternate legs (the near leg leads in move-1, the
+far leg in move-2) and idle frames show a small motion fitting the character.
+`production/tools/repair_walk_idle.py` had Codex redraw only idle-1, idle-2,
+move-1 and move-2 of each unit's installed sheet; every result was reviewed by
+eye. Installed for 42 units (all four frames), the E-Web team (walk only), and
+Bel Iblis and the Wookiee lookout (idle only: their redrawn walks lost the
+grey beard and the weapon). Not changed: the stormtrooper and clone trooper
+(blocked by the image safety system), the scout trooper speeder, the
+decontamination droid, and the Y-wing (Codex redesigned the craft).
+
+The old-style vehicles, ships and objectives (boarding shuttles, minelayer,
+mole miner, Star Destroyer, TIE bomber and interceptor, docked warship,
+Katana dreadnaught, cloning cylinder, shield generator, shipyard platform)
+got full Codex sheets in the house style (`gen_codex_owner_sheets.py`, the
+speeder sheet as template, the old sprite as the design reference); their
+shots and effects are painted, so no flash is blitted over them.

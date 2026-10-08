@@ -125,7 +125,8 @@
    58,
    37
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-clone-trooper": {
   "blit": [
@@ -155,14 +156,16 @@
    58,
    47
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-mole-miner": {
   "blit": [
    58,
    37
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-noghri": {
   "blit": [
@@ -214,7 +217,8 @@
    58,
    43
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-stormtrooper": {
   "blit": [
@@ -236,7 +240,8 @@
    58,
    37
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-tie-fighter": {
   "blit": [
@@ -250,7 +255,8 @@
    58,
    39
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-nr-awing": {
   "blit": [
@@ -264,7 +270,8 @@
    58,
    42
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-nr-commando": {
   "blit": [
@@ -278,7 +285,8 @@
    58,
    44
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-nr-engineer-squad": {
   "blit": [
@@ -382,28 +390,32 @@
    45,
    22
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-ob-dreadnaught": {
   "blit": [
    58,
    37
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-ob-shield-generator": {
   "blit": [
    58,
    29
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-ob-shipyard-platform": {
   "blit": [
    58,
    23
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-sm-smuggler": {
   "blit": [

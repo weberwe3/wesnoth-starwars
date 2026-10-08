@@ -100,8 +100,9 @@ figs = o.figures(Image.open({src!r}))
 cur = Image.open({unit!r} + "/standing.png").convert("RGBA")
 bb = cur.getbbox()
 scale = (bb[3] - bb[1]) / figs[0].height
-scale = min([scale] + [min(o.MAX_W / f.width, 70 / f.height) for f in figs])
-made = o.frames(figs, True, scale)
+want = ["standing"] + {redraw!r}
+scale = min([scale] + [min(o.MAX_W / f.width, o.MAX_H / f.height) for n, f in zip(o.NAMES, figs) if n in want])
+made = o.frames(figs, True, scale, only=want)
 # Snap the redrawn frames to the colours of the unit's installed frames, so
 # background green bleeding into the new art is replaced and colours match.
 names_all = ["standing", "idle-1", "idle-2", "move-1", "move-2", "melee-1", "melee-2", "ranged-1", "ranged-2",
@@ -116,7 +117,8 @@ st_px = st_px[..., :3][st_px[..., 3] > 110]
 greenish = lambda c: c[1] > c[0] + 12 and c[1] > c[2] + 12
 if len(st_px) and sum(1 for c in st_px if greenish(c)) / len(st_px) < 0.02:
     # The unit has no green of its own: greenish palette entries are background bleed.
-    pal = [tuple(palette.getpalette()[i * 3:i * 3 + 3]) for i in range(96)]
+    flat_pal = palette.getpalette()
+    pal = [tuple(flat_pal[i * 3:i * 3 + 3]) for i in range(len(flat_pal) // 3)][:96]
     keep = [c for c in pal if not greenish(c)] or pal
     flat = [v for c in keep for v in c] + [0, 0, 0] * (256 - len(keep))
     palette = Image.new("P", (1, 1)); palette.putpalette(flat)
@@ -159,7 +161,12 @@ def hist(im):
     h = np.bincount(px[:, 0] * 64 + px[:, 1] * 8 + px[:, 2], minlength=512).astype(float)
     return h / max(1, h.sum())
 st = made["standing"]
-report = {{"idle1_vs_standing": diff(a(st), a(made["idle-1"])), "idle2_vs_standing": diff(a(st), a(made["idle-2"])),
+def geom(im):
+    b = im.getbbox() or (0, 0, 1, 1)
+    return b[3] - b[1], (b[0] + b[2]) / 2
+sh, sx = geom(st)
+report_geom = {{n: [geom(made[n])[0] / max(1, sh), geom(made[n])[1] - sx] for n in ("idle-1", "idle-2")}}
+report = {{"idle_geometry": report_geom, "idle1_vs_standing": diff(a(st), a(made["idle-1"])), "idle2_vs_standing": diff(a(st), a(made["idle-2"])),
           "idle1_vs_idle2": diff(a(made["idle-1"]), a(made["idle-2"])), "move1_vs_move2": diff(a(made["move-1"]), a(made["move-2"])),
           "identity": float(min(np.minimum(hist(made[n]), hist(cur)).sum() for n in {redraw!r}))}}
 for n in {redraw!r}:
@@ -173,7 +180,7 @@ def evaluate(r: dict) -> list[str]:
     if r["idle1_vs_standing"] < 0.04 or r["idle2_vs_standing"] < 0.04 or r["idle1_vs_idle2"] < 0.03:
         issues.append("idle-1 and idle-2 must show a visible idle motion: each must differ from the standing "
                       "frame and from each other (breathing, weight shift, weapon or clothing movement).")
-    if r["idle1_vs_standing"] > 0.7 or r["idle2_vs_standing"] > 0.7:
+    if any(not 0.85 <= h <= 1.15 or abs(dx) > 6 for h, dx in r.get("idle_geometry", {}).values()):
         issues.append("idle-1 and idle-2 must stay close to the standing pose, in the same spot and size; only a "
                       "small motion.")
     if r["move1_vs_move2"] < 0.12:
