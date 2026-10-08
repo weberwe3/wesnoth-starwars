@@ -177,3 +177,7 @@ fitted to 256x256 with `production/tools/fit_portrait.py`: Luke (also used by
 his unarmed variation), Imperial Infiltrator, Republic Commander, Heavy
 Weapons Squad, Slicer Team, Psadan Elder, Recon Squad (previously a mainline
 peasant portrait), Decontamination Droid and Combat Engineer Squad.
+
+`sw-unit-im-at-st`: all 12 frames from an owner-supplied sheet (2026-10-08,
+`~/art-references/owner-at-st.webp`), replacing the Codex sheet. Its shots
+are painted, so no flash is blitted.
