@@ -181,3 +181,9 @@ peasant portrait), Decontamination Droid and Combat Engineer Squad.
 `sw-unit-im-at-st`: all 12 frames from an owner-supplied sheet (2026-10-08,
 `~/art-references/owner-at-st.webp`), replacing the Codex sheet. Its shots
 are painted, so no flash is blitted.
+
+`sw-unit-im-star-destroyer`: all 12 frames from an owner-supplied sheet
+(2026-10-08, `~/art-references/owner-star-destroyer.webp`), imported with
+`--colors 128 --alpha-cut 40` so its thin green turbolaser bolts keep their
+colour (bright effect colours get their own palette entries per hue band, and
+dim green background spill on the outline is removed).

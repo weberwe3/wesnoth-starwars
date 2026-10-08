@@ -176,7 +176,8 @@ def sheet_scale(figs: list[Image.Image]) -> float:
 
 
 def frames(figs: list[Image.Image], palette_from_all: bool = False,
-           scale: float | None = None, only: list[str] | None = None) -> dict[str, Image.Image]:
+           scale: float | None = None, only: list[str] | None = None,
+           colors: int | None = None, alpha_cut: int = 110) -> dict[str, Image.Image]:
     """The 72x72 frames. The palette comes from the standing figure, or with
     palette_from_all from every frame (for sheets whose effects -- a fire
     burst, a muzzle flash -- use colours the standing pose does not)."""
@@ -193,14 +194,64 @@ def frames(figs: list[Image.Image], palette_from_all: bool = False,
     for f in sources:
         pal_src.paste(f.convert("RGB"), (x, 0), mask=f.getchannel("A"))
         x += f.width
-    palette = pal_src.quantize(colors=64 if palette_from_all else 48, method=Image.Quantize.MEDIANCUT,
+    palette = pal_src.quantize(colors=colors or (64 if palette_from_all else 48), method=Image.Quantize.MEDIANCUT,
                                dither=Image.Dither.NONE)
+    if colors:
+        # Small, bright, strongly coloured effects (laser bolts, engine glow) are few
+        # pixels against a large hull, so median cut merges them away: give the
+        # saturated pixels their own palette entries.
+        src = np.asarray(pal_src).reshape(-1, 3).astype(int)
+        # Bright only: dim green edge pixels are background bleed, not effects.
+        sat = src[((src.max(1) - src.min(1)) > 60) & (src.max(1) > 150)]
+        if len(sat) >= 16:
+            # Per hue band (12 bands), up to 4 shades each, so a rare green is
+            # not merged into a common cyan.
+            r, g, b = sat[:, 0] / 255, sat[:, 1] / 255, sat[:, 2] / 255
+            mx, mn = sat.max(1) / 255, sat.min(1) / 255
+            d = np.maximum(mx - mn, 1e-6)
+            hue = np.where(mx == r, ((g - b) / d) % 6, np.where(mx == g, (b - r) / d + 2, (r - g) / d + 4)) * 60
+            add = []
+            for band in range(12):
+                px = sat[(hue >= band * 30) & (hue < band * 30 + 30)]
+                if len(px) < 12:
+                    continue
+                order = np.argsort(px.sum(1))
+                for chunk in np.array_split(px[order], 4):
+                    if len(chunk):
+                        add += [int(v) for v in np.median(chunk, axis=0)]
+            base = palette.getpalette()[:3 * (colors or 64)]
+            merged = (base + add)[:768]
+            palette = Image.new("P", (1, 1))
+            palette.putpalette(merged + [0] * (768 - len(merged)))
     out = {}
     for name, fig in zip(NAMES, figs):
         if only is not None and name not in only:
             continue
+        if colors:
+            # Background spill: dim green pixels on the figure's edge (touching
+            # transparency) are the backdrop blended into the outline. Bright
+            # greens (laser bolts) are kept.
+            arr = np.asarray(fig.convert("RGBA")).copy()
+            for _ in range(2):
+                op = arr[..., 3] > 0
+                pad = np.pad(~op, 1, constant_values=True)
+                edge = op & (pad[:-2, 1:-1] | pad[2:, 1:-1] | pad[1:-1, :-2] | pad[1:-1, 2:])
+                c = arr[..., :3].astype(int)
+                spill = edge & (c[..., 1] > c[..., 0] + 12) & (c[..., 1] > c[..., 2] + 12) & (c[..., 1] < 135)
+                arr[spill, 3] = 0
+            fig = Image.fromarray(arr, "RGBA")
         small = fig.resize((max(1, round(fig.width * scale)), max(1, round(fig.height * scale))), Image.LANCZOS)
-        alpha = small.getchannel("A").point(lambda v: 255 if v >= 110 else 0)
+        if alpha_cut < 110:
+            # Thin effects (laser lines, sparks) keep their colour: resize the
+            # colour premultiplied by alpha, so a 2-px line shrunk 5x is a
+            # faint pixel of laser colour rather than a mix with the background.
+            arr = np.asarray(fig.convert("RGBA")).astype(float)
+            pre = np.dstack([arr[..., :3] * arr[..., 3:4] / 255, arr[..., 3]]).astype(np.uint8)
+            pm = np.asarray(Image.fromarray(pre, "RGBA").resize(small.size, Image.BOX)).astype(float)
+            a_ = np.maximum(pm[..., 3:4], 1)
+            rgb_ = np.clip(pm[..., :3] * 255 / a_, 0, 255)
+            small = Image.fromarray(np.dstack([rgb_, pm[..., 3:4]]).astype(np.uint8), "RGBA")
+        alpha = small.getchannel("A").point(lambda v: 255 if v >= alpha_cut else 0)
         rgb = Image.new("RGB", small.size, (0, 0, 0))
         rgb.paste(small.convert("RGB"), mask=alpha)
         rgb = rgb.quantize(palette=palette, dither=Image.Dither.NONE).convert("RGBA")
@@ -221,9 +272,14 @@ def main() -> int:
     parser.add_argument("--match-scale", type=Path, metavar="OTHER_SHEET",
                         help="use the scale of another sheet of the same character drawn at the same size "
                              "(e.g. an unarmed set matching the armed one), so the unit keeps its size")
+    parser.add_argument("--alpha-cut", type=int, default=110,
+                        help="opacity below which a shrunk pixel is dropped; lower it (e.g. 40) to keep thin effects")
+    parser.add_argument("--colors", type=int, help="palette size (default 48, or 64 with --palette-from-all); "
+                        "raise it when small effects in a rare colour lose their hue")
     args = parser.parse_args()
     scale = sheet_scale(figures(Image.open(args.match_scale))) if args.match_scale else None
-    made = frames(figures(Image.open(args.sheet)), args.palette_from_all, scale)
+    made = frames(figures(Image.open(args.sheet)), args.palette_from_all, scale, colors=args.colors,
+                  alpha_cut=args.alpha_cut)
     if args.preview:
         strip = Image.new("RGBA", (12 * SPRITE * 4, SPRITE * 4), (70, 90, 60, 255))
         for i, name in enumerate(NAMES):
