@@ -193,5 +193,6 @@ dim green background spill on the outline is removed).
 (cut from the sheet's ranged frames) is the bombing-run ordnance: the
 off-map bombing sortie flown by the TIE bomber drops it on each hex
 (`images/misc/sw-energy-bomb-1..12.png`, `air.CRAFT_BURST` in lua/sw_air.lua):
-four frames of the ball falling, then the blue blast mixed with mainline's
-`halo/flame-burst` fire and smoke.
+four frames of the ball falling, then a 12-frame blast drawn by Codex to the
+owner's direction (blue energy and fiery combustion, smoke fading away;
+`~/art-references/codex-bomb-fx.png`), 16 frames in all.

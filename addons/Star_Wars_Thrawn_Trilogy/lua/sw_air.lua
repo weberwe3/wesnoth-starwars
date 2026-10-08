@@ -342,7 +342,7 @@ air.PACING = { approach = 3, exit = 3, step_ms = 160, burst_frame_ms = 90, settl
 -- Craft whose ordnance has its own impact animation (halo frames centred on
 -- the hex; the energy bomb falls into the hex, then bursts).
 air.CRAFT_BURST = {
-	sw_unit_im_tie_bomber = "misc/sw-energy-bomb-[1~4].png:70,misc/sw-energy-bomb-[5~12].png:90",
+	sw_unit_im_tie_bomber = "misc/sw-energy-bomb-[1~4].png:70,misc/sw-energy-bomb-[5~10].png:90,misc/sw-energy-bomb-[11~16].png:130",
 }
 
 local function flyover(strike, hexes)
