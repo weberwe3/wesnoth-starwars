@@ -6663,7 +6663,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
-      "sha256": "bfa75be786de520197f5f4c4d13d02f6f0640ab95a1dced018c8140624e7b184"
+      "sha256": "41700b9bd4c48b5e574d751ae633c036bbf92558617a344966a9ca0abcea1c36"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/spacecraft.cfg",
@@ -6811,7 +6811,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-luke.png",
-      "sha256": "37542507f8ea7d36c683e81966c421ab5da8cd335befe78b09efcf29a2a00434"
+      "sha256": "6a06e844798cb5b52810d3644d32905f2c2df6bdd7c464e9d20b465c0dfa64f1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-hero-luuke.png",
@@ -6855,11 +6855,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-decon-droid.png",
-      "sha256": "a92edde590a0ded8448d7a814186e6ed80455549aed06d560bb3c38715047b09"
+      "sha256": "16a625bdd07d7c73e4c206ae855cba3801ae83a14529c01c7cb2ed0b72c3b1b6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-infiltrator.png",
-      "sha256": "b73586593b2f6a50607267aebb2b2e302ffbf037ec28f818a558b2a4d8829a55"
+      "sha256": "4fc2421d012b24ddc8a8d61ed604f9130914b17d848853e846869d17d8ce4d48"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-minelayer.png",
@@ -6879,7 +6879,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-recon-squad.png",
-      "sha256": "a005990b5b4133ca30be7d8e789bbefcf681c035142f47870dbf660777c59107"
+      "sha256": "13d099eb363f4fb8334162e7d5bc2144c4775c0d4150b7bffb7b2482d71e7a46"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-im-royal-guard.png",
@@ -6935,7 +6935,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-engineer-squad.png",
-      "sha256": "eb58249e4c934b01c927221a5313171fcce61a4917086c0ed358efd530d69151"
+      "sha256": "74bcb630fc3e82a22b0229261752047b5bbec5ef743765fe6b6ff4f809b2125f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-eweb-team.png",
@@ -6947,11 +6947,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-heavy-weapons-squad.png",
-      "sha256": "f2d92efc03d47716b46760336c742cf62e4ca9dc5dbaba174ab80695148626ec"
+      "sha256": "1c18597298d2606a4d07fe1395ce98b1161b58c3d6bbd8c4f72f5b14e7a2069d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-hero-commander.png",
-      "sha256": "87146b88c1ff2bea39cd0e11aa58efa25cfc16ce8390320d11168a2125ef2936"
+      "sha256": "cf67ade8938de906c7b770badcff972eac93c1f853cc7befaf46e9a2d5e20b53"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-militia.png",
@@ -6963,7 +6963,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-slicer-team.png",
-      "sha256": "fc01ada733530bbd3f30f1a5beeddfdd2e6f2f872cf836a9d17cba9e9f7ca159"
+      "sha256": "92430fa2c98cc717b6af09f99a1ee3ccfa8724eedc1644fa64b99fb53ce48f4b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-nr-trooper.png",
@@ -7023,7 +7023,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wy-psadan.png",
-      "sha256": "b09b561eafaf6641a8abd85d2edd43e36c328a9b5625976ba7a403358bb944e2"
+      "sha256": "9e808e694e04b8aa26adb68083d8438a2875e5b61242d86bc50c12af0268a80f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis/death-1.png",

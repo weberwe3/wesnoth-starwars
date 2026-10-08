@@ -169,3 +169,11 @@ AT-ST walker, cloaked asteroid)
 got full Codex sheets in the house style (`gen_codex_owner_sheets.py`, the
 speeder sheet as template, the old sprite as the design reference); their
 shots and effects are painted, so no flash is blitted over them.
+
+## Owner-supplied portraits (2026-10-08)
+
+From `character-portraits-v1.zip` (kept as `~/art-references/portraits-v1/`),
+fitted to 256x256 with `production/tools/fit_portrait.py`: Luke (also used by
+his unarmed variation), Imperial Infiltrator, Republic Commander, Heavy
+Weapons Squad, Slicer Team, Psadan Elder, Recon Squad (previously a mainline
+peasant portrait), Decontamination Droid and Combat Engineer Squad.
