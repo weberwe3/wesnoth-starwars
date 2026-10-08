@@ -164,7 +164,8 @@ decontamination droid, and the Y-wing (Codex redesigned the craft).
 
 The old-style vehicles, ships and objectives (boarding shuttles, minelayer,
 mole miner, Star Destroyer, TIE bomber and interceptor, docked warship,
-Katana dreadnaught, cloning cylinder, shield generator, shipyard platform)
+Katana dreadnaught, cloning cylinder, shield generator, shipyard platform,
+AT-ST walker, cloaked asteroid)
 got full Codex sheets in the house style (`gen_codex_owner_sheets.py`, the
 speeder sheet as template, the old sprite as the design reference); their
 shots and effects are painted, so no flash is blitted over them.

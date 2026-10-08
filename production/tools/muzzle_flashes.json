@@ -118,7 +118,8 @@
    58,
    22
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-boarding-shuttle": {
   "blit": [
@@ -383,7 +384,8 @@
    58,
    22
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-ob-cloning-cylinder": {
   "blit": [
