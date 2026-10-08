@@ -9,7 +9,7 @@ The result keeps the template's layout (two labelled rows of six on a flat
 green background), so production/tools/import_owner_sheet.py installs it.
 
 Jobs are in owner_sheet_jobs.json: {unit_id: {"ref": [image, [x0, y0, x1, y1]]
-or null, "notes": "..."}}; reference images live in ~/art-references (licensed;
+or null, "notes": "...", optional "template": a sheet in ~/art-references}}; reference images live in ~/art-references (licensed;
 see docs/ART_LICENSE_CANDIDATES.md). Every sheet is checked to split into 12
 frames; a failing attempt is retried with a correction. Results go to
 --out-dir for review; nothing is installed.
@@ -67,7 +67,7 @@ def generate(unit_id: str, job: dict, template: Path, out_dir: Path, attempts: i
     direction = g.codex_art.load_direction(g.ROOT)
     described = scrub(job.get("describe") or direction["units"].get(unit_id, ""))
     workspace = g.codex_art._managed_directory(f"sheet-{unit_id.replace('_', '-')}")
-    refs = [template]
+    refs = [g.REFERENCES / job["template"] if job.get("template") else template]
     if job.get("ref"):
         image, box = job["ref"]
         refs.append(crop_ref(g.REFERENCES / image, box, workspace))
