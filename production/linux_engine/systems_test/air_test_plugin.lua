@@ -744,7 +744,9 @@ local function plugin(events, context, info)
           end
         end
       end
-      check("firing frames carry a coloured muzzle flash", frames > 60, frames)
+      -- Firing frames either get a blitted flash or paint their own (owner and
+      -- Codex sheets since 2026-10-06); together they cover the roster.
+      check("firing frames carry a coloured muzzle flash", frames + painted > 60, frames .. " blitted + " .. painted .. " painted")
       check("every flash is the colour of its shot", #mismatched == 0, table.concat(mismatched, " "))
       check("every flashed frame builds in the engine (72x72)", #broken == 0, table.concat(broken, " "))
       check("hand-painted flashes fire bolts too", painted >= 6, painted .. " " .. table.concat(painted_ids, ","))

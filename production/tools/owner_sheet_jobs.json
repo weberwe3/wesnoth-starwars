@@ -1,0 +1,267 @@
+{
+ "_note": "Jobs for gen_codex_owner_sheets.py (2026-10-06). ref = [image in ~/art-references, crop box] or null; references are owner-licensed (docs/ART_LICENSE_CANDIDATES.md).",
+ "sw_unit_im_recon_squad": {
+  "ref": [
+   "sacraicross-fanart-121.png",
+   [
+    25,
+    60,
+    235,
+    360
+   ]
+  ],
+  "describe": "a camouflaged military recon soldier in an olive helmet, goggles and breathing mask, with a long ragged cape",
+  "notes": "keep the cape trailing in the walk; melee is a combat knife slash; ranged frames aim and fire a suppressed energy rifle."
+ },
+ "sw_unit_im_signal_jammer_team": {
+  "ref": [
+   "sacraicross-fanart-121.png",
+   [
+    310,
+    85,
+    365,
+    190
+   ]
+  ],
+  "describe": "a military signals soldier in a pale fur-lined armoured suit and helmet",
+  "notes": "add a compact jamming backpack with a short antenna; melee is a pistol-whip; ranged frames fire a small energy pistol."
+ },
+ "sw_unit_nr_engineer_squad": {
+  "ref": [
+   "sacraicross-fanart-210.png",
+   [
+    175,
+    40,
+    215,
+    140
+   ]
+  ],
+  "describe": "a combat engineer in an orange work jumpsuit with tool pouches",
+  "notes": "melee swings a heavy engineering tool; ranged frames fire a short energy carbine; keep the tool belt."
+ },
+ "sw_unit_nr_eweb_team": {
+  "ref": [
+   "sacraicross-fanart-060.png",
+   [
+    55,
+    130,
+    100,
+    235
+   ]
+  ],
+  "describe": "a soldier in olive fatigues and a padded blast vest",
+  "notes": "the soldier operates a heavy tripod-mounted repeating energy cannon with a power cable: standing, idle and defend crouch behind the gun; move carries the folded gun on the shoulder; melee is a punch; ranged frames fire the tripod cannon; death slumps over the gun."
+ },
+ "sw_unit_nr_heavy_weapons_squad": {
+  "ref": [
+   "sacraicross-fanart-099.png",
+   [
+    205,
+    15,
+    260,
+    125
+   ]
+  ],
+  "describe": "a big, bald heavy-weapons soldier in grey and red armour",
+  "notes": "restyle the armour as a rebel soldier's padded vest and fatigues in grey and blue; he carries a heavy energy cannon for the ranged frames, with a sidearm holstered; melee is a shoulder charge."
+ },
+ "sw_unit_nr_hero_commander": {
+  "ref": [
+   "sacraicross-fanart-179.png",
+   [
+    170,
+    30,
+    210,
+    135
+   ]
+  ],
+  "describe": "a rebel commander in a blue uniform jacket",
+  "notes": "melee is a close-range pistol shot or pistol-whip; ranged frames aim and fire an energy rifle; confident command posture when standing."
+ },
+ "sw_unit_nr_slicer_team": {
+  "ref": [
+   "sacraicross-fanart-099.png",
+   [
+    295,
+    15,
+    345,
+    125
+   ]
+  ],
+  "describe": "a technical specialist with tinted goggles and a gear-laden vest",
+  "notes": "melee jabs a handheld hacking probe; ranged frames fire a small energy pistol; keep a small data pad on the belt."
+ },
+ "sw_unit_nr_rifle_squad": {
+  "ref": [
+   "sacraicross-fanart-060.png",
+   [
+    265,
+    30,
+    380,
+    305
+   ]
+  ],
+  "describe": "a rebel fleet trooper in a white-and-black visor helmet, light blue shirt and black vest",
+  "notes": "melee is a rifle-butt strike; ranged frames aim and fire an energy rifle."
+ },
+ "sw_unit_im_decon_droid": {
+  "ref": [
+   "sacraicross-fanart-214.png",
+   [
+    50,
+    330,
+    210,
+    510
+   ]
+  ],
+  "describe": "a bulky, slow industrial droid on short tracked legs with a dented ochre hull, a chemical sprayer nozzle and a heavy manipulator arm",
+  "notes": "use the attached droid only for its bulk and pixel style; recolour it ochre and give it short tank treads instead of legs. Move rolls forward on the treads; melee swings the manipulator arm; ranged frames spray a greenish chemical mist from the nozzle; defend hunches; death topples over with sparks and smoke."
+ },
+ "sw_unit_wl_vornskr": {
+  "ref": [
+   "tactical-sandwiches-vornskr.jpg",
+   null
+  ],
+  "describe": "a lean, wolf-sized four-legged predator with smooth grey hide, a long whip-like tail, a narrow toothed snout and pale eyes",
+  "notes": "redraw it as a pixel-art beast walking on four legs: move is a stalking trot; melee-1 and melee-2 are a lunging bite; ranged-1 and ranged-2 are a whip of its long tail; defend recoils; death collapses onto its side."
+ },
+ "sw_unit_wy_myneyrshi": {
+  "ref": [
+   "codemus-myneyrsh.jpg",
+   null
+  ],
+  "describe": "a lean, tall alien native with four arms and blue crystalline skin, wearing a woven loincloth, beads and feathers",
+  "notes": "redraw it as a pixel-art unit with all four arms: it holds a long spear in two hands and a short bow in the other two. Melee thrusts the spear; ranged frames draw and loose the bow; keep all four arms visible in every frame."
+ },
+ "sw_unit_wy_psadan": {
+  "ref": null,
+  "describe": "a short, stocky alien native whose whole body is covered in overlapping grey stone-like armour plates, like a walking boulder, carrying a heavy wooden war club",
+  "notes": "it has no ranged weapon: ranged-1 and ranged-2 throw a rock overhand; melee swings the war club; move is a heavy, plodding walk; death crumbles to the ground."
+ },
+ "sw_unit_im_at_st": {
+  "template": "template-scout-sheet.png",
+  "ref": [
+   "current-sw_unit_im_at_st.png",
+   null
+  ],
+  "describe": "a two-legged armoured scout walker with a boxy angular grey cockpit head, chin-mounted twin energy cannons and thin jointed legs",
+  "notes": "redraw it as a walking machine: move alternates its two legs (one leg forward, then the other); idle sways the cockpit head slightly; melee is a kick; ranged frames fire the chin cannons; death collapses with smoke and sparks. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_im_boarding_shuttle": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_im_boarding_shuttle.png",
+   null
+  ],
+  "describe": "an angular grey military assault shuttle with folded wings, a heavy forward boarding hatch and twin laser cannons",
+  "notes": "it is a craft with no rider: idle hovers with engine glow; move flies forward banking slightly; melee rams forward; ranged frames fire the twin cannons; defend shudders; death breaks apart in an explosion. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_nr_boarding_shuttle": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_nr_boarding_shuttle.png",
+   null
+  ],
+  "describe": "a boxy armoured assault shuttle with stubby wings, white and blue panelling and a heavy forward docking hatch",
+  "notes": "it is a craft with no rider: idle hovers with engine glow; move flies forward banking slightly; melee rams forward; ranged frames fire its cannons; defend shudders; death breaks apart in an explosion. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_im_minelayer": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_im_minelayer.png",
+   null
+  ],
+  "describe": "a converted bulk freighter: a long boxy grey hull with open release bays along its belly and small gun turrets",
+  "notes": "it is a ship with no rider: idle shows engine glow and blinking lights; move flies forward; melee releases a mine from the belly bays; ranged frames fire the turrets; defend shudders; death breaks apart in an explosion. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_im_mole_miner": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_im_mole_miner.png",
+   null
+  ],
+  "describe": "a squat industrial mining craft with an ochre-yellow rounded hull, heavy armour plates and forward plasma cutting jets",
+  "notes": "it is a ground vehicle with no visible rider: idle rumbles with exhaust; move crawls forward; melee and ranged frames fire the forward plasma cutting jets; defend shudders; death bursts into flames and smoke. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_im_star_destroyer": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_im_star_destroyer.png",
+   null
+  ],
+  "describe": "a huge dagger-shaped grey capital warship with a stepped command tower near the stern and rows of turbolaser turrets",
+  "notes": "it is a capital ship seen from a three-quarter view: idle shows engine glow; move glides forward; melee fires point-blank broadsides; ranged-1 aims and ranged-2 fires turbolaser batteries; defend shows shield flashes; death erupts in chain explosions. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_im_tie_bomber": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_im_tie_bomber.png",
+   null
+  ],
+  "describe": "a double-hulled starfighter with a ball cockpit beside an elongated ordnance pod, flanked by two bent solar-panel wings, dark grey",
+  "notes": "it is a starfighter: idle hovers with engine glow; move flies forward banking slightly; melee drops a bomb; ranged frames fire its lasers; defend shudders; death explodes. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_im_tie_interceptor": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_im_tie_interceptor.png",
+   null
+  ],
+  "describe": "a small starfighter with a spherical cockpit and two dagger-shaped bent-wing solar panels with wingtip cannons, dark grey",
+  "notes": "it is a starfighter: idle hovers with engine glow; move flies forward banking slightly; melee is a strafing pass; ranged frames fire the wingtip cannons; defend shudders; death explodes. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_nr_docked_warship": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_nr_docked_warship.png",
+   null
+  ],
+  "describe": "a medium-sized white frigate warship with a long hull, a rear engine block and docking clamps attached",
+  "notes": "it is a ship held in docking clamps: idle shows engine glow and blinking lights; move strains forward in the clamps; melee and ranged frames fire small point-defence turrets; defend shows sparks on the hull; death explodes. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_ob_dreadnaught": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_ob_dreadnaught.png",
+   null
+  ],
+  "describe": "a long, old-fashioned heavy cruiser warship with a weathered grey-tan ribbed hull, a blocky command bridge and banks of turbolaser turrets",
+  "notes": "it is a capital ship seen from a three-quarter view: idle shows engine glow; move glides forward; melee fires point-blank broadsides; ranged frames fire turbolaser banks; defend shows hull hits; death erupts in chain explosions. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_ob_cloaked_asteroid": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_ob_cloaked_asteroid.png",
+   null
+  ],
+  "describe": "a rough grey-brown asteroid shimmering faintly at its edges with a half-visible stealth field",
+  "notes": "it is a drifting asteroid, not a vehicle: idle and move rotate it slowly with the stealth shimmer flickering; melee and ranged frames flare the shimmer; defend shows rock chips flying; death shatters it into fragments. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_ob_cloning_cylinder": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_ob_cloning_cylinder.png",
+   null
+  ],
+  "describe": "a tall glass cloning cylinder filled with pale green fluid and a vague human shape, on a metal base with cables and pipes",
+  "notes": "it is a stationary machine: idle and move show bubbles rising and the fluid glowing; melee and ranged frames spark its cables; defend cracks the glass slightly; death shatters the glass and spills the fluid. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_ob_shield_generator": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_ob_shield_generator.png",
+   null
+  ],
+  "describe": "a squat armoured planetary shield generator: a grey dome on a fortified base with glowing blue emitter vanes",
+  "notes": "it is a stationary installation: idle and move pulse the blue emitter vanes; melee and ranged frames flare a blue shield arc; defend shows the shield rippling; death explodes with the dome caving in. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_ob_shipyard_platform": {
+  "template": "template-speeder-sheet.png",
+  "ref": [
+   "current-sw_unit_ob_shipyard_platform.png",
+   null
+  ],
+  "describe": "a large orbital shipyard platform: a skeletal grey framework with work lights, cranes and a half-built hull inside",
+  "notes": "it is a stationary orbital platform: idle and move blink the work lights and swing a crane; melee and ranged frames fire point-defence turrets; defend shows sparks; death breaks apart in explosions. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ }
+}

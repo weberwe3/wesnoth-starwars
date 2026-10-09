@@ -444,7 +444,7 @@ FORWARD_OBSERVERS = {
 }
 # Anti-air: (radius, accuracy penalty) against sorties striking near the unit.
 ANTI_AIR = {
-    "sw_unit_im_at_st": (2, 20), "sw_unit_nr_eweb_team": (2, 20), "sw_unit_ob_shield_generator": (3, 20),
+    "sw_unit_im_at_st": (2, 20), "sw_unit_nr_eweb_team": (2, 20),
 }
 
 
@@ -646,9 +646,9 @@ ROSTER = [
                attack("ion_cannon", "ion cannon", "cold", "ranged", 7, 2, specials=["slow"]),
                attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 2)]),
     U("sw_unit_nr_docked_warship", "Docked Warship",
-      "A New Republic warship tied up at the shipyards for refit, with only a skeleton crew aboard and its point-defense guns manned.",
+      "A New Republic warship tied up at the shipyards for refit, with only a skeleton crew aboard: it cannot move or fight back, and must be defended.",
       file="hte_space", level=2, hp=120, mp=0, xp=100, cost=0, mt="sw_capital", race="mechanical",
-      attacks=[attack("point_defense", "point-defense lasers", "fire", "ranged", 6, 2)], zoc="no"),
+      attacks=[], zoc="no"),
 
     # Heroes ---------------------------------------------------------------
     U("sw_hero_luke", "Jedi Knight",
@@ -850,9 +850,9 @@ ROSTER = [
       file="tlc_units", level=0, hp=30, mp=0, xp=20, cost=0, mt="sw_capital", race="mechanical",
       attacks=[], zoc="no"),
     U("sw_unit_ob_shipyard_platform", "Shipyard Platform",
-      "An orbital construction platform at the Bilbringi shipyards.",
+      "An orbital construction platform at the Bilbringi shipyards. It has no weapons of its own; the fleet defends it.",
       file="tlc_units", level=2, hp=110, mp=0, xp=90, cost=0, mt="sw_capital", race="mechanical",
-      attacks=[attack("point_defense", "point-defense lasers", "fire", "ranged", 8, 2)], zoc="no"),
+      attacks=[], zoc="no"),
 
     # Smugglers and wildlife ----------------------------------------------
     U("sw_unit_sm_smuggler", "Smuggler",
@@ -904,6 +904,16 @@ def animations(u: dict) -> str:
                                                 None if u["id"] in STATIONARY else MOVE_SOUNDS.get(u["mt"])), 4) + "\n"
         + indent(frame(f"{base}/move-2.png", 150), 4) + "\n[/movement_anim]",
     ]
+    static = STATIC_ANIMS.get(u["id"])
+    if static is not None:
+        keep = [blocks[0]] + ([blocks[1]] if "idle" in static else [])
+        if "defend" in static:
+            keep.append("[defend]\n" + indent(frame(f"{base}/defend.png", 250), 4) + "\n[/defend]")
+        keep.append(
+            "[death]\n" + indent(with_sound(frame(f"{base}/death-1.png", 200),
+                                            DEATH_OVERRIDES.get(u["id"], DEATH_SOUNDS.get(u["mt"]))), 4) + "\n"
+            + indent(frame(f"{base}/death-2.png", 400), 4) + "\n[/death]")
+        return "\n".join(keep)
     # The melee and ranged frames are always wired so the art contract stays
     # complete; the range filter keeps an absent attack range from using them.
     melee = [a for a in expanded_attacks(u) if a["range"] == "melee"]
@@ -956,6 +966,8 @@ REPUBLIC_STARFIGHTERS = {"sw_unit_nr_xwing", "sw_unit_nr_ywing", "sw_unit_nr_awi
 #   derived  the sprite has no flash colour of its own; the faction/lore logic
 #            below picks the bolt colour, and each attack's firing frame blits
 #            a flash of that same colour at the muzzle point.
+#   posed    hand-posed firing frames drawn without a flash: handled like
+#            derived, with the flash blitted at the weapon tip.
 MUZZLE_FLASHES_PATH = Path(__file__).resolve().parent / "muzzle_flashes.json"
 MUZZLE_FLASHES: dict[str, dict] = (json.loads(MUZZLE_FLASHES_PATH.read_text(encoding="utf-8"))
                                    if MUZZLE_FLASHES_PATH.exists() else {})
@@ -971,7 +983,7 @@ def flash_overlay(unit_id: str, attack_name: str, missile: tuple[str, str | None
     frame, in the colour of its projectile; "" when none is drawn (no
     projectile, bows and bombs, or a hand-drawn flash already in the art)."""
     entry = MUZZLE_FLASHES.get(slug(unit_id))
-    if not missile or not entry or entry.get("kind") != "derived":
+    if not missile or not entry or entry.get("kind") not in ("derived", "posed"):
         return ""
     if attack_name == "bow" or attack_name.startswith("concussion_"):
         return ""
@@ -1093,6 +1105,19 @@ MOVE_SOUNDS = {"sw_starfighter": "sw-move-fighter.wav", "sw_capital": "sw-move-c
                "sw_repulsor": "sw-move-speeder.wav", "sw_walker": "sw-move-walker.wav"}
 STATIONARY = {"sw_unit_ob_cloaked_asteroid", "sw_unit_ob_cloning_cylinder", "sw_unit_ob_shield_generator",
               "sw_unit_ob_shipyard_platform"}
+
+
+# Installations and objects that neither move nor attack (owner direction
+# 2026-10-08): only the animations their art provides are wired. Their other
+# frame files stay on disk as copies of the standing frame for the art
+# contract, but the unit never plays them.
+STATIC_ANIMS = {
+    "sw_unit_nr_docked_warship": {"idle", "death"},
+    "sw_unit_ob_cloning_cylinder": {"idle", "death"},
+    "sw_unit_ob_shipyard_platform": {"idle", "death"},
+    "sw_unit_ob_shield_generator": {"idle", "defend", "death"},
+    "sw_unit_ob_cloaked_asteroid": {"idle", "defend", "death"},
+}
 
 
 def with_sound(frame_text: str, sound: str | None) -> str:
@@ -1391,7 +1416,26 @@ def attack_wml(a: dict, unit_slug: str, unit_id: str = "") -> str:
     return "\n".join(lines)
 
 
-def unit_wml(u: dict) -> str:
+# Unarmed variations (owner direction 2026-10-06): a hero who loses his weapon
+# in a mission shows his own unarmed sprite set until he recovers it. The
+# variation is the full unit (inherit=no, so no positional merging of
+# animations) with its art in units/<slug>-unarmed/ and an animation for the
+# fists the mission's object gives him. Scenarios switch it with the
+# SW_UNARMED / SW_ARMED macros (utils/hte_macros.cfg).
+UNARMED_VARIATIONS = {"sw_hero_luke": "fists"}
+
+
+def unarmed_variation(u: dict) -> str:
+    s = slug(u["id"])
+    art = f"{s}-unarmed"
+    body = unit_wml(u, with_variations=False).replace(f"units/{s}/", f"units/{art}/").split("\n")
+    body = [line for line in body[1:-1] if not line.startswith("    id=")]
+    melee = melee_anim(f"units/{art}", u["id"], {"name": UNARMED_VARIATIONS[u["id"]]})
+    return "\n".join(["[variation]", "    variation_id=unarmed", "    variation_name= _ \"unarmed\"",
+                      "    hide_help=yes", "    inherit=no"] + body + [indent(melee, 4), "[/variation]"])
+
+
+def unit_wml(u: dict, with_variations: bool = True) -> str:
     s = slug(u["id"])
     lines = [
         "[unit_type]",
@@ -1435,8 +1479,10 @@ def unit_wml(u: dict) -> str:
     for a in expanded_attacks(u):
         lines.append(indent(attack_wml(a, s, u["id"]), 4))
     lines.append(indent(animations(u), 4))
-    if u["id"] in FLYOVER_CRAFT:
+    if u["id"] in FLYOVER_CRAFT and with_variations:
         lines.append(indent(flyover_variation(), 4))
+    if u["id"] in UNARMED_VARIATIONS and with_variations:
+        lines.append(indent(unarmed_variation(u), 4))
     lines.append("[/unit_type]")
     return "\n".join(lines)
 

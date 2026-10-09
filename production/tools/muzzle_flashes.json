@@ -1,205 +1,214 @@
 {
  "sw-hero-bel-iblis": {
   "blit": [
-   52,
-   22
+   49,
+   28
   ],
   "kind": "derived"
  },
  "sw-hero-cbaoth": {
   "blit": [
-   52,
-   22
+   54,
+   24
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-chewbacca": {
   "blit": [
-   47,
-   22
+   57,
+   27
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-han": {
   "blit": [
-   44,
-   22
+   51,
+   29
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-karrde": {
   "blit": [
-   46,
-   22
+   50,
+   30
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-khabarakh": {
   "blit": [
-   58,
-   22
+   47,
+   24
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-lando": {
   "blit": [
-   48,
-   22
+   54,
+   24
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-leia": {
   "blit": [
-   49,
-   22
+   46,
+   33
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-luke": {
   "blit": [
-   51,
-   22
+   58,
+   25
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-hero-luuke": {
   "blit": [
    58,
-   22
+   21
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-hero-mara": {
   "blit": [
-   52,
-   22
+   49,
+   33
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-pellaeon": {
   "blit": [
-   46,
-   22
+   50,
+   28
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-hero-thrawn": {
   "blit": [
    41,
-   22
+   20
   ],
   "kind": "derived"
  },
  "sw-hero-wedge": {
   "blit": [
    58,
-   41
+   40
   ],
   "kind": "derived"
  },
  "sw-hero-xwing-luke": {
   "blit": [
-   58,
-   39
+   57,
+   40
   ],
   "kind": "derived"
  },
  "sw-unit-bi-commando": {
   "blit": [
-   54,
-   22
+   50,
+   30
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-at-st": {
   "blit": [
    58,
-   22
+   20
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-boarding-shuttle": {
   "blit": [
    58,
-   37
+   34
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-clone-trooper": {
   "blit": [
-   47,
-   22
+   44,
+   29
   ],
   "kind": "derived"
  },
  "sw-unit-im-decon-droid": {
   "blit": [
    58,
-   27
+   22
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-infiltrator": {
   "blit": [
    58,
-   22
+   19
   ],
-  "kind": "derived"
+  "color": "orange",
+  "kind": "painted"
  },
  "sw-unit-im-minelayer": {
   "blit": [
    58,
    47
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-mole-miner": {
   "blit": [
    58,
-   37
+   35
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-noghri": {
   "blit": [
-   58,
+   45,
    22
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-officer": {
   "blit": [
-   44,
-   22
+   49,
+   33
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-recon-squad": {
   "blit": [
-   56,
-   22
+   55,
+   24
   ],
-  "color": "blue",
+  "color": "red",
   "kind": "painted"
  },
  "sw-unit-im-royal-guard": {
   "blit": [
-   43,
-   22
+   54,
+   26
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-scout-trooper": {
   "blit": [
-   58,
-   35
+   57,
+   44
   ],
-  "kind": "derived"
+  "color": "orange",
+  "kind": "painted"
  },
  "sw-unit-im-signal-jammer-team": {
   "blit": [
-   52,
-   22
+   49,
+   27
   ],
   "color": "blue",
   "kind": "painted"
@@ -209,70 +218,76 @@
    58,
    43
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-stormtrooper": {
   "blit": [
    48,
-   22
+   23
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-im-stormtrooper-sergeant": {
   "blit": [
-   48,
-   22
+   47,
+   24
   ],
-  "kind": "derived"
+  "color": "orange",
+  "kind": "painted"
  },
  "sw-unit-im-tie-bomber": {
   "blit": [
-   58,
-   37
+   55,
+   39
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-im-tie-fighter": {
   "blit": [
-   58,
-   29
+   55,
+   33
   ],
   "kind": "derived"
  },
  "sw-unit-im-tie-interceptor": {
   "blit": [
    58,
-   39
+   36
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-nr-awing": {
   "blit": [
-   58,
-   42
+   53,
+   46
   ],
   "kind": "derived"
  },
  "sw-unit-nr-boarding-shuttle": {
   "blit": [
    58,
-   42
+   40
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-nr-commando": {
   "blit": [
-   55,
-   22
+   49,
+   33
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-docked-warship": {
   "blit": [
    58,
-   44
+   43
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-nr-engineer-squad": {
   "blit": [
@@ -287,64 +302,73 @@
    58,
    29
   ],
-  "kind": "derived"
+  "color": "orange",
+  "kind": "painted"
  },
  "sw-unit-nr-field-medic": {
   "blit": [
-   50,
-   22
+   49,
+   35
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-heavy-weapons-squad": {
   "blit": [
-   58,
-   25
+   57,
+   27
   ],
-  "color": "blue",
+  "color": "orange",
   "kind": "painted"
  },
  "sw-unit-nr-hero-commander": {
   "blit": [
-   57,
-   22
+   55,
+   25
   ],
-  "color": "blue",
+  "color": "red",
   "kind": "painted"
  },
  "sw-unit-nr-militia": {
   "blit": [
    48,
-   22
+   28
   ],
-  "kind": "derived"
+  "kind": "posed"
+ },
+ "sw-unit-nr-rifle-squad": {
+  "blit": [
+   56,
+   25
+  ],
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-nr-sergeant": {
   "blit": [
-   56,
-   22
+   46,
+   28
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-slicer-team": {
   "blit": [
-   52,
-   22
+   50,
+   26
   ],
-  "color": "blue",
+  "color": "orange",
   "kind": "painted"
  },
  "sw-unit-nr-trooper": {
   "blit": [
-   49,
-   22
+   45,
+   31
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-nr-xwing": {
   "blit": [
-   58,
-   35
+   55,
+   38
   ],
   "kind": "derived"
  },
@@ -360,83 +384,91 @@
    58,
    22
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-ob-cloning-cylinder": {
   "blit": [
    45,
    22
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-ob-dreadnaught": {
   "blit": [
    58,
    37
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-ob-shield-generator": {
   "blit": [
    58,
    29
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-ob-shipyard-platform": {
   "blit": [
    58,
-   23
+   21
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-sm-smuggler": {
   "blit": [
-   45,
-   22
+   43,
+   29
   ],
   "kind": "derived"
  },
  "sw-unit-sm-veteran": {
   "blit": [
-   50,
-   22
+   53,
+   36
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-wk-lookout": {
   "blit": [
-   53,
-   22
+   56,
+   28
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-wk-warrior": {
   "blit": [
    57,
-   22
+   30
   ],
-  "kind": "derived"
+  "kind": "posed"
  },
  "sw-unit-wl-vornskr": {
   "blit": [
-   58,
-   30
+   49,
+   41
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-wy-myneyrshi": {
   "blit": [
    58,
    22
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  },
  "sw-unit-wy-psadan": {
   "blit": [
-   58,
-   22
+   54,
+   28
   ],
-  "kind": "derived"
+  "color": null,
+  "kind": "painted"
  }
 }

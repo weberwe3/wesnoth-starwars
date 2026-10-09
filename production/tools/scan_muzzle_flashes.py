@@ -6,7 +6,7 @@ flash of the sprite that fires it. If the sprite has no muzzle-flash colour of
 its own, the faction/lore colour logic in gen_hte_units.projectile() decides,
 and the flash is drawn in that colour.
 
-Two kinds of sprite set exist:
+Three kinds of sprite set exist:
   painted  hand-drawn firing poses (ranged-1 differs from standing) with the
            flash painted into the art: its colour is measured here and the
            bolts take that colour.
@@ -15,6 +15,10 @@ Two kinds of sprite set exist:
            the unit WML blits a flash in each weapon's own colour onto it at
            the muzzle point measured here (same placement rule as the old
            baked-in flash).
+  posed    hand-posed firing frames drawn without a flash, listed in
+           posed_firing_frames.json (gen_codex_reference_frames.py, owner
+           sheets): like derived, the WML blits the flash, at the weapon tip
+           (the rightmost column of the upper figure; these poses face right).
 
 --strip-generic removes the old baked-in warm flash from derived sets
 (ranged-2 := ranged-1, which is the same master), once.
@@ -35,6 +39,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 UNITS = ROOT / "addons/Star_Wars_Thrawn_Trilogy/images/units"
 OUT = Path(__file__).resolve().parent / "muzzle_flashes.json"
+POSED = set(json.loads((Path(__file__).resolve().parent / "posed_firing_frames.json").read_text(encoding="utf-8"))["units"])
 SPRITE = 72
 # Flash image size (projectiles/sw-flash-*.png); the blit is centred on the muzzle.
 FLASH_W, FLASH_H = 14, 10
@@ -82,6 +87,22 @@ def bright_hues(frame: np.ndarray) -> dict[str, int]:
     return out
 
 
+def tip_point(frame: np.ndarray) -> tuple[int, int]:
+    """The weapon tip of a right-facing pose: the rightmost opaque column of
+    the figure's upper two thirds (legs and robes reach out lower down), at
+    the middle of its opaque rows there."""
+    alpha = frame[..., 3] > 24
+    rows = np.nonzero(alpha.any(axis=1))[0]
+    if len(rows):
+        alpha = alpha.copy()
+        alpha[rows.min() + int((rows.max() - rows.min()) * 0.67):] = False
+    xs = np.nonzero(alpha.any(axis=0))[0]
+    if len(xs) == 0:
+        return SPRITE - 6, SPRITE // 2
+    ys = np.nonzero(alpha[:, xs.max()])[0]
+    return int(min(SPRITE - 6, xs.max() + 1)), int(ys.mean())
+
+
 def painted_color(firing: np.ndarray) -> str | None:
     """The flash colour of a hand-drawn firing frame, from the bright tinted
     pixels at the muzzle: the figure's outermost 10 columns on either side
@@ -107,11 +128,14 @@ def scan() -> dict[str, dict]:
     for unit in sorted(p for p in UNITS.iterdir() if (p / "ranged-2.png").exists()):
         standing, r1, r2 = (rgba(unit / f"{n}.png") for n in ("standing", "ranged-1", "ranged-2"))
         derived = bool((standing == r1).all())
-        mx, my = muzzle_point(r1)
-        entry = {"kind": "derived" if derived else "painted",
+        posed = unit.name in POSED
+        painted = not derived and not posed
+        kind = "derived" if derived else "posed" if posed else "painted"
+        mx, my = muzzle_point(r1) if derived or painted else tip_point(r2)
+        entry = {"kind": kind,
                  "blit": [max(0, min(SPRITE - FLASH_W, mx - FLASH_W // 2)),
                           max(0, min(SPRITE - FLASH_H, my - FLASH_H // 2))]}
-        if not derived:
+        if painted:
             entry["color"] = painted_color(r2)
         result[unit.name] = entry
     return result

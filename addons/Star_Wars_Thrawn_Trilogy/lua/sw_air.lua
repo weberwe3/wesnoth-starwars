@@ -339,6 +339,12 @@ end
 -- detonations then ripple along the line, one hex every step_ms.
 air.PACING = { approach = 3, exit = 3, step_ms = 160, burst_frame_ms = 90, settle_ms = 350, lead_ms = 250 }
 
+-- Craft whose ordnance has its own impact animation (halo frames centred on
+-- the hex; the energy bomb falls into the hex, then bursts).
+air.CRAFT_BURST = {
+	sw_unit_im_tie_bomber = "misc/sw-energy-bomb-[1~4].png:70,misc/sw-energy-bomb-[5~10].png:90,misc/sw-energy-bomb-[11~16].png:130",
+}
+
 local function flyover(strike, hexes)
 	if strike.craft == "" or not wesnoth.unit_types[strike.craft] or #hexes == 0 then return end
 	if strike.path == "hexes" then
@@ -388,7 +394,8 @@ function air.resolve(strike)
 		if def.sound then wesnoth.audio.play(def.sound) end
 		wesnoth.interface.delay(air.PACING.lead_ms)
 		flyover(strike, hexes)
-		local burst = "halo/flame-burst-[1~8].png:" .. air.PACING.burst_frame_ms .. ",misc/blank-hex.png:1"
+		local burst = (air.CRAFT_BURST[strike.craft] or "halo/flame-burst-[1~8].png:" .. air.PACING.burst_frame_ms)
+			.. ",misc/blank-hex.png:1"
 		for _i, h in ipairs(hexes) do
 			wesnoth.wml_actions.item{ x = h.x, y = h.y, halo = burst, name = "sw_air_blast", redraw = false }
 			wesnoth.wml_actions.redraw{}

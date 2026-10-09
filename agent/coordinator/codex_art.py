@@ -121,9 +121,16 @@ def build_prompt(direction: dict[str, Any], unit_id: str, unit_name: str, kind: 
     else:
         framing = ("a head-and-shoulders portrait of the character for dialogue scenes, the face and upper body "
                    "filling the frame (for a vehicle or ship, a dramatic close three-quarter view of the craft)")
-    return f"""Use your image generation tool to create exactly ONE original image: {framing}, on a TRANSPARENT background. Show a single subject only; do not combine several views in one image. Save it as {kind}.png in the current working directory. Do not create any other files.
+    # Owner rule (2026-10-04): no character or franchise names in a prompt.
+    # The unit name is not sent; the subject is rewritten in plain words and
+    # the finished prompt is refused if a banned name remains.
+    del unit_name
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "production/tools"))
+    from prompt_scrub import check, scrub
+    prompt = f"""Use your image generation tool to create exactly ONE original image: {framing}, on a TRANSPARENT background. Show a single subject only; do not combine several views in one image. Save it as {kind}.png in the current working directory. Do not create any other files.
 
-Subject ({unit_name}): {subject}
+Subject: {scrub(subject)}
 
 Style: {direction.get("style", "")}
 
@@ -131,6 +138,11 @@ Rules:
 {rules}
 
 After saving, reply with only the file name."""
+    try:
+        check(prompt)
+    except ValueError as exc:
+        raise CodexArtError(str(exc)) from exc
+    return prompt
 
 
 def _managed_directory(slug: str) -> Path:

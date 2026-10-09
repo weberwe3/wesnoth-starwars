@@ -1,0 +1,27 @@
+{
+ "_note": "Units whose ranged frames are hand-posed without a muzzle flash; scan_muzzle_flashes.py treats them as 'posed' and blits the flash at the weapon tip. Each listed tip was checked by eye (2026-10-06). Not listed: sw-hero-bel-iblis, sw-hero-thrawn and sw-unit-sm-smuggler, whose firing frames show no weapon pointed forward; they keep their earlier flash points until their ranged frames are redrawn.",
+ "units": [
+  "sw-hero-cbaoth",
+  "sw-hero-chewbacca",
+  "sw-hero-han",
+  "sw-hero-karrde",
+  "sw-hero-khabarakh",
+  "sw-hero-lando",
+  "sw-hero-leia",
+  "sw-hero-mara",
+  "sw-hero-pellaeon",
+  "sw-unit-bi-commando",
+  "sw-unit-im-noghri",
+  "sw-unit-im-officer",
+  "sw-unit-im-royal-guard",
+  "sw-unit-im-stormtrooper",
+  "sw-unit-nr-commando",
+  "sw-unit-nr-field-medic",
+  "sw-unit-nr-militia",
+  "sw-unit-nr-sergeant",
+  "sw-unit-nr-trooper",
+  "sw-unit-sm-veteran",
+  "sw-unit-wk-lookout",
+  "sw-unit-wk-warrior"
+ ]
+}
