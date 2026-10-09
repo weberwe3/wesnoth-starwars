@@ -210,3 +210,18 @@ idle, defend and death); their other frame files are copies of the standing
 frame kept for the art contract. The docked warship and shipyard platform
 lost their point-defense attacks and overwatch, and the shield generator its
 anti-air ability, because the books give them no weapons.
+
+## Size tiers (2026-10-08)
+
+Units are sized by lore within the 72-px hex (owner direction), using
+`production/tools/size_tiers.json` and `size_unit_tiers.py`: every frame of a
+unit is scaled by one factor, anchored at its feet; game-drawn muzzle flashes
+move with the art. True scale is impossible (a trooper 1.8 m, a Star
+Destroyer 1,600 m), so sizes are relative within tiers: vornskr (0.8 m) <
+Noghri (~1.4 m) and Psadan (1.5 m) < humans (~1.8 m, 56-58 px tall) <
+Myneyrsh (1.9 m) < Wookiees (~2.2 m) < the AT-ST (8.6 m); fighters by length
+(TIE fighter 6.3 m < TIE bomber 7.8 m < A-wing and TIE interceptor 9.6 m <
+X-wing 12.5 m < Y-wing 16 m); shuttles and freighters larger; capital ships
+and installations fill the hex. Sources: Wookieepedia (Legends) entries for
+the Dreadnaught-class (600 m), vornskr, Noghri, Myneyrsh, Psadan and TIE
+bomber.
