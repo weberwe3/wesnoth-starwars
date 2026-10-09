@@ -196,3 +196,17 @@ off-map bombing sortie flown by the TIE bomber drops it on each hex
 four frames of the ball falling, then a 12-frame blast drawn by Codex to the
 owner's direction (blue energy and fiery combustion, smoke fading away;
 `~/art-references/codex-bomb-fx.png`), 16 frames in all.
+
+## Owner-supplied ship and installation sheets (2026-10-08)
+
+Full 12-frame sheets: `sw-unit-ob-dreadnaught`, `sw-unit-im-boarding-shuttle`,
+`sw-unit-nr-boarding-shuttle`. Partial sheets (installed with
+`import_owner_sheet.py --frames`): `sw-unit-nr-docked-warship`,
+`sw-unit-ob-cloning-cylinder`, `sw-unit-ob-shipyard-platform` (idle and
+death) and `sw-unit-ob-shield-generator` (idle, defend and death). These
+installations neither move nor attack (owner decision): `STATIC_ANIMS` in
+gen_hte_units.py wires only those animations (and the cloaked asteroid's
+idle, defend and death); their other frame files are copies of the standing
+frame kept for the art contract. The docked warship and shipyard platform
+lost their point-defense attacks and overwatch, and the shield generator its
+anti-air ability, because the books give them no weapons.

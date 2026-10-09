@@ -54,7 +54,7 @@ LABEL_REACH = 80      # ... or this far left of it
 LABEL_LEFT_EDGE = 40  # labels starting further in than this are centred under their frames
 
 
-def figures(img: Image.Image) -> list[Image.Image]:
+def figures(img: Image.Image, per_row: tuple[int, int] = (6, 6)) -> list[Image.Image]:
     """The 12 figures, in order. Labelled sheets are cut into cells near the
     labels (each label sits at its cell's left edge), at the emptiest column,
     so a frame keeps all its pieces (debris, sparks, a muzzle flash) and wide
@@ -70,7 +70,7 @@ def figures(img: Image.Image) -> list[Image.Image]:
     # one frame. The text (and its anti-aliased edge) is removed from those
     # rows, so a figure reaching up into a label row keeps its own pixels.
     yellow = (a[..., 0] > 170) & (a[..., 1] > 160) & (a[..., 2] < 110) & (np.abs(a[..., 0] - a[..., 1]) < 70)
-    label_row = np.array([len(_runs(yellow[y], merge_gap=40)) >= 4 for y in range(h)])
+    label_row = np.array([len(_runs(yellow[y], merge_gap=40)) >= min(4, min(per_row)) for y in range(h)])
     label_bands = _runs(label_row, merge_gap=3)
     text = np.zeros_like(fg)
     for ly0, ly1 in label_bands:
@@ -89,7 +89,8 @@ def figures(img: Image.Image) -> list[Image.Image]:
     rows = sorted(sorted((b for b in bands if b[1] - b[0] > LABEL_MAX_H), key=lambda b: b[0] - b[1])[:2])
     fg = figure
     out = []
-    for y0, y1 in rows:
+    for row_i, (y0, y1) in enumerate(rows):
+        n_row = per_row[row_i]
         # The row's labels: the nearest label band on the sheet's label side
         # (all labels sit above their frames, or all below).
         above_side = bool(label_bands) and bool(rows) and label_bands[0][0] < rows[0][0]
@@ -99,7 +100,7 @@ def figures(img: Image.Image) -> list[Image.Image]:
         if nearest:
             ly0, ly1 = nearest[0]
             words = _runs(yellow[ly0:ly1].any(0), merge_gap=20)
-            if len(words) == 6:
+            if len(words) == n_row:
                 # Cut between frames at the emptiest column near each label:
                 # a figure may reach a little past its own label to the left.
                 occupancy = fg[y0:y1].sum(0)
@@ -128,14 +129,14 @@ def figures(img: Image.Image) -> list[Image.Image]:
                 xs = np.nonzero((band_parts == i).any(axis=0))[0]
                 # Only small pieces (a prop, a spark) move whole; a large piece that
                 # spans two frames (a shield dome touching the next frame's arc) is cut.
-                cell_w = w / 6
+                cell_w = w / n_row
                 if len(xs) and xs.max() - xs.min() < 0.6 * cell_w and \
                         any(xs.min() < c0 <= xs.max() for c0 in starts[1:]):
                     centre = (xs.min() + xs.max()) / 2
                     straddling[i] = sum(1 for c0 in starts if c0 <= centre) - 1
         else:
             cells = sorted(sorted((r for r in _runs(fg[y0:y1].sum(0) > 2) if r[1] - r[0] >= 8),
-                                  key=lambda r: r[0] - r[1])[:6])
+                                  key=lambda r: r[0] - r[1])[:n_row])
         for k, (x0, x1) in enumerate(cells):
             mask = fg[y0:y1, x0:x1].copy()
             if starts:
@@ -164,8 +165,8 @@ def figures(img: Image.Image) -> list[Image.Image]:
             rgba[..., 3] = np.where(mask, 255, 0)
             fig = Image.fromarray(rgba, "RGBA")
             out.append(fig.crop(fig.getbbox()))
-    if len(out) != 12:
-        raise SystemExit(f"found {len(out)} figures, wanted 12")
+    if len(out) != sum(per_row):
+        raise SystemExit(f"found {len(out)} figures, wanted {sum(per_row)}")
     return out
 
 
@@ -262,6 +263,17 @@ def frames(figs: list[Image.Image], palette_from_all: bool = False,
     return out
 
 
+def partial_frames(named: dict[str, Image.Image], palette_from_all: bool, colors: int | None,
+                   alpha_cut: int) -> dict[str, Image.Image]:
+    """Frames of a partial sheet, all at one scale: the first frame (the unit's
+    standing pose) is MAX_H tall unless a wider frame needs less."""
+    figs = list(named.values())
+    scale = min([MAX_H / figs[0].height] + [min(MAX_W / f.width, MAX_H / f.height) for f in figs])
+    padded = figs + [figs[0]] * (12 - len(figs))       # frames() works on a 12-frame list
+    made = frames(padded, palette_from_all, scale, colors=colors, alpha_cut=alpha_cut)
+    return {name: made[NAMES[i]] for i, name in enumerate(named)}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sheet", type=Path)
@@ -276,7 +288,26 @@ def main() -> int:
                         help="opacity below which a shrunk pixel is dropped; lower it (e.g. 40) to keep thin effects")
     parser.add_argument("--colors", type=int, help="palette size (default 48, or 64 with --palette-from-all); "
                         "raise it when small effects in a rare colour lose their hue")
+    parser.add_argument("--frames", help="a partial sheet: its frame names, row by row, rows split by '/' "
+                        "(e.g. 'idle-1,idle-2/death-1,death-2'); only these frames are written")
     args = parser.parse_args()
+    if args.frames:
+        rows_spec = [r.split(",") for r in args.frames.split("/")]
+        figs = figures(Image.open(args.sheet), tuple(len(r) for r in rows_spec))
+        names = [n for r in rows_spec for n in r]
+        made = partial_frames(dict(zip(names, figs)), args.palette_from_all, args.colors, args.alpha_cut)
+        target = UNITS / args.unit_id.replace("_", "-")
+        if args.preview:
+            strip = Image.new("RGBA", (len(made) * SPRITE * 4, SPRITE * 4), (70, 90, 60, 255))
+            for i, f in enumerate(made.values()):
+                strip.alpha_composite(f.resize((SPRITE * 4, SPRITE * 4), Image.NEAREST), (i * SPRITE * 4, 0))
+            strip.save(args.preview)
+            print(f"preview: {args.preview}")
+            return 0
+        for name, frame in made.items():
+            frame.save(target / f"{name}.png", optimize=True)
+        print(f"{args.unit_id}: {', '.join(made)} installed")
+        return 0
     scale = sheet_scale(figures(Image.open(args.match_scale))) if args.match_scale else None
     made = frames(figures(Image.open(args.sheet)), args.palette_from_all, scale, colors=args.colors,
                   alpha_cut=args.alpha_cut)
