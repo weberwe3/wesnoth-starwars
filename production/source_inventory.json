@@ -6303,7 +6303,7 @@
   "source_files": [
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/_main.cfg",
-      "sha256": "0b9eb5f20a6155bcce2f1abfcc58a5fbad52a0f42a6ec7d3630ac8e9f0a99f6f"
+      "sha256": "0395cea28fe7bf5df4340bb72ac6993f9e6cec1c9100a3b40070905824ae86d9"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/01_the_noghri_prisoner.cfg",
@@ -6479,7 +6479,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "55a40c50ea3a443fe2ef3e1f7b4faec1a6f1bd52cc5073e8a633251b8dec0ac5"
+      "sha256": "ec3f463e09868138ab0fbc109be56900ba3965d4f4244ef4fcda13d1c1dcad71"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",

@@ -32,7 +32,8 @@ difficulty.
   Destroyers fire green, X-wings red.
 - Battlefields drawn for the setting: durasteel decks and bulkheads,
   duracrete command bunkers, shuttle landing pads, and duracrete roads.
-- Original synthesized weapon sounds and original music for every mission.
+- Original synthesized weapon sounds and an original orchestral score for every
+  mission, with victory and defeat cues.
 - A **Field Manual** in the right-click menu of every mission explains the
   Force and ysalamiri, blaster colours, space battles, bases, heroes, and
   stealth.
@@ -41,7 +42,9 @@ difficulty.
 
 All code, maps, story text, dialogue, sound effects, and music in this add-on
 were made for it, and so was the art except the character sprites credited
-below. The sounds and music are synthesized from code. Names and broad story
+below. The sound effects are synthesized from code; the music is original
+orchestral composition performed with the MIT-licensed MuseScore General
+SoundFont (S. Christian Collins, based on FluidR3 by Frank Wen). Names and broad story
 concepts come from the Legends continuity; no prose, film or game dialogue,
 music, sound, or game assets are copied.
 

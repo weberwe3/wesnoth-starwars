@@ -274,3 +274,23 @@ for the olive-uniformed gunner, a purple hound for the grey vornskr). The
 E-Web's heavy bolts are now blue (New Republic) instead of orange. Khabarakh's
 ranged-2 bolt, which the sheet cutter assigned to the neighbouring defend
 frame, was moved back in front of his pistol.
+## Music (2026-10-10)
+
+The nine music tracks are original orchestral cues. Codex composed each as a
+Python score (`production/tools/music/scores/<track>.py`) against the score API
+in `production/tools/music/score.py`, from per-track briefs and a memorable-
+game-music method supplied by the project owner (hook within two bars, A-A'-B-A''
+form, repetition with variation, countermelody, composed return to the opening),
+in a classic space-opera orchestral style without quoting any existing theme
+(`production/tools/gen_codex_music_scores.py`; prompts name nothing).
+
+They are performed with the MuseScore General SoundFont (v0.2) by S. Christian
+Collins, based on FluidR3 by Frank Wen and FluidR3Mono by Michael Cowgill,
+shared under the MIT license; its notice is in
+`production/tools/music/SOUNDFONT_LICENSE.md`. The SoundFont itself (216 MB) is
+not in the repository: download `MuseScore_General.sf2` from
+https://ftp.osuosl.org/pub/musescore/soundfont/MuseScore_General/ to
+`~/opt/soundfonts/` to re-render. Rendering needs `tinysoundfont`, `scipy`,
+`numpy` and `soundfile` (art toolchain Python).
+
+This replaces the earlier code-synthesized tracks (`gen_music.py`, removed).
