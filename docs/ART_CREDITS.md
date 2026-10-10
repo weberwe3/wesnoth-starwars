@@ -225,3 +225,12 @@ X-wing 12.5 m < Y-wing 16 m); shuttles and freighters larger; capital ships
 and installations fill the hex. Sources: Wookieepedia (Legends) entries for
 the Dreadnaught-class (600 m), vornskr, Noghri, Myneyrsh, Psadan and TIE
 bomber.
+
+## Story backdrops (2026-10-09)
+
+The story slides before each mission show a painted backdrop of the setting
+(`images/story/sw-story-<setting>.jpg`, 1280x720 JPEG). Codex painted them from
+generic, in-universe descriptions that name nothing
+(`production/tools/gen_codex_story_backdrops.py`; prompt_scrub applies), with no
+reference images. Scenarios use them through `{SW_STORY_BACKDROP <setting>}`
+(utils/hte_macros.cfg), one per story slide.
