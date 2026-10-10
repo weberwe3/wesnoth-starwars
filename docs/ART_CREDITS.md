@@ -294,3 +294,13 @@ https://ftp.osuosl.org/pub/musescore/soundfont/MuseScore_General/ to
 `numpy` and `soundfile` (art toolchain Python).
 
 This replaces the earlier code-synthesized tracks (`gen_music.py`, removed).
+
+## Space details (2026-10-10)
+
+`images/terrain/sw/space-decal-{1,3,4,5}.png` (a nebula wisp, a star cluster, a
+distant galaxy and a gas cloud) were painted by Codex on black
+(`~/art-references/codex-space-decals.png`, `gen_codex_space_decals.py`) and
+cut out with luminance as opacity. `utils/hte_terrain.cfg` scatters them, with
+mirrored and rotated copies, over about 6% of open-space hexes. The sheet's
+ringed planet and moon are not installed: scattered at random they read as
+copies of one object.
