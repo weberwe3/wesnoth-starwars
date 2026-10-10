@@ -32,7 +32,7 @@ Units whose sprite frames come from the sheet:
 - `sw-unit-im-stormtrooper` (replaced by an owner-supplied sheet, below)
 - `sw-unit-im-officer`
 - `sw-unit-im-royal-guard`
-- `sw-unit-nr-trooper`
+- `sw-unit-nr-trooper` (replaced by a Codex sheet, below)
 - `sw-unit-nr-sergeant`
 - `sw-unit-nr-commando`
 - `sw-unit-bi-commando`
@@ -135,6 +135,11 @@ installed with `import_owner_sheet.py --palette-from-all`.
   214, recoloured to its ochre tracked design).
 - Codemus: `sw-unit-wy-myneyrshi`. Tactical-Sandwiches: `sw-unit-wl-vornskr`.
 - No reference: `sw-unit-wy-psadan` (from its written description).
+- No reference: `sw-unit-nr-trooper` (2026-10-09, from its written description,
+  with the `sw-unit-nr-rifle-squad` sheet as the template). The sheet-cut sprite
+  read as a man in a blue suit and hat; the new one wears a field helmet,
+  olive fatigues and a combat vest, matching its portrait. Its firing frame
+  paints a blue bolt, so it is a painted flash.
 - `sw-unit-nr-eweb-team`'s standing frame is its crouched idle-1 (behind the
   gun), so standing and idle do not alternate with and without the gun.
 - `sw-unit-nr-rifle-squad` previously used a mainline image; it now has its own
@@ -237,3 +242,12 @@ template and the unit's own portrait as the reference
 (`~/art-references/portrait-<unit>.png`; jobs in `owner_sheet_jobs.json`). Their
 firing frames paint their own flash, so they are now painted flashes, and two
 stray fragments from neighbouring cells were removed from the defend frames.
+
+## Story backdrops (2026-10-09)
+
+The story slides before each mission show a painted backdrop of the setting
+(`images/story/sw-story-<setting>.jpg`, 1280x720 JPEG). Codex painted them from
+generic, in-universe descriptions that name nothing
+(`production/tools/gen_codex_story_backdrops.py`; prompt_scrub applies), with no
+reference images. Scenarios use them through `{SW_STORY_BACKDROP <setting>}`
+(utils/hte_macros.cfg), one per story slide.
