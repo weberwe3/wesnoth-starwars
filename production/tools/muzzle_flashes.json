@@ -360,10 +360,11 @@
  },
  "sw-unit-nr-trooper": {
   "blit": [
-   45,
-   31
+   55,
+   30
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-unit-nr-xwing": {
   "blit": [
