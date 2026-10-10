@@ -39,10 +39,11 @@
  },
  "sw-hero-khabarakh": {
   "blit": [
-   47,
-   24
+   54,
+   35
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-hero-lando": {
   "blit": [
@@ -175,10 +176,11 @@
  },
  "sw-unit-im-noghri": {
   "blit": [
-   45,
-   22
+   55,
+   37
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-unit-im-officer": {
   "blit": [
@@ -213,10 +215,10 @@
  },
  "sw-unit-im-signal-jammer-team": {
   "blit": [
-   49,
-   27
+   51,
+   31
   ],
-  "color": "blue",
+  "color": "red",
   "kind": "painted"
  },
  "sw-unit-im-star-destroyer": {
@@ -307,9 +309,9 @@
  "sw-unit-nr-eweb-team": {
   "blit": [
    58,
-   29
+   40
   ],
-  "color": "orange",
+  "color": "blue",
   "kind": "painted"
  },
  "sw-unit-nr-field-medic": {
@@ -462,8 +464,8 @@
  },
  "sw-unit-wl-vornskr": {
   "blit": [
-   49,
-   41
+   53,
+   43
   ],
   "color": null,
   "kind": "painted"
@@ -478,8 +480,8 @@
  },
  "sw-unit-wy-psadan": {
   "blit": [
-   54,
-   28
+   56,
+   38
   ],
   "color": null,
   "kind": "painted"
