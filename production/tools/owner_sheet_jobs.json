@@ -264,6 +264,51 @@
   "describe": "a large orbital shipyard platform: a skeletal grey framework with work lights, cranes and a half-built hull inside",
   "notes": "it is a stationary orbital platform: idle and move blink the work lights and swing a crane; melee and ranged frames fire point-defence turrets; defend shows sparks; death breaks apart in explosions. Redraw it in the template's pixel-art style; the attached second image only shows its design."
  },
+ "sw_hero_pellaeon": {
+  "ref": [
+   "portrait-sw-hero-pellaeon.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "an older fleet captain with short grey hair, a lined face and a calm, tired expression, in an olive-grey military officer's uniform with a coloured rank plaque on the chest, a black belt, dark trousers and tall black boots, carrying a small energy pistol",
+  "notes": "standing and idle stand straight with hands at the belt or behind the back, idle frames shift weight and glance aside; melee is a punch; ranged frames raise the pistol one-handed and fire a bright red bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_im_officer": {
+  "ref": [
+   "portrait-sw-unit-im-officer.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a military officer in an olive-grey uniform with a peaked olive-grey cap, a small rank plaque on the chest, black gloves, a black belt with a holster, dark trousers and black boots, carrying a small energy pistol",
+  "notes": "standing and idle stand stiffly at attention, idle frames tug a glove and look around; melee is a punch; ranged frames raise the pistol one-handed and fire a bright red bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_nr_field_medic": {
+  "ref": [
+   "portrait-sw-unit-nr-field-medic.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a female combat medic with curly brown hair tied back, olive-green field fatigues, a white padded medic vest with two vertical red stripes, a shoulder satchel of medical supplies and dark boots, carrying a small energy pistol",
+  "notes": "she has no melee weapon: the melee frames show her kneeling to tend a wound and standing up again; ranged frames raise the pistol and fire a bright blue bolt; idle frames check the satchel and look around; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_hero_cbaoth": {
+  "ref": [
+   "portrait-sw-hero-cbaoth.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a very old man with long flowing white hair and a long white beard, wearing a brown hooded outer robe over a cream tunic and dark boots, wielding a green energy blade",
+  "notes": "standing and idle hold the green blade lowered at his side with a proud, stern posture, idle frames raise his chin and stroke his beard; melee frames swing the green energy blade in a wide arc; ranged frames thrust his free hand forward and shoot crackling blue-white lightning from his fingers; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_nr_militia": {
+  "ref": [
+   "portrait-sw-unit-nr-militia.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a female resistance fighter with untidy brown hair, a sand-coloured scarf, a patched grey jacket under scavenged grey armour plates, dark trousers and worn boots, carrying a small energy pistol",
+  "notes": "standing and idle hold the pistol low and ready, idle frames glance around warily; melee is a punch; ranged frames raise the pistol and fire a bright blue bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
  "sw_unit_nr_trooper": {
   "ref": null,
   "template": "codex-sw_unit_nr_rifle_squad.png",
