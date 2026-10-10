@@ -15,16 +15,12 @@
  },
  "sw_unit_im_signal_jammer_team": {
   "ref": [
-   "sacraicross-fanart-121.png",
-   [
-    310,
-    85,
-    365,
-    190
-   ]
+   "portrait-sw-unit-im-signal-jammer-team.png",
+   null
   ],
-  "describe": "a military signals soldier in a pale fur-lined armoured suit and helmet",
-  "notes": "add a compact jamming backpack with a short antenna; melee is a pistol-whip; ranged frames fire a small energy pistol."
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a military electronics technician with short dark hair, in dark grey armour with red trim, wearing a backpack radio jammer with a tall antenna and a small dish, carrying a small energy pistol",
+  "notes": "idle frames adjust a dial on the backpack and glance at the antenna; it has no melee weapon: the melee frames show him crouching to adjust the jammer and rising; ranged-1 aims the pistol, ranged-2 fires a bright red bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
  },
  "sw_unit_nr_engineer_squad": {
   "ref": [
@@ -41,16 +37,12 @@
  },
  "sw_unit_nr_eweb_team": {
   "ref": [
-   "sacraicross-fanart-060.png",
-   [
-    55,
-    130,
-    100,
-    235
-   ]
+   "portrait-sw-unit-nr-eweb-team.png",
+   null
   ],
-  "describe": "a soldier in olive fatigues and a padded blast vest",
-  "notes": "the soldier operates a heavy tripod-mounted repeating energy cannon with a power cable: standing, idle and defend crouch behind the gun; move carries the folded gun on the shoulder; melee is a punch; ranged frames fire the tripod cannon; death slumps over the gun."
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a female heavy gunner with brown hair tied back, olive-green fatigues and a combat vest, crewing a heavy rotary repeating energy cannon on a tripod with a power generator box beside it",
+  "notes": "standing and idle crouch behind the tripod-mounted cannon, idle frames check the generator and look along the barrel; move frames walk carrying the cannon on her shoulder with alternating legs; melee is a punch beside the gun; ranged frames fire the cannon with a bright blue burst at the muzzle; defend ducks behind the gun; death frames slump beside the gun and lie still. "
  },
  "sw_unit_nr_heavy_weapons_squad": {
   "ref": [
@@ -119,11 +111,12 @@
  },
  "sw_unit_wl_vornskr": {
   "ref": [
-   "tactical-sandwiches-vornskr.jpg",
+   "portrait-sw-unit-wl-vornskr.png",
    null
   ],
-  "describe": "a lean, wolf-sized four-legged predator with smooth grey hide, a long whip-like tail, a narrow toothed snout and pale eyes",
-  "notes": "redraw it as a pixel-art beast walking on four legs: move is a stalking trot; melee-1 and melee-2 are a lunging bite; ranged-1 and ranged-2 are a whip of its long tail; defend recoils; death collapses onto its side."
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a sleek, hairless, four-legged grey predator like a lean hound, with a long narrow snout full of teeth, pointed ears and a long whip-like tail",
+  "notes": "four-legged animal: move frames are a running gait with alternating legs; idle frames sniff the air and flick the tail; melee-1 lunges and bites; melee-2 lashes the whip tail forward; defend crouches and snarls; death frames collapse onto its side and lie still. "
  },
  "sw_unit_wy_myneyrshi": {
   "ref": [
@@ -134,9 +127,13 @@
   "notes": "redraw it as a pixel-art unit with all four arms: it holds a long spear in two hands and a short bow in the other two. Melee thrusts the spear; ranged frames draw and loose the bow; keep all four arms visible in every frame."
  },
  "sw_unit_wy_psadan": {
-  "ref": null,
-  "describe": "a short, stocky alien native whose whole body is covered in overlapping grey stone-like armour plates, like a walking boulder, carrying a heavy wooden war club",
-  "notes": "it has no ranged weapon: ranged-1 and ranged-2 throw a rock overhand; melee swings the war club; move is a heavy, plodding walk; death crumbles to the ground."
+  "ref": [
+   "portrait-sw-unit-wy-psadan.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a squat, massive humanoid alien covered in thick rocky grey-brown armour plates with a heavy brow and beard, wearing gold horned ornaments, carrying a heavy stone war club",
+  "notes": "standing and idle hold the war club ready, idle frames roll the shoulders and grunt; melee-1 raises the club overhead, melee-2 smashes it down; it has no ranged weapon: ranged frames show a club swing at full reach; defend raises the plated forearms; death frames fall forward and lie still. "
  },
  "sw_unit_im_at_st": {
   "template": "template-scout-sheet.png",
@@ -377,5 +374,23 @@
   "template": "codex-sw_unit_nr_rifle_squad.png",
   "describe": "a hard-bitten bald mercenary with a scarred face, in a long dark brown coat over light armour, dark trousers and boots, carrying a heavy energy pistol",
   "notes": "standing and idle stand with the pistol held low, idle frames roll the shoulders and look around coldly; melee frames slash with a knife; ranged frames raise the pistol and fire a bright orange bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_hero_khabarakh": {
+  "ref": [
+   "portrait-sw-hero-khabarakh.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a lean grey-skinned alien warrior with a large hairless head, dark deep-set eyes and a protruding jaw, in close-fitting dark grey armour with a green sash, holding a long curved knife in each hand and a small stun pistol on the belt",
+  "notes": "he moves in a low, predatory crouch; idle frames shift weight and turn the knives; melee frames slash fast with both curved knives; ranged frames raise the stun pistol and fire a bright blue stun bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_im_noghri": {
+  "ref": [
+   "portrait-sw-unit-im-noghri.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a lean grey-skinned alien commando with a large hairless head, dark deep-set eyes and a protruding jaw, in close-fitting black armour with blue-lit trim, holding a long curved knife in each hand and a small stun pistol on the belt",
+  "notes": "it moves in a low, predatory crouch; idle frames shift weight and turn the knives; melee frames slash fast with both curved knives; ranged frames raise the stun pistol and fire a bright blue stun bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
  }
 }

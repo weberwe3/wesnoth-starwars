@@ -266,6 +266,14 @@ colour (an olive coat on the green sheet), which had left gold buttons and
 highlights as speckles. The 13 sprites redrawn on 2026-10-09 were re-imported
 with the fix.
 
+`sw-hero-khabarakh`, `sw-unit-im-noghri`, `sw-unit-im-signal-jammer-team`,
+`sw-unit-nr-eweb-team`, `sw-unit-wl-vornskr` and `sw-unit-wy-psadan` were redrawn
+the same way from their portraits (2026-10-10): low-detail or mismatched
+sprites (an armoured trooper for the jammer technician, a white-armoured crew
+for the olive-uniformed gunner, a purple hound for the grey vornskr). The
+E-Web's heavy bolts are now blue (New Republic) instead of orange. Khabarakh's
+ranged-2 bolt, which the sheet cutter assigned to the neighbouring defend
+frame, was moved back in front of his pistol.
 ## Music (2026-10-10)
 
 The nine music tracks are original orchestral cues. Codex composed each as a
