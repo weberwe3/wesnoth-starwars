@@ -1,0 +1,92 @@
+{
+  "_note": "Rank designs for gen_codex_rank_designs.py. Owner direction 2026-10-10: higher ranks clearly more distinctive than lower ones, communicating a higher tier, lore-accurate, while the character stays identifiable as the base design. '2' = Seasoned veteran, '3' = Elite; rank 3 is redrawn from the rank-2 idle sprite, so each tier builds on the last. Owner rule 2026-10-10: Codex is only asked to redraw the attached idle sprite in the stated way, so these notes describe visible changes only -- no character names and no setting terms. The lore behind each design is recorded in docs/ART_CREDITS.md. Only units that rank up past their top level are listed (troopers, militia and smugglers are promoted instead).",
+  "_hold": [],
+  "sw-unit-nr-sergeant": {
+    "2": "a grey armoured chest plate with a bright plaque of small coloured squares on it, an armoured plate on the near shoulder, and a headset with a small microphone boom",
+    "3": "everything from the attached sprite plus a long olive field coat worn open over the armour, gold piping on the shoulder plate, and a peaked command cap in place of the helmet"
+  },
+  "sw-unit-nr-commando": {
+    "2": "dark green and brown face paint and a camouflage-patterned helmet cover with leaves tucked into the straps",
+    "3": "everything from the attached sprite plus a ragged camouflage poncho in forest colours draped over both shoulders, changing the silhouette"
+  },
+  "sw-unit-nr-eweb-team": {
+    "2": "heat-blackened gauntlets and an armoured shield plate fixed to the big gun, with tally marks painted on it",
+    "3": "everything from the attached sprite plus a large glowing blue power cell on a tripod beside the gun and grey armour plates on the crew"
+  },
+  "sw-unit-nr-field-medic": {
+    "2": "a white tabard over the vest with a blue cross-shaped emblem, and glowing blue canisters on the belt",
+    "3": "everything from the attached sprite plus a white helmet with a blue stripe, a glowing scanner on the forearm, and a small floating round medical robot beside the shoulder"
+  },
+  "sw-unit-wk-warrior": {
+    "2": "a second crossed bandolier with metal ornaments and riveted metal bracers on both forearms",
+    "3": "everything from the attached sprite plus woven-fibre and dark metal armour on the chest and shoulders and a tall carved wooden headdress"
+  },
+  "sw-unit-wk-lookout": {
+    "2": "carved wooden beads braided into the fur and a leaf-green sash across the body",
+    "3": "everything from the attached sprite plus a hooded cloak of woven leaves over the head and shoulders and carved ornaments on the weapon"
+  },
+  "sw-unit-nr-xwing": {
+    "2": "a bold second red stripe along each wing, a row of small tally marks under the cockpit, and carbon scorch marks",
+    "3": "everything from the attached sprite plus wide red bands on all four wing tips and the nose, a longer row of tally marks, and a red-and-white dome behind the cockpit"
+  },
+  "sw-unit-nr-awing": {
+    "2": "its red markings redrawn as bold double stripes and a row of tally marks near the cockpit",
+    "3": "a striking red-and-white paint scheme over the whole hull, gold trim on the engines and a long row of tally marks"
+  },
+  "sw-unit-nr-ywing": {
+    "2": "bold yellow stripes on the nose and engine covers and a row of tally marks near the cockpit",
+    "3": "everything from the attached sprite plus wide yellow-and-black bands on the nose and engines, fresh grey hull plates and a long row of tally marks"
+  },
+  "sw-unit-sm-veteran": {
+    "2": "a heavier long coat with a raised collar and a second holster on the thigh",
+    "3": "everything from the attached sprite plus a peaked captain's cap with a gold badge and a short dark shoulder cape"
+  },
+  "sw-unit-bi-commando": {
+    "2": "a grey armoured chest plate, an armoured plate on the near shoulder and a painted stripe on the helmet",
+    "3": "everything from the attached sprite plus grey armour on the shoulders and shins, a lowered helmet visor with a short antenna, and a short dark field cape"
+  },
+  "sw-hero-han": {
+    "2": "a low-slung gun belt with spare power packs, red stripes down the outer seams of the trousers, and a dark jacket worn open over the vest",
+    "3": "everything from the attached sprite plus a long dark coat with a raised collar in place of the jacket and a small bright rank plaque on the coat"
+  },
+  "sw-hero-leia": {
+    "2": "a hooded white poncho over the outfit and a utility belt",
+    "3": "a long pale hooded robe over the outfit and a simple silver cylinder hilt hanging at the belt"
+  },
+  "sw-hero-chewbacca": {
+    "2": "a second crossed bandolier and riveted metal bracers on both forearms",
+    "3": "everything from the attached sprite plus dark metal and woven-fibre armour plates on the shoulders and chest"
+  },
+  "sw-hero-lando": {
+    "2": "a longer, richer cape with a gold-patterned lining",
+    "3": "a smart military tunic with rank insignia and gold shoulder boards, worn under the cape"
+  },
+  "sw-hero-luke": {
+    "2": "a plain brown robe worn open over the black outfit, its hood down on the shoulders so the face and hair stay fully visible",
+    "3": "a long flowing black cloak over the black outfit, its hood down so the face and hair stay fully visible, a black glove on the right hand, and a belt of small pouches"
+  },
+  "sw-hero-xwing-luke": {
+    "2": "a bold second red stripe on each wing and a row of tally marks under the cockpit",
+    "3": "everything from the attached sprite plus wide red bands on all four wing tips and the nose and a longer row of tally marks"
+  },
+  "sw-hero-wedge": {
+    "2": "a long row of tally marks under the cockpit and bold red stripes along the wings",
+    "3": "everything from the attached sprite plus wide red bands on all four wing tips and the nose and gold trim round the cockpit"
+  },
+  "sw-hero-mara": {
+    "2": "a short dark cloak over the flight suit and a belt with pouches",
+    "3": "a long black hooded cloak over the black flight suit and a silver cylinder hilt at the belt"
+  },
+  "sw-hero-karrde": {
+    "2": "a headset and a shoulder satchel holding small glowing cards",
+    "3": "everything from the attached sprite plus a long grey coat that changes the silhouette and a pendant of a large curved tooth"
+  },
+  "sw-hero-bel-iblis": {
+    "2": "a dark short cape over the long coat",
+    "3": "a longer dark cape, rows of medal ribbons on the coat and gold shoulder boards"
+  },
+  "sw-hero-khabarakh": {
+    "2": "bold pale stripes painted on the grey skin of the face and arms",
+    "3": "everything from the attached sprite plus a ceremonial sash across the chest and dark armour plates on the shoulders"
+  }
+}

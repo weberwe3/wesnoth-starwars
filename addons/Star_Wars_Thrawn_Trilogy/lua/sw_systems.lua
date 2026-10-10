@@ -152,7 +152,8 @@ on("unit placed", "sw_sys_unit_placed", function()
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
 	if not u then return end
 	force.init_unit(u)
-	rank.update(u)
+	local _changed
+	_changed, u = rank.update(u)   -- a rank design change replaces the unit
 	local acfg = alert.config()
 	if acfg and u.side == acfg.guard_side and u.variables.sw_alert_state == nil then
 		-- Reinforcements arriving after the alarm come in alert.

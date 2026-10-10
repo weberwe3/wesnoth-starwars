@@ -11,6 +11,8 @@
 -- over blue rank plaque, independent brass studs, dark Jedi violet marks.
 -- Creatures and objects have no style and no insignia. Stats are not
 -- changed: AMLAs keep the engine's default bonus (+3 HP, +20% XP, full heal).
+-- Units with redrawn rank designs (DATA designs) also change to them at
+-- rank II and III: same poses, gear earned in the field.
 --
 -- Each new rank adds one object (id sw_rank_insignia) whose plate covers the
 -- previous one exactly; objects are only ever added, so no unit is rebuilt
@@ -51,18 +53,52 @@ function rank.image(style, n)
 	return "misc/sw-rank-" .. style .. "-" .. n .. ".png"
 end
 
--- Make the insignia match the unit's rank. Returns true if it changed.
+-- The rank design (variation rank2/rank3, gen_hte_units.py RANK_NAMES) the
+-- unit should wear: the highest redrawn design at or below its rank, or ""
+-- for the base art. nil when the unit is in a variation the rank system does
+-- not own (e.g. "unarmed", SW_UNARMED): that look wins until SW_ARMED.
+function rank.design_for(u)
+	local entry = rank.DATA[u.type]
+	local current = u.variation or ""
+	if current ~= "" and not current:match("^rank%d$") then return nil end
+	local want = ""
+	for _i, n in ipairs(entry and entry.designs or {}) do
+		if rank.of(u) >= n then want = "rank" .. n end
+	end
+	return want
+end
+
+-- Switch the unit to its rank design, in place (unit:transform keeps the
+-- unit, its modifications -- AMLAs, insignia -- and its id; [modify_unit]
+-- re-created it with a placeholder underlying id). Hit points, experience
+-- and status are kept, as mainline [transform_unit] does. Returns the unit.
+function rank.apply_design(u)
+	local want = rank.design_for(u)
+	if want == nil or want == (u.variation or "") then return u end
+	local hp, xp = u.hitpoints, u.experience
+	local status = wml.get_child(u.__cfg, "status") or {}
+	if want == "" then u:transform(u.type) else u:transform(u.type, want) end
+	u.hitpoints, u.experience = hp, xp
+	for key, value in pairs(status) do u.status[key] = value end
+	core.log("rank", u.id .. " wears design " .. (want == "" and "base" or want))
+	return u
+end
+
+-- Make the insignia and design match the unit's rank. Returns true if the
+-- insignia changed, and the unit to use from now on (a design change
+-- replaces it).
 function rank.update(u)
 	local style = rank.style(u)
-	if not style then return false end
+	if not style then return false, u end
+	u = rank.apply_design(u)
 	local n = rank.of(u)
 	local shown = core.number(u.variables.sw_rank_shown, 0)
-	if n <= shown then return false end
+	if n <= shown then return false, u end
 	u:add_modification("object", { id = "sw_rank_insignia", T.effect{ apply_to = "image_mod",
 		add = "BLIT(" .. rank.image(style, n) .. "," .. rank.X .. "," .. rank.Y .. ")" } })
 	u.variables.sw_rank_shown = n
 	core.log("rank", u.id .. " shows rank " .. n .. " (" .. style .. ")")
-	return true
+	return true, u
 end
 
 function rank.status_line(u)
@@ -76,7 +112,9 @@ end
 function rank.on_post_advance()
 	local ctx = wesnoth.current.event_context
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
-	if u and rank.update(u) then
+	local changed
+	if u then changed, u = rank.update(u) end
+	if changed then
 		local viewer = core.viewing_side()
 		if viewer == nil or viewer < 1 then viewer = u.side end
 		if u:matches{ T.filter_vision{ side = viewer, visible = true } } then

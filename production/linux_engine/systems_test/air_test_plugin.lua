@@ -11,7 +11,7 @@ local PHASE = "main"
 local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "flanking", "ai_ranged", "check_ai_ranged",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "flanking", "ai_ranged", "check_ai_ranged",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "muzzle_flashes", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
@@ -155,6 +155,28 @@ local function plugin(events, context, info)
       check("dark Jedi wear violet marks", tostring(swt.level_up("t_cb").image_mods):find("sw%-rank%-darkside%-1") ~= nil)
       swt.place("sw_hero_pellaeon", 2, 9, 5, "t_pel")
       check("Imperial officers wear the rank plaque", tostring(swt.level_up("t_pel").image_mods):find("sw%-rank%-imperial%-1") ~= nil)
+      -- Rank designs: at rank II and III a type with redrawn art switches to
+      -- variation rank2 / rank3 (lua/sw_rank.lua); a hero disarmed by the
+      -- story (variation "unarmed") keeps that look.
+      local with_designs = {}
+      for ty, entry in pairs(rank.DATA) do
+        if entry.designs and #entry.designs > 0 then table.insert(with_designs, ty) end
+      end
+      table.sort(with_designs)
+      local design_type = with_designs[1]
+      if design_type then
+        local d = swt.place(design_type, 1, 13, 7, "t_design")
+        check("below rank II the base design is worn", rank.of(d) >= 2 or d.variation == "")
+        for _i = 1, 3 do
+          if rank.of(d) >= 2 then break end
+          d = swt.level_up("t_design")
+        end
+        local want = rank.DATA[design_type].designs[1] == 2 and "rank2" or ""
+        check("rank II wears its redrawn design (" .. design_type .. ")", d.variation == want, d.variation)
+        check("the design keeps the rank insignia", tostring(d.image_mods):find("sw%-rank%-") ~= nil)
+      else
+        check("rank designs: no type has redrawn rank art yet", true)
+      end
       local v = swt.place("sw_unit_wl_vornskr", 3, 11, 5, "t_vor")
       local vhp = v.max_hitpoints
       v = swt.level_up("t_vor")
@@ -434,6 +456,51 @@ local function plugin(events, context, info)
     -- Flanking (units/00_sw_specials.cfg): +10% to hit per armed unit hostile
     -- to the target on its far side as seen from the attacker, max +20%,
     -- offense only. Engine combat simulation with real unit positions.
+    -- Ability review 2026-10-10 (docs/balance/MISSION_BALANCE_REVIEW.md 3.7),
+    -- checked with the engine's own combat simulation.
+    function S.ability_review()
+      swt.clear()
+      local function idx(u, name)
+        for i, a in ipairs(u.attacks) do if a.name == name then return i end end
+      end
+      local function dmg(att, name, def)
+        local _a, _d, aw = wesnoth.simulate_combat(att, idx(att, name), def)
+        return aw.damage
+      end
+      local st = swt.place("sw_unit_im_stormtrooper", 2, 6, 10, "t_ab_st")
+      local ch = swt.place("sw_hero_chewbacca", 1, 5, 10, "t_ab_ch")
+      local full = dmg(ch, "wookiee_strength", st)
+      ch.hitpoints = math.floor(ch.max_hitpoints / 2) - 1
+      local hurt = dmg(ch, "wookiee_strength", st)
+      check("Wookiee rage: +25% melee below half hit points", math.abs(hurt - full * 1.25) <= 1 and hurt > full,
+        full .. " -> " .. hurt)
+      ch.hitpoints = math.ceil(ch.max_hitpoints / 2)
+      check("no rage at half hit points or more", dmg(ch, "wookiee_strength", st) == full)
+      ch:erase()
+      local wk = swt.place("sw_unit_wk_warrior", 1, 5, 10, "t_ab_wk")
+      local wfull = dmg(wk, "ryyk_blade", st)
+      wk.hitpoints = 5
+      check("Wookiee warriors rage too", dmg(wk, "ryyk_blade", st) > wfull)
+      local han = swt.place("sw_hero_han", 1, 3, 12, "t_ab_han")
+      check("Han Solo is a skirmisher", han:matches{ ability = "skirmisher" })
+      st:erase(); wk:erase(); han:erase()
+      -- Force hunter: vornskrs strike any Force user (Mara, Leia) harder, not only Luke.
+      local v = swt.place("sw_unit_wl_vornskr", 2, 6, 10, "t_ab_v")
+      local function vs(type, id)
+        local d = swt.place(type, 1, 5, 10, id)
+        local value = dmg(v, "fangs", d)
+        local res = d:resistance_against("blade")
+        d:erase()
+        return value, 6 * (100 - res) / 100
+      end
+      local mara, mara_base = vs("sw_hero_mara", "t_ab_mara")
+      local leia, leia_base = vs("sw_hero_leia", "t_ab_leia")
+      local hn, han_base = vs("sw_hero_han", "t_ab_han2")
+      check("Force hunter applies to Mara (+50%)", math.abs(mara - mara_base * 1.5) <= 1, mara .. " vs " .. mara_base)
+      check("Force hunter applies to Leia (+50%)", math.abs(leia - leia_base * 1.5) <= 1, leia .. " vs " .. leia_base)
+      check("no Force hunter bonus against a non-Force user", math.abs(hn - han_base) <= 1, hn .. " vs " .. han_base)
+    end
+
     function S.flanking()
       swt.clear()
       local function idx(u, name)

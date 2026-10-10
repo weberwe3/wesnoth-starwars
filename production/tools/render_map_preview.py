@@ -5,7 +5,9 @@ Each hex is drawn with its terrain's symbol image (the editor tile) from the
 add-on's and the installed engine's terrain definitions: base terrain first,
 then the overlay (forest, village, ...). Transitions between terrains, which
 the engine blends at run time, are not drawn, so the preview is blockier than
-the game; it is meant for judging layout, variety and readability.
+the game; it is meant for judging layout, variety and readability. The wall
+relief (utils/hte_terrain.cfg SW_WALL_RELIEF, gen_wall_relief.py) is drawn with
+the same neighbour rules as the game.
 
 Usage (art Python): render_map_preview.py MAP.map [MAP ...] --out DIR [--scale 0.5]
 """
@@ -51,6 +53,40 @@ def tile(name: str) -> Image.Image | None:
     return _cache[name]
 
 
+WALLS = {"Qwt": "timber", "Qwc": "colony", "Qwp": "palace", "Qwr": "rock", "Qib": "bulkhead"}
+
+
+def neighbours(x: int, y: int) -> dict[str, tuple[int, int]]:
+    odd = x % 2      # odd columns sit half a hex lower
+    return {"n": (x, y - 1), "s": (x, y + 1), "ne": (x + 1, y - 1 + odd), "se": (x + 1, y + odd),
+            "nw": (x - 1, y - 1 + odd), "sw": (x - 1, y + odd)}
+
+
+def draw_relief(img: Image.Image, grid: list[list[str]]) -> None:
+    def base(x, y):
+        if 0 <= y < len(grid) and 0 <= x < len(grid[y]):
+            return grid[y][x].partition("^")[0]
+        return None
+    for y, row in enumerate(grid):
+        for x in range(len(row)):
+            here = base(x, y)
+            pos = (54 * x, 72 * y + (36 if x % 2 else 0))
+            for d, (nx, ny) in neighbours(x, y).items():
+                there = base(nx, ny)
+                if there is None:
+                    continue
+                name = None
+                if here in WALLS and there not in WALLS and not there.startswith("X"):
+                    name = f"wall-relief-{WALLS[here]}-{d}"
+                elif here == "Qcb" and there not in ("Qcb", "Qkb"):
+                    name = f"wall-relief-bunker-{d}"
+                elif here not in WALLS and not here.startswith("X") and there in WALLS:
+                    name = f"wall-shadow-{d}"
+                t = tile(f"sw/{name}") if name else None
+                if t is not None:
+                    img.alpha_composite(t, pos)
+
+
 def render(map_path: Path, symbols: dict[str, str], scale: float) -> Image.Image:
     rows = [r for r in map_path.read_text(encoding="utf-8").splitlines() if r.strip() and "," in r]
     grid = [[c.strip().split(" ")[-1] for c in r.split(",")] for r in rows]
@@ -67,6 +103,7 @@ def render(map_path: Path, symbols: dict[str, str], scale: float) -> Image.Image
                     missing.add(part)
                     continue
                 img.alpha_composite(t, (px + (72 - t.width) // 2, py + (72 - t.height) // 2))
+    draw_relief(img, grid)
     if missing:
         print(f"{map_path.name}: no tile for {sorted(missing)}")
     return img.resize((int(img.width * scale), int(img.height * scale)), Image.LANCZOS)
