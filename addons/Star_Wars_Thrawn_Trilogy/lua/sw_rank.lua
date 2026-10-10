@@ -68,15 +68,20 @@ function rank.design_for(u)
 	return want
 end
 
--- Switch the unit to its rank design. Returns the unit to use from now on:
--- [modify_unit] replaces the unit, so the old proxy is no longer valid.
+-- Switch the unit to its rank design, in place (unit:transform keeps the
+-- unit, its modifications -- AMLAs, insignia -- and its id; [modify_unit]
+-- re-created it with a placeholder underlying id). Hit points, experience
+-- and status are kept, as mainline [transform_unit] does. Returns the unit.
 function rank.apply_design(u)
 	local want = rank.design_for(u)
 	if want == nil or want == (u.variation or "") then return u end
-	local id = u.id
-	wesnoth.wml_actions.modify_unit{ T.filter{ id = id }, variation = want }
-	core.log("rank", id .. " wears design " .. (want == "" and "base" or want))
-	return wesnoth.units.get(id) or u
+	local hp, xp = u.hitpoints, u.experience
+	local status = wml.get_child(u.__cfg, "status") or {}
+	if want == "" then u:transform(u.type) else u:transform(u.type, want) end
+	u.hitpoints, u.experience = hp, xp
+	for key, value in pairs(status) do u.status[key] = value end
+	core.log("rank", u.id .. " wears design " .. (want == "" and "base" or want))
+	return u
 end
 
 -- Make the insignia and design match the unit's rank. Returns true if the

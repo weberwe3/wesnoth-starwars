@@ -105,6 +105,10 @@ POSES = {
 }
 # Units whose ranged attack is not a gun.
 POSE_OVERRIDES = {
+    # A crew-served gun is carried when the team moves, not set up.
+    "sw-unit-nr-eweb-team": {w: f"the crew walking ({p}), carrying the big gun and its power pack between them"
+                             for w, p in (("walk-1", "near leg forward"), ("walk-2", "legs passing"),
+                                          ("walk-3", "far leg forward"), ("walk-4", "legs passing"))},
     "sw-hero-luke": {"ranged-1": "raising the held glowing blade to guard",
                      "ranged-2": "the held glowing blade turning aside a small bright red bolt"},
 }
@@ -167,14 +171,19 @@ sheet.convert("RGB").save(r"{out}")
     subprocess.run([str(g.codex_art.art_python()), "-c", script], check=True, capture_output=True, timeout=120)
 
 
+# Units whose high-resolution sheet in ~/art-references is an earlier design
+# that later art replaced (the installed idle sprite is used instead).
+SUPERSEDED_SHEETS = {"sw-hero-khabarakh", "sw-unit-im-at-st"}
+
+
 def idle_reference(slug: str, out: Path) -> None:
     """The unit's idle sprite as Codex's reference: its idle frame cut from the
     unit's original high-resolution sheet (~/art-references, where the installed
     frames were scaled down from), or else the installed 72x72 idle sprite
     enlarged 8x. On a flat magenta key."""
     uid = slug.replace("-", "_")
-    sheet = next((g.REFERENCES / f"{p}-{uid}.png" for p in ("owner", "codex")
-                  if (g.REFERENCES / f"{p}-{uid}.png").exists()), None)
+    sheet = None if slug in SUPERSEDED_SHEETS else next(
+        (g.REFERENCES / f"{p}-{uid}.png" for p in ("owner", "codex") if (g.REFERENCES / f"{p}-{uid}.png").exists()), None)
     script = f"""
 import sys
 sys.path.insert(0, r"{TOOLS}")
@@ -354,6 +363,36 @@ print("ok")
 """)
 
 
+def craft_frames(slug: str, rank: int, design_idle: Path, preview: Path | None, install: bool) -> str | None:
+    """Craft keep one silhouette in every pose (the base frames differ only by a
+    slight bank), and Codex redrawing a craft's full sheet changes its design.
+    So a craft's rank art is its approved design sprite in every pose, with the
+    base unit's own death frames (the explosion and wreck need no new paint).
+    The generator keeps the base flash overlay for craft: the geometry is the same."""
+    names = install_names(slug)
+    dest = UNITS / f"{slug}-rank{rank}"
+    base = UNITS / slug
+    return _run(f"""
+import os
+from PIL import Image
+names = {names!r}
+design = Image.open(r"{design_idle}").convert("RGBA")
+out = {{n: (Image.open(r"{base}/" + n + ".png").convert("RGBA") if n.startswith("death") else design) for n in names}}
+preview = {str(preview)!r}
+if preview != "None":
+    strip = Image.new("RGBA", (len(names) * 144, 288), (70, 90, 60, 255))
+    for i, n in enumerate(names):
+        strip.alpha_composite(Image.open(r"{base}/" + n + ".png").convert("RGBA").resize((144, 144), Image.NEAREST), (i * 144, 0))
+        strip.alpha_composite(out[n].resize((144, 144), Image.NEAREST), (i * 144, 144))
+    strip.save(preview)
+if {install!r}:
+    os.makedirs(r"{dest}", exist_ok=True)
+    for n, f in out.items():
+        f.save(r"{dest}/" + n + ".png", optimize=True)
+print("ok")
+""")
+
+
 def codex_sheet(prompt: str, ref: Path, workspace: Path, stem: str, attempts: int, check) -> tuple[Path | None, list]:
     history, corrections = [], []
     for attempt in range(1, attempts + 1):
@@ -375,11 +414,15 @@ def codex_sheet(prompt: str, ref: Path, workspace: Path, stem: str, attempts: in
     return None, history
 
 
-def generate(slug: str, rank: int, design: str, out_dir: Path, attempts: int) -> dict:
+def generate(slug: str, rank: int, design: str, out_dir: Path, attempts: int, frames_only: bool = False) -> dict:
     src = source_art(slug, rank)
     hires_prev = out_dir / f"{slug}-rank{rank - 1}-design-hires.png"
     if not (src / "idle-1.png").exists() and not hires_prev.exists():
         return {"unit": slug, "rank": rank, "state": "failed", "history": [{"issue": f"no source art {src.name}"}]}
+    design_png = out_dir / f"{slug}-rank{rank}-design.png"
+    if frames_only and design_png.exists():
+        h1 = [{"issue": "design reused"}]
+        return frames_step(slug, rank, design_png, out_dir, attempts, h1)
     # Step 1: the design, redrawn from the idle sprite.
     ws = workspace_for(slug, rank, "design")
     ref = ws / "idle-reference.png"
@@ -398,6 +441,14 @@ def generate(slug: str, rank: int, design: str, out_dir: Path, attempts: int) ->
     if sheet is None:
         return {"unit": slug, "rank": rank, "state": "failed", "step": "design", "history": h1}
     shutil.copyfile(sheet, out_dir / f"{slug}-rank{rank}-design-sheet.png")
+    if slug in CRAFT:
+        problem = craft_frames(slug, rank, design_png, out_dir / f"{slug}-rank{rank}-preview.png", False)
+        state = "generated" if not problem else "failed"
+        return {"unit": slug, "rank": rank, "state": state, "step": "craft", "history": h1 + [{"issue": problem}]}
+    return frames_step(slug, rank, design_png, out_dir, attempts, h1)
+
+
+def frames_step(slug: str, rank: int, design_png: Path, out_dir: Path, attempts: int, h1: list) -> dict:
     # Step 2: the full frame set, redrawn from the new idle sprite.
     ws2 = workspace_for(slug, rank, "frames")
     ref2 = ws2 / "idle-reference.png"
@@ -423,6 +474,7 @@ def main() -> int:
     parser.add_argument("--only", action="append")
     parser.add_argument("--attempts", type=int, default=3)
     parser.add_argument("--install", action="store_true", help="install already generated sheets from --out-dir")
+    parser.add_argument("--frames-only", action="store_true", help="reuse the approved design; redraw the frames")
     args = parser.parse_args()
     jobs = json.loads(JOBS.read_text(encoding="utf-8"))
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -431,13 +483,18 @@ def main() -> int:
         if slug in jobs.get("_hold", []):
             print(f"{slug}: held (base art pending)", flush=True)
             continue
+        if args.install and slug in CRAFT:
+            problem = craft_frames(slug, args.rank, args.out_dir / f"{slug}-rank{args.rank}-design.png", None, True)
+            print(f"{slug} rank {args.rank}: {'installed' if not problem else 'FAILED ' + problem}", flush=True)
+            failed += bool(problem)
+            continue
         if args.install:
             problem = import_frames(slug, args.rank, args.out_dir / f"{slug}-rank{args.rank}.png",
                                     args.out_dir / f"{slug}-rank{args.rank}-design.png", None, True)
             print(f"{slug} rank {args.rank}: {'installed' if not problem else 'FAILED ' + problem}", flush=True)
             failed += bool(problem)
             continue
-        outcome = generate(slug, args.rank, jobs[slug][str(args.rank)], args.out_dir, args.attempts)
+        outcome = generate(slug, args.rank, jobs[slug][str(args.rank)], args.out_dir, args.attempts, args.frames_only)
         print(json.dumps(outcome), flush=True)
         failed += outcome["state"] != "generated"
         if any(h.get("issue") == "quota" for h in outcome["history"]):

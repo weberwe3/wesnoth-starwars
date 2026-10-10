@@ -82,14 +82,19 @@ sheet.convert("RGB").save(r"{out}")
     subprocess.run([str(g.codex_art.art_python()), "-c", script], check=True, capture_output=True, timeout=120)
 
 
+# Units whose high-resolution sheet in ~/art-references is an earlier design
+# that later art replaced (the installed idle sprite is used instead).
+SUPERSEDED_SHEETS = {"sw-hero-khabarakh", "sw-unit-im-at-st"}
+
+
 def idle_reference(slug: str, out: Path) -> None:
     """The unit's idle sprite as Codex's reference: its idle frame cut from the
     unit's original high-resolution sheet (~/art-references, where the installed
     frames were scaled down from), or else the installed 72x72 idle sprite
     enlarged 8x. On a flat magenta key."""
     uid = slug.replace("-", "_")
-    sheet = next((g.REFERENCES / f"{p}-{uid}.png" for p in ("owner", "codex")
-                  if (g.REFERENCES / f"{p}-{uid}.png").exists()), None)
+    sheet = None if slug in SUPERSEDED_SHEETS else next(
+        (g.REFERENCES / f"{p}-{uid}.png" for p in ("owner", "codex") if (g.REFERENCES / f"{p}-{uid}.png").exists()), None)
     script = f"""
 import sys
 sys.path.insert(0, r"{TOOLS}")

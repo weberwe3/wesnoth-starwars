@@ -1507,7 +1507,10 @@ def rank_variation(u: dict, n: int) -> str:
     body = unit_wml(u, with_variations=False).replace(f"units/{s}/", f"units/{s}-rank{n}/")
     # The base art's muzzle-flash point does not fit the redrawn frames, which
     # paint their own flash (gen_codex_rank_designs.py).
-    body = re.sub(r"~BLIT\(projectiles/sw-flash-[^)]*\)", "", body).split("\n")
+    # Craft keep the base geometry (gen_codex_rank_designs.craft_frames) and its flash point.
+    if u["mt"] != "sw_starfighter":
+        body = re.sub(r"~BLIT\(projectiles/sw-flash-[^)]*\)", "", body)
+    body = body.split("\n")
     body = [line for line in body[1:-1] if not line.startswith("    id=")]
     return "\n".join(["[variation]", f"    variation_id=rank{n}", f"    variation_name= _ \"{RANK_NAMES[n]}\"",
                       "    hide_help=yes", "    inherit=no"] + body + ["[/variation]"])
