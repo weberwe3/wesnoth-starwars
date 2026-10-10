@@ -263,5 +263,11 @@
   ],
   "describe": "a large orbital shipyard platform: a skeletal grey framework with work lights, cranes and a half-built hull inside",
   "notes": "it is a stationary orbital platform: idle and move blink the work lights and swing a crane; melee and ranged frames fire point-defence turrets; defend shows sparks; death breaks apart in explosions. Redraw it in the template's pixel-art style; the attached second image only shows its design."
+ },
+ "sw_unit_nr_trooper": {
+  "ref": null,
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a rebel infantry soldier in full field gear: a rounded grey-white combat helmet with a dark visor band and chin strap, olive-green field fatigues, a padded tan combat vest with ammunition pouches and webbing, dark gloves and knee-high boots, carrying a long black energy rifle with a stock and scope. He must read clearly as a military soldier, not a civilian: no suit, no tie, no brimmed hat",
+  "notes": "standing and idle hold the rifle across the body at the ready (idle frames shift weight and glance around); move frames are a walk with alternating legs and the rifle held; melee is a rifle-butt strike; ranged frames shoulder the rifle and fire a bright energy bolt; defend crouches behind the raised rifle; death frames fall and lie still."
  }
 }
