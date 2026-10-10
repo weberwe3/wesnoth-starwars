@@ -10,7 +10,7 @@
 --                          (WML variable sw_ach_withdrawals, SW_HERO_WITHDRAWS)
 --   sw_swift               sub-achievement per mission: victory with at least
 --                          a third of the turns unused (hold-out missions excluded)
---   sw_ace                 progress: enemy starfighters/warships destroyed by side 1
+--   sw_ace                 progress: armed enemy starfighters/warships destroyed by side 1
 --   Tactics group          trilogy complete; Force powers, overwatch, sweeps, air calls
 
 local ach = {}
@@ -89,8 +89,10 @@ function ach.on_die()
 	local killer = wesnoth.units.get(ctx.x2, ctx.y2)
 	if not victim or not killer or killer.side ~= ach.PLAYER_SIDE then return end
 	if not wesnoth.sides.is_enemy(victim.side, ach.PLAYER_SIDE) then return end
+	-- Armed ships only: cloaked asteroids, shield generators and shipyard
+	-- platforms share the capital-ship movement type but are not kills.
 	local ut = wesnoth.unit_types[victim.type]
-	if ut and ach.SHIPS[ut.__cfg.movement_type] then ach.progress(group, "sw_ace") end
+	if ut and ach.SHIPS[ut.__cfg.movement_type] and #victim.attacks > 0 then ach.progress(group, "sw_ace") end
 end
 
 -- A tactic used by unit u (Force power, overwatch, sweep) or air support for a side.
