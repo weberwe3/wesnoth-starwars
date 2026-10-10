@@ -7,7 +7,7 @@
 --
 -- Systems: the Force (sw_force), overwatch (sw_overwatch), sensors and
 -- electronic warfare (sw_ew), Thrawn Doctrine (sw_doctrine), off-map air
--- support (sw_air) and rank insignia (sw_rank).
+-- support (sw_air), rank insignia (sw_rank) and achievements (sw_achievements).
 --
 -- Event precedence (all handlers are registered here, nowhere else):
 --   prestart    1. carried-over state reset (overwatch, Force, EW, doctrine)
@@ -44,19 +44,32 @@ local air = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_air.lua")
 local rank = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_rank.lua")
 local alert = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua")
 local range = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_range.lua")
+local achievements = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_achievements.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements }
 
 -- Cross-system wiring (hooks are plain Lua tables, rebuilt on every load).
 ew.hooks.bonus = { doctrine.ew_bonus }
 ew.hooks.on_decoy_exposed = { doctrine.on_decoy_exposed }
-ew.on_tactic = function(u, key) doctrine.observe_tactic(u, key) end
+ew.on_tactic = function(u, key)
+	doctrine.observe_tactic(u, key)
+	if key == "sweep" then achievements.on_tactic(u.side, "sw_sweep") end
+end
 overwatch.hooks.modify = { doctrine.overwatch_modify }
-overwatch.on_enter = function(u) doctrine.observe_tactic(u, "overwatch") end
-force.on_power_used = function(u, power_id) doctrine.observe_tactic(u, "force_" .. power_id) end
-air.hooks.on_call = { function(side, sortie_id, observer) doctrine.observe_tactic(observer, "air_" .. sortie_id) end }
+overwatch.on_enter = function(u)
+	doctrine.observe_tactic(u, "overwatch")
+	achievements.on_tactic(u.side, "sw_overwatch")
+end
+force.on_power_used = function(u, power_id)
+	doctrine.observe_tactic(u, "force_" .. power_id)
+	achievements.on_tactic(u.side, "sw_force")
+end
+air.hooks.on_call = {
+	function(side, sortie_id, observer) doctrine.observe_tactic(observer, "air_" .. sortie_id) end,
+	function(side) achievements.on_tactic(side, "sw_air") end,
+}
 
 local function on(name, id, action)
 	wesnoth.game_events.add{ name = name, id = id, first_time_only = false, action = action }
@@ -441,5 +454,9 @@ function sw_systems.digest()
 	for i = 1, #text do h = (h * 33 + text:byte(i)) % 2147483647 end
 	return string.format("%d:%d", h, #text), text
 end
+
+-- Achievements (lua/sw_achievements.lua, achievements.cfg).
+on("victory", "sw_ach_victory", achievements.on_victory)
+on("die", "sw_ach_die", achievements.on_die)
 
 core.log("systems", "tactical systems loaded")
