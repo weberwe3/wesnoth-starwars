@@ -27,7 +27,8 @@
 --               5. EW: that side's sweeps end, decoys/reveals expire, pictures
 --               6. doctrine: composition, studied marks, prediction
 --   side turn end  1. doctrine observes the side's formation
---                  2. AI sides may call air support, sweep, then enter overwatch
+--                  2. AI sides may call air support and sweep; then units of
+--                     every side that kept their attack enter overwatch
 --   post advance   rank insignia (promotion or AMLA)
 --   die / unit placed / recruit  refreshes and initialisation
 -- Force displacement (Push/Pull) moves units without firing events, so it

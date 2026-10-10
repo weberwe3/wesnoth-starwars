@@ -14,7 +14,7 @@ local STEPS = {
   "fp", "targets", "slam_wall", "check_slam_wall", "slam_occupied", "check_slam_occupied",
   "push_pull", "world_field", "null_outline", "menu_text", "menu_dialog", "check_menu_dialog", "slam_edge", "check_slam_edge", "fields", "ow_fire", "check_ow_fire",
   "multi_fire", "check_multi", "deflect", "check_deflect", "deflect_field", "check_deflect_field",
-  "hidden_and_trick", "arcs_and_hooks", "ai_turn", "check_ai_turn", "recursion", "check_recursion", "sense_choke", "check_choke", "prepare_save",
+  "hidden_and_trick", "arcs_and_hooks", "auto_overwatch", "ai_turn", "check_ai_turn", "recursion", "check_recursion", "sense_choke", "check_choke", "prepare_save",
 }
 
 local function plugin(events, context, info)
@@ -503,6 +503,39 @@ local function plugin(events, context, info)
         cfg.accuracy == -10 and cfg.weapons[1] == "blaster_rifle")
       local beast = place("sw_unit_wl_vornskr", 2, 18, 12, "t_beast")
       check("units without the overwatch ability cannot overwatch", ow.config(beast) == nil and not ow.can_enter(beast))
+    end
+
+    -- Automatic overwatch (owner direction 2026-10-11): at the end of a side's
+    -- turn -- the player's as well as the AI's -- every unit that can hold
+    -- overwatch and kept its attack goes on overwatch; chosen entries alone
+    -- feed the observation hook (Thrawn Doctrine).
+    function S.auto_overwatch()
+      clear()
+      local side = wesnoth.sides[1]
+      check("side 1 is the player in this test", side.controller == "human")
+      place("sw_unit_nr_trooper", 1, 6, 6, "t_auto_idle")
+      local used = place("sw_unit_nr_trooper", 1, 8, 6, "t_auto_used")
+      used.attacks_left = 0
+      place("sw_unit_wl_vornskr", 1, 10, 6, "t_auto_beast")
+      local observed = 0
+      local saved = ow.on_enter
+      ow.on_enter = function() observed = observed + 1 end
+      ow.on_side_turn_end(1)
+      check("a player unit that kept its attack goes on overwatch at turn end", u("t_auto_idle").variables.sw_ow_active == true)
+      check("a unit that attacked this turn does not", not u("t_auto_used").variables.sw_ow_active)
+      check("a unit without the overwatch ability does not", not u("t_auto_beast").variables.sw_ow_active)
+      check("automatic overwatch is not reported as a chosen tactic", observed == 0, observed)
+      ow.clear(u("t_auto_idle"))
+      u("t_auto_idle").attacks_left = 1
+      ow.enter(u("t_auto_idle"))
+      check("overwatch chosen from the menu is still reported", observed == 1, observed)
+      ow.on_enter = saved
+      ow.clear(u("t_auto_idle"))
+      u("t_auto_idle").attacks_left = 1
+      wml.variables.sw_overwatch_auto = "no"
+      ow.on_side_turn_end(1)
+      check("sw_overwatch_auto=no turns it off", not u("t_auto_idle").variables.sw_ow_active)
+      wml.variables.sw_overwatch_auto = nil
     end
 
     -- AI safety: hand side 2 to the AI for one turn; it may enter overwatch at

@@ -336,7 +336,7 @@ before installing; off-model redraws were rejected and redone.
   plaques, forest-moon camouflage ponchos, Wookiee war armour, Jedi robes and
   cloaks for the Force users, squadron-leader paint and kill markings for
   starfighters, Lando's general's tunic, Mara's black cloak, Noghri clan
-  markings. 20 units have a rank II design and 18 a rank III design; where a
+  markings. 21 units have a rank II design and 20 a rank III design; where a
   tier could not be drawn on-model the unit keeps its previous tier's look
   (E-Web rank II: base look; Luke, Y-wing rank III: rank II look).
 - **Wall relief.** Interior walls and bunker aprons were flat. Edge pieces

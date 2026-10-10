@@ -332,6 +332,20 @@ Not changed: Noghri stealth and backstab, Thrawn's tactical genius, the
 leaders' leadership, the starfighter specials and the Force profiles already
 match their sources and their roles.
 
+### 3.8 Automatic overwatch (2026-10-11)
+
+Owner direction: a unit that does not use its attack during a turn and can go
+on overwatch takes it automatically at the end of the turn. This was already
+the rule for AI sides; it now applies to the player too
+(`lua/sw_overwatch.lua`, `ow.on_side_turn_end`). Units that attacked, used a
+power or sensor sweep that costs the attack, or are dazed are left as they
+are. Choosing Overwatch from the menu still takes it earlier (and ends the
+unit's movement). Automatic entries are not reported to Thrawn's Doctrine,
+which learns only from overwatch the player chooses, so the Grand Admiral
+does not gain Insight every turn for free. Off switch:
+`sw_overwatch_auto=no` (all sides); `sw_overwatch_ai=no` still turns it off
+for AI sides only.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and
