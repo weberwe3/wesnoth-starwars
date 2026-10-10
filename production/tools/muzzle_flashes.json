@@ -1,15 +1,16 @@
 {
  "sw-hero-bel-iblis": {
   "blit": [
-   49,
+   58,
    28
   ],
-  "kind": "derived"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-hero-cbaoth": {
   "blit": [
    58,
-   32
+   28
   ],
   "color": "blue",
   "kind": "painted"
@@ -30,10 +31,11 @@
  },
  "sw-hero-karrde": {
   "blit": [
-   50,
-   30
+   51,
+   31
   ],
-  "kind": "posed"
+  "color": "orange",
+  "kind": "painted"
  },
  "sw-hero-khabarakh": {
   "blit": [
@@ -111,9 +113,10 @@
  "sw-unit-bi-commando": {
   "blit": [
    50,
-   30
+   32
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-unit-im-at-st": {
   "blit": [
@@ -279,10 +282,11 @@
  },
  "sw-unit-nr-commando": {
   "blit": [
-   49,
-   33
+   58,
+   32
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-unit-nr-docked-warship": {
   "blit": [
@@ -310,8 +314,8 @@
  },
  "sw-unit-nr-field-medic": {
   "blit": [
-   52,
-   31
+   53,
+   30
   ],
   "color": "blue",
   "kind": "painted"
@@ -350,10 +354,11 @@
  },
  "sw-unit-nr-sergeant": {
   "blit": [
-   46,
-   28
+   58,
+   31
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-unit-nr-slicer-team": {
   "blit": [
@@ -427,17 +432,19 @@
  },
  "sw-unit-sm-smuggler": {
   "blit": [
-   43,
-   29
+   54,
+   31
   ],
-  "kind": "derived"
+  "color": "orange",
+  "kind": "painted"
  },
  "sw-unit-sm-veteran": {
   "blit": [
-   53,
-   36
+   54,
+   30
   ],
-  "kind": "posed"
+  "color": "orange",
+  "kind": "painted"
  },
  "sw-unit-wk-lookout": {
   "blit": [

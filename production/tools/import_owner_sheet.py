@@ -64,7 +64,20 @@ def figures(img: Image.Image, per_row: tuple[int, int] = (6, 6)) -> list[Image.I
     h, w, _ = a.shape
     corners = np.array([a[2, 2], a[2, w - 3], a[h - 3, 2], a[h - 3, w - 3]])
     bg = np.median(corners, axis=0)
-    fg = np.sqrt(((a - bg) ** 2).sum(-1)) > 40
+    dist = np.sqrt(((a - bg) ** 2).sum(-1))
+    fg = dist > 40
+    # Clothing close to the backdrop colour (an olive coat on a green sheet)
+    # falls under that threshold and would be punched out, leaving the coat's
+    # buttons and highlights as speckles. Near-background regions enclosed by
+    # the figure stay figure unless they are the flat backdrop itself (a real
+    # gap between arm and body is drawn in the exact background colour).
+    from scipy import ndimage
+    near, n = ndimage.label(~fg)
+    if n:
+        border = set(np.unique(np.concatenate([near[0], near[-1], near[:, 0], near[:, -1]])))
+        mean_dist = ndimage.mean(dist, near, range(1, n + 1))
+        keep = np.array([i not in border and mean_dist[i - 1] > 16 for i in range(1, n + 1)])
+        fg |= np.concatenate([[False], keep])[near]
     # Label rows: yellow text spread across the sheet (in at least four
     # places along the row); a painted muzzle flash is yellow too, but only in
     # one frame. The text (and its anti-aliased edge) is removed from those

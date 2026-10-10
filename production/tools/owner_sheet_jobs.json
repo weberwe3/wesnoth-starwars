@@ -314,5 +314,68 @@
   "template": "codex-sw_unit_nr_rifle_squad.png",
   "describe": "a rebel infantry soldier in full field gear: a rounded grey-white combat helmet with a dark visor band and chin strap, olive-green field fatigues, a padded tan combat vest with ammunition pouches and webbing, dark gloves and knee-high boots, carrying a long black energy rifle with a stock and scope. He must read clearly as a military soldier, not a civilian: no suit, no tie, no brimmed hat",
   "notes": "standing and idle hold the rifle across the body at the ready (idle frames shift weight and glance around); move frames are a walk with alternating legs and the rifle held; melee is a rifle-butt strike; ranged frames shoulder the rifle and fire a bright energy bolt; defend crouches behind the raised rifle; death frames fall and lie still."
+ },
+ "sw_hero_bel_iblis": {
+  "ref": [
+   "portrait-sw-hero-bel-iblis.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a distinguished older general with swept-back grey hair, in a long olive-green greatcoat with a high collar over a dark uniform, a brown belt and dark boots, carrying a small energy pistol",
+  "notes": "standing and idle stand tall and composed, idle frames clasp hands behind the back and look into the distance; melee is a punch; ranged frames raise the pistol one-handed and fire a bright blue bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_hero_karrde": {
+  "ref": [
+   "portrait-sw-hero-karrde.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a lean, dark-haired man with a trimmed beard and a calm, clever expression, in a tan leather jacket over a dark shirt, dark trousers and boots, carrying a small energy pistol",
+  "notes": "standing and idle stand relaxed with the pistol held low, idle frames glance aside with a faint smile; melee is a punch; ranged frames raise the pistol and fire a bright orange bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_bi_commando": {
+  "ref": [
+   "portrait-sw-unit-bi-commando.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a special-forces commando in tan and brown armour plates over fatigues, a tan combat helmet with a dark visor, webbing and pouches, gloves and boots, carrying a compact energy rifle",
+  "notes": "standing and idle hold the rifle at the ready, idle frames scan left and right; melee is a rifle-butt strike; ranged frames shoulder the rifle and fire a bright blue bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_nr_commando": {
+  "ref": [
+   "portrait-sw-unit-nr-commando.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a jungle commando with a short beard, a camouflage cap and green-and-brown camouflage fatigues, a tactical vest, gloves and boots, carrying a short energy carbine and a knife on the belt",
+  "notes": "standing and idle hold the carbine at the ready, idle frames check the carbine and glance around; melee frames slash with a combat knife; ranged frames shoulder the carbine and fire a bright blue bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_nr_sergeant": {
+  "ref": [
+   "portrait-sw-unit-nr-sergeant.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a veteran infantry sergeant in a grey-white field helmet with a chin strap, olive fatigues and a padded grey combat vest, gloves and boots, carrying a long energy rifle",
+  "notes": "standing and idle hold the rifle across the body, idle frames point forward giving an order; melee is a rifle-butt strike; ranged frames shoulder the rifle and fire a bright blue bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_sm_smuggler": {
+  "ref": [
+   "portrait-sw-unit-sm-smuggler.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a young human smuggler with tousled brown hair and stubble, in a worn brown leather jacket over a dark shirt, dark trousers and boots, a holster on the hip, carrying a small energy pistol",
+  "notes": "standing and idle stand with a cocky slouch, idle frames spin the pistol and look around; melee frames slash with a small knife; ranged frames raise the pistol and fire a bright orange bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
+ },
+ "sw_unit_sm_veteran": {
+  "ref": [
+   "portrait-sw-unit-sm-veteran.png",
+   null
+  ],
+  "template": "codex-sw_unit_nr_rifle_squad.png",
+  "describe": "a hard-bitten bald mercenary with a scarred face, in a long dark brown coat over light armour, dark trousers and boots, carrying a heavy energy pistol",
+  "notes": "standing and idle stand with the pistol held low, idle frames roll the shoulders and look around coldly; melee frames slash with a knife; ranged frames raise the pistol and fire a bright orange bolt; move frames are a walk with alternating legs; defend braces and flinches; death frames fall and lie still."
  }
 }
