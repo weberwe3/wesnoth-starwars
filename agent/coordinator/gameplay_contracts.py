@@ -18,7 +18,11 @@ from production.contract_store import ContractStoreError, load_contracts
 
 ADDON_ROOT = "addons/Star_Wars_Thrawn_Trilogy"
 MAX_DIAGNOSTIC_CHARS = 6000
-MAX_HISTORICAL_TICKETS = 200
+# Upper bound on the first-parent add-on commits the historical retention
+# check walks (a sanity limit on the inventory, not a project limit). Raised
+# from 200 when main reached 200 add-on commits (2026-10-11): at the limit
+# every new add-on change failed CI with "Historical validation unavailable".
+MAX_HISTORICAL_TICKETS = 1000
 # A base code, a base^overlay pair, or an overlay-only code (mainline defines
 # overlays such as villages and forests as string=^Vhc).
 _TERRAIN_TOKEN = re.compile(r"^(?:[A-Za-z0-9]{1,4}(?:\^[A-Za-z0-9]{1,4})?|\^[A-Za-z0-9]{1,4})$")
