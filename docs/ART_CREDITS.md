@@ -32,7 +32,7 @@ Units whose sprite frames come from the sheet:
 - `sw-unit-im-stormtrooper` (replaced by an owner-supplied sheet, below)
 - `sw-unit-im-officer`
 - `sw-unit-im-royal-guard`
-- `sw-unit-nr-trooper`
+- `sw-unit-nr-trooper` (replaced by a Codex sheet, below)
 - `sw-unit-nr-sergeant`
 - `sw-unit-nr-commando`
 - `sw-unit-bi-commando`
@@ -135,6 +135,11 @@ installed with `import_owner_sheet.py --palette-from-all`.
   214, recoloured to its ochre tracked design).
 - Codemus: `sw-unit-wy-myneyrshi`. Tactical-Sandwiches: `sw-unit-wl-vornskr`.
 - No reference: `sw-unit-wy-psadan` (from its written description).
+- No reference: `sw-unit-nr-trooper` (2026-10-09, from its written description,
+  with the `sw-unit-nr-rifle-squad` sheet as the template). The sheet-cut sprite
+  read as a man in a blue suit and hat; the new one wears a field helmet,
+  olive fatigues and a combat vest, matching its portrait. Its firing frame
+  paints a blue bolt, so it is a painted flash.
 - `sw-unit-nr-eweb-team`'s standing frame is its crouched idle-1 (behind the
   gun), so standing and idle do not alternate with and without the gun.
 - `sw-unit-nr-rifle-squad` previously used a mainline image; it now has its own
