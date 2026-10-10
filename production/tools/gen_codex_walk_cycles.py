@@ -102,6 +102,14 @@ if sheet:
         fig = o.figures(Image.open(sheet))[1]          # idle-1 of the 12-frame sheet
     except SystemExit:
         fig = None
+if fig is not None:
+    # The sheet must still be this unit's art: a later redraw (e.g. owner art)
+    # may have replaced it. Compare mean colours with the installed idle sprite.
+    import numpy as np
+    a = np.asarray(fig.convert("RGBA")).astype(int)
+    b = np.asarray(Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")).astype(int)
+    if np.abs(a[a[..., 3] > 0][:, :3].mean(0) - b[b[..., 3] > 0][:, :3].mean(0)).sum() > 30:
+        fig = None
 if fig is None:
     f = Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")
     f = f.crop(f.getbbox())
@@ -122,13 +130,32 @@ sys.path.insert(0, r"{TOOLS}")
 import numpy as np
 from PIL import Image
 import import_owner_sheet as o
-figs = o.figures(Image.open(r"{sheet}"), (5,))
+
+# Fragments well apart from the figure (bits of a frame label), dropped at
+# full resolution before scaling: below 0.3% of the figure and over 8 px away.
+def drop_fragments(fig):
+    a = np.asarray(fig.convert("RGBA")).copy()
+    lab, k = ndimage.label(a[..., 3] > 0)
+    if k > 1:
+        sizes = ndimage.sum(np.ones_like(lab), lab, range(1, k + 1))
+        main = lab == (int(np.argmax(sizes)) + 1)
+        near = ndimage.binary_dilation(main, iterations=8)
+        for i, v in enumerate(sizes):
+            piece = lab == i + 1
+            if v < 0.003 * sizes.max() and not (piece & near).any():
+                a[piece, 3] = 0
+    return Image.fromarray(a, "RGBA")
+
+from scipy import ndimage
+figs = [drop_fragments(f) for f in o.figures(Image.open(r"{sheet}"), (5,))]
 ref = np.asarray(Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")).astype(int)
 for fig in figs:
     f = np.asarray(fig.convert("RGBA")).astype(int)
-    # Identity gate: every frame keeps the idle sprite's colours (mean within 20).
+    # Identity gate: every frame keeps the idle sprite's colours (mean within 45:
+    # redraws in another palette measured 69-287; faithful ones with Codex's
+    # slight colour grading 20-35). A coarse gate: previews are still reviewed.
     diff = np.abs(f[f[..., 3] > 0][:, :3].mean(0) - ref[ref[..., 3] > 0][:, :3].mean(0)).sum()
-    if diff > 20:
+    if diff > 45:
         raise SystemExit(f"a frame changed colour ({{diff:.0f}})")
 installed = Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")
 box = installed.getbbox()
@@ -143,12 +170,6 @@ out = {{n: made[o.NAMES[i + 1]] for i, n in enumerate(names)}}
 stand = made["standing"].getbbox()
 if abs((stand[3] - stand[1]) - (box[3] - box[1])) > 2:
     raise SystemExit("idle height mismatch")
-preview = {str(preview)!r}
-if preview != "None":
-    strip = Image.new("RGBA", (6 * 288, 288), (70, 90, 60, 255))
-    for i, f in enumerate([installed, Image.open(r"{UNITS / slug}/move-1.png").convert("RGBA")] + list(out.values())):
-        strip.alpha_composite(f.resize((288, 288), Image.NEAREST), (i * 288, 0))
-    strip.save(preview)
 # Specks of backdrop green the cut kept as "effects" (bright greens survive
 # for laser light): tiny isolated green pieces are dropped. A lightsaber
 # blade is one large piece and stays.
@@ -162,7 +183,7 @@ for n, f in out.items():
         if (lab == i).sum() <= 4:
             a[lab == i, 3] = 0
     c = a[..., :3].astype(int)
-    a[(a[..., 3] > 0) & (c[..., 0] > c[..., 1] + 90) & (c[..., 2] > c[..., 1] + 90), 3] = 0   # magenta key inside
+    a[(a[..., 3] > 0) & (c[..., 0] > c[..., 1] + 60) & (c[..., 2] > c[..., 1] + 60), 3] = 0   # magenta key inside
     for _ in range(2):
         op = a[..., 3] > 0
         pad = np.pad(~op, 1, constant_values=True)
@@ -170,6 +191,12 @@ for n, f in out.items():
         c = a[..., :3].astype(int)
         a[edge & (c[..., 0] > c[..., 1] + 40) & (c[..., 2] > c[..., 1] + 40), 3] = 0   # magenta key fringe
     out[n] = Image.fromarray(a, "RGBA")
+preview = {str(preview)!r}
+if preview != "None":
+    strip = Image.new("RGBA", (6 * 288, 288), (70, 90, 60, 255))
+    for i, f in enumerate([installed, Image.open(r"{UNITS / slug}/move-1.png").convert("RGBA")] + list(out.values())):
+        strip.alpha_composite(f.resize((288, 288), Image.NEAREST), (i * 288, 0))
+    strip.save(preview)
 if {install!r}:
     for n, f in out.items():
         f.save(r"{UNITS / slug}/" + n + ".png", optimize=True)

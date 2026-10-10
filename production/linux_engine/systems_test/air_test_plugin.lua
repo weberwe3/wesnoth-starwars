@@ -160,16 +160,19 @@ local function plugin(events, context, info)
       -- story (variation "unarmed") keeps that look.
       local with_designs = {}
       for ty, entry in pairs(rank.DATA) do
-        if entry.designs and #entry.designs > 0 and (entry.base or 0) == 0 then table.insert(with_designs, ty) end
+        if entry.designs and #entry.designs > 0 then table.insert(with_designs, ty) end
       end
       table.sort(with_designs)
       local design_type = with_designs[1]
       if design_type then
         local d = swt.place(design_type, 1, 13, 7, "t_design")
-        check("rank I keeps the base design", swt.level_up("t_design").variation == "")
-        d = swt.level_up("t_design")
-        local want2 = rank.DATA[design_type].designs[1] == 2 and "rank2" or ""
-        check("rank II wears its redrawn design (" .. design_type .. ")", d.variation == want2, d.variation)
+        check("below rank II the base design is worn", rank.of(d) >= 2 or d.variation == "")
+        for _i = 1, 3 do
+          if rank.of(d) >= 2 then break end
+          d = swt.level_up("t_design")
+        end
+        local want = rank.DATA[design_type].designs[1] == 2 and "rank2" or ""
+        check("rank II wears its redrawn design (" .. design_type .. ")", d.variation == want, d.variation)
         check("the design keeps the rank insignia", tostring(d.image_mods):find("sw%-rank%-") ~= nil)
       else
         check("rank designs: no type has redrawn rank art yet", true)

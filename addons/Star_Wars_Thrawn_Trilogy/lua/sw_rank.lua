@@ -68,29 +68,32 @@ function rank.design_for(u)
 	return want
 end
 
--- Switch the unit to its rank design. Returns true if it changed.
+-- Switch the unit to its rank design. Returns the unit to use from now on:
+-- [modify_unit] replaces the unit, so the old proxy is no longer valid.
 function rank.apply_design(u)
 	local want = rank.design_for(u)
-	if want == nil or want == (u.variation or "") then return false end
-	wesnoth.wml_actions.modify_unit{ T.filter{ id = u.id }, variation = want }
-	core.log("rank", u.id .. " wears design " .. (want == "" and "base" or want))
-	return true
+	if want == nil or want == (u.variation or "") then return u end
+	local id = u.id
+	wesnoth.wml_actions.modify_unit{ T.filter{ id = id }, variation = want }
+	core.log("rank", id .. " wears design " .. (want == "" and "base" or want))
+	return wesnoth.units.get(id) or u
 end
 
 -- Make the insignia and design match the unit's rank. Returns true if the
--- insignia changed. The unit proxy u stays valid (modify_unit keeps the unit).
+-- insignia changed, and the unit to use from now on (a design change
+-- replaces it).
 function rank.update(u)
 	local style = rank.style(u)
-	if not style then return false end
-	rank.apply_design(u)
+	if not style then return false, u end
+	u = rank.apply_design(u)
 	local n = rank.of(u)
 	local shown = core.number(u.variables.sw_rank_shown, 0)
-	if n <= shown then return false end
+	if n <= shown then return false, u end
 	u:add_modification("object", { id = "sw_rank_insignia", T.effect{ apply_to = "image_mod",
 		add = "BLIT(" .. rank.image(style, n) .. "," .. rank.X .. "," .. rank.Y .. ")" } })
 	u.variables.sw_rank_shown = n
 	core.log("rank", u.id .. " shows rank " .. n .. " (" .. style .. ")")
-	return true
+	return true, u
 end
 
 function rank.status_line(u)
@@ -104,7 +107,9 @@ end
 function rank.on_post_advance()
 	local ctx = wesnoth.current.event_context
 	local u = wesnoth.units.get(ctx.x1, ctx.y1)
-	if u and rank.update(u) then
+	local changed
+	if u then changed, u = rank.update(u) end
+	if changed then
 		local viewer = core.viewing_side()
 		if viewer == nil or viewer < 1 then viewer = u.side end
 		if u:matches{ T.filter_vision{ side = viewer, visible = true } } then

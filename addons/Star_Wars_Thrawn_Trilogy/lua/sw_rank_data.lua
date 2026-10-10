@@ -2,7 +2,7 @@
 -- Rank insignia style, starting rank and redrawn rank designs per unit type (lua/sw_rank.lua).
 return {
 	sw_unit_nr_trooper = { style = "republic", base = 0, designs = {} },
-	sw_unit_nr_sergeant = { style = "republic", base = 1, designs = {} },
+	sw_unit_nr_sergeant = { style = "republic", base = 1, designs = {2} },
 	sw_unit_nr_commando = { style = "republic", base = 0, designs = {} },
 	sw_unit_nr_eweb_team = { style = "republic", base = 0, designs = {} },
 	sw_unit_nr_field_medic = { style = "republic", base = 0, designs = {} },

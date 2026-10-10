@@ -187,6 +187,14 @@ if sheet:
         fig = o.figures(Image.open(sheet))[1]          # idle-1 of the 12-frame sheet
     except SystemExit:
         fig = None
+if fig is not None:
+    # The sheet must still be this unit's art: a later redraw (e.g. owner art)
+    # may have replaced it. Compare mean colours with the installed idle sprite.
+    import numpy as np
+    a = np.asarray(fig.convert("RGBA")).astype(int)
+    b = np.asarray(Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")).astype(int)
+    if np.abs(a[a[..., 3] > 0][:, :3].mean(0) - b[b[..., 3] > 0][:, :3].mean(0)).sum() > 30:
+        fig = None
 if fig is None:
     f = Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")
     f = f.crop(f.getbbox())
@@ -244,11 +252,26 @@ def same_colours(fig, ref_path):
     ref = np.asarray(Image.open(ref_path).convert("RGBA")).astype(int)
     f = np.asarray(fig.convert("RGBA")).astype(int)
     diff = np.abs(f[f[..., 3] > 0][:, :3].mean(0) - ref[ref[..., 3] > 0][:, :3].mean(0)).sum()
-    if diff > 20:
+    if diff > 45:
         raise SystemExit(f"the unchanged copy changed colour ({{diff:.0f}})")
 
+# Fragments well apart from the figure (bits of a frame label), dropped at
+# full resolution before scaling: below 0.3% of the figure and over 8 px away.
+def drop_fragments(fig):
+    a = np.asarray(fig.convert("RGBA")).copy()
+    lab, k = ndimage.label(a[..., 3] > 0)
+    if k > 1:
+        sizes = ndimage.sum(np.ones_like(lab), lab, range(1, k + 1))
+        main = lab == (int(np.argmax(sizes)) + 1)
+        near = ndimage.binary_dilation(main, iterations=8)
+        for i, v in enumerate(sizes):
+            piece = lab == i + 1
+            if v < 0.003 * sizes.max() and not (piece & near).any():
+                a[piece, 3] = 0
+    return Image.fromarray(a, "RGBA")
+
 def cut(sheet, per_row, ref_idle):
-    figs = o.figures(Image.open(sheet), per_row)
+    figs = [drop_fragments(f) for f in o.figures(Image.open(sheet), per_row)]
     same_colours(figs[0], ref_idle)
     box = Image.open(ref_idle).convert("RGBA").getbbox()
     scale = (box[3] - box[1]) / figs[0].height
@@ -275,7 +298,7 @@ def cut(sheet, per_row, ref_idle):
         # Magenta key colour blended into the figure (outline gaps): dropped
         # anywhere, then pinholes it leaves are filled by despeckle_unit.py.
         c = a[..., :3].astype(int)
-        a[(a[..., 3] > 0) & (c[..., 0] > c[..., 1] + 90) & (c[..., 2] > c[..., 1] + 90), 3] = 0
+        a[(a[..., 3] > 0) & (c[..., 0] > c[..., 1] + 60) & (c[..., 2] > c[..., 1] + 60), 3] = 0
         lab, k = ndimage.label(a[..., 3] > 0)
         if k > 1:
             sizes = ndimage.sum(np.ones_like(lab), lab, range(1, k + 1))
