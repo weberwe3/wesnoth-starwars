@@ -317,6 +317,21 @@ player cannot judge them.
   turns, giving force ratios up to about 3.2 in The Last Command. Hard is
   meant to be punishing.
 
+### 3.7 Ability review (2026-10-10)
+
+Owner goal: abilities that enhance play and balance while staying within the
+lore. Three changes (`production/tools/gen_hte_units.py`):
+
+| Unit | Change | Lore | Play |
+|---|---|---|---|
+| Chewbacca, Wookiee Warrior | **Wookiee rage** on their melee attack: +25% damage below half hit points | A Wookiee's temper is legendary | A wounded Wookiee is dangerous up close: finish it or keep away. Melee only, so it rewards closing in rather than adding raw power |
+| Han Solo | **Skirmisher** | A smuggler who slips past blockades | Han flanks and breaks contact where others are pinned; a distinct role from Leia and Lando, who lead |
+| Vornskr | **Force hunter** now matches every Force user (`sw_ability_force`), not only Luke and C'baoth | Karrde's vornskrs react to Mara Jade on sight | Mara and Leia now draw the beasts too: guard Force users in Myrkr's forests |
+
+Not changed: Noghri stealth and backstab, Thrawn's tactical genius, the
+leaders' leadership, the starfighter specials and the Force profiles already
+match their sources and their roles.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

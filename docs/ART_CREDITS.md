@@ -304,3 +304,27 @@ cut out with luminance as opacity. `utils/hte_terrain.cfg` scatters them, with
 mirrored and rotated copies, over about 6% of open-space hexes. The sheet's
 ringed planet and moon are not installed: scattered at random they read as
 copies of one object.
+
+## Smoother motion and rank designs (2026-10-10)
+
+- **Walk cycles.** Walking units had two stride frames and no passing pose.
+  Codex drew four-frame cycles (contact, passing, contact, passing) from each
+  unit's own installed frames (`gen_codex_walk_cycles.py`), scaled to the
+  installed standing frame and reduced to its palette; `move-1..move-4`.
+  Redraws that drifted off-model were rejected and kept their two frames (or
+  were redone with `--passing-only`, which keeps the unit's own strides and
+  adds only the passing poses). Idle animations now ease in and out, and craft
+  hover gently while standing (generated WML; no new art).
+- **Pinholes.** Small transparent holes inside figures, left by earlier
+  cut-outs, were filled from neighbouring colours (`despeckle_unit.py`).
+- **Rank designs.** Units that rank up past their top level change at rank II
+  (Seasoned veteran) and III (Elite) into redrawn versions of themselves:
+  the same poses with bolder, lore-grounded gear that shows the tier at a
+  glance (armour plates, capes and cloaks, squadron paint)
+  (`gen_codex_rank_designs.py`, `rank_design_jobs.json`; art in
+  `units/<slug>-rank2/`, `-rank3/`). Rank III is drawn from rank II.
+- **Wall relief.** Interior walls and bunker aprons were flat. Edge pieces
+  drawn from each wall's own texture give walls a vertical face, a lit rim and
+  a cast shadow, and bunker aprons a low parapet (`gen_wall_relief.py`;
+  `images/terrain/sw/wall-relief-*.png`, `wall-shadow-*.png`).
+

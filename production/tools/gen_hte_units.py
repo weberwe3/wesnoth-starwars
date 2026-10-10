@@ -396,7 +396,7 @@ def ew_ability(unit_id: str) -> str | None:
         "[dummy]\n"
         "    id=sw_ability_ew\n"
         f"{attrs}"
-        "    name= _ \"sensors & EW\"\n"
+        "    name= _ \"sensors and EW\"\n"
         f"    description= _ \"Sensors and electronic warfare: {'; '.join(parts)}. See the Field Manual: Sensors and cloaking.\"\n"
         "[/dummy]"
     )
@@ -1504,7 +1504,10 @@ def rank_designs(unit_id: str) -> list[int]:
 
 def rank_variation(u: dict, n: int) -> str:
     s = slug(u["id"])
-    body = unit_wml(u, with_variations=False).replace(f"units/{s}/", f"units/{s}-rank{n}/").split("\n")
+    body = unit_wml(u, with_variations=False).replace(f"units/{s}/", f"units/{s}-rank{n}/")
+    # The base art's muzzle-flash point does not fit the redrawn frames, which
+    # paint their own flash (gen_codex_rank_designs.py).
+    body = re.sub(r"~BLIT\(projectiles/sw-flash-[^)]*\)", "", body).split("\n")
     body = [line for line in body[1:-1] if not line.startswith("    id=")]
     return "\n".join(["[variation]", f"    variation_id=rank{n}", f"    variation_name= _ \"{RANK_NAMES[n]}\"",
                       "    hide_help=yes", "    inherit=no"] + body + ["[/variation]"])

@@ -3,16 +3,18 @@
 
 Owner direction (2026-10-10): extra frames for smoother motion. Units were
 drawn with two walking frames (two strides, no passing pose), so a walk
-snapped between them. Codex is shown the unit's installed standing and
-walking frames (enlarged) and draws one labelled row of five frames:
-standing, then contact - passing - contact - passing. The standing figure
-is only the scale reference: the row is scaled so it matches the installed
-standing frame's height, anchored like the other frames (bottom centre),
-and reduced to its own palette. move-1..move-4 are written; the generator
+snapped between them. Codex is shown the unit's idle sprite (idle-1.png,
+enlarged) as its reference (owner direction 2026-10-10: the idle sprite is
+the reference for new frames) and draws one labelled row of five frames:
+idle, then contact - passing - contact - passing. The idle figure is only the
+scale reference: the row is scaled so it matches the installed idle frame's
+height, anchored like the other frames (bottom centre), and reduced to its
+own palette. move-1..move-4 are written; the generator
 (gen_hte_units.py) plays all four when move-3.png exists.
 
 Reviews go to --out-dir (a 4x preview strip per unit); --install writes the
-frames. Codex is told no names (owner rule; prompt_scrub).
+frames. Prompts name no character and use no setting terms: Codex is only asked
+to redraw the attached sprite in a stated way (owner rule 2026-10-10; prompt_scrub).
 
 Usage: python3 production/tools/gen_codex_walk_cycles.py --out-dir DIR [--only SLUG ...]
            [--install] [--sheet SLUG=EXISTING.png ...]
@@ -20,6 +22,7 @@ Usage: python3 production/tools/gen_codex_walk_cycles.py --out-dir DIR [--only S
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import subprocess
@@ -38,26 +41,23 @@ GAITS = {
     "quadruped": ("a four-frame trot cycle for this four-legged creature: frame walk-1 with the near front and "
                   "far hind legs reaching forward, walk-2 with the legs gathered under the body, walk-3 with the "
                   "other diagonal pair reaching forward, walk-4 gathered again"),
-    "walker": ("a four-frame walking cycle for this two-legged armoured walker machine: walk-1 with the near leg "
+    "walker": ("a four-frame walking cycle for this two-legged machine: walk-1 with the near leg "
                "planted forward, walk-2 with the far leg lifted and passing the near leg (the cab slightly "
                "higher), walk-3 with the far leg planted forward, walk-4 with the near leg lifted and passing"),
-    "biped": ("a four-frame walking cycle: walk-1 contact pose with the near leg forward (like the first walking "
-              "frame in the reference), walk-2 passing pose with the legs together under the body and the body "
-              "one pixel higher, walk-3 contact pose with the far leg forward (like the second walking frame), "
-              "walk-4 passing pose again"),
+    "biped": ("a four-frame walking cycle: walk-1 contact pose with the near leg forward, walk-2 passing pose "
+              "with the legs together under the body and the body one pixel higher, walk-3 contact pose with the "
+              "far leg forward, walk-4 passing pose again"),
 }
 QUADRUPEDS = {"sw-unit-wl-vornskr"}
 WALKERS = {"sw-unit-im-at-st"}
 
 PROMPT = """Use your image generation tool to create exactly ONE image and save it as {name} in the current working directory. Do not create any other files.
 
-The attached image shows one pixel-art unit from a turn-based tactics game, enlarged: {subject}. It shows the unit's standing frame and its two walking frames, on a flat green background.
+Redraw the attached pixel-art sprite (enlarged, on a flat magenta background) as a sprite sheet: ONE row of five frames on the same flat magenta background, each frame labelled in small yellow text above it: idle, walk-1, walk-2, walk-3, walk-4.
+- idle: the attached sprite, unchanged.
+- walk-1 to walk-4: {gait}. Arms and held equipment swing naturally and stay consistent between the four frames, and anything held is the same as in the attached sprite. {note}
 
-Draw a sprite sheet of this same unit: ONE row of five frames on the same flat green background, each frame labelled in small yellow text above it: standing, walk-1, walk-2, walk-3, walk-4.
-- standing: the standing frame, unchanged.
-- walk-1 to walk-4: {gait}. Arms and held equipment swing naturally and stay consistent between the four frames; the weapon or tool is held the same way as in the walking frames of the reference. {note}
-
-Keep exactly the same unit, proportions, colours, equipment, pixel-art style, dark outline and shading, the same size, and the same three-quarter view facing right. Leave wide empty gaps of background between the frames so no frame touches another, and draw nothing else on the sheet.
+Keep everything about the attached sprite exactly the same: the exact colours and patterns (do not add or change any pattern), the proportions and head size, face, hair or helmet, outfit, colours, equipment, pixel-art style, dark outline and shading, the same size, and the same three-quarter view facing right. Leave wide empty gaps of background between the frames so no frame touches another, and draw nothing else on the sheet.
 {corrections}
 After saving, reply with only the file name."""
 
@@ -69,10 +69,10 @@ def gait_for(slug: str) -> str:
 def reference_strip(slug: str, out: Path) -> None:
     script = f"""
 from PIL import Image
-frames = [Image.open(r"{UNITS / slug}/" + n + ".png").convert("RGBA") for n in ("standing", "move-1", "move-2")]
+frames = [Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")]
 k, gap = 8, 48
 w = sum(f.width * k for f in frames) + gap * (len(frames) + 1)
-sheet = Image.new("RGBA", (w, 72 * k + 2 * gap), (60, 112, 60, 255))
+sheet = Image.new("RGBA", (w, 72 * k + 2 * gap), (255, 0, 255, 255))
 x = gap
 for f in frames:
     sheet.alpha_composite(f.resize((f.width * k, f.height * k), Image.NEAREST), (x, gap))
@@ -80,6 +80,38 @@ for f in frames:
 sheet.convert("RGB").save(r"{out}")
 """
     subprocess.run([str(g.codex_art.art_python()), "-c", script], check=True, capture_output=True, timeout=120)
+
+
+def idle_reference(slug: str, out: Path) -> None:
+    """The unit's idle sprite as Codex's reference: its idle frame cut from the
+    unit's original high-resolution sheet (~/art-references, where the installed
+    frames were scaled down from), or else the installed 72x72 idle sprite
+    enlarged 8x. On a flat magenta key."""
+    uid = slug.replace("-", "_")
+    sheet = next((g.REFERENCES / f"{p}-{uid}.png" for p in ("owner", "codex")
+                  if (g.REFERENCES / f"{p}-{uid}.png").exists()), None)
+    script = f"""
+import sys
+sys.path.insert(0, r"{TOOLS}")
+from PIL import Image
+import import_owner_sheet as o
+sheet = {str(sheet) if sheet else None!r}
+fig = None
+if sheet:
+    try:
+        fig = o.figures(Image.open(sheet))[1]          # idle-1 of the 12-frame sheet
+    except SystemExit:
+        fig = None
+if fig is None:
+    f = Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")
+    f = f.crop(f.getbbox())
+    fig = f.resize((f.width * 8, f.height * 8), Image.NEAREST)
+gap = 64
+canvas = Image.new("RGBA", (fig.width + 2 * gap, fig.height + 2 * gap), (255, 0, 255, 255))
+canvas.alpha_composite(fig.convert("RGBA"), (gap, gap))
+canvas.convert("RGB").save(r"{out}")
+"""
+    subprocess.run([str(g.codex_art.art_python()), "-c", script], check=True, capture_output=True, timeout=300)
 
 
 def import_sheet(slug: str, sheet: Path, preview: Path | None, install: bool) -> str | None:
@@ -91,18 +123,26 @@ import numpy as np
 from PIL import Image
 import import_owner_sheet as o
 figs = o.figures(Image.open(r"{sheet}"), (5,))
-installed = Image.open(r"{UNITS / slug}/standing.png").convert("RGBA")
+ref = np.asarray(Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")).astype(int)
+for fig in figs:
+    f = np.asarray(fig.convert("RGBA")).astype(int)
+    # Identity gate: every frame keeps the idle sprite's colours (mean within 20).
+    diff = np.abs(f[f[..., 3] > 0][:, :3].mean(0) - ref[ref[..., 3] > 0][:, :3].mean(0)).sum()
+    if diff > 20:
+        raise SystemExit(f"a frame changed colour ({{diff:.0f}})")
+installed = Image.open(r"{UNITS / slug}/idle-1.png").convert("RGBA")
 box = installed.getbbox()
 scale = (box[3] - box[1]) / figs[0].height
 fit = min(min(o.MAX_W / f.width, o.MAX_H / f.height) for f in figs)
 scale = min(scale, fit)
-padded = figs + [figs[0]] * 7
+# Pad to frames()'s 12 by cycling the drawn figures (one repeated figure would dominate the palette).
+padded = (figs * 12)[:12]
 made = o.frames(padded, True, scale, colors=72, alpha_cut=40)
 names = ["move-1", "move-2", "move-3", "move-4"]
 out = {{n: made[o.NAMES[i + 1]] for i, n in enumerate(names)}}
 stand = made["standing"].getbbox()
 if abs((stand[3] - stand[1]) - (box[3] - box[1])) > 2:
-    raise SystemExit("standing height mismatch")
+    raise SystemExit("idle height mismatch")
 preview = {str(preview)!r}
 if preview != "None":
     strip = Image.new("RGBA", (6 * 288, 288), (70, 90, 60, 255))
@@ -121,6 +161,14 @@ for n, f in out.items():
     for i in range(1, k + 1):
         if (lab == i).sum() <= 4:
             a[lab == i, 3] = 0
+    c = a[..., :3].astype(int)
+    a[(a[..., 3] > 0) & (c[..., 0] > c[..., 1] + 90) & (c[..., 2] > c[..., 1] + 90), 3] = 0   # magenta key inside
+    for _ in range(2):
+        op = a[..., 3] > 0
+        pad = np.pad(~op, 1, constant_values=True)
+        edge = op & (pad[:-2, 1:-1] | pad[2:, 1:-1] | pad[1:-1, :-2] | pad[1:-1, 2:])
+        c = a[..., :3].astype(int)
+        a[edge & (c[..., 0] > c[..., 1] + 40) & (c[..., 2] > c[..., 1] + 40), 3] = 0   # magenta key fringe
     out[n] = Image.fromarray(a, "RGBA")
 if {install!r}:
     for n, f in out.items():
@@ -131,20 +179,16 @@ print("ok")
     return None if run.returncode == 0 else (run.stderr or run.stdout).strip().splitlines()[-1][-200:]
 
 
-def describe(slug: str) -> str:
-    direction = g.codex_art.load_direction(g.ROOT)
-    return scrub(direction["units"].get(slug.replace("-", "_"), "") or "a unit")
-
-
 def generate(slug: str, out_dir: Path, attempts: int, note: str = "") -> dict:
-    workspace = g.codex_art._managed_directory(f"walk-{slug}")
+    # A neutral folder name: Codex sees its working directory, and it must not carry a character's name.
+    workspace = g.codex_art._managed_directory("walk-" + hashlib.sha1(slug.encode()).hexdigest()[:10])
     ref = workspace / "walk-reference.png"
-    reference_strip(slug, ref)
+    idle_reference(slug, ref)
     corrections: list[str] = []
     history = []
     for attempt in range(1, attempts + 1):
         target = workspace / f"walk-{attempt}.png"
-        prompt = PROMPT.format(name=target.name, subject=describe(slug), gait=gait_for(slug), note=scrub(note),
+        prompt = PROMPT.format(name=target.name, gait=gait_for(slug), note=scrub(note),
                                corrections="".join(f"- Correction: {c}\n" for c in corrections))
         ok, output = g._codex_with_refs(prompt, [ref], target, slug)
         if not ok:

@@ -10,6 +10,7 @@ each wall's own texture:
       meets floor: to the south (s, se, sw) the wall's vertical face, darker,
       with a bright lip where the top surface ends; to the north (n, ne, nw)
       a light rim on the top surface.
+  (bunker: the castle hexes of a command bunker, a low parapet.)
   sw/wall-shadow-<dir>.png  on a floor hex, along an edge shared with a wall
       to its north (n, ne, nw): the shadow the wall casts. Other directions
       are blank.
@@ -28,7 +29,11 @@ from PIL import Image, ImageDraw
 
 OUT = Path(__file__).resolve().parents[2] / "addons/Star_Wars_Thrawn_Trilogy/images/terrain/sw"
 FAMILIES = {"timber": "wall-timber", "colony": "wall-colony", "palace": "wall-palace", "rock": "wall-rock",
-            "bulkhead": "bulkhead"}
+            "bulkhead": "bulkhead", "bunker": "bunker"}
+# Height of each family's face relative to a full wall: bunker aprons (the
+# castle hexes round a command bunker) get a low parapet, so the recruiting
+# footprint stands out without reading as an impassable wall.
+HEIGHT = {"bunker": 0.45}
 S = 72
 # Hex corners (flat top) and each edge's endpoints.
 CORNERS = {"nw": (18, 0), "ne": (54, 0), "e": (72, 36), "se": (54, 72), "sw": (18, 72), "w": (0, 36)}
@@ -61,13 +66,13 @@ def wall_texture(stem: str) -> np.ndarray:
     return np.asarray(Image.open(OUT / f"{stem}.png").convert("RGBA").resize((S, S))).astype(float)
 
 
-def relief(stem: str, direction: str) -> Image.Image:
+def relief(stem: str, direction: str, height: float = 1.0) -> Image.Image:
     tex = wall_texture(stem)
     inside = hex_mask()
     d = edge_distance(direction)
     out = np.zeros((S, S, 4))
     if direction in SOUTH:
-        depth = SOUTH[direction]
+        depth = max(4, round(SOUTH[direction] * height))
         band = inside & (d >= 0) & (d < depth)
         # The vertical face: the wall's own texture, darkened and graded so
         # it is darkest at the foot, with faint vertical courses.
@@ -101,7 +106,7 @@ def shadow(direction: str) -> Image.Image:
 def main() -> int:
     for family, stem in FAMILIES.items():
         for direction in EDGES:
-            relief(stem, direction).save(OUT / f"wall-relief-{family}-{direction}.png", optimize=True)
+            relief(stem, direction, HEIGHT.get(family, 1.0)).save(OUT / f"wall-relief-{family}-{direction}.png", optimize=True)
     for direction in EDGES:
         shadow(direction).save(OUT / f"wall-shadow-{direction}.png", optimize=True)
     print(f"wrote {len(FAMILIES) * len(EDGES) + len(EDGES)} relief images")
