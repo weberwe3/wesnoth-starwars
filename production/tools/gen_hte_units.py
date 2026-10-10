@@ -900,10 +900,16 @@ def animations(u: dict) -> str:
         "[standing_anim]\n" + indent(frame(f"{base}/standing.png", 1000), 4) + "\n[/standing_anim]",
         "[idle_anim]\n" + indent(frame(f"{base}/idle-1.png", 300), 4) + "\n"
         + indent(frame(f"{base}/idle-2.png", 300), 4) + "\n[/idle_anim]",
-        "[movement_anim]\n" + indent(with_sound(frame(f"{base}/move-1.png", 150),
-                                                None if u["id"] in STATIONARY else MOVE_SOUNDS.get(u["mt"])), 4) + "\n"
+        "[movement_anim]\n" + indent(frame(f"{base}/move-1.png", 150), 4) + "\n"
         + indent(frame(f"{base}/move-2.png", 150), 4) + "\n[/movement_anim]",
     ]
+    # The movement animation loops for every hex of a move, so an engine sound
+    # on it repeats. The take-off animation plays once per move, before the
+    # first step (owner direction 2026-10-09: one engine sound per move).
+    move_sound = None if u["id"] in STATIONARY else MOVE_SOUNDS.get(u["mt"])
+    if move_sound:
+        blocks.append("[pre_movement_anim]\n" + indent(with_sound(frame(f"{base}/move-1.png", 60), move_sound), 4)
+                      + "\n[/pre_movement_anim]")
     static = STATIC_ANIMS.get(u["id"])
     if static is not None:
         keep = [blocks[0]] + ([blocks[1]] if "idle" in static else [])
