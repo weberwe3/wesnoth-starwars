@@ -99,7 +99,7 @@ def figures(img: Image.Image, per_row: tuple[int, int] = (6, 6)) -> list[Image.I
         text[lo:hi] |= near
     figure = fg & ~text
     bands = _runs(figure.any(1))
-    rows = sorted(sorted((b for b in bands if b[1] - b[0] > LABEL_MAX_H), key=lambda b: b[0] - b[1])[:2])
+    rows = sorted(sorted((b for b in bands if b[1] - b[0] > LABEL_MAX_H), key=lambda b: b[0] - b[1])[:len(per_row)])
     fg = figure
     out = []
     for row_i, (y0, y1) in enumerate(rows):

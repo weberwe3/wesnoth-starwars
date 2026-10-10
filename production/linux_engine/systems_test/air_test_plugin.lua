@@ -155,6 +155,25 @@ local function plugin(events, context, info)
       check("dark Jedi wear violet marks", tostring(swt.level_up("t_cb").image_mods):find("sw%-rank%-darkside%-1") ~= nil)
       swt.place("sw_hero_pellaeon", 2, 9, 5, "t_pel")
       check("Imperial officers wear the rank plaque", tostring(swt.level_up("t_pel").image_mods):find("sw%-rank%-imperial%-1") ~= nil)
+      -- Rank designs: at rank II and III a type with redrawn art switches to
+      -- variation rank2 / rank3 (lua/sw_rank.lua); a hero disarmed by the
+      -- story (variation "unarmed") keeps that look.
+      local with_designs = {}
+      for ty, entry in pairs(rank.DATA) do
+        if entry.designs and #entry.designs > 0 and (entry.base or 0) == 0 then table.insert(with_designs, ty) end
+      end
+      table.sort(with_designs)
+      local design_type = with_designs[1]
+      if design_type then
+        local d = swt.place(design_type, 1, 13, 7, "t_design")
+        check("rank I keeps the base design", swt.level_up("t_design").variation == "")
+        d = swt.level_up("t_design")
+        local want2 = rank.DATA[design_type].designs[1] == 2 and "rank2" or ""
+        check("rank II wears its redrawn design (" .. design_type .. ")", d.variation == want2, d.variation)
+        check("the design keeps the rank insignia", tostring(d.image_mods):find("sw%-rank%-") ~= nil)
+      else
+        check("rank designs: no type has redrawn rank art yet", true)
+      end
       local v = swt.place("sw_unit_wl_vornskr", 3, 11, 5, "t_vor")
       local vhp = v.max_hitpoints
       v = swt.level_up("t_vor")

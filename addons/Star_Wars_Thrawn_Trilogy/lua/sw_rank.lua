@@ -11,6 +11,8 @@
 -- over blue rank plaque, independent brass studs, dark Jedi violet marks.
 -- Creatures and objects have no style and no insignia. Stats are not
 -- changed: AMLAs keep the engine's default bonus (+3 HP, +20% XP, full heal).
+-- Units with redrawn rank designs (DATA designs) also change to them at
+-- rank II and III: same poses, gear earned in the field.
 --
 -- Each new rank adds one object (id sw_rank_insignia) whose plate covers the
 -- previous one exactly; objects are only ever added, so no unit is rebuilt
@@ -51,10 +53,36 @@ function rank.image(style, n)
 	return "misc/sw-rank-" .. style .. "-" .. n .. ".png"
 end
 
--- Make the insignia match the unit's rank. Returns true if it changed.
+-- The rank design (variation rank2/rank3, gen_hte_units.py RANK_NAMES) the
+-- unit should wear: the highest redrawn design at or below its rank, or ""
+-- for the base art. nil when the unit is in a variation the rank system does
+-- not own (e.g. "unarmed", SW_UNARMED): that look wins until SW_ARMED.
+function rank.design_for(u)
+	local entry = rank.DATA[u.type]
+	local current = u.variation or ""
+	if current ~= "" and not current:match("^rank%d$") then return nil end
+	local want = ""
+	for _i, n in ipairs(entry and entry.designs or {}) do
+		if rank.of(u) >= n then want = "rank" .. n end
+	end
+	return want
+end
+
+-- Switch the unit to its rank design. Returns true if it changed.
+function rank.apply_design(u)
+	local want = rank.design_for(u)
+	if want == nil or want == (u.variation or "") then return false end
+	wesnoth.wml_actions.modify_unit{ T.filter{ id = u.id }, variation = want }
+	core.log("rank", u.id .. " wears design " .. (want == "" and "base" or want))
+	return true
+end
+
+-- Make the insignia and design match the unit's rank. Returns true if the
+-- insignia changed. The unit proxy u stays valid (modify_unit keeps the unit).
 function rank.update(u)
 	local style = rank.style(u)
 	if not style then return false end
+	rank.apply_design(u)
 	local n = rank.of(u)
 	local shown = core.number(u.variables.sw_rank_shown, 0)
 	if n <= shown then return false end
