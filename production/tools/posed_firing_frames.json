@@ -3,18 +3,13 @@
  "units": [
   "sw-hero-chewbacca",
   "sw-hero-han",
-  "sw-hero-karrde",
   "sw-hero-khabarakh",
   "sw-hero-lando",
   "sw-hero-leia",
   "sw-hero-mara",
-  "sw-unit-bi-commando",
   "sw-unit-im-noghri",
   "sw-unit-im-royal-guard",
   "sw-unit-im-stormtrooper",
-  "sw-unit-nr-commando",
-  "sw-unit-nr-sergeant",
-  "sw-unit-sm-veteran",
   "sw-unit-wk-lookout",
   "sw-unit-wk-warrior"
  ]

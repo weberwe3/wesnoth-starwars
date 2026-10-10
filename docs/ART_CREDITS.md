@@ -251,3 +251,17 @@ generic, in-universe descriptions that name nothing
 (`production/tools/gen_codex_story_backdrops.py`; prompt_scrub applies), with no
 reference images. Scenarios use them through `{SW_STORY_BACKDROP <setting>}`
 (utils/hte_macros.cfg), one per story slide.
+
+`sw-hero-bel-iblis`, `sw-hero-karrde`, `sw-unit-bi-commando`,
+`sw-unit-nr-commando`, `sw-unit-nr-sergeant`, `sw-unit-sm-smuggler` and
+`sw-unit-sm-veteran` were redrawn the same way (2026-10-09). Their sprites
+did not match their portraits (a red-shirted figure for the greatcoated
+general, a green alien for the human smuggler, a pink blob for the commando).
+The smuggler's and veteran's painted flashes are orange; the scanner reads
+their yellow-white cores as green, so `muzzle_flashes.json` records orange by
+hand and their bolts stay orange.
+
+`import_owner_sheet.py` no longer punches out clothing close to the backdrop
+colour (an olive coat on the green sheet), which had left gold buttons and
+highlights as speckles. The 13 sprites redrawn on 2026-10-09 were re-imported
+with the fix.
