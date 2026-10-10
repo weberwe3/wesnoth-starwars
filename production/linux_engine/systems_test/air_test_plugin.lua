@@ -11,7 +11,7 @@ local PHASE = "main"
 local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "flanking", "ai_ranged", "check_ai_ranged",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "flanking", "ai_ranged", "check_ai_ranged",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "muzzle_flashes", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
@@ -499,6 +499,20 @@ local function plugin(events, context, info)
       check("Force hunter applies to Mara (+50%)", math.abs(mara - mara_base * 1.5) <= 1, mara .. " vs " .. mara_base)
       check("Force hunter applies to Leia (+50%)", math.abs(leia - leia_base * 1.5) <= 1, leia .. " vs " .. leia_base)
       check("no Force hunter bonus against a non-Force user", math.abs(hn - han_base) <= 1, hn .. " vs " .. han_base)
+    end
+
+    -- Achievement rules (lua/sw_achievements.lua; awarded only in campaign missions).
+    function S.achievements()
+      local ach = sw_systems.achievements
+      check("missions map to their campaign's achievement group",
+        ach.campaign_of("sw_hte_01_ysalamiri_harvest") == "Star_Wars_Thrawn_Trilogy"
+        and ach.campaign_of("sw_dfr_03_jomark") == "Star_Wars_Thrawn_Trilogy_Dark_Force_Rising"
+        and ach.campaign_of("sw_tlc_09_bilbringi") == "Star_Wars_Thrawn_Trilogy_The_Last_Command")
+      check("test scenarios earn nothing", ach.campaign_of(wesnoth.scenario.id) == nil, wesnoth.scenario.id)
+      check("swift: a third of the turns unused", ach.is_swift(10, 15) and not ach.is_swift(11, 15))
+      check("hold-out missions have no swift victory", ach.HOLD_OUT.sw_hte_03_adrift and ach.HOLD_OUT.sw_tlc_02_the_smugglers_council)
+      check("each campaign has a final mission", ach.FINALS.sw_hte_10_thrawns_gambit and ach.FINALS.sw_dfr_10_honoghrs_choice
+        and ach.FINALS.sw_tlc_10_the_last_command)
     end
 
     function S.flanking()

@@ -351,6 +351,19 @@ menu): an attack left this turn, attacks at all (`max_attacks`), not
 petrified, not an unaware guard, not dazed, and an overwatch weapon whose
 specials allow attacking.
 
+### 3.9 Achievements (2026-10-11)
+
+Replay goals for each campaign, in the main menu's Achievements screen
+(`achievements.cfg`, `lua/sw_achievements.lua`): complete it; complete it on
+Hard; complete it with no hero ever withdrawing; **Hit and Run** (win each
+mission with at least a third of its turns unused -- hold-out missions
+excluded); and **Ace** (destroy armed enemy starfighters and warships: 30 in
+Heir to the Empire, 20 in Dark Force Rising, 30 in The Last Command; an AI
+player destroyed 26, 17 and 29 in one run of each campaign's space battles).
+A Tactics group rewards using the systems (Force powers, chosen overwatch,
+sensor sweeps, air support) and completing all three campaigns. Only the
+human player earns them; the engine skips replays.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and
