@@ -1291,6 +1291,90 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/move-3.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/move-4.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
@@ -1543,6 +1627,90 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/move-3.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/move-4.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
@@ -1706,6 +1874,90 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank2/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/move-3.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/move-4.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/standing.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
       ]
@@ -1879,6 +2131,90 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/move-3.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/move-4.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
@@ -1960,6 +2296,174 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde/standing.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/move-3.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/move-4.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/move-3.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/move-4.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg"
       ]
     },
     {
@@ -9659,7 +10163,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "sha256": "309a544c8bde9476d1f0a4a1efc4566825b01dd9bb92edbc9b523935a5a0af07"
+      "sha256": "e7167c679ad29ecb9cc09948a8b667596320b4fd5f45a266d5aee48124eef953"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
@@ -9671,7 +10175,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "20f542ece51df65eb9c19543f0836182603647cfa7178b0d0960c886ec2f0729"
+      "sha256": "27d129545c1c8c5494ddc06aacd0b3da418b3b4ad95482284e1d8d864b113e03"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
@@ -9763,7 +10267,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_data.lua",
-      "sha256": "87feea99512c0c41f405f9363a210870c7ec554db9df4e83219742ef4f9b8ce8"
+      "sha256": "2b7a20086902b3fcc045f0e78e772dc11738cd84c87de2d40ee70dd8521962f7"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
@@ -10110,6 +10614,62 @@
       "sha256": "af685bf4ed062406447a8c02f0856cc6fb11026e23024b8f3163729e5cc48835"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/death-1.png",
+      "sha256": "71f6e55b399328b595772d52df602b3381a8259ef4c0c66f97a54db0e3784397"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/death-2.png",
+      "sha256": "db3215d0fa7d0301ef0dfc346e2d672de4c59199fc4f696e7b7392600b6ba19c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/defend.png",
+      "sha256": "04c5e3ce92b7db024bab78b79d19e47aaac6570fee3add47646d5c0bdf152a6a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/idle-1.png",
+      "sha256": "2a37492a6b923c4221c38a111d0bc75faa2941f452d516059afd246807d5df81"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/idle-2.png",
+      "sha256": "4c08adc93988fcdec39f580bcf46094519a5baf8d5b208444c10fa52530ebbbb"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/melee-1.png",
+      "sha256": "1644e3b2fb1717e843e49022137097ca7daf108a5d0bd249f486ed6ae62b0baa"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/melee-2.png",
+      "sha256": "2958ecc41b766aa1e40ba73f76487359c9362762c4f7d3f4543b1ad2119b34d5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/move-1.png",
+      "sha256": "2711fe44fd59499ac55f2819a990b10face1d49be58c72a643f4207bcecdd96e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/move-2.png",
+      "sha256": "cb2ae375b6b1332b158b1e932e90cb1d438dd2184cdac2f93c614cde1f3936b6"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/move-3.png",
+      "sha256": "1ba6b99f31505c371c64241c2ccd09c6b6f705ac7b9ec06db691b70060d3022a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/move-4.png",
+      "sha256": "ff50ee4da3b51e32db989bd44abe7650010a23d8426bdaad8dbaa8230c9f006a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/ranged-1.png",
+      "sha256": "1d439c62eb0082471c8635db0b3d94119c296f1bc867bfef2b94a1c809de1349"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/ranged-2.png",
+      "sha256": "9c47e8b96d0e55c9015026987bbcf36ea48c7a59305289a8f8727c731d024cb0"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis-rank3/standing.png",
+      "sha256": "548726f5e189d40d12da9793c73e6041b2414fdc0947b1aefbe212f9d5ec6b48"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-bel-iblis/death-1.png",
       "sha256": "db27a88fb52c362238b25c997e3019f364f0ad1d91cd6d2424951ebacbfe7313"
     },
@@ -10278,6 +10838,62 @@
       "sha256": "d29b12cb401a61c0f27c5b72ce7bbce52a241834b7701e2d8590db48218a21e7"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/death-1.png",
+      "sha256": "d467c52cabe07340ef9f5328f9923fd42bb3502325ba142d8b73a1f3285e41e3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/death-2.png",
+      "sha256": "055baddc2fd5e1dd9fdd3bbc9259a999f06691379f0caf2fe39cec80577a0f40"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/defend.png",
+      "sha256": "5b77a347749dbcb1cc52f2fea7a1dfd3dd6e8cc4a7b7615886ea6051fde2b6cf"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/idle-1.png",
+      "sha256": "69df641f74b8a74253fc0c4ae93a33f6112497a131f23fb56c405d1fd1cfb5c7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/idle-2.png",
+      "sha256": "4567cf920f889f4a862dfa34ddeeb8b211391ceea379897bfbacd2249f5f5dbf"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/melee-1.png",
+      "sha256": "5951bfa74badcd5c5cce744e7220e29011fc16492b81ee3587ac786e78e8218d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/melee-2.png",
+      "sha256": "3bed94cb062ef48470625ea5e9b61ddf080b60b5df7c81dd2ec4cc841b5b5e48"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/move-1.png",
+      "sha256": "a6ced7fa5c2fe0ace457bba6e88f174ea1c2a396f15ba3799a1c08980367a338"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/move-2.png",
+      "sha256": "deb2af50bd53716ffbc6300f18b1d160c117c5d6c77b2c43fb9121b47337d906"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/move-3.png",
+      "sha256": "ab351003d57209387da3488ac2a9a2da8ba8a99492825fcb99f2533db08115c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/move-4.png",
+      "sha256": "736df8fd580805facdf7956c4501a30939a234004943470d1c845a1985f69b52"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/ranged-1.png",
+      "sha256": "6053a5736550891b658bdb083e37ef4835628bd35b91dd0502b337c8d3aca01b"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/ranged-2.png",
+      "sha256": "8c85126bf2259b74eb7e2047338fb98241c9256b4c62f2a4f2f73b073331ab22"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca-rank3/standing.png",
+      "sha256": "b03840f8b44737f0ed4e5ad0ce413526ad4488f6ac01e3b1af16b13386619081"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-chewbacca/death-1.png",
       "sha256": "8bff90eb22e707ccf74ff94963599d594154da21a4491788d53fad33db697c5b"
     },
@@ -10388,6 +11004,62 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank2/standing.png",
       "sha256": "d88a32db391651389724d45c869ecff01b344a34ef54283faada29fa827cdb09"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/death-1.png",
+      "sha256": "90f6291a82a441e67a867e0a785edae1d57d835fefb66120e431b2614cb53c39"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/death-2.png",
+      "sha256": "e863c3e64f11e21f09c50d1fb7f7de5c203dc17631d597f478ccaf3194d76d45"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/defend.png",
+      "sha256": "bad4f3523e20037b82f6106c11d98152b5198a0a4eb0aa9ac173a9c621ca4019"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/idle-1.png",
+      "sha256": "61888d20aa7518a444c10a5443afff41d42acaec49be270f0f6cea335a9650e3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/idle-2.png",
+      "sha256": "c4d22d1b673426c87b76e19dbeb1c551fbccec45e124b3a92aaf3d5e3c293e30"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/melee-1.png",
+      "sha256": "cb999a3480d37544e85acbac6d94a06cde9b82d1619ba154f80c46f1482d8cc2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/melee-2.png",
+      "sha256": "1917f4ab85c654a680bf048816e8208c7c8fcc989b6c84dd1b09df2c2f3a07d7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/move-1.png",
+      "sha256": "8be775f71b33d8200f0f1091da26efa9773608d6ee607a04dc4c1c51f7cf97e4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/move-2.png",
+      "sha256": "5b687be8cd06c7b686ba6225eb84bfac5e746308e4e19f1e5113b542e5984676"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/move-3.png",
+      "sha256": "24419a147dcb433e806c7a6a7bd4290c6b9ba129addcc94e87f993707b3e80af"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/move-4.png",
+      "sha256": "3b21765cd269c03c24b36e37718333a81e57bd6d2bc1c9453f308fbc0f0857c8"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/ranged-1.png",
+      "sha256": "add7d76099cde646f4bd3b57587edeaba3eddd58cd568868bd6a3bab39438958"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/ranged-2.png",
+      "sha256": "f6d261264234b1871d2ea2a55cb7a4a4d8eb6a168f6115c16c2b391442796d61"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han-rank3/standing.png",
+      "sha256": "0d7a677ea9fbf6878a11c918361ba7cd2c9c5014dd6ba80f46739f41797eb0b4"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-han/death-1.png",
@@ -10502,6 +11174,62 @@
       "sha256": "e4873534b32ec5349e62de95a4c06903e11cdb3ea71de9afc11f86238cb90bdd"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/death-1.png",
+      "sha256": "5bc9861c329a769556cc7f73bec02f342f048697a85b8bd2361150da911532a5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/death-2.png",
+      "sha256": "7a457bad390fe87228e68bfa27ffbe45fb088be3c4cb9361f838b7d8d6cf5114"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/defend.png",
+      "sha256": "71f703e74866e2cdd84547a3b6e9cd0758f993b48ec83622f8c6558b43bfc209"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/idle-1.png",
+      "sha256": "85b5011210bb9b9bfd473ab1fd3932fcc364ec0a51f8569ef1eb6fa6e12ead6d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/idle-2.png",
+      "sha256": "25fa6379d4caa89db67296dc6eae5459f21366aed896ae75ee73783a0bdf53b9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/melee-1.png",
+      "sha256": "c564ac04fb4a8df24ea5248ced808e5a7e3899f9d281cb7e2563df8747a5c502"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/melee-2.png",
+      "sha256": "164e4dc70bc7c38a7470ee7a868a4f4a68ad730ba3ec92a7e3773a76399bf1c1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/move-1.png",
+      "sha256": "f863e82670b7257b3299d91a31ecd43814101dfcc90ca3df036d87604771fbd7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/move-2.png",
+      "sha256": "e9091bdf1668dd9125863abd5828d72878ec4e49f1a8b08913ed29b282242d31"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/move-3.png",
+      "sha256": "b7835394d9c392357837795ed0f21fbe8fdc5e903ed2b6bf124980b74c7f19d2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/move-4.png",
+      "sha256": "fbef49cb43b43533b79a8b7589ee01ca8f7bc1bcf73b89abdb7f67fe16923c6c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/ranged-1.png",
+      "sha256": "db64610520c69ed52cff7018f56345dbba0b0a18f664849bcbdbf1ea23485305"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/ranged-2.png",
+      "sha256": "068091b740305795694ca773b2aeadf70585b83d8b95b7444e710aaf94e51ed9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde-rank3/standing.png",
+      "sha256": "baad90a1d22e3755f6cf0767c183d8345960dd20b60e1cc97a108c5160ed5e49"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde/death-1.png",
       "sha256": "bc40ce8c9bf0039758ff26f4d8f0a551f98eed772bcddba5d1a5d005562becf5"
     },
@@ -10556,6 +11284,118 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-karrde/standing.png",
       "sha256": "b91e5be4b80347dfbe675209dbba622c59c6c60407500ed8ad15e115970f4725"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/death-1.png",
+      "sha256": "324707247e2922bf32cc7af499e156aedf4c8d77f9461ddca7495f610deddd4f"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/death-2.png",
+      "sha256": "9e197af987ac53ea17319df2284bb221263fcc2672909bc89c3cada3950056c3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/defend.png",
+      "sha256": "ab5eaff0bc9e7d8f6b5d767b7d92ce029e3885673f1e11208bbc3577079bbef3"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/idle-1.png",
+      "sha256": "4011c7bdcd9b32d1fc2e563d8b69abfc2eea06136774adee160e1558f8acd024"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/idle-2.png",
+      "sha256": "fff281b721a30886c62ed0d76e0d23c49de3380004515f30657baad1a67617d0"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/melee-1.png",
+      "sha256": "1705b8d3b948c2cc14712073690949b5c10396c99e4e13e741a91e495fb17d94"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/melee-2.png",
+      "sha256": "34b2521331fa425f8ee3251d0429b5f29bb5cc1cc66b463d8929aba7693398ae"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/move-1.png",
+      "sha256": "f8b451453b1ff04fa0dff11a65efaf5f6a68890ac00560109b0659ee0f5c375d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/move-2.png",
+      "sha256": "e59d53e29184c88ee0c6ea0784673393c806bac1fc8601a6e45a5aae93f0e28a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/move-3.png",
+      "sha256": "694bb50f6005de6f367634765a7ecb81167e96f02123982acb1ac4999912feb6"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/move-4.png",
+      "sha256": "4dcef7dd644c3fd38c703735922c051292f417669b3ba28a72f69379971a7e01"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/ranged-1.png",
+      "sha256": "4a0b54a58576e22bc0d38f82ac3bdf98644ce9c7b1de770cccb21a9bd1e80428"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/ranged-2.png",
+      "sha256": "51bc00bfc9dc4ea213bc6a8f80dcfb2c22f6fd445a47bfef4fb59b5cb2ccdcb9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank2/standing.png",
+      "sha256": "5cb3645ccddf6fb1c6abb47e8a1e9aa6e59b2a9626d07e3449f5fb4c923f7fb4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/death-1.png",
+      "sha256": "0639a56b4ef446867d427cd29f71eea3f065f105a4054dd850b79455e25df1d0"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/death-2.png",
+      "sha256": "e48fc0d948a383d0f26243c862af31f3d32cc2ee0b8dcc6c034d9f2fe09a6d2e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/defend.png",
+      "sha256": "659f4a1b2dc849cbb084b74ce465b15bdc91e3677011d10b36b33285bc856411"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/idle-1.png",
+      "sha256": "e7f80aaf076aff6f09b52acbfc4dac7eb93c2cf153e4f1a950801e23812a5f4f"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/idle-2.png",
+      "sha256": "1669968a28e57d1e4b72de5bd6fc18be9458ada58e08c7d8f950895f616d49d5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/melee-1.png",
+      "sha256": "c4113d58f509e31481c666256eeabd48a96be7d5a1bdf3e7c0b7ea2dc2ad12c5"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/melee-2.png",
+      "sha256": "dad74f489e90dc40df08db4a1ab2b6672a18b933f2790692bcdcbeeb6bca5a43"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/move-1.png",
+      "sha256": "7f101ea12d2866d7d25fb52e05210efd2b2d225904df28fef24657c46f062673"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/move-2.png",
+      "sha256": "f51ab14190d765701f162900588888dbd9b9d77abeab484a36d763fa371848b2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/move-3.png",
+      "sha256": "8a72f30348453f77ff73f376fe1397b427156180321c745e28144d7a89641d99"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/move-4.png",
+      "sha256": "360801b45ede508854140254b87988b52fa8db0f629cf6caddf0c21849c871b7"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/ranged-1.png",
+      "sha256": "28853e78dd82a345f9cc0071f8ff4dcb65531a23c90aa1bf603d1274b55cacc1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/ranged-2.png",
+      "sha256": "a22894770f81568cbdf5a50ab7aff2e133ea47648a6ea551b24c6f5ae97f5bab"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh-rank3/standing.png",
+      "sha256": "1bc524462ce529dbbacbc9dc24b4f4fb8e2fad32e0c337c2441d3d71093166ec"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-khabarakh/death-1.png",

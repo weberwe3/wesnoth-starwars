@@ -307,24 +307,40 @@ copies of one object.
 
 ## Smoother motion and rank designs (2026-10-10)
 
+Owner rules for these redraws: the unit's **idle sprite** is Codex's only
+reference (cut from the unit's original high-resolution sheet in
+`~/art-references` where that sheet still matches the installed art, otherwise
+the installed sprite enlarged), and prompts only ask for a redraw in a stated
+way -- no character names, no setting terms. Every result was reviewed by eye
+before installing; off-model redraws were rejected and redone.
+
 - **Walk cycles.** Walking units had two stride frames and no passing pose.
-  Codex drew four-frame cycles (contact, passing, contact, passing) from each
-  unit's own installed frames (`gen_codex_walk_cycles.py`), scaled to the
-  installed standing frame and reduced to its palette; `move-1..move-4`.
-  Redraws that drifted off-model were rejected and kept their two frames (or
-  were redone with `--passing-only`, which keeps the unit's own strides and
-  adds only the passing poses). Idle animations now ease in and out, and craft
-  hover gently while standing (generated WML; no new art).
+  34 units now have four-frame cycles (contact, passing, contact, passing),
+  `move-1..move-4` (`gen_codex_walk_cycles.py`), scaled to the installed idle
+  frame and reduced to its palette. Two-frame walks remain for the
+  stormtrooper and stormtrooper sergeant (the image safety filter blocked
+  every attempt; not retried around it) and the E-Web team (its two frames
+  carry the gun, which reads better than a set-up gun sliding). Idle
+  animations ease in and out, and craft hover gently while standing
+  (generated WML).
 - **Pinholes.** Small transparent holes inside figures, left by earlier
   cut-outs, were filled from neighbouring colours (`despeckle_unit.py`).
 - **Rank designs.** Units that rank up past their top level change at rank II
-  (Seasoned veteran) and III (Elite) into redrawn versions of themselves:
-  the same poses with bolder, lore-grounded gear that shows the tier at a
-  glance (armour plates, capes and cloaks, squadron paint)
-  (`gen_codex_rank_designs.py`, `rank_design_jobs.json`; art in
-  `units/<slug>-rank2/`, `-rank3/`). Rank III is drawn from rank II.
+  (Seasoned veteran) and III (Elite) into redrawn versions of themselves, the
+  tier shown at a glance (`gen_codex_rank_designs.py`,
+  `rank_design_jobs.json`; art in `units/<slug>-rank2/`, `-rank3/`): first the
+  idle sprite is redrawn with the rank's gear, then that sprite is redrawn as
+  the full frame set; rank III builds on rank II's full-resolution redraw.
+  Craft wear the approved design in every pose with their own death frames.
+  Lore behind the designs: New Republic special-forces armour and rank
+  plaques, forest-moon camouflage ponchos, Wookiee war armour, Jedi robes and
+  cloaks for the Force users, squadron-leader paint and kill markings for
+  starfighters, Lando's general's tunic, Mara's black cloak, Noghri clan
+  markings. 20 units have a rank II design and 18 a rank III design; where a
+  tier could not be drawn on-model the unit keeps its previous tier's look
+  (E-Web rank II: base look; Luke, Y-wing rank III: rank II look).
 - **Wall relief.** Interior walls and bunker aprons were flat. Edge pieces
   drawn from each wall's own texture give walls a vertical face, a lit rim and
   a cast shadow, and bunker aprons a low parapet (`gen_wall_relief.py`;
   `images/terrain/sw/wall-relief-*.png`, `wall-shadow-*.png`).
-
+  `render_map_preview.py` draws them with the game's neighbour rules.
