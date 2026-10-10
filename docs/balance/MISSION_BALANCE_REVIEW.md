@@ -346,6 +346,11 @@ does not gain Insight every turn for free. Off switch:
 `sw_overwatch_auto=no` (all sides); `sw_overwatch_ai=no` still turns it off
 for AI sides only.
 
+Only units that can actually attack take it (`ow.can_attack`, also used by the
+menu): an attack left this turn, attacks at all (`max_attacks`), not
+petrified, not an unaware guard, not dazed, and an overwatch weapon whose
+specials allow attacking.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

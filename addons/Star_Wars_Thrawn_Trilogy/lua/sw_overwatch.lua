@@ -81,23 +81,52 @@ end
 
 -- ---------------------------------------------------------------- enter / clear
 
+-- A weapon whose specials forbid attacking with it (e.g. a Jedi's blaster
+-- deflection, [disable] active on offense) cannot hold overwatch.
+local function can_attack_with(a)
+	for _i, sp in ipairs(a.specials or {}) do
+		local tag, body = sp[1], sp[2] or {}
+		if tag == "disable" and (body.active_on == nil or body.active_on == "" or body.active_on == "offense") then
+			return false
+		end
+	end
+	return true
+end
+
+-- Overwatch is only for units that can actually attack (owner direction
+-- 2026-10-11): an attack left this turn and attacks at all (max_attacks),
+-- not petrified, not an unaware guard (sw_alert), not dazed by a Mind Trick,
+-- and an overwatch weapon that may be used to attack. Returns the weapon, or
+-- nil and the reason.
+function ow.can_attack(u, cfg)
+	if u.max_attacks < 1 then return nil, _ "cannot attack" end
+	if u.attacks_left < 1 then return nil, _ "no attack left" end
+	if u.status.petrified then return nil, _ "cannot attack" end
+	if u.variables.sw_alert_state == "unaware" then return nil, _ "unaware" end
+	if force.is_dazed(u) then return nil, _ "dazed" end
+	for _i, name in ipairs(cfg.weapons) do
+		for _j, a in ipairs(u.attacks) do
+			if a.name == name and can_attack_with(a) then return a end
+		end
+	end
+	return nil, _ "no suitable weapon"
+end
+
 function ow.can_enter(u)
 	local cfg = ow.config(u)
 	if not cfg then return false, _ "cannot hold overwatch" end
 	if u.variables.sw_ow_active then return false, _ "already on overwatch" end
-	if u.attacks_left < 1 then return false, _ "no attack left" end
-	if force.is_dazed(u) then return false, _ "dazed" end
-	if not find_attack(u, cfg.weapons) then return false, _ "no suitable weapon" end
-	return true, nil, cfg
+	local weapon, why = ow.can_attack(u, cfg)
+	if not weapon then return false, why end
+	return true, nil, cfg, weapon
 end
 
 -- automatic: entered at the end of the unit's turn (ow.on_side_turn_end), not
 -- chosen. Automatic entries are not reported to the observation hook: Thrawn's
 -- Doctrine learns from tactics the player chooses, not from the default.
 function ow.enter(u, automatic)
-	local ok, why, cfg = ow.can_enter(u)
+	local ok, why, cfg, weapon = ow.can_enter(u)
 	if not ok then core.log("overwatch", u.id .. " cannot enter: " .. tostring(why)) return false end
-	local weapon = find_attack(u, cfg.weapons)
 	u.attacks_left = 0
 	if cfg.commit_moves then u.moves = 0 end
 	u.variables.sw_ow_active = true
@@ -296,9 +325,10 @@ force.on_disabled = function(u) ow.clear(u) end
 
 -- Every side (owner direction 2026-10-11): a unit that can hold overwatch and
 -- did not use its attack this turn enters overwatch automatically when its
--- side ends the turn -- for the player as for the AI. Units that attacked,
--- used an attack-costing power or sweep, are dazed or have no suitable weapon
--- are left as they are (ow.can_enter). Choosing Overwatch from the menu still
+-- side ends the turn -- for the player as for the AI. Only units that can
+-- actually attack (ow.can_attack): units that attacked, used an
+-- attack-costing power or sweep, cannot attack at all, are unaware guards,
+-- dazed or petrified, or have no usable weapon are left as they are. Choosing Overwatch from the menu still
 -- works, to take it earlier (it also ends the unit's movement). Disable with
 -- sw_overwatch_auto=no (all sides) or sw_overwatch_ai=no (AI sides only).
 local function off(name)

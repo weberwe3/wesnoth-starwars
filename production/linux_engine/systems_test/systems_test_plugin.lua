@@ -536,6 +536,24 @@ local function plugin(events, context, info)
       ow.on_side_turn_end(1)
       check("sw_overwatch_auto=no turns it off", not u("t_auto_idle").variables.sw_ow_active)
       wml.variables.sw_overwatch_auto = nil
+      -- Only units that can actually attack.
+      local noatk = place("sw_unit_nr_trooper", 1, 6, 9, "t_auto_noatk")
+      noatk.max_attacks = 0
+      noatk.attacks_left = 0
+      local stone = place("sw_unit_nr_trooper", 1, 8, 9, "t_auto_stone")
+      stone.status.petrified = true
+      local guard = place("sw_unit_im_stormtrooper", 1, 10, 9, "t_auto_guard")
+      guard.variables.sw_alert_state = "unaware"
+      local barred = place("sw_unit_nr_trooper", 1, 12, 9, "t_auto_barred")
+      barred:add_modification("object", { T.effect{ apply_to = "attack", name = "blaster_rifle",
+        T.set_specials{ mode = "append", T.disable{ id = "t_no_attack", active_on = "offense" } } } })
+      ow.on_side_turn_end(1)
+      check("a unit that cannot attack at all does not", not u("t_auto_noatk").variables.sw_ow_active)
+      check("a petrified unit does not", not u("t_auto_stone").variables.sw_ow_active)
+      check("an unaware guard does not", not u("t_auto_guard").variables.sw_ow_active)
+      check("a weapon that may not attack does not hold overwatch", not u("t_auto_barred").variables.sw_ow_active)
+      check("the same check guards the menu", not ow.can_enter(u("t_auto_barred")) and not ow.can_enter(u("t_auto_stone")))
+      check("a unit that can attack still does", u("t_auto_idle").variables.sw_ow_active == true)
     end
 
     -- AI safety: hand side 2 to the AI for one turn; it may enter overwatch at
