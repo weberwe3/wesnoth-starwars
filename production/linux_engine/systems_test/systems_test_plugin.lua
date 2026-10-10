@@ -14,7 +14,7 @@ local STEPS = {
   "fp", "targets", "slam_wall", "check_slam_wall", "slam_occupied", "check_slam_occupied",
   "push_pull", "world_field", "null_outline", "menu_text", "menu_dialog", "check_menu_dialog", "slam_edge", "check_slam_edge", "fields", "ow_fire", "check_ow_fire",
   "multi_fire", "check_multi", "deflect", "check_deflect", "deflect_field", "check_deflect_field",
-  "hidden_and_trick", "arcs_and_hooks", "auto_overwatch", "ai_turn", "check_ai_turn", "recursion", "check_recursion", "sense_choke", "check_choke", "prepare_save",
+  "hidden_and_trick", "arcs_and_hooks", "auto_overwatch", "tips", "ai_turn", "check_ai_turn", "recursion", "check_recursion", "sense_choke", "check_choke", "prepare_save",
 }
 
 local function plugin(events, context, info)
@@ -554,6 +554,39 @@ local function plugin(events, context, info)
       check("a weapon that may not attack does not hold overwatch", not u("t_auto_barred").variables.sw_ow_active)
       check("the same check guards the menu", not ow.can_enter(u("t_auto_barred")) and not ow.can_enter(u("t_auto_stone")))
       check("a unit that can attack still does", u("t_auto_idle").variables.sw_ow_active == true)
+    end
+
+    -- Just-in-time tips (lua/sw_tips.lua): first relevant unseen tip, once each.
+    function S.tips()
+      clear()
+      local tips = sw_systems.tips
+      local saved_seen, saved_off = wml.variables.sw_tips_seen, wml.variables.sw_tips_off
+      wml.variables.sw_tips_seen = nil
+      wml.variables.sw_tips_off = nil
+      check("no tip with no units", tips.next_tip() == nil or tips.next_tip().id ~= "force")
+      place("sw_unit_nr_trooper", 1, 6, 6, "t_tip_tr")
+      local t1 = tips.next_tip()
+      check("a rifleman brings the weapon ranges tip first", t1 and t1.id == "ranges", t1 and t1.id)
+      tips.mark_seen("ranges")
+      place("sw_hero_luke", 1, 8, 6, "t_tip_luke")
+      local t2 = tips.next_tip()
+      check("a Force user brings the Force tip next", t2 and t2.id == "force", t2 and t2.id)
+      tips.mark_seen("force")
+      place("sw_unit_im_stormtrooper", 2, 14, 6, "t_tip_st")
+      local t3 = tips.next_tip()
+      check("an overwatch-capable unit facing enemies brings the overwatch tip", t3 and t3.id == "overwatch", t3 and t3.id)
+      tips.mark_seen("overwatch")
+      check("a tip already seen is not shown again", tips.next_tip() == nil or tips.next_tip().id ~= "overwatch")
+      u("t_tip_st"):to_map(7, 6)
+      check("the enemy now stands next to the trooper", u("t_tip_st").x == 7 and u("t_tip_st").y == 6)
+      local t4 = tips.next_tip()
+      check("contact with an enemy brings the flanking tip", t4 and t4.id == "flanking", t4 and t4.id)
+      wml.variables.sw_tips_off = "yes"
+      check("turned off, no tip at all", tips.next_tip() == nil)
+      wml.variables.sw_tips_off = nil
+      check("rank tip only for a rank earned past the type's start",
+        not (function() for _i, t in ipairs(tips.LIST) do if t.id == "ranks" then return t.when() end end end)())
+      wml.variables.sw_tips_seen, wml.variables.sw_tips_off = saved_seen, saved_off
     end
 
     -- AI safety: hand side 2 to the AI for one turn; it may enter overwatch at
