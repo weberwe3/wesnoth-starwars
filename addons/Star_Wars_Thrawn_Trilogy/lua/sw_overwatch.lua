@@ -91,7 +91,10 @@ function ow.can_enter(u)
 	return true, nil, cfg
 end
 
-function ow.enter(u)
+-- automatic: entered at the end of the unit's turn (ow.on_side_turn_end), not
+-- chosen. Automatic entries are not reported to the observation hook: Thrawn's
+-- Doctrine learns from tactics the player chooses, not from the default.
+function ow.enter(u, automatic)
 	local ok, why, cfg = ow.can_enter(u)
 	if not ok then core.log("overwatch", u.id .. " cannot enter: " .. tostring(why)) return false end
 	local weapon = find_attack(u, cfg.weapons)
@@ -112,7 +115,7 @@ function ow.enter(u)
 	ow.update_indicator(u)
 	core.float(u.x, u.y, _ "overwatch", "#ffd27a")
 	core.log("overwatch", u.id .. " on overwatch: " .. cfg.reactions .. " reaction(s), range " .. cfg.range)
-	if ow.on_enter then ow.on_enter(u) end   -- observation hook (Thrawn Doctrine)
+	if ow.on_enter and not automatic then ow.on_enter(u) end   -- observation hook (Thrawn Doctrine)
 	return true
 end
 
@@ -291,14 +294,23 @@ end
 -- Units disabled by Mind Trick (or future suppression) lose overwatch.
 force.on_disabled = function(u) ow.clear(u) end
 
--- AI sides: units that kept their attack enter overwatch at the end of the
--- side's turn, so the AI uses the system too. Disable with
--- sw_overwatch_ai=no.
+-- Every side (owner direction 2026-10-11): a unit that can hold overwatch and
+-- did not use its attack this turn enters overwatch automatically when its
+-- side ends the turn -- for the player as for the AI. Units that attacked,
+-- used an attack-costing power or sweep, are dazed or have no suitable weapon
+-- are left as they are (ow.can_enter). Choosing Overwatch from the menu still
+-- works, to take it earlier (it also ends the unit's movement). Disable with
+-- sw_overwatch_auto=no (all sides) or sw_overwatch_ai=no (AI sides only).
+local function off(name)
+	local v = wml.variables[name]
+	return v == false or v == "no"
+end
+
 function ow.on_side_turn_end(side)
-	if wml.variables.sw_overwatch_ai == false or wml.variables.sw_overwatch_ai == "no" then return end
-	if wesnoth.sides[side].controller ~= "ai" then return end
+	if off("sw_overwatch_auto") then return end
+	if wesnoth.sides[side].controller == "ai" and off("sw_overwatch_ai") then return end
 	for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ side = side, ability = ow.ABILITY })) do
-		if ow.can_enter(u) then ow.enter(u) end
+		if ow.can_enter(u) then ow.enter(u, true) end
 	end
 end
 
