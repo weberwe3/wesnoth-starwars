@@ -225,3 +225,15 @@ X-wing 12.5 m < Y-wing 16 m); shuttles and freighters larger; capital ships
 and installations fill the hex. Sources: Wookieepedia (Legends) entries for
 the Dreadnaught-class (600 m), vornskr, Noghri, Myneyrsh, Psadan and TIE
 bomber.
+
+## Redrawn from portraits (2026-10-09)
+
+`sw-hero-pellaeon`, `sw-unit-im-officer`, `sw-unit-nr-field-medic`,
+`sw-hero-cbaoth` and `sw-unit-nr-militia` replaced sheet-cut sprites that read
+badly in game (animal-like or horned heads, malformed legs, a bare figure, and
+a two-red-blade figure for the old robed master). Codex redrew all 12 frames
+of each in the house style, with the `sw-unit-nr-rifle-squad` sheet as the
+template and the unit's own portrait as the reference
+(`~/art-references/portrait-<unit>.png`; jobs in `owner_sheet_jobs.json`). Their
+firing frames paint their own flash, so they are now painted flashes, and two
+stray fragments from neighbouring cells were removed from the defend frames.

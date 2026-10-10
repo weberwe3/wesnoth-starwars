@@ -8,10 +8,11 @@
  },
  "sw-hero-cbaoth": {
   "blit": [
-   54,
-   24
+   58,
+   32
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-hero-chewbacca": {
   "blit": [
@@ -80,10 +81,11 @@
  },
  "sw-hero-pellaeon": {
   "blit": [
-   50,
-   28
+   53,
+   32
   ],
-  "kind": "posed"
+  "color": "red",
+  "kind": "painted"
  },
  "sw-hero-thrawn": {
   "blit": [
@@ -177,10 +179,11 @@
  },
  "sw-unit-im-officer": {
   "blit": [
-   49,
-   33
+   58,
+   30
   ],
-  "kind": "posed"
+  "color": "red",
+  "kind": "painted"
  },
  "sw-unit-im-recon-squad": {
   "blit": [
@@ -307,10 +310,11 @@
  },
  "sw-unit-nr-field-medic": {
   "blit": [
-   49,
-   35
+   52,
+   31
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-unit-nr-heavy-weapons-squad": {
   "blit": [
@@ -330,10 +334,11 @@
  },
  "sw-unit-nr-militia": {
   "blit": [
-   48,
-   28
+   57,
+   32
   ],
-  "kind": "posed"
+  "color": "blue",
+  "kind": "painted"
  },
  "sw-unit-nr-rifle-squad": {
   "blit": [
