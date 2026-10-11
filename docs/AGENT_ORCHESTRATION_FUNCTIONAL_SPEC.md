@@ -1211,10 +1211,12 @@ conditions without exposing secrets or silently changing power, login, or
 security settings. A missing GUI or locked-session capability blocks its required
 gate. Reboot recovery is claimed only if approved automatic startup is configured.
 
-Retain the existing two-attempt repair and three-consecutive-worktree-failure
-limits, global pauses, provider circuits, deletion approval, and exact-head
-publication checks. Bounded retries, quota waits, no-progress detection, and the
-completion cutoff cannot reset counters or skip verification. Before claiming
+Retain the existing two-attempt repair limit per processing run, global pauses,
+provider circuits, deletion approval, and exact-head publication checks.
+Retryable autonomous worktree failures preserve the exact worktree and resume
+after the cooldown without a consecutive-failure ceiling. Failure counts remain
+diagnostic history rather than a stop condition. Quota waits, no-progress
+detection, and the completion cutoff cannot reset budgets or skip verification. Before claiming
 unattended delivery, run isolated interruption and fault fixtures plus an approved
 bounded real trial on the supported host and session. Success requires at least
 one newly verified requirement in a promoted, offline-launchable player build

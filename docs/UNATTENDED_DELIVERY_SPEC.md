@@ -168,10 +168,12 @@ explicit mappings for any added states:
 | Global safety pause, reference mismatch, security or repository-integrity failure | Stop scheduling and publication; preserve evidence and report the required action |
 | Packaging or promotion failure | Preserve the previous eligible player build; diagnose and retry only within policy |
 
-Keep the existing two-attempt recovery and three-consecutive-worktree-failure
-boundaries. Availability handling cannot reset counters, rotate identities, or
-choose unrelated work to escape a mandatory pause. Apply any proposed changes to
-that behavior only in a separate explicit governance ticket.
+Keep the existing two-attempt recovery limit per processing run. Retryable
+worktree failures preserve and resume the exact worktree after the cooldown,
+without a consecutive-failure ceiling. Record failure counts as diagnostic
+history. Availability handling cannot reset budgets, rotate identities, or
+choose unrelated work to escape another mandatory pause. Apply proposed policy
+changes only in a separate explicit governance ticket.
 
 Persist a failure fingerprint and verified-progress window. Repeated identical
 failures or several tickets without a newly verified requirement must cause a

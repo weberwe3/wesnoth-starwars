@@ -4153,7 +4153,7 @@ class ApprovalQueueTests(unittest.TestCase):
                 controller._last_completion_monotonic = 39.0
                 self.assertTrue(controller._cooldown_complete())
 
-    def test_autonomous_worktree_stops_after_three_consecutive_failures(self) -> None:
+    def test_autonomous_worktree_retries_beyond_three_consecutive_failures(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             (base / "agent" / "runtime").mkdir(parents=True)
@@ -4192,7 +4192,7 @@ class ApprovalQueueTests(unittest.TestCase):
                 ),
                 mock.patch.object(ticket_runner, "load_ticket", return_value=ticket),
             ):
-                for index in range(1, 4):
+                for index in range(1, 8):
                     run_id = f"abc123def45{index}"
                     controller.store.update(lambda state, value=run_id: state["run"].update({
                         "state": "planning", "run_id": value,
@@ -4200,8 +4200,11 @@ class ApprovalQueueTests(unittest.TestCase):
                     controller._run(run_id, "sol-low", "Continue safely", True)
                     state = controller.public_state()
                     self.assertEqual(state["autonomous_failure_streak"]["count"], index)
-                    self.assertEqual(state["automation"]["enabled"], index < 3)
-                    if index == 1:
+                    self.assertTrue(state["automation"]["enabled"])
+                    self.assertIn(f"Worktree retry {index} scheduled", state["run"]["summary"])
+                    self.assertIn(f"Consecutive failure {index}", state["run"]["error"])
+                    self.assertIsNone(state["activity"][-1]["recovery_limit"])
+                    if index in (1, 3, 4, 7):
                         retry = controller._failure_streak_resume_proposal({
                             "resumable_local_work": [{
                                 "name": "agent/other", "previous_task_id": "OTHER",
@@ -4215,10 +4218,18 @@ class ApprovalQueueTests(unittest.TestCase):
                         self.assertEqual(retry["ticket"]["resume_branch"], "agent/fixture")
 
             state = controller.public_state()
-            self.assertIn("three consecutive failures", state["run"]["summary"])
-            self.assertIn("Last failure:", state["run"]["error"])
-            self.assertIn("configured failure limit", state["run"]["error"])
-            self.assertEqual(state["activity"][-1]["recovery_limit"], 3)
+            self.assertEqual(state["autonomous_failure_streak"]["count"], 7)
+            self.assertIn("bounded scenario defect", state["run"]["error"])
+            reloaded = AutonomyController.__new__(AutonomyController)
+            reloaded.root = base
+            self.assertEqual(reloaded._read_failure_streak()["count"], 7)
+            self.assertEqual(reloaded._record_autonomous_failure(
+                "agent/fixture", "reviewer_change_request", "Still failing", "Repair it"
+            ), 8)
+            self.assertEqual(reloaded._read_failure_streak()["count"], 8)
+            self.assertEqual(reloaded._record_autonomous_failure(
+                "agent/new-fixture", "reviewer_change_request", "New failure", "Repair it"
+            ), 1)
 
 
 class PublicationGameValidationTests(unittest.TestCase):
