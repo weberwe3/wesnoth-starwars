@@ -7,7 +7,8 @@
 --
 -- Systems: the Force (sw_force), overwatch (sw_overwatch), sensors and
 -- electronic warfare (sw_ew), Thrawn Doctrine (sw_doctrine), off-map air
--- support (sw_air), rank insignia (sw_rank) and achievements (sw_achievements).
+-- support (sw_air), rank insignia (sw_rank), achievements (sw_achievements)
+-- and just-in-time tips (sw_tips).
 --
 -- Event precedence (all handlers are registered here, nowhere else):
 --   prestart    1. carried-over state reset (overwatch, Force, EW, doctrine)
@@ -46,10 +47,11 @@ local rank = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_rank.lua"
 local alert = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua")
 local range = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_range.lua")
 local achievements = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_achievements.lua")
+local tips = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips }
 
 -- Cross-system wiring (hooks are plain Lua tables, rebuilt on every load).
 ew.hooks.bonus = { doctrine.ew_bonus }
@@ -460,5 +462,8 @@ end
 -- Achievements (lua/sw_achievements.lua, achievements.cfg).
 on("victory", "sw_ach_victory", achievements.on_victory)
 on("die", "sw_ach_die", achievements.on_die)
+
+-- Just-in-time tips (lua/sw_tips.lua): one Field Manual tip at most per player turn.
+on("side turn", "sw_tips_side_turn", tips.on_side_turn)
 
 core.log("systems", "tactical systems loaded")

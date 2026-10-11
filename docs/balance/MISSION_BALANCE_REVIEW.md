@@ -364,6 +364,17 @@ A Tactics group rewards using the systems (Force powers, chosen overwatch,
 sensor sweeps, air support) and completing all three campaigns. Only the
 human player earns them; the engine skips replays.
 
+### 3.10 Just-in-time tips (2026-10-11)
+
+The tactical systems were explained only in the Field Manual menu, so a new
+player could miss most of them. `lua/sw_tips.lua` shows a short Field Manual
+tip at the start of the player's turn the first time a system matters --
+weapon ranges, the Force, overwatch, flanking, sensor contacts, air support,
+getting in unseen, ysalamiri fields, Thrawn's doctrine, ranks -- at most one
+per turn, each once per playthrough (`sw_tips_seen`, carried between
+missions). Each tip offers "Turn off tips" (`sw_tips_off`); the Field Manual
+has "Show the tips again".
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and
