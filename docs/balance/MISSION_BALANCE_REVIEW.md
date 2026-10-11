@@ -455,6 +455,21 @@ The last two missions without mid-mission events:
   - On turn 5 a second raider boat (2/3/4, with a veteran from Normal) lands beside whichever southern village has fewer of Luke's units within 3 hexes.
   - On a tie it lands at the south-east village.
 
+### 3.17 Command decisions (2026-10-11)
+
+Nothing the player chose shaped a campaign beyond its recruits. Each campaign
+now has one decision (`lua/sw_command.lua`), offered at the start of
+Shadows of Kashyyyk, The Senator's Men and The Palace Infiltrators, standing
+until the campaign ends:
+
+| Choice | Effect | Rough value |
+| --- | --- | --- |
+| Supply convoy | +25 credits at the start of each later mission where the player recruits | 4-5 missions: about 100-125 credits |
+| Veteran cadre | 2 loyal units of the best current recruit at once, half-way to their next level | about 40-60 credits now, no upkeep, and they carry over |
+| Counter-intelligence | Thrawn's Doctrine capped at 75 Insight: no Coordinated fire (+10% to hit against studied types) | matters in the Thrawn missions: HTE 9-10, DFR 9, TLC 9-10 |
+
+An AI-controlled player takes the supply convoy.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and
