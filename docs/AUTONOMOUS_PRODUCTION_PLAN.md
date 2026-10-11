@@ -308,8 +308,9 @@ verified-progress windows. Add completion-reserve admission checks to selection.
 Keep original contracts, repair counters, global pauses, and publication ordering.
 
 **Acceptance:** quota waits are bounded; fallback/circuit exhaustion and the
-existing two-attempt/three-failure boundaries remain stops; restart cannot reset
-usage or retries. Independent work bypasses only blockers already eligible under
+two-attempt recovery limit per processing run remains enforced; retryable
+worktree failures resume after cooldown without a consecutive-failure ceiling.
+Restart cannot reset usage or bounded in-run attempts. Independent work bypasses only blockers already eligible under
 policy. Repeated no-progress outcomes produce one bounded planning review and a
 precise preserved stop. The completion cutoff prevents expansion without skipping
 mandatory validation. A model-generated success message cannot satisfy progress.

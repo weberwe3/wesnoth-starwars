@@ -1080,3 +1080,15 @@ before consuming their results. The opening observation proves this repair;
 it does not prove a completed legal route. That attempt later exited `-11`
 after an occupied-hex request, whose crash cause remains unconfirmed and whose
 failure evidence is preserved separately.
+
+### 2026-10-11 — Consecutive retry counts are diagnostic history
+
+**Symptom:** A retryable defect stopped continuous work after three failed
+processing runs even while a scoped repair remained available.
+**Confirmed cause:** The coordinator imposed a count-based stop and clamped
+persisted failure counts to three. The owner explicitly removed that policy.
+**Resolution:** Retry the same verified worktree after cooldown without a
+consecutive-failure ceiling; retain and increment its real diagnostic count.
+**Prevention:** Exercise at least seven failed runs, exact-worktree resumption,
+reload counts above three, and a new worktree identity. Continue enforcing the
+separate two-repair processing-run limit and non-retryable safety boundaries.

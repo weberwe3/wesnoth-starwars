@@ -48,7 +48,6 @@ MAX_BRIEF_LENGTH = 1000
 MAX_GUIDANCE_LENGTH = 1000
 PLANNER_CACHE_SECONDS = 900
 AUTOMATION_COOLDOWN_SECONDS = 60
-AUTONOMOUS_WORKTREE_FAILURE_LIMIT = 3
 AUTONOMOUS_CONTRACT_REPLAN_FAILURES = {
     "ticket_acceptance_contract_failure",
 }
@@ -1065,11 +1064,10 @@ class AutonomyController:
                 streak = self._record_autonomous_failure(
                     identity, failure_class, detail, required_action
                 ) if retryable else 0
-                if retryable and streak < AUTONOMOUS_WORKTREE_FAILURE_LIMIT:
+                if retryable:
                     retry_action = (
                         f"The autonomous coordinator will preserve and resume this exact worktree "
-                        f"after the cooldown. Consecutive failure {streak} of "
-                        f"{AUTONOMOUS_WORKTREE_FAILURE_LIMIT}; two bounded in-run repair attempts "
+                        f"after the cooldown. Consecutive failure {streak}; two bounded in-run repair attempts "
                         "remain governed separately."
                     )
                     self.queue.event(
@@ -1077,41 +1075,13 @@ class AutonomyController:
                         level="error", detail=detail, ticket_id=ticket["task_id"],
                         failure_class=failure_class, required_action=retry_action,
                         recovery_attempt=streak,
-                        recovery_limit=AUTONOMOUS_WORKTREE_FAILURE_LIMIT,
+                        recovery_limit=None,
                     )
                     self._finish(
                         run_id, False,
-                        f"Worktree retry {streak} of {AUTONOMOUS_WORKTREE_FAILURE_LIMIT} scheduled",
+                        f"Worktree retry {streak} scheduled",
                         ticket_id=ticket["task_id"],
                         error=f"{detail} {retry_action}",
-                    )
-                    return
-                if retryable:
-                    final_detail = (
-                        f"Last failure: {detail} Required action from the failed step: "
-                        f"{required_action} Autonomous processing for worktree {identity} has ceased "
-                        f"because it failed {AUTONOMOUS_WORKTREE_FAILURE_LIMIT} consecutive times, "
-                        "reaching the configured failure limit. The branch, worktree, and diagnostic "
-                        "evidence were preserved for manual inspection or an explicitly restarted run."
-                    )
-                    final_action = (
-                        "Inspect the preserved worktree and the last failure above. Re-enable "
-                        "automation only when you want to authorize a new three-failure window."
-                    )
-                    self.queue.event(
-                        f"{ticket['task_id']} stopped at the three-failure worktree limit",
-                        level="error", detail=final_detail, ticket_id=ticket["task_id"],
-                        failure_class=failure_class, required_action=final_action,
-                        recovery_attempt=streak,
-                        recovery_limit=AUTONOMOUS_WORKTREE_FAILURE_LIMIT,
-                    )
-                    self._finish(
-                        run_id, False,
-                        "Autonomous worktree processing ceased after three consecutive failures",
-                        ticket_id=ticket["task_id"], error=final_detail,
-                    )
-                    self._disable_automation(
-                        "Autonomous worktree processing ceased after three consecutive failures"
                     )
                     return
                 self.queue.event(
@@ -1572,7 +1542,7 @@ Existing candidate diff excerpt (facts only; use it to select exact proof text):
             retry["_planning_inventory"] = inventory
             self.queue.event(
                 "Sol planning call avoided",
-                detail="Python resumed the exact worktree in its three-failure retry window.",
+                detail="Python resumed the exact preserved worktree after a retryable failure.",
             )
             return retry
         deterministic = self._single_resume_proposal(inventory)
@@ -3492,7 +3462,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
             return empty
         return {
             "identity": identity[:240],
-            "count": min(AUTONOMOUS_WORKTREE_FAILURE_LIMIT, max(0, count)),
+            "count": max(0, count),
             "failure_class": str(value.get("failure_class") or "ticket_failure")[:80],
             "last_detail": str(value.get("last_detail") or "Ticket execution failed.")[:2000],
         }
@@ -3520,7 +3490,6 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
     ) -> int:
         previous = self._read_failure_streak()
         count = previous["count"] + 1 if previous["identity"] == identity else 1
-        count = min(AUTONOMOUS_WORKTREE_FAILURE_LIMIT, count)
         self._write_failure_streak({
             "identity": identity[:240],
             "count": count,

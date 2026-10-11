@@ -278,8 +278,10 @@ a planning defect; preserve it and create a linked corrected revision through
 the appropriate authority. A no-op ticket is redundant. Neither is a reason to
 manufacture changes or repeatedly spend code-repair attempts.
 
-Keep existing two-attempt recovery and three-consecutive-worktree-failure pause
-boundaries. Provider failures remain distinct from content defects. The scheduler
+Keep the existing two-attempt recovery limit per processing run. Retryable
+worktree failures resume after the cooldown without a consecutive-failure
+ceiling; their recorded counts remain diagnostic history. Provider failures
+remain distinct from content defects. The scheduler
 must not work around a mandatory global pause by selecting an unrelated ticket.
 An unavailable asset capability may leave an ordinary dependency blocked while
 other eligible work continues, only when current policy permits that continuation.

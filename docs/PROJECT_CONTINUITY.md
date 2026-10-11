@@ -1087,7 +1087,7 @@ DASH-027 requires its dedicated governance change to merge first. It binds stand
 
 The controlled content policy now makes post-Return of the Jedi Expanded Universe (Legends) terminology an affirmative fidelity requirement while retaining the existing original-expression boundary. New project-owned WML/Lua IDs use the `sw_` namespace; player-facing fields use full lore names; dialogue, story prose, macros, terrain logic, events, and scenarios are newly authored; and the add-on remains structured for free distribution through the official Wesnoth add-on server. Requests for code artifacts should receive complete, scoped, commented WML/Lua that fits the stated Wesnoth directory and turn-based hex framework.
 
-Continuous automation now treats backlog maintenance as a coordinator responsibility. After existing or resumable work and the documented priority catalog are exhausted, one compact read-only Sol call proposes four ordered implementation contracts. Python rejects unsafe or overlapping entries, stores only validated contracts in ignored runtime state, starts the first immediately, and revalidates and selects later entries without another planner call. If every proposal fails only deterministic acceptance-contract shape checks, Python gives Sol the exact per-ticket diagnostics for one corrected backlog call; all other failures remain fail-closed and visible. It requests a new set only after the prior set is exhausted or unusable. All existing worktree, scope, validation, tester, reviewer, deletion, publication, and three-failure gates remain unchanged.
+Continuous automation now treats backlog maintenance as a coordinator responsibility. After existing or resumable work and the documented priority catalog are exhausted, one compact read-only Sol call proposes four ordered implementation contracts. Python rejects unsafe or overlapping entries, stores only validated contracts in ignored runtime state, starts the first immediately, and revalidates and selects later entries without another planner call. If every proposal fails only deterministic acceptance-contract shape checks, Python gives Sol the exact per-ticket diagnostics for one corrected backlog call; all other failures remain fail-closed and visible. It requests a new set only after the prior set is exhausted or unusable. The worktree, scope, validation, tester, reviewer, deletion, and publication gates remain enforced. The former three-failure stop was removed by the explicit 2026-10-11 governance change described below.
 
 The dashboard also stores separate, editable **Planning guidance** for the coordinator. It is high-level owner preference for the next planning or backlog-generation decision, not a per-ticket brief or a bypass for existing work, scope, governance, approval, or safety boundaries. It remains editable during an active ticket and is persisted without interrupting that work.
 
@@ -1175,8 +1175,9 @@ analysis and regression expectations are in `docs/WORKTREE_LESSONS.md`.
 Failed, non-deleting approval-queue entries are now deterministic recovery work
 when continuous automation is re-enabled. The coordinator selects the oldest
 eligible exact record before requesting any new ticket plan, preserves its
-original objective and scope, and retains the existing three-failure worktree
-ceiling. Deletion-bearing failures still require their explicit manual boundary.
+original objective and scope. Retryable failures resume after cooldown without
+a consecutive-failure ceiling. Deletion-bearing failures still require their
+explicit manual boundary.
 
 Managed `agent/*` ref discovery no longer silently discards every branch after
 the first 100. It inventories all refs up to an explicit 1,000-ref safety ceiling
@@ -1850,3 +1851,14 @@ Claude's mission balance and active tips/debrief/hotkey work. After safe existin
 contracts are exhausted, use the governed backlog selection/refill process;
 preserve bounded worktrees, immutable scope, independent review and exact-head
 CI, installed-game and real player-launch gates.
+
+### 2026-10-11 — Remove the consecutive worktree failure ceiling
+
+The owner explicitly removed the three-failure limit. Retryable continuous
+failures now preserve and resume the exact worktree after the normal cooldown
+regardless of their consecutive count. Persisted counts, including counts from
+older stopped runs, remain diagnostic evidence and continue increasing rather
+than being clamped to three. Each processing run still has its separate
+bounded two-repair policy; non-retryable failures, provider circuits, global
+pauses, exact scope, validation, review and publication gates remain enforced.
+The DASH-020 table entry above describes historical behavior, superseded here.
