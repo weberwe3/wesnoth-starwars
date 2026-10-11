@@ -6,6 +6,12 @@
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
       "expected_id": "sw_unit_nr_hero_commander"
+    },
+    {
+      "id": "sw-hero-specialization-field-manual",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
+      "expected_id": "sw_field_manual"
     }
   ]
 }

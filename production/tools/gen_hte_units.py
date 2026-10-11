@@ -1573,6 +1573,101 @@ def veteran_training_wml(u: dict) -> str:
     ])
 
 
+
+# Hero specializations use native advancement caps and modification persistence.
+# Rank and unarmed variations rebuild through unit_wml, retaining the same menu.
+# UnitTypeWML / EffectWML: max_times bounds choices; movement must preserve vision.
+def hero_training_wml(u: dict) -> str:
+    if not u["hero"] or u["advances"] is not None:
+        return ""
+    choices = []
+
+    def add(key: str, label: str, limit: int, effects: str,
+            icon: str = "icons/crossed_sword_and_hammer.png") -> None:
+        choices.append("\n".join([
+            "[advancement]", f"    id=sw_amla_hero_{key}",
+            "    strict_amla=yes", f"    max_times={limit}",
+            f'    description= _ "{label}; full heal and cure, Max XP +20% ({"once" if limit == 1 else "up to 2 times"})"',
+            f'    image="{icon}"', indent(effects, 4),
+            "    {AMLA_EFFECTS_HEAL_AND_RAISE_XP}", "[/advancement]",
+        ]))
+
+    def weapon(key: str, label: str, name: str) -> None:
+        # Include the aimed counterpart once, preserving strikes/range/specials.
+        names = [a["name"] for a in expanded_attacks(u)
+                 if a["name"] in {name, name + "_aimed"}]
+        assert names, f"hero training weapon missing: {u['id']} / {name}"
+        add(key, label + ": +1 damage", 2, "\n".join([
+            "[effect]", "    apply_to=attack", f"    name={','.join(names)}",
+            "    increase_damage=1", "[/effect]",
+        ]))
+
+    def mobility(label: str) -> None:
+        add("mobility", label + ": +1 movement, vision unchanged", 1,
+            "[effect]\n    apply_to=movement\n    increase=1\n    apply_to_vision=no\n[/effect]",
+            "icons/boots_elven.png")
+
+    def field_care() -> None:
+        add("field_care", "Field coordination: adjacent allies recover 4 HP/turn, slows poison (no stacking)", 1,
+            "\n".join([
+                "[effect]", "    apply_to=new_ability", "    [abilities]",
+                "        [heals]", "            id=sw_ability_hero_field_care",
+                "            value=4", "            max_value=4",
+                "            affect_allies=yes", "            affect_self=no",
+                "            poison=slowed", '            name= _ "field coordination"',
+                '            description= _ "Coordinates battlefield recovery: adjacent allies recover up to 4 HP at the start of this unit\'s turn. Slows poison; does not heal the commander or stack with other healers."',
+                "            [affect_adjacent]", "            [/affect_adjacent]",
+                "        [/heals]", "    [/abilities]", "[/effect]",
+            ]), "icons/potion_green_medium.png")
+
+    def infiltration() -> None:
+        add("infiltration", "Infiltration: ignores enemy zones of control", 1,
+            "[effect]\n    apply_to=new_ability\n    [abilities]\n" +
+            indent(ABILITY_BUILDERS["skirmisher"](), 8) +
+            "\n    [/abilities]\n[/effect]", "icons/boots_elven.png")
+
+    uid = u["id"]
+    if uid in {"sw_hero_luke", "sw_hero_cbaoth", "sw_hero_luuke"}:
+        weapon("saber", "Lightsaber discipline", "lightsaber")
+    elif uid in {"sw_hero_xwing_luke", "sw_hero_wedge"}:
+        weapon("lasers", "Laser calibration", "laser_cannons")
+        mobility("Combat maneuvering")
+    elif uid == "sw_hero_mara":
+        weapon("blade", "Vibroblade discipline", "vibroblade")
+        infiltration()
+    elif uid == "sw_hero_khabarakh":
+        weapon("knives", "Commando knife training", "noghri_knives")
+        infiltration()
+    elif uid == "sw_hero_chewbacca":
+        weapon("strength", "Close combat training", "wookiee_strength")
+        weapon("bowcaster", "Bowcaster calibration (normal and aimed)", "bowcaster")
+    elif uid == "sw_hero_han":
+        weapon("blaster", "DL-44 calibration (normal and aimed)", "heavy_blaster_pistol")
+        mobility("Blockade running")
+    elif uid in {"sw_hero_lando", "sw_hero_karrde"}:
+        weapon("sidearm", "Sidearm discipline", "blaster_pistol")
+        field_care()
+    elif uid in {"sw_hero_leia", "sw_hero_pellaeon", "sw_hero_thrawn", "sw_hero_bel_iblis"}:
+        field_care()
+        mobility("Command repositioning")
+    else:
+        raise ValueError(f"hero has no specializations: {uid}")
+
+    if uid in FORCE_PROFILES:
+        # A separate ability augments capacity without replacing a scenario's
+        # Force profile, known powers, cost/range overrides or regeneration.
+        add("force_focus", "Force discipline: +2 maximum Force Points, regeneration unchanged", 1,
+            "\n".join([
+                "[effect]", "    apply_to=new_ability", "    [abilities]",
+                "        [dummy]", "            id=sw_ability_hero_force_focus",
+                "            fp_bonus=2", '            name= _ "Force discipline"',
+                '            description= _ "Adds 2 to maximum Force Points. Regeneration, power costs and cooldowns are unchanged. Ysalamiri still block all Force use and regeneration."',
+                "        [/dummy]", "    [/abilities]", "[/effect]",
+            ]), "icons/potion_blue_medium.png")
+    assert 2 <= len(choices) <= 3, uid
+    return "\n".join(choices)
+
+
 def unit_wml(u: dict, with_variations: bool = True) -> str:
     s = slug(u["id"])
     lines = [
@@ -1599,7 +1694,7 @@ def unit_wml(u: dict, with_variations: bool = True) -> str:
     ]
     if u["advances"] is None:
         lines.append("    {AMLA_DEFAULT}")
-        training = veteran_training_wml(u)
+        training = hero_training_wml(u) if u["hero"] else veteran_training_wml(u)
         if training:
             lines.append(indent(training, 4))
     if u["zoc"] == "no":

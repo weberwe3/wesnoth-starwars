@@ -542,3 +542,88 @@ row comes from 3 separate runs after the change.
 - **Engine tests (`run_systems_tests.py --suite air`):** hero withdrawal,
   both outside combat (`[harm_unit]`) and in combat. The hero leaves the map,
   is kept healed, and the scenario continues.
+
+
+## 6. Hero specialization balance (2026-10-11)
+
+Player impact: named heroes can specialize after their final level instead of
+always taking +3 HP. Their advancement dialogs offer two or three role-specific,
+capped options alongside the existing HP choice, with full healing/cure and the
+normal +20% next-XP cost on every selection.
+
+| Heroes | Specializations and caps |
+| --- | --- |
+| Luke, C'baoth, Luuke | Lightsaber +1 damage twice; +2 maximum Force Points once |
+| X-wing Luke | Lasers +1 damage twice; +1 movement once; +2 Force Points once |
+| Wedge | Lasers +1 damage twice; +1 movement once |
+| Leia | Adjacent-allied healing 4 once; +1 movement once; +2 Force Points once |
+| Mara | Vibroblade +1 damage twice; ignore zones of control once; +2 Force Points once |
+| Khabarakh | Knives +1 damage twice; ignore zones of control once |
+| Han | DL-44 +1 damage twice (normal and aimed); +1 movement once |
+| Chewbacca | Melee +1 damage twice; bowcaster +1 damage twice (normal and aimed) |
+| Lando, Karrde | Pistol +1 damage twice; adjacent-allied healing 4 once |
+| Pellaeon, Thrawn, Bel Iblis | Adjacent-allied healing 4 once; +1 movement once |
+
+Weapon training adds no strikes, range or accuracy. At most +2 damage per
+strike, it competes with HP rather than arriving free; a four-strike lightsaber
+can gain at most 8 raw damage per exchange. Mobility leaves vision unchanged.
+Infiltration also works within ysalamiri fields, where Mara loses Force agility.
+Field coordination affects allies adjacent at the commander's turn start,
+excludes self, slows poison, and does not stack with medics or Force healing.
+Force capacity adds no regeneration, power, discount or cooldown reduction and
+still respects ysalamiri suppression; existing per-scenario Force overrides
+remain intact. No starting stats, mission events, difficulty settings, recruit
+lists, hero withdrawal or defeat conditions change. Native advancement IDs and
+caps persist through rank art changes and saves. Existing saves retain any
+cached advancement menu until the engine refreshes/rebuilds the unit, as with
+veteran training; this feature does not rewrite saved heroes.
+
+Validation against the candidate on Wesnoth 1.19.27:
+
+| Existing gate | Actual result |
+| --- | --- |
+| Unit generator and inventory | Passed; 56 generated unit types |
+| Native progression | 472 checks passed, including 30 real saved-game reload checks |
+| Systems, all suites | 542 passed; 0 failed; 0 blocking engine errors |
+| Three campaign sequences | All passed: 30 scenario transitions and 30 saved-WML validations |
+| Declared gameplay contracts | 102 passed, including Force capacity and the Field Manual |
+| Careful-player AI soak, all 30 missions | 30 technical passes; 9 victories and 21 defeats |
+
+Campaign sequence victories are scripted route checks, and their save checks
+validate saved WML. Native progression and systems tests separately exercise
+real engine reloads. Systems retained 11 known unsynced-controller warnings from
+the harness context. No soak mission reported a technical failure; wins and
+losses below are ordinary AI outcomes, not evidence of human difficulty balance.
+
+| Mission | AI outcome | Final turn |
+| --- | --- | --- |
+| sw_hte_01_ysalamiri_harvest | Defeat | 17 |
+| sw_hte_02_ambush_at_bpfassh | Defeat | 15 |
+| sw_hte_03_adrift | Defeat | 8 |
+| sw_hte_04_shadows_of_kashyyyk | Defeat | 11 |
+| sw_hte_05_prisoner_of_myrkr | Defeat | 15 |
+| sw_hte_06_raid_on_karrdes_base | Defeat | 16 |
+| sw_hte_07_the_forest_crossing | Defeat | 4 |
+| sw_hte_08_nomad_city | Victory | 15 |
+| sw_hte_09_sluis_van_shipyards | Victory | 7 |
+| sw_hte_10_thrawns_gambit | Defeat | 6 |
+| sw_dfr_01_the_noghri_prisoner | Victory | 3 |
+| sw_dfr_02_honoghr | Defeat | 3 |
+| sw_dfr_03_jomark | Defeat | 6 |
+| sw_dfr_04_the_senators_men | Defeat | 15 |
+| sw_dfr_05_peregrines_nest | Victory | 16 |
+| sw_dfr_06_the_mad_jedi | Defeat | 5 |
+| sw_dfr_07_the_dark_force | Defeat | 17 |
+| sw_dfr_08_aboard_the_katana | Defeat | 7 |
+| sw_dfr_09_battle_for_the_fleet | Defeat | 9 |
+| sw_dfr_10_honoghrs_choice | Victory | 5 |
+| sw_tlc_01_the_siege_of_coruscant | Victory | 8 |
+| sw_tlc_02_the_smugglers_council | Defeat | 4 |
+| sw_tlc_03_the_palace_infiltrators | Victory | 9 |
+| sw_tlc_04_landfall_on_wayland | Defeat | 6 |
+| sw_tlc_05_the_natives_of_wayland | Defeat | 4 |
+| sw_tlc_06_the_gates_of_tantiss | Victory | 8 |
+| sw_tlc_07_the_cloning_vats | Defeat | 16 |
+| sw_tlc_08_the_throne_room | Defeat | 7 |
+| sw_tlc_09_bilbringi | Victory | 14 |
+| sw_tlc_10_the_last_command | Defeat | 7 |

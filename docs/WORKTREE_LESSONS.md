@@ -1317,3 +1317,18 @@ legal short native progress and the flat-distance detour. **Prevention:** Test
 both affordable forward movement and deliberate holding beside a surviving
 visible threat. Preserve the separate native result; policy checks do not prove
 combat survival across ordinary random outcomes.
+
+### 2026-10-11 — Keep native progression fixtures inside the playable border
+
+**Symptom:** The hero specialization fixture could not find its newly placed
+hero, and its field-care target failed setup. **Confirmed cause:** An 8-by-8
+map with the ordinary one-hex border has playable coordinates 1 through 6;
+the new fixture used column or row 7. **Resolution:** Move the hero and all
+healing participants onto interior hexes. The native run then passed every
+hero advancement and saved-game check. A remaining healing check required
+two ordinary end-turn calls because both fixture sides are human; restoring
+the full side 1-to-2-to-1 cycle passed native turn-start healing, non-stacking,
+poison stabilization, and self/enemy exclusions. **Prevention:** Verify playable
+map bounds before placing fixture units and use a complete native turn cycle
+when checking turn-start effects. Do not alter gameplay to accommodate an
+out-of-bounds or incomplete-turn fixture.
