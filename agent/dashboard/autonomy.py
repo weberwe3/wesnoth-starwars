@@ -48,6 +48,12 @@ MAX_BRIEF_LENGTH = 1000
 MAX_GUIDANCE_LENGTH = 1000
 PLANNER_CACHE_SECONDS = 900
 AUTOMATION_COOLDOWN_SECONDS = 60
+# Retryable worktree failures are retried without a count limit (owner
+# decision), but a failure that cannot pass must not spend provider quota every
+# minute: the cooldown doubles with each consecutive failure up to this cap,
+# and every Nth consecutive failure raises a needs-attention event.
+AUTONOMOUS_RETRY_BACKOFF_MAX_SECONDS = 3600
+AUTONOMOUS_FAILURE_ATTENTION_EVERY = 5
 AUTONOMOUS_CONTRACT_REPLAN_FAILURES = {
     "ticket_acceptance_contract_failure",
 }
@@ -301,6 +307,17 @@ def bounded_agent_branch_lines(branch_output: str) -> list[str]:
             "Managed agent branch inventory exceeds the supported safety bound"
         )
     return lines
+
+
+def retry_cooldown_seconds(streak: int) -> int:
+    """Cooldown before the next run: doubles per consecutive failure, capped."""
+
+    if streak <= 1:
+        return AUTOMATION_COOLDOWN_SECONDS
+    return min(
+        AUTONOMOUS_RETRY_BACKOFF_MAX_SECONDS,
+        AUTOMATION_COOLDOWN_SECONDS * 2 ** min(streak - 1, 16),
+    )
 
 
 class AutonomyController:
@@ -1065,11 +1082,24 @@ class AutonomyController:
                     identity, failure_class, detail, required_action
                 ) if retryable else 0
                 if retryable:
+                    wait = retry_cooldown_seconds(streak)
                     retry_action = (
                         f"The autonomous coordinator will preserve and resume this exact worktree "
-                        f"after the cooldown. Consecutive failure {streak}; two bounded in-run repair attempts "
-                        "remain governed separately."
+                        f"after a {wait}-second cooldown. Consecutive failure {streak}; two bounded "
+                        "in-run repair attempts remain governed separately."
                     )
+                    if streak % AUTONOMOUS_FAILURE_ATTENTION_EVERY == 0:
+                        self.queue.event(
+                            f"{ticket['task_id']} needs attention: {streak} consecutive failures",
+                            level="error", detail=detail, ticket_id=ticket["task_id"],
+                            failure_class=failure_class,
+                            required_action=(
+                                "Automation keeps retrying with a growing cooldown. Inspect the "
+                                "preserved worktree; the failure may not be fixable without guidance."
+                            ),
+                            recovery_attempt=streak,
+                            recovery_limit=None,
+                        )
                     self.queue.event(
                         f"{ticket['task_id']} failed; autonomous worktree retry scheduled",
                         level="error", detail=detail, ticket_id=ticket["task_id"],
@@ -3541,7 +3571,7 @@ Compact authoritative state: {json.dumps(compact, separators=(',', ':'))}
     def _cooldown_complete(self) -> bool:
         return (
             time.monotonic() - self._last_completion_monotonic
-            >= AUTOMATION_COOLDOWN_SECONDS
+            >= retry_cooldown_seconds(self._read_failure_streak()["count"])
         )
 
     def _disable_automation(self, summary: str | None = None) -> None:
