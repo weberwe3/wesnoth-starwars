@@ -1201,3 +1201,64 @@ fixture tree 4 at (23,15), followed by ordinary reassignment and re-harvest.
 exact tree coordinates and subsequent living carrier. Do not infer completion
 from a reset alone: the preserved route later lost a second frame carrier and
 failed its then-current one-drop bound before the fourth delivery.
+
+### 2026-10-11 — Skip irrelevant source scans without narrowing platform selection
+
+**Symptom:** Art inspection enumerated every add-on configuration even when a
+candidate changed only documentation or fixture code. **Confirmed cause:**
+`unit_ids_for_source_paths` parsed all configuration files before checking
+whether any changed path belonged to the unit directory. **Resolution:** Return
+an empty set before enumeration when there is no changed unit-directory CFG;
+retain the original complete parser and exact changed-source selection otherwise,
+including deleted and mixed candidates. An initial case-sensitive extension
+guard was rejected because Windows' existing glob also selects `.CFG`.
+The corrected guard uses `casefold`, and regression checks compare lowercase
+and uppercase files with the original platform glob and parser. **Prevention:**
+Test both the avoided enumeration and the retained selection on supported
+platforms. The corrected candidate passed three focused Windows checks, 210
+dashboard, 54 scenario, 10 acceptance and five compatibility checks plus reference
+validation. A separate earlier full run's `Errno 12` remains preserved; these
+results do not establish a general filesystem or WSL transport repair.
+
+### 2026-10-11 — Check known occupied prefixes before issuing native movement
+
+**Symptom:** Leia's requested affordable path crossed Han's occupied hex;
+the native command left her at its first prefix and the strict movement check
+failed. **Confirmed cause:** Native path discovery can include friendly occupied
+hexes that an ordinary move cannot traverse. **Resolution:** Reject candidate
+paths containing known friendly or side-one-visible occupied steps, retaining
+the normal viewing-side and visibility options. Subsequent native movement
+passed that legality boundary, but the full route still failed from a retreat
+loop and ordinary defeat. **Prevention:** Validate every entered step against
+known occupancy, and preserve actual reached-prefix and movement-budget evidence.
+Do not consult hidden occupants to improve policy or equate a legal command with
+successful evacuation.
+
+### 2026-10-11 — Allow native detours across flat geometric objective distance
+
+**Symptom:** Leia reached the western waypoint at (2,3) but stopped advancing;
+the northern wall required first moving through (2,2) and (2,1). **Confirmed
+cause:** All three hexes have the same installed-engine hex distance to the
+Falcon, so strict geometric progress rejected the required detour. **Resolution:**
+Rank Leia's reachable endpoints by forward position on the engine's visible
+native objective path, while retaining affordable-path and occupancy checks.
+The actual extracted old planner fails the plateau regression; the repaired
+planner passes it and four earlier policy cases. **Prevention:** Include a
+necessary flat-distance detour in planner checks and require real native
+campaign evidence before claiming escape. Stubbed path regressions establish
+this selection boundary, not combat survival or full route completion.
+
+### 2026-10-11 — Protect objective assignment from incidental ready-tree harvest
+
+**Symptom:** A scout assigned tree 4 selected an affordable native endpoint at
+ready tree 3, (17,13), and naturally harvested that tree. **Confirmed cause:**
+The production harvest handler accepts any empty side-one unit; endpoint scoring
+did not protect another carrier's ready objective. **Resolution:** Reject every
+possible entered prefix containing an unassigned ready tree for empty units,
+including escorts. Preserve the active carrier's assigned tree, non-ready trees
+and units already carrying a frame. The actual extracted prior M1 planner fails
+the observed endpoint case; the repaired planner passes endpoint, interrupted
+prefix, assigned-tree and non-ready-tree cases. **Prevention:** Keep strict
+harvest-to-assignment checks and qualify actual production outcomes separately
+from these planner regressions. Never accept a wrong assignment to turn a failed
+native route into a pass.
