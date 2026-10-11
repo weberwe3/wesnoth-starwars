@@ -42,6 +42,12 @@
       "kind": "source-text",
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
       "contains": "if d < math.max(2, a.min_range or 1) or d > (a.max_range or 1)\n\t\tor disabled_on_offense(u, a, target, u.x, u.y) then return end"
+    },
+    {
+      "id": "sw-hero-force-focus-capacity",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_force.lua",
+      "contains": "local focus = core.ability_cfg(u, \"sw_ability_hero_force_focus\")\n\treturn {\n\t\tfp_max = core.number(cfg.fp_max, 6) + core.number(focus and focus.fp_bonus, 0),"
     }
   ]
 }

@@ -46,8 +46,11 @@ end
 function force.config(u)
 	local cfg = core.ability_cfg(u, force.ABILITY)
 	if not cfg then return nil end
+	-- Native capped hero AMLA adds capacity while preserving the original
+	-- profile and scenario overrides. Ability modifications survive rebuild/load.
+	local focus = core.ability_cfg(u, "sw_ability_hero_force_focus")
 	return {
-		fp_max = core.number(cfg.fp_max, 6),
+		fp_max = core.number(cfg.fp_max, 6) + core.number(focus and focus.fp_bonus, 0),
 		fp_regen = core.number(cfg.fp_regen, 1),
 		powers = core.split(cfg.powers),
 		raw = cfg,

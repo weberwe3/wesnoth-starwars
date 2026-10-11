@@ -48,6 +48,18 @@ local function plugin(events, context, info)
         end)
         settle()
     end
+    if SW_PHASE == "load" then
+        wesnoth.plugin.execute(context, function() sw_vet.field_care_setup() end)
+        settle()
+        -- Both test sides are human: cycle their actual native turns.
+        context.end_turn{}
+        settle()
+        -- Side 2 is human in this fixture: end its native turn as well.
+        context.end_turn{}
+        settle()
+        wesnoth.plugin.execute(context, function() sw_vet.field_care_check() end)
+        settle()
+    end
     if SW_PHASE == "main" then
         context.save_game{ filename = "sw_veterancy_test_save" }
         settle()

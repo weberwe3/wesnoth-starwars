@@ -13,7 +13,15 @@ end
 function sw_vet.place(type_id, id, x)
     wesnoth.wml_actions.unit{ type = type_id, id = id, x = x or 3, y = 3, side = 1,
         random_traits = false, generate_name = false }
-    return wesnoth.units.get(id)
+    local u = wesnoth.units.get(id)
+    if not u then
+        local present = {}
+        for _, found in ipairs(wesnoth.units.find_on_map{}) do
+            present[#present + 1] = found.id .. ":" .. found.type .. "@" .. found.x .. "," .. found.y
+        end
+        error("native placement lost " .. tostring(id) .. ":" .. tostring(type_id) .. " among " .. table.concat(present, ";"))
+    end
+    return u
 end
 
 function sw_vet.config(u, choice)
@@ -140,6 +148,110 @@ function sw_vet.damage(u, bonus, label)
         and u.attacks.blaster_rifle.number == 3 and u.attacks.blaster_rifle_aimed.number == 2)
 end
 
+
+-- Hero gameplay PR: extend the existing native advancement/save runner.
+-- Handwritten expected effects test the actual engine, not generator output.
+local SW_HERO_CASES = {
+    {"sw_hero_luke", "saber", "lightsaber", 11, "force_focus", 8},
+    {"sw_hero_xwing_luke", "lasers", "laser_cannons", 9, "mobility", 8, "force_focus", 6},
+    {"sw_hero_leia", "field_care", nil, nil, "mobility", 5, "force_focus", 4},
+    {"sw_hero_han", "blaster", "heavy_blaster_pistol", 9, "mobility", 6},
+    {"sw_hero_chewbacca", "strength", "wookiee_strength", 10, "bowcaster", 13},
+    {"sw_hero_lando", "sidearm", "blaster_pistol", 7, "field_care"},
+    {"sw_hero_mara", "blade", "vibroblade", 8, "infiltration", nil, "force_focus", 5},
+    {"sw_hero_karrde", "sidearm", "blaster_pistol", 8, "field_care"},
+    {"sw_hero_wedge", "lasers", "laser_cannons", 9, "mobility", 8},
+    {"sw_hero_pellaeon", "field_care", nil, nil, "mobility", 5},
+    {"sw_hero_thrawn", "field_care", nil, nil, "mobility", 5},
+    {"sw_hero_khabarakh", "knives", "noghri_knives", 9, "infiltration"},
+    {"sw_hero_cbaoth", "saber", "lightsaber", 12, "force_focus", 10},
+    {"sw_hero_bel_iblis", "field_care", nil, nil, "mobility", 5},
+    {"sw_hero_luuke", "saber", "lightsaber", 11, "force_focus", 6},
+}
+
+local function sw_hero_cfg(u, ability)
+    for _, abilities in ipairs(wml.child_array(u.__cfg, "abilities")) do
+        for _, child in ipairs(abilities) do
+            if child[2].id == ability then return child[2] end
+        end
+    end
+end
+
+local function sw_hero_effect(u, key, weapon, base, label)
+    local ok = false
+    if weapon then
+        ok = u.attacks[weapon].damage == base + 2
+        local aimed = u.attacks[weapon .. "_aimed"]
+        if aimed then ok = ok and aimed.damage == base + 2 end
+    elseif key == "mobility" then
+        ok = u.max_moves == base + 1 and u.vision == base
+    elseif key == "force_focus" then
+        local cfg = sw_systems.force.config(u)
+        ok = cfg and cfg.fp_max == base + 2
+        local raw = cfg and cfg.raw
+        ok = ok and cfg.fp_regen == tonumber(raw.fp_regen)
+        sw_systems.force.set_fp(u, cfg.fp_max + 100)
+        ok = ok and sw_systems.force.fp(u) == base + 2
+    elseif key == "field_care" then
+        local cfg = sw_hero_cfg(u, "sw_ability_hero_field_care")
+        ok = cfg and tonumber(cfg.value) == 4 and tonumber(cfg.max_value) == 4
+            and cfg.affect_allies and not cfg.affect_self and cfg.poison == "slowed"
+    elseif key == "infiltration" then
+        ok = u:matches{ ability = "skirmisher" }
+    end
+    sw_vet.check(label .. ": exact hero benefit after native rank rebuild", ok)
+end
+
+-- The 8x8 fixture map includes its border: playable coordinates are 1..6.
+function sw_vet.heroes()
+    for _, c in ipairs(SW_HERO_CASES) do
+        local id, label = c[1] == "sw_hero_luke" and "sw_vet_saved_hero" or "sw_vet_hero", c[1]
+        local u = sw_vet.place(c[1], id, 6)
+        local expected, count = c[7] and 3 or 2, 0
+        for _, cfg in ipairs(u.advancements) do
+            if tostring(cfg.id):find("^sw_amla_hero_") then count = count + 1 end
+        end
+        sw_vet.check(label .. ": two or three role choices plus default", count == expected
+            and sw_vet.config(u, SW_DEFAULT) ~= nil)
+        sw_vet.check(label .. ": no generic soldier drills", not sw_vet.config(u, SW_WEAPONS)
+            and not sw_vet.config(u, SW_MOBILITY))
+        local function choose(key, weapon, base)
+            local choice = "sw_amla_hero_" .. key
+            local cfg = assert(sw_vet.config(u, choice))
+            local cap = weapon and 2 or 1
+            sw_vet.check(label .. " " .. key .. ": exact native cap", tonumber(cfg.max_times) == cap and cfg.strict_amla)
+            for i = 1, cap do u = sw_vet.choose(id, choice, label .. " " .. key .. " " .. i) end
+            sw_hero_effect(u, key, weapon, base, label .. " " .. key)
+            sw_vet.reject_capped(id, choice, label .. " " .. key .. " cap")
+            u = wesnoth.units.get(id)
+        end
+        choose(c[2], c[3], c[4])
+        if c[5] == "bowcaster" then choose(c[5], "bowcaster", c[6])
+        else choose(c[5], nil, c[6]) end
+        if c[7] then choose(c[7], nil, c[8]) end
+        local before = u.max_hitpoints
+        u = sw_vet.choose(id, SW_DEFAULT, label .. " fallback")
+        sw_vet.check(label .. ": HP fallback still works after specialization caps", u.max_hitpoints == before + 3)
+        -- Keep one trained Force hero for the existing real save/load phase.
+        if c[1] == "sw_hero_luke" then
+            wml.variables.sw_vet_hero_digest = sw_vet.snapshot(u)
+        else u:erase() end
+    end
+end
+
+function sw_vet.hero_load()
+    local u = assert(wesnoth.units.get("sw_vet_saved_hero"))
+    sw_vet.check("hero save/load: trained native stats and state", sw_vet.snapshot(u) == wml.variables.sw_vet_hero_digest)
+    sw_hero_effect(u, "saber", "lightsaber", 11, "hero save/load saber")
+    sw_hero_effect(u, "force_focus", nil, 8, "hero save/load Force")
+    sw_vet.reject_capped(u.id, "sw_amla_hero_saber", "hero save/load saber cap")
+    sw_vet.reject_capped(u.id, "sw_amla_hero_force_focus", "hero save/load Force cap")
+    sw_systems.force.add_static_source(u.x, u.y, 1)
+    sw_vet.check("trained hero: ysalamiri still suppress Force", sw_systems.force.is_suppressed(u))
+    wml.array_access.set("sw_force_null_sources", {})
+    sw_systems.force.refresh_fields()
+end
+
 function sw_vet.training()
     sw_vet.place("sw_unit_nr_sergeant", "sw_vet_trained")
     local u = sw_vet.choose("sw_vet_trained", SW_WEAPONS, "weapons I")
@@ -186,9 +298,11 @@ function sw_vet.training()
     sw_vet.place("sw_unit_nr_sergeant", "sw_vet_partial", 5)
     local partial = sw_vet.choose("sw_vet_partial", SW_WEAPONS, "partial before save")
     wml.variables.sw_vet_partial_digest = sw_vet.snapshot(partial)
+    sw_vet.heroes()
 end
 
 function sw_vet.load()
+    sw_vet.hero_load()
     local u = assert(wesnoth.units.get("sw_vet_trained"), "save lost trained veteran")
     sw_vet.check("save/load: exact trained native state", sw_vet.snapshot(u) == wml.variables.sw_vet_saved_digest)
     sw_vet.menu(u, "save/load full menu", true)
@@ -200,6 +314,38 @@ function sw_vet.load()
     sw_vet.damage(partial, 2, "remaining drill after load")
     sw_vet.check("save/load: remaining choice keeps native rank behavior",
         partial.variation == "rank3" and sw_systems.rank.amla_count(partial) == 2)
+end
+
+
+-- Native turn-start healing is checked after the existing reload assertions,
+-- so taking turns cannot alter the older progression/save digests beforehand.
+function sw_vet.field_care_setup()
+    local a = sw_vet.place("sw_hero_leia", "sw_vet_care_a", 2)
+    a:to_map(2, 4)
+    local b = sw_vet.place("sw_hero_karrde", "sw_vet_care_b", 4)
+    b:to_map(4, 4)
+    sw_vet.choose(a.id, "sw_amla_hero_field_care", "native healing Leia")
+    sw_vet.choose(b.id, "sw_amla_hero_field_care", "native healing Karrde")
+    local ally = sw_vet.place("sw_unit_nr_trooper", "sw_vet_care_ally", 3)
+    ally:to_map(3, 4)
+    local poisoned = sw_vet.place("sw_unit_nr_trooper", "sw_vet_care_poison", 3)
+    poisoned:to_map(3, 5)
+    poisoned.status.poisoned = true
+    local enemy = sw_vet.place("sw_unit_im_stormtrooper", "sw_vet_care_enemy", 1)
+    enemy.side = 2
+    enemy:to_map(1, 4)
+    for _, id in ipairs({a.id, b.id, ally.id, poisoned.id, enemy.id}) do
+        local u = wesnoth.units.get(id)
+        u.hitpoints, u.resting = 10, false
+    end
+end
+
+function sw_vet.field_care_check()
+    local ally = wesnoth.units.get("sw_vet_care_ally")
+    sw_vet.check("native field coordination: two commanders heal only 4 HP", ally.hitpoints == 14, ally.hitpoints)
+    sw_vet.check("native field coordination: poison stabilized without healing or cure", wesnoth.units.get("sw_vet_care_poison").hitpoints == 10 and wesnoth.units.get("sw_vet_care_poison").status.poisoned)
+    sw_vet.check("native field coordination: no self healing", wesnoth.units.get("sw_vet_care_a").hitpoints == 10 and wesnoth.units.get("sw_vet_care_b").hitpoints == 10, wesnoth.units.get("sw_vet_care_a").hitpoints .. "," .. wesnoth.units.get("sw_vet_care_b").hitpoints)
+    sw_vet.check("native field coordination: no enemy healing", wesnoth.units.get("sw_vet_care_enemy").hitpoints == 10)
 end
 
 return sw_vet
