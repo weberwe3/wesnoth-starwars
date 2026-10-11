@@ -538,6 +538,8 @@ local function plugin(events, context, info)
       check("hold-out missions have no swift victory", ach.HOLD_OUT.sw_hte_03_adrift and ach.HOLD_OUT.sw_tlc_02_the_smugglers_council)
       check("each campaign has a final mission", ach.FINALS.sw_hte_10_thrawns_gambit and ach.FINALS.sw_dfr_10_honoghrs_choice
         and ach.FINALS.sw_tlc_10_the_last_command)
+      local ok = pcall(ach.feat, "sw_feat_gambit")
+      check("a mission feat outside the campaigns is ignored without error", ok)
     end
 
     -- Bonus objectives (lua/sw_bonus.lua).
