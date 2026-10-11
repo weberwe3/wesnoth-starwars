@@ -12,9 +12,11 @@ Suites (default: all):
           battle using every intelligence mechanic); the engine then replays
           the recorded game and the test compares digests of all
           intelligence state recorded at checkpoints.
-Every check prints SW_TEST: PASS/FAIL.
+Every check prints SW_TEST: PASS/FAIL. Plugin suites require separate complete
+main/reload process evidence and a real save. Air idles after completion until
+owned termination; this does not test the engine's interactive quit lifecycle.
 
-Usage: python3 production/linux_engine/run_systems_tests.py [--suite all|force|intel|replay]
+Usage: python3 production/linux_engine/run_systems_tests.py [--suite all|force|intel|air|replay]
        [--workdir DIR] [--output evidence.json]
 Exit code 0 only if every check passed and none errored.
 """
@@ -25,6 +27,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -35,36 +38,165 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_campaign_sequence import ADDON, ADDON_ID, CAMPAIGNS, DEFAULT_ENGINE  # noqa: E402
 
 HERE = Path(__file__).resolve().parent / "systems_test"
-ENGINE_ERRORS = re.compile(r"error (?:scripting/lua|wml|config|engine)[^:]*:|stack traceback", re.IGNORECASE)
+ENGINE_ERRORS = re.compile(
+    r"\berror(?:\s+[\w/.-]+)?\s*:|stack traceback|\bfatal\b|"
+    r"\bassertion\b.*\bfailed\b|\bsegmentation fault\b|\bcore dumped\b|\bterminate called\b",
+    re.IGNORECASE)
+LOG_TAIL_LIMIT = 16384
+# Artificial controller hand-offs in these isolated fixtures emit this exact
+# installed-engine diagnostic. Preserve it as a warning; a controller-related
+# error, actual OOS, appended fatal or different diagnostic remains an error.
+SYNTHETIC_CONTROLLER_DIAGNOSTIC = (
+    "error replay: Trying to ask the server for a 'change_controller_wml' choice in a unsynced "
+    "context, doing the choice locally. This can cause OOS.")
+SYNTHETIC_CONTROLLER_WARNING = re.compile(
+    r"(?:[0-9]{8} [0-9]{2}:[0-9]{2}:[0-9]{2} )?" + re.escape(SYNTHETIC_CONTROLLER_DIAGNOSTIC))
+REQUIRED_CHECKS = {
+    "systems_test_plugin.lua": {
+        "main": ("FP initialised to max on placement", "Force Choke damages its target",
+                 "Force Choke spent C'baoth's FP"),
+        "load": ("save/load: Force Points kept", "save/load: overwatch kept",
+                 "save/load: overwatch index kept", "save/load: null field rebuilt",
+                 "save/load: systems reloaded"),
+    },
+    "intel_test_plugin.lua": {
+        "main": ("Star Destroyer profile from its unit type", "AI doctrine state stays valid"),
+        "load": ("save/load: intelligence state identical after reload",
+                 "save/load: recomputing the picture changes nothing", "save/load: sensor contact kept",
+                 "save/load: contact marker kept", "save/load: cloaked unit still hidden",
+                 "save/load: decoy kept", "save/load: doctrine Insight and patterns kept",
+                 "save/load: EW ready after reload"),
+    },
+    "air_test_plugin.lua": {
+        "main": ("a fresh trooper wears no insignia", "trooper promoted to sergeant",
+                 "AMLA stats unchanged from the default: +3 max HP each, full heal",
+                 "test scenarios earn nothing", "victory banks the reward",
+                 "recruiting: paid in full", "Hide attack range clears it"),
+        "load": ("save/load: state identical after reload", "save/load: sorties kept",
+                 "save/load: inbound bombing kept", "save/load: inbound marker kept",
+                 "save/load: rank insignia kept"),
+    },
+}
 
 
-def run_phase(engine: Path, userdata: Path, plugin_name: str, phase: str, timeout: int, extra: list[str]) -> str:
+def phase_checks(text: str) -> list[str]:
+    return [line.strip() for line in text.splitlines()
+            if line.strip().startswith(("SW_TEST: PASS ", "SW_TEST: FAIL "))]
+
+
+def has_done(text: str) -> bool:
+    return any(line.strip() == "SW_TEST: done" for line in text.splitlines())
+
+
+def classify_diagnostics(text: str) -> tuple[list[str], list[str]]:
+    """Return errors and explicitly retained exact synthetic-fixture warnings."""
+    errors, warnings = [], []
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if SYNTHETIC_CONTROLLER_WARNING.fullmatch(line):
+            warnings.append(line)
+        elif ENGINE_ERRORS.search(line):
+            errors.append(line)
+    return list(dict.fromkeys(errors)), list(dict.fromkeys(warnings))
+
+
+def run_phase(engine: Path, userdata: Path, plugin_name: str, phase: str, timeout: int, extra: list[str]) -> dict:
+    """Capture actual process evidence; completion never excuses a native crash.
+
+    The air fixture idles after completion. Other existing fixtures may finish
+    normally. Only a termination we requested after observing done can count as
+    an expected signal exit. Interactive engine quit behavior is not tested.
+    """
+    required = REQUIRED_CHECKS[plugin_name][phase]
     plugin = userdata.parent / f"plugin_{phase}.lua"
     plugin.write_text((HERE / plugin_name).read_text(encoding="utf-8")
                       .replace('local PHASE = "main"', f'local PHASE = "{phase}"'), encoding="utf-8")
     logs = userdata / "logs"
     before = set(logs.glob("*.log"))
     env = dict(os.environ, SDL_VIDEO_DRIVER="offscreen", SDL_AUDIO_DRIVER="dummy")
-    proc = subprocess.Popen([str(engine), "--resolution", "1024x768", "--userdata-dir", str(userdata),
-                             "--plugin", str(plugin), *extra], cwd=userdata.parent, env=env,
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    start = time.time()
+    stdout_path = userdata.parent / f"stdout_{phase}.log"
+    stderr_path = userdata.parent / f"stderr_{phase}.log"
 
-    def text() -> str:
+    def native_logs() -> str:
         return "\n".join(p.read_text(encoding="utf-8", errors="replace")
                          for p in sorted(set(logs.glob("*.log")) - before))
-    while proc.poll() is None and time.time() - start < timeout:
-        if "SW_TEST: done" in text():
-            time.sleep(3)
-            break
-        time.sleep(1)
-    if proc.poll() is None:
-        proc.terminate()
-        try:
-            proc.wait(timeout=15)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-    return text()
+
+    def streams() -> tuple[str, str]:
+        return (stdout_path.read_text(encoding="utf-8", errors="replace"),
+                stderr_path.read_text(encoding="utf-8", errors="replace"))
+
+    completed = False
+    timed_out = False
+    termination_requested = False
+    termination_after_completion = False
+    kill_requested = False
+    with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open("w", encoding="utf-8") as stderr:
+        proc = subprocess.Popen([str(engine), "--resolution", "1024x768", "--userdata-dir", str(userdata),
+                                 "--plugin", str(plugin), *extra], cwd=userdata.parent, env=env,
+                                stdout=stdout, stderr=stderr)
+        deadline = time.monotonic() + timeout
+        while True:
+            code = proc.poll()
+            out, err = streams()
+            completed = has_done(native_logs() + "\n" + out + "\n" + err)
+            if code is not None or completed:
+                break
+            if time.monotonic() >= deadline:
+                timed_out = True
+                break
+            time.sleep(1)
+        if proc.poll() is None:
+            termination_requested = True
+            termination_after_completion = completed
+            proc.terminate()
+            try:
+                proc.wait(timeout=15)
+            except subprocess.TimeoutExpired:
+                kill_requested = True
+                proc.kill()
+                proc.wait()
+        else:
+            proc.wait()
+    out, err = streams()
+    log = native_logs()
+    text = log + "\n" + out + "\n" + err
+    # Preserve repeated checks within their authoritative log while avoiding a
+    # duplicate copy when the engine mirrors those same lines to stdout.
+    checks = phase_checks(log)
+    checks += [check for check in phase_checks(out + "\n" + err) if check not in checks]
+    errors, warnings = classify_diagnostics(text)
+    completed = completed and has_done(text)
+    owned_stop = (termination_requested and termination_after_completion and
+                  (proc.returncode == -signal.SIGTERM or
+                   (kill_requested and proc.returncode == -signal.SIGKILL)))
+    if timed_out:
+        errors.append("phase timed out before completion")
+    if not completed:
+        errors.append("phase completion marker missing")
+    if not checks:
+        errors.append("phase produced no meaningful checks")
+    for check in required:
+        if "SW_TEST: PASS " + check not in checks:
+            errors.append("required passing check missing: " + check)
+    prepared = any(line.strip().startswith("SW_TEST: state prepared for save") for line in text.splitlines())
+    saved = any(line.strip() == "SW_TEST: saved" for line in text.splitlines())
+    if phase == "main" and not (prepared and saved):
+        errors.append("main phase did not complete save preparation and saving")
+    if proc.returncode != 0 and not owned_stop:
+        errors.append(f"unexpected engine exit: {proc.returncode}")
+    failed = [check for check in checks if check.startswith("SW_TEST: FAIL ")]
+    result = {"phase": phase, "engine_exit_code": proc.returncode, "completed": completed,
+              "timed_out": timed_out, "termination_requested": termination_requested,
+              "termination_after_completion": termination_after_completion,
+              "kill_requested": kill_requested, "owned_stop_after_completion": owned_stop,
+              "prepared_save": prepared, "saved": saved, "checks": checks,
+              "failed_checks": failed, "errors": errors, "warnings": warnings,
+              "pass": not errors and not failed}
+    if not result["pass"]:
+        result["diagnostics"] = {name: {"tail": value[-LOG_TAIL_LIMIT:],
+                                        "truncated": len(value) > LOG_TAIL_LIMIT}
+                                 for name, value in (("native_log", log), ("stdout", out), ("stderr", err))}
+    return result
 
 
 SUITES = {
@@ -73,7 +205,6 @@ SUITES = {
     "air": ("sw_test_air", "air_test_plugin.lua", "sw_air_test_save"),
 }
 REPLAY_TESTS = ("sw_test_intel_replay", "sw_test_air_replay")
-REPLAY_STRICT_IGNORE = re.compile(r"change_controller_wml")
 
 
 def stage(work: Path, scenario: str | None, replay: bool) -> Path:
@@ -107,34 +238,53 @@ def stage(work: Path, scenario: str | None, replay: bool) -> Path:
     return userdata
 
 
-def run_plugin_suite(engine: Path, work: Path, suite: str, timeout: int) -> tuple[list[str], list[str]]:
+def run_plugin_suite(engine: Path, work: Path, suite: str, timeout: int,
+                     phase_evidence: list[dict] | None = None) -> tuple[list[str], list[str]]:
     scenario, plugin, save_name = SUITES[suite]
     userdata = stage(work, scenario, False)
-    log_main = run_phase(engine, userdata, plugin, "main", timeout, [])
-    saves = sorted(userdata.rglob(f"{save_name}*"))
-    log_load = run_phase(engine, userdata, plugin, "load", timeout, ["--load", saves[-1].name]) if saves else ""
+    phases = [run_phase(engine, userdata, plugin, "main", timeout, [])]
+    # The engine resolves --load names within userdata/sync/saves. Never pass
+    # an absolute path or pick a similarly named file from another directory.
+    save_dir = userdata / "sync/saves"
+    saves = sorted(p for p in save_dir.glob(f"{save_name}*")
+                   if p.is_file() and p.resolve().parent == save_dir.resolve())
+    phases[0]["authoritative_save"] = saves[-1].name if saves else None
+    if not saves:
+        phases[0]["errors"].append("required authoritative save missing")
+        phases[0]["pass"] = False
+    if saves:
+        phases.append(run_phase(engine, userdata, plugin, "load", timeout, ["--load", saves[-1].name]))
     results = []
-    for text in (log_main, log_load):
-        for line in text.splitlines():
-            if line.startswith("SW_TEST: PASS ") or line.startswith("SW_TEST: FAIL "):
-                results.append(f"[{suite}] " + line[len("SW_TEST: "):])
+    errors = []
+    for phase_result in phases:
+        phase_result["suite"] = suite
+        results += [f"[{suite}] " + line[len("SW_TEST: "):] for line in phase_result["checks"]]
+        results.append(f"[{suite}] {'PASS' if phase_result['pass'] else 'FAIL'} "
+                       f"{phase_result['phase']} phase evidence: exit {phase_result['engine_exit_code']}")
+        errors += [f"{phase_result['phase']}: {error}" for error in phase_result["errors"]]
+    if phase_evidence is not None:
+        phase_evidence.extend(phases)
     if not saves:
         results.append(f"[{suite}] FAIL save/load: no save produced")
-    errors = sorted({l.strip() for l in (log_main + log_load).splitlines() if ENGINE_ERRORS.search(l)})
+        errors.append("required reload phase missing: no authoritative save produced")
+    if len(phases) != 2:
+        errors.append("both main and reload phases are required")
     return results, errors
 
 
-def run_replay_suite(engine: Path, work: Path, timeout: int) -> tuple[list[str], list[str]]:
+def run_replay_suite(engine: Path, work: Path, timeout: int,
+                     warning_evidence: list[str] | None = None) -> tuple[list[str], list[str]]:
     results: list[str] = []
     errors: list[str] = []
     for test in REPLAY_TESTS:
-        r, e = run_replay_test(engine, work / test, test, timeout)
+        r, e = run_replay_test(engine, work / test, test, timeout, warning_evidence)
         results += r
         errors += e
     return results, errors
 
 
-def run_replay_test(engine: Path, work: Path, test: str, timeout: int) -> tuple[list[str], list[str]]:
+def run_replay_test(engine: Path, work: Path, test: str, timeout: int,
+                    warning_evidence: list[str] | None = None) -> tuple[list[str], list[str]]:
     userdata = stage(work, None, True)
     env = dict(os.environ, SDL_VIDEO_DRIVER="offscreen", SDL_AUDIO_DRIVER="dummy")
     try:
@@ -163,8 +313,9 @@ def run_replay_test(engine: Path, work: Path, test: str, timeout: int) -> tuple[
     results.append(f"{tag} {'PASS' if len(original) >= 4 else 'FAIL'} digest checkpoints recorded in play: {len(original)}")
     results.append(f"{tag} {'PASS' if len(replayed) >= 4 and len(replayed) == len(original) else 'FAIL'} "
                    f"digest checkpoints reproduced by the replay: {len(replayed)}")
-    errors = sorted({l.strip() for l in text.splitlines()
-                     if ENGINE_ERRORS.search(l) and not REPLAY_STRICT_IGNORE.search(l)})
+    errors, warnings = classify_diagnostics(text)
+    if warning_evidence is not None:
+        warning_evidence.extend(f"{tag} {warning}" for warning in warnings)
     return results, errors
 
 
@@ -202,22 +353,30 @@ def main() -> int:
     suites = ["force", "intel", "air", "replay"] if args.suite == "all" else [args.suite]
     results: list[str] = run_static_checks()
     errors: list[str] = []
+    phase_evidence: list[dict] = []
+    warning_evidence: list[str] = []
     for suite in suites:
         if suite == "replay":
-            r, e = run_replay_suite(args.engine, base / suite, args.timeout)
+            r, e = run_replay_suite(args.engine, base / suite, args.timeout, warning_evidence)
         else:
-            r, e = run_plugin_suite(args.engine, base / suite, suite, args.timeout)
+            r, e = run_plugin_suite(args.engine, base / suite, suite, args.timeout, phase_evidence)
         results += r
         errors += [f"[{suite}] {x}" for x in e]
+    warning_evidence += [f"[{phase['suite']}] {phase['phase']}: {warning}"
+                         for phase in phase_evidence for warning in phase["warnings"]]
     passed = [r for r in results if r.split("] ", 1)[-1].startswith("PASS")]
     failed = [r for r in results if r.split("] ", 1)[-1].startswith("FAIL")]
     for r in results:
         print(r)
     for e in errors[:10]:
         print("ENGINE ERROR:", e[:300])
+    for warning in warning_evidence[:10]:
+        print("ENGINE WARNING:", warning[:300])
     print(f"{len(passed)} passed, {len(failed)} failed, {len(errors)} engine errors")
-    evidence = {"schema_version": 2, "kind": "sw-systems-tests", "suites": suites, "passed": passed,
+    evidence = {"schema_version": 3, "kind": "sw-systems-tests", "suites": suites, "passed": passed,
                 "failed": failed, "engine_errors": errors[:50],
+                "phase_evidence": phase_evidence,
+                "engine_warnings": warning_evidence,
                 "pass": not failed and not errors and bool(passed)}
     if args.output:
         args.output.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
