@@ -571,7 +571,17 @@ local function plugin(events, context, info)
       check("debrief shows the turn", text:find("Mission complete on turn") ~= nil or (wesnoth.scenario.turns or -1) <= 0)
       wml.variables.sw_bonus_result = { scenario = wesnoth.scenario.id, state = "missed", gold = 40 }
       check("debrief reports a missed bonus", db.text():find("Bonus objective missed") ~= nil)
-      wml.variables.sw_bonus_result, wml.variables.sw_debrief = nil, nil
+      -- Campaign totals: each victory adds once.
+      wml.variables.sw_campaign_stats = nil
+      wml.variables.sw_bonus_result = { scenario = wesnoth.scenario.id, state = "complete", gold = 40 }
+      local st = db.record()
+      st = db.record()
+      check("a mission is added to the campaign totals once", st.missions == 1 and st.bonus == 1 and st.withdrawn == 1,
+        st.missions .. "/" .. st.bonus .. "/" .. st.withdrawn)
+      local summary = db.campaign_text(db.campaign_stats())
+      check("campaign summary lists missions and bonus objectives",
+        summary:find("Missions won: 1") ~= nil and summary:find("Bonus objectives earned: 1") ~= nil, summary)
+      wml.variables.sw_bonus_result, wml.variables.sw_debrief, wml.variables.sw_campaign_stats = nil, nil, nil
     end
 
     function S.flanking()
