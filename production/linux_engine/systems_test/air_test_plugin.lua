@@ -608,6 +608,10 @@ local function plugin(events, context, info)
       local summary = db.campaign_text(db.campaign_stats())
       check("campaign summary lists missions and bonus objectives",
         summary:find("Missions won: 1") ~= nil and summary:find("Bonus objectives earned: 1") ~= nil, summary)
+      wml.variables.sw_command = { choice = "counter", scenario = "earlier" }
+      summary = db.campaign_text(db.campaign_stats())
+      check("campaign summary names the command decision", summary:find("Command decision: Counter%-intelligence") ~= nil, summary)
+      wml.variables.sw_command = nil
       wml.variables.sw_bonus_result, wml.variables.sw_debrief, wml.variables.sw_campaign_stats = nil, nil, nil
     end
 
