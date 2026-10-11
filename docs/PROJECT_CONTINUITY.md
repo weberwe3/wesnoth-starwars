@@ -1862,3 +1862,68 @@ than being clamped to three. Each processing run still has its separate
 bounded two-repair policy; non-retryable failures, provider circuits, global
 pauses, exact scope, validation, review and publication gates remain enforced.
 The DASH-020 table entry above describes historical behavior, superseded here.
+
+### 2026-10-11 — Native route milestone and autonomous recovery handoff
+
+The owner authorized autonomous work without further publication approval
+questions and directed primary Codex to handle coordinator failures directly
+using advanced reasoning. Root now implements repairs and records actual
+validation; independent application roles review frozen sources and evidence.
+Claude owns mission balance and active achievements, tactical tips, commands,
+debrief and hotkey work. Preserve that concurrent work and continue prioritizing
+playability, fun and depth across the mod.
+
+PR #383 corrected native recruit activation, non-nil plugin command transport
+and repeated observation of the same delivery snapshot. PR #384 corrected the
+CLI seed claim, carrier progress selection and combat/escort sequencing. PR #385
+completed generated mission-route contract 01 through ordinary NORMAL play:
+four unique real harvests and deliveries, ordinary victory on turn 6 and native
+transition to `sw_hte_02_ambush_at_bpfassh`. Its final run recorded 268 records,
+34 legal moves, one attack and no engine errors or timeout; the runner exited
+`0` before stopping its owned engine with `-15`. This is one automated route,
+with ordinary campaign randomness and skipped messages; it does not prove
+human balance, reliable survival across outcomes, save/reload or interactive quit.
+PR #385 merged at `40b66327010a330f5c0a9e3f2008b57bf32dca21` and completed
+installed-game validation of all 100 contracts plus the real player-launcher gate.
+
+PR #386 appended qualified attack-userdata, terminal-defeat and production
+frame-drop lessons. It merged at `08c9a884acd3f4f085cd220eba679ce381039dd3` and
+completed the same installed-game and launcher gates. The underlying failed
+escape routes remain failures. Owner-requested removal of the consecutive
+three-failure ceiling is live in PR #382; each processing window retains its
+separate initial attempt and two source repairs, and subsequent windows continue
+without discarding evidence.
+
+Generated contract `generated-04e5d8f6-03`, ticket `SOL-20261011-091455-LEIA`,
+is active in the preserved Windows-backed progression worktree. Its immutable
+scope is the two legal-route fixture files. It must enter real mission two from
+mission one, move Leia from her actual opening to the Falcon at (25,2), observe
+ordinary victory and mission-three transition, and retain the ignored-command
+negative, native terrain/budgets, fog and actual enemy/combat evidence. No mission
+WML, direct objective state or enemy-controller writes are permitted. Preserved
+windows 1–4 all failed. Window 4 repair 2 passed source-bound syntax, classifier
+and extracted-planner checks, and its fresh 592-record native run completed M1
+with one qualified frame-drop recovery. M2's legal movement reached (2,3), then
+the native objective path turned south into combat; Leia died at (14,6) on turn 8.
+It observed `done(false)`, no engine errors or timeout, and no escape victory.
+Continue navigation diagnosis in the next preserved processing window. No escape
+candidate is ready for publication. Generated contract 04 remains next, addressing observer
+save compatibility and the post-preload save warning.
+
+Separate direct coordinator maintenance `CODEX-ART-SOURCE-SCAN-20261011`
+preserves the original art unit parser while skipping irrelevant complete source
+scans. Corrected source commit `251ab0a8ad6189e91e92e53bc1ee9be94b3881a0` is
+frozen on `agent/codex-art-source-scan-20261011`, independently approved and
+unpublished. It passed all 210 dashboard, 54 scenario, 10 acceptance and five
+compatibility checks plus reference validation. The initially narrower Windows
+extension guard and one later transient filesystem failure remain preserved.
+Publish the qualified lesson update before this repaired ticket, then require
+exact-head CI, protected merge and installed-game/player-launch evidence.
+
+WSL client handshakes and cross-mounted full source scans intermittently failed.
+An existing interactive Linux connection carried the actual native checks, and
+bundled Windows Python ran the same official validator/inventory tools against
+the native worktrees. These are execution-transport recoveries with recorded
+tool, source and result identities; they do not relax validation gates or prove
+that the underlying transport fault is fixed. Claude's machine-local settings
+were preserved byte-for-byte and excluded only by their exact local path.
