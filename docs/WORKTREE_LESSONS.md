@@ -998,3 +998,34 @@ coordinator's compatibility check passed all 30 actual campaign save artifacts.
 **Prevention:** Include translated/multiline concatenations in scanner regressions
 and check real engine saves. Scanner compatibility does not prove that every
 artifact has been reloaded, that a human can win, or that campaign balance is sound.
+
+### 2026-10-10 — Stand-off AI must revalidate legality after movement
+
+**Symptom:** The original ranged AI selected defensive-only Jedi deflection and
+submitted stale attack commands after intercepted movement changed combatants or
+weapons. The first repaired candidate also failed its hidden-target fixture.
+**Confirmed causes:** Source omitted offensive-disable and post-move legality
+checks. The fixture added hides after querying visibility, bypassed native
+movement's status-cache refresh, and never proved the target was actually hidden.
+Installed 1.19.27 caches invisibility by hex; its unit copy constructor starts
+with an empty cache. This is a fixture-specific setup failure, not evidence that
+adding a hides modification always breaks visibility in normal play.
+**Resolution:** Respect `active_on`/`apply_to` and native conditional unit filters;
+preserve defense-only aimed shots. After movement, reacquire and check the actor,
+attack budget, selected weapon, hostile visible target and current legal range.
+The hidden fixture now clones/reinserts the target and separately requires native
+`filter_vision` to prove invisibility before checking command suppression.
+The corrected native air suite passed 217 checks with no failures or engine errors,
+a real legal AI-turn attack, an actual save and five native reload checks; both
+phases completed before owned `-15` stops, without timeout. The same final fixture
+with original AI recorded 198 passes and 19 failures: 18 expected AI/phase failures
+and one unrelated observer-XP assertion failure whose cause is not established.
+Earlier failed-candidate and negative-control evidence remains preserved.
+**Prevention:** Pair illegal-candidate and post-move invalidation cases with a
+real AI-turn positive and native save/reload. Assert setup preconditions before
+accepting suppression. Intercepted move/command-delivery checks exercise the real
+CA with native units, but do not prove actual movement/combat for those cases.
+Lua weapon matching supplies no two-combatant active-special context; uncertain
+opponent/context-sensitive weapon filters remain conservative. Do not treat every
+conditional disable as unconditional or claim complete combat-rule coverage,
+human balance or publication from these bounded proofs.
