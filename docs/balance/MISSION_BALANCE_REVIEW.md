@@ -424,7 +424,7 @@ Thrawn move and an answer to it (Easy/Normal/Hard counts):
 | Mission | Thrawn's move | Relief |
 | --- | --- | --- |
 | Thrawn's Gambit | Turn 5: 2/3/3 TIE bombers (+1 interceptor on Hard) appear beside the warship with fewer defenders within 4 hexes, one turn from it | Turn 8: shipyard picket, 3/2/1 fighters |
-| The Last Command | Turn 4: 2/3/4 TIE interceptors appear in the corners behind the strike force | Turn 6: Karrde's smugglers, 3/2/2 fighters (Y-wings with ion cannons) |
+| The Last Command | Turn 4: 2/2/3 TIE interceptors appear in the corners behind the strike force | Turn 6: Karrde's smugglers, 3/2/2 fighters (Y-wings with ion cannons) |
 
 The bomber target rewards spreading the defence: piling every fighter on one
 warship invites the strike on the other. Honoghr's Choice already has its
