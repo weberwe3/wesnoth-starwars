@@ -897,3 +897,34 @@ committed maps had no keep anywhere.
 **Prevention:** `mission_balance_report.py` warns when side 1 has gold and a
 recruit list but does not start on a keep. Draw keeps and other key hexes
 last in map generators.
+
+### 2026-10-10 — Acceptance and scope interpreted the same unit-file glob differently
+
+**Symptom:** An immutable gameplay ticket allowed `units/*.cfg`; scope validation
+passed, but acceptance rejected evidence in a matching unit file as out of scope.
+**Confirmed cause:** Scope used `fnmatch.fnmatchcase` on normalized paths, while
+acceptance supported only exact paths and a special `/**` prefix case.
+**Resolution:** Acceptance now uses the same normalized-path `fnmatchcase`
+semantics. The coordinator recorded passing acceptance regressions without
+rewriting the original ticket contract.
+**Prevention:** Keep matcher parity tests for exact paths, file globs, nested
+paths, case sensitivity, and negative matches in other directories. A validator
+disagreement requires a bounded controller repair, not a replacement contract.
+
+### 2026-10-10 — Art completion must follow the exact unit's identity and capabilities
+
+**Symptom:** Completed art for five owner-directed passive objectives failed
+because their WML omitted unused movement, attack, and some defend animations.
+Review also found that another unit's references in the same file could satisfy
+wiring, and duplicate identities across files could be silently overwritten.
+**Confirmed cause:** Wiring searched the entire source file and required every
+animation for every unit; identity maps selected the last repeated unit ID.
+**Resolution:** Art certification requires one balanced direct unit identity
+across the add-on. The five documented static objectives may omit unused wiring
+only while their passive capabilities are proved; their actual static states
+remain required. All 13 PNG content, dimension, and alpha checks remain required.
+The coordinator recorded passing art regressions and current-roster validation.
+**Prevention:** Test missing actual frames, missing or invalid unused PNGs,
+mobile/combat/unknown capability rejection, borrowed wiring, and duplicate direct
+IDs in the same file and across files, including quoted IDs and definitions
+outside `units/`. Never let a dictionary overwrite establish identity uniqueness.

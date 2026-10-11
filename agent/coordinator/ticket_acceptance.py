@@ -9,6 +9,7 @@ promised. These checks compare the candidate to its original worktree base.
 
 from __future__ import annotations
 
+import fnmatch
 from pathlib import Path
 import re
 import subprocess
@@ -339,6 +340,6 @@ def validate_ticket_acceptance(
 
 
 def _path_matches(path: str, pattern: str) -> bool:
-    if pattern.endswith("/**"):
-        return path.startswith(pattern[:-2])
-    return path == pattern
+    # Match ticket_runner.path_allowed: acceptance cannot reject evidence that
+    # the same immutable ticket's scope checker permits through a glob.
+    return fnmatch.fnmatchcase(path.replace("\\", "/"), pattern)

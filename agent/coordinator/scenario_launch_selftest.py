@@ -1489,6 +1489,158 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             self.assertFalse(result["requires_llm"])
             self.assertTrue(validate_art_queue(root)["pass"])
 
+    def _passive_art_fixture(self, root: Path, unit_id: str, *, full_wiring: bool = False) -> tuple[Path, dict]:
+        unit = root / "addons" / ADDON_ID / "units" / "objects.cfg"
+        unit.parent.mkdir(parents=True)
+        unit.write_text(
+            f"[unit_type]\nid={unit_id}\nname=_\"Fixture Object\"\nmovement=0\n[/unit_type]\n",
+            encoding="utf-8",
+        )
+        sync = synchronize_art_queue(root, {unit_id})
+        self.assertTrue(sync["pass"], sync)
+        job = sync["jobs"][0]
+        required = {"standing", "idle-1", "idle-2", "death-1", "death-2", "portrait"}
+        if unit_id in {"sw_unit_ob_shield_generator", "sw_unit_ob_cloaked_asteroid"}:
+            required.add("defend")
+        references = []
+        for asset in job["assets"]:
+            target = root / "addons" / ADDON_ID / asset["path"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            dimensions = (256, 256) if asset["state"] == "portrait" else (72, 72)
+            target.write_bytes(_test_png(*dimensions))
+            if full_wiring or asset["state"] in required:
+                key = "profile" if asset["state"] == "portrait" else "image"
+                references.append(f"{key}={asset['path'].removeprefix('images/')}")
+        unit.write_text(unit.read_text(encoding="utf-8").replace(
+            "[/unit_type]", "{AMLA_DEFAULT}\n" + "\n".join(references) + "\n[/unit_type]"
+        ), encoding="utf-8")
+        return unit, job
+
+    def test_five_owner_static_objects_require_only_their_actual_wiring(self) -> None:
+        static_ids = (
+            "sw_unit_nr_docked_warship", "sw_unit_ob_cloning_cylinder", "sw_unit_ob_shipyard_platform",
+            "sw_unit_ob_shield_generator", "sw_unit_ob_cloaked_asteroid",
+        )
+        for unit_id in static_ids:
+            with self.subTest(unit_id=unit_id), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                _unit, job = self._passive_art_fixture(root, unit_id)
+                self.assertEqual(len(job["assets"]), 13)
+                self.assertTrue(art_import_preflight(root, job["id"])["pass"])
+                self.assertTrue(confirm_art_import(root, job["id"])["pass"])
+                self.assertTrue(validate_art_queue(root)["pass"])
+
+    def test_static_object_still_requires_real_frames_and_every_unused_png(self) -> None:
+        for defect in ("idle-wiring", "defend-wiring", "unused-png-missing", "unused-png-dimensions"):
+            with self.subTest(defect=defect), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                unit, job = self._passive_art_fixture(root, "sw_unit_ob_shield_generator")
+                if defect.endswith("wiring"):
+                    state = "idle-2" if defect == "idle-wiring" else "defend"
+                    asset = next(a for a in job["assets"] if a["state"] == state)
+                    unit.write_text(unit.read_text(encoding="utf-8").replace(
+                        f"image={asset['path'].removeprefix('images/')}\n", ""
+                    ), encoding="utf-8")
+                    expected = "not fully wired"
+                else:
+                    asset = next(a for a in job["assets"] if a["state"] == "move-1")
+                    target = root / "addons" / ADDON_ID / asset["path"]
+                    if defect == "unused-png-missing":
+                        target.unlink()
+                    else:
+                        target.write_bytes(_test_png(73, 72))
+                    expected = "missing valid PNG"
+                result = art_import_preflight(root, job["id"])
+                self.assertFalse(result["pass"], result)
+                self.assertIn(expected, result["message"])
+
+    def test_static_wiring_exemption_requires_exact_proven_passive_capabilities(self) -> None:
+        defects = {
+            "mobile": ("movement=0", "movement=1"),
+            "combat": ("{AMLA_DEFAULT}", "[attack]\nname=blaster\n[/attack]\n{AMLA_DEFAULT}"),
+            "unknown-movement": ("movement=0", "movement=$sw_movement"),
+            "missing-movement": ("movement=0\n", ""),
+            "inherited": ("{AMLA_DEFAULT}", "[base_unit]\nid=sw_unknown\n[/base_unit]\n{AMLA_DEFAULT}"),
+            "unknown-macro": ("{AMLA_DEFAULT}", "{SW_UNKNOWN_COMBAT}\n{AMLA_DEFAULT}"),
+            "movement-effect": ("{AMLA_DEFAULT}", "[modifications]\n[object]\n[effect]\napply_to=movement\nincrease=1\n[/effect]\n[/object]\n[/modifications]\n{AMLA_DEFAULT}"),
+            "conditional": ("movement=0", "#ifdef SW_MODE\nmovement=0\n#endif"),
+            "nested-identity": ("id=sw_unit_nr_docked_warship", "id=sw_other\n[abilities]\n[dummy]\nid=sw_unit_nr_docked_warship\n[/dummy]\n[/abilities]"),
+        }
+        for defect, (before, after) in defects.items():
+            with self.subTest(defect=defect), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                unit, job = self._passive_art_fixture(root, "sw_unit_nr_docked_warship")
+                unit.write_text(unit.read_text(encoding="utf-8").replace(before, after), encoding="utf-8")
+                result = art_import_preflight(root, job["id"])
+                self.assertFalse(result["pass"], result)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _unit, job = self._passive_art_fixture(root, "sw_unit_unknown_object")
+            result = art_import_preflight(root, job["id"])
+            self.assertFalse(result["pass"], result)
+            self.assertIn("move-1", result["message"])
+
+    def test_art_wiring_cannot_be_borrowed_from_another_unit_in_the_source_file(self) -> None:
+        for unit_id in ("sw_unit_nr_docked_warship", "sw_unit_normal_combatant"):
+            with self.subTest(unit_id=unit_id), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                unit, job = self._passive_art_fixture(root, unit_id, full_wiring=unit_id == "sw_unit_normal_combatant")
+                missing = next(a for a in job["assets"] if a["state"] == "idle-2")
+                reference = f"image={missing['path'].removeprefix('images/')}\n"
+                source = unit.read_text(encoding="utf-8").replace(reference, "")
+                unit.write_text(source + "\n[unit_type]\nid=sw_unit_neighbour\n" + reference + "[/unit_type]\n", encoding="utf-8")
+                result = art_import_preflight(root, job["id"])
+                self.assertFalse(result["pass"], result)
+                self.assertIn("idle-2", result["message"])
+
+    def test_normal_combatants_keep_full_movement_attack_and_defend_wiring(self) -> None:
+        for state in ("move-1", "move-2", "melee-1", "melee-2", "ranged-1", "ranged-2", "defend"):
+            with self.subTest(state=state), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                unit, job = self._passive_art_fixture(root, "sw_unit_normal_combatant", full_wiring=True)
+                source = unit.read_text(encoding="utf-8").replace(
+                    "movement=0", "movement=5\n[attack]\nname=blaster\n[/attack]"
+                )
+                unit.write_text(source, encoding="utf-8")
+                self.assertTrue(art_import_preflight(root, job["id"])["pass"])
+                asset = next(a for a in job["assets"] if a["state"] == state)
+                unit.write_text(source.replace(f"image={asset['path'].removeprefix('images/')}\n", ""), encoding="utf-8")
+                result = art_import_preflight(root, job["id"])
+                self.assertFalse(result["pass"], result)
+                self.assertIn(state, result["message"])
+
+    def test_duplicate_unit_identity_cannot_complete_an_art_job(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            unit, job = self._passive_art_fixture(root, "sw_unit_nr_docked_warship")
+            source = unit.read_text(encoding="utf-8")
+            unit.write_text(source + source, encoding="utf-8")
+            result = art_import_preflight(root, job["id"])
+            self.assertFalse(result["pass"], result)
+            self.assertIn("unique unit WML identity", result["message"])
+
+    def test_cross_file_duplicate_unit_identity_blocks_queue_and_import_certification(self) -> None:
+        cases = (("units/z_duplicate.cfg", False), ("utils/duplicate_unit.cfg", False), ("units/z_quoted_duplicate.cfg", True))
+        for duplicate_path, quoted in cases:
+            with self.subTest(path=duplicate_path, quoted=quoted), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                unit, job = self._passive_art_fixture(root, "sw_unit_nr_docked_warship")
+                self.assertTrue(confirm_art_import(root, job["id"])["pass"])
+                self.assertTrue(validate_art_queue(root)["pass"])
+                duplicate = root / "addons" / ADDON_ID / duplicate_path
+                duplicate.parent.mkdir(parents=True, exist_ok=True)
+                source = unit.read_text(encoding="utf-8")
+                if quoted:
+                    source = source.replace("id=sw_unit_nr_docked_warship", 'id="sw_unit_nr_docked_warship"')
+                duplicate.write_text(source, encoding="utf-8")
+                queued = validate_art_queue(root)
+                self.assertFalse(queued["pass"], queued)
+                self.assertIn("unique unit WML identity", queued["diagnostic"])
+                preflight = art_import_preflight(root, job["id"])
+                self.assertFalse(preflight["pass"], preflight)
+                self.assertIn("unique unit WML identity", preflight["message"])
+                self.assertFalse(confirm_art_import(root, job["id"])["pass"])
+
     def test_ready_art_jobs_that_share_a_unit_source_form_one_safe_batch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

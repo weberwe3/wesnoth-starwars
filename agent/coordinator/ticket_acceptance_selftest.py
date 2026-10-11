@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 import unittest
 
-from ticket_acceptance import validate_acceptance_contract, validate_ticket_acceptance
+from ticket_acceptance import _path_matches, validate_acceptance_contract, validate_ticket_acceptance
 
 
 SCENARIO = "addons/Star_Wars_Thrawn_Trilogy/scenarios/01_first_battle.cfg"
@@ -115,6 +115,44 @@ class TicketAcceptanceTests(unittest.TestCase):
             "row": 1, "column": 2, "terrain": "Gg^Fp",
         }))
         self.assertTrue(result["pass"])
+
+    def test_unit_file_glob_acceptance_uses_the_scope_matcher_semantics(self) -> None:
+        unit = "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg"
+        path = self.root / unit
+        path.parent.mkdir(parents=True)
+        path.write_text("[unit_type]\nid=sw_unit_fixture\n[/unit_type]\n", encoding="utf-8")
+        _run(self.root, "add", ".")
+        _run(self.root, "-c", "user.name=t", "-c", "user.email=t@example.invalid", "commit", "-m", "base unit")
+        self.base_sha = _output(self.root, "rev-parse", "HEAD")
+        path.write_text(path.read_text(encoding="utf-8") + "\nid=sw_amla_weapons_drill\n", encoding="utf-8")
+        ticket = self.ticket({"kind": "source_text", "path": unit, "base": "absent", "contains": "id=sw_amla_weapons_drill"})
+        ticket["allowed_paths"] = ["addons/Star_Wars_Thrawn_Trilogy/units/*.cfg"]
+        result = validate_ticket_acceptance(self.root, ticket)
+        self.assertTrue(result["pass"], result)
+        ticket["allowed_paths"] = ["addons/Star_Wars_Thrawn_Trilogy/scenarios/*.cfg"]
+        result = validate_ticket_acceptance(self.root, ticket)
+        self.assertFalse(result["pass"])
+        self.assertIn("outside the ticket's allowed paths", result["diagnostic"])
+
+    def test_acceptance_globs_match_scope_without_broadening_other_directories(self) -> None:
+        from ticket_runner import path_allowed
+
+        cases = [
+            ("units/one.cfg", "units/one.cfg", True),
+            ("units/two.cfg", "units/one.cfg", False),
+            ("units/one.cfg", "units/*.cfg", True),
+            ("units/one.lua", "units/*.cfg", False),
+            ("scenarios/one.cfg", "units/*.cfg", False),
+            ("units/nested/one.cfg", "units/**", True),
+            ("units-other/one.cfg", "units/**", False),
+            ("units/one.cfg", "units/??e.cfg", True),
+            ("units/One.cfg", "units/[A-Z]*.cfg", True),
+            ("units\\one.cfg", "units/*.cfg", True),
+        ]
+        for path, pattern, expected in cases:
+            with self.subTest(path=path, pattern=pattern):
+                self.assertEqual(_path_matches(path, pattern), expected)
+                self.assertEqual(_path_matches(path, pattern), path_allowed(path, [pattern]))
 
     def test_existing_feature_cannot_be_claimed_as_this_ticket_work(self) -> None:
         Path(self.root / SCENARIO).write_text(
