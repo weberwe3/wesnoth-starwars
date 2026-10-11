@@ -1776,3 +1776,77 @@ documented legal-route, existing-save compatibility and playability gaps;
 Claude retains mission balance and active tips/debrief/hotkey work. Preserve
 that ownership and existing achievements work when selecting the next bounded
 ticket.
+
+### 2026-10-11 — Stand-off AI legality and Lua contract repair published and tested
+
+The earlier entries remain historical snapshots. Our required AI lesson, PR #373,
+is `published_and_tested` at `bc304e7ab383488f0681ab0c71540cf011985e53`, with
+93 passing contracts and exact installed-game/player evidence preserved in
+`agent/runtime/codex-ai-legality-lesson-post-publish-final.json`. Our AI PR #377
+passed CI at exact head `13a2edf14a6c4d0e11c4d35305b80766c0761125` and protected
+merge `d5fe0391c9bb52dd6d01b910cb29175b36c570cf`. Its official record
+`840b91c8b5c0018f` is now `published_and_tested` after the validator repair below.
+Concurrent Claude PRs #370–372, #374–376 and #378 supplied mission events/balance,
+command choices, mission feats and command-summary/debrief changes; those changes
+were retained through integration rather than attributed to the AI ticket.
+
+Stand-off AI excludes petrified attackers and weapons disabled on offense,
+preserves defense-disabled aimed shots, and honors conditional unit filters.
+After movement it reacquires both combatants and rechecks the actor, selected
+weapon and attack budget, hostility, native visibility and current legal range.
+Scoring and deterministic order are unchanged. Lua weapon matching lacks a
+two-combatant active-special context; uncertain opponent/context-sensitive weapon
+filters remain conservative rather than establishing complete combat-rule coverage.
+
+The final candidate was integrated with main at
+`a115912eeda1c36effb87577d993f3463d4cd9d5`, including Claude's PR #378 summary,
+and tested with the repaired AI and fixture overlays. It passed 227 strict native
+air-suite checks, zero failures
+and zero engine errors; the runner exited `0`. It includes command-choice,
+mission-feat and command-summary assertions, a real legal AI-turn attack, actual
+save creation and five native reload checks. Both phases completed without timeout
+before runner-owned `-15` shutdown. Evidence is in
+`/tmp/sw-ai-summary-integration-final-20261011/candidate-ai.json` and `outcomes.json`,
+with `agent/runtime/codex-ai-summary-integration-manifest.json`. The qualified reused
+old-AI control at `08ab50e5aa98a7f8a79a02314d3f8b7e5b7d6181` recorded 208 passes,
+17 targeted legality failures plus their main-phase failure summary, and no engine
+errors in `/tmp/sw-ai-feats-integration-20261011/negative-original-ai.json`.
+Its AI and complete legality/real-AI fixture functions were unchanged by the later
+summary integration; it is not a fresh full control at `a115`. Intercepted
+move/command-delivery cases exercise the native CA and units but do not prove
+actual movement/combat for those cases; the real AI positive is separate. Earlier
+failed native evidence, including hidden-target setup and the unrelated observer-XP
+failure with unconfirmed cause, remains preserved.
+
+Initial AI publication failed Lua coverage despite local PASS: declared contracts
+supported only WML sources/kinds, and local validation omitted changed paths.
+Maintenance PR #379 added bounded exact-literal `source-text` Lua declarations and
+local changed-path coverage while keeping WML scanners separate and protected
+rules intact. All 93 old contracts were preserved; seven static AI literals bring
+the total to 100. Actual maintenance tests passed 54 scenario, 207 dashboard and
+10 acceptance checks, plus compile, static and retention checks. Historical
+retention at the final revision passed 218 tickets. Literal retention is static
+evidence, distinct from native behavior. The first maintenance publisher still
+had the pre-merge validator loaded and failed on the Lua source; a fresh process
+loaded the merged repair and passed without another source edit. That failure is
+preserved in `agent/runtime/codex-lua-contract-preserved-first-published-failure.json`.
+
+PR #379 passed exact-head CI at `0ebd8de47b46b91acba332aa6bbededf90c0dedc` and
+protected merge `a46a98f1fb7fb8b714bcab13c50e069915cf6ef4`; official record
+`9bd368ff246b016c` is `published_and_tested`. Fresh installed-engine validation
+exited `0`, all 100 contracts and ticket acceptance passed, and the real player
+launcher passed with expected and actual SHA `a46a98f1fb7fb8b714bcab13c50e069915cf6ef4`.
+The original AI merge `d5fe0391` is an ancestor of this tested repair revision;
+the player evidence is for `a46a98f1`, not the older merge. Preserved authorities
+are `agent/runtime/codex-lua-contract-preserved-post-publish.json` and
+`agent/runtime/codex-ai-ranged-legality-preserved-published-success.json`.
+
+These results do not prove human balance, all 30 legal campaign victories,
+command-state reload, native reload of every campaign save, on-screen summary
+presentation or an engine interactive-quit fix. Continue selecting the most
+impactful governed work across the mod's playability, fun and depth, retaining
+legal-route, existing-save compatibility and human playability gaps. Account for
+Claude's mission balance and active tips/debrief/hotkey work. After safe existing
+contracts are exhausted, use the governed backlog selection/refill process;
+preserve bounded worktrees, immutable scope, independent review and exact-head
+CI, installed-game and real player-launch gates.
