@@ -106,7 +106,7 @@ tips.LIST = {
 		end
 	  end,
 	  caption = _ "Ranks",
-	  text = _ "A unit past its highest level now earns ranks -- Veteran, Seasoned veteran, Elite -- shown as insignia. Many units and heroes also change their look as Seasoned veterans and Elites. Keep your veterans alive: they carry over to the next mission." },
+	  text = _ "A unit past its highest level now earns ranks -- Veteran, Seasoned veteran, Elite -- shown as insignia. Many units and heroes also change their look as Seasoned veterans and Elites. At each rank, most units choose their training: more hit points, a weapons drill or a mobility drill. Keep your veterans alive: they carry over to the next mission." },
 }
 
 local function seen_set()
