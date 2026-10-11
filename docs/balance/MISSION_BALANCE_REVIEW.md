@@ -310,8 +310,9 @@ player cannot judge them.
 - **The Last Command and The Throne Room** remain the hardest missions for the
   AI player. They are campaign finales: they should be the hardest, but a
   person should confirm they are winnable on Normal.
-- **Raid on Karrde's Base** sometimes loses Han, the leader, on turn 2–3 to the
-  starting AT-ST, when he is pushed forward. Keep him behind the line.
+- **Raid on Karrde's Base** sometimes lost Han, the leader, on turn 2–3 to the
+  starting AT-ST when he was pushed forward. Addressed in 3.12 (the walker
+  starts further back on Easy and Normal); a person should confirm it.
 - **Hard** keeps the original pressure on the missions listed above. On Hard,
   levers compound: less player gold, more enemy gold and income, and fewer
   turns, giving force ratios up to about 3.2 in The Last Command. Hard is
@@ -374,6 +375,30 @@ getting in unseen, ysalamiri fields, Thrawn's doctrine, ranks -- at most one
 per turn, each once per playthrough (`sw_tips_seen`, carried between
 missions). Each tip offers "Turn off tips" (`sw_tips_off`); the Field Manual
 has "Show the tips again".
+
+### 3.11 Bonus objectives (2026-10-11)
+
+Owner goal: fun from several approaches to each mission. Every mission except
+the three finales now has one optional objective, shown in its objectives as
+a "Bonus objective" (`SW_BONUS` / `SW_BONUS_OBJECTIVE`, `lua/sw_bonus.lua`).
+Kinds, matched to each mission: hold N settlements; lose no units; keep named
+heroes in the fight (those most likely to withdraw there); never raise the
+alarm (Prisoner of Myrkr); Adrift's own "destroy the whole patrol", whose old
+note promised a reward that nothing paid. Losing one is announced when it
+happens. Reward: 40-50 credits, banked at victory and paid in full -- not cut
+by the 40% gold carryover -- at the start of the next mission where the
+player can recruit (`sw_bonus_bank`). Finales have none: their gold does not
+carry into the next campaign.
+
+### 3.12 Raid on Karrde's Base: the opening walker (2026-10-11)
+
+Cause: the starting AT-ST at (5,9) is 8 hexes from Han, the critical hero;
+with 4 moves and a 3-hex twin cannon it reached him on turn 2 whenever he
+stepped forward -- a one-bad-turn loss of the kind 3.1 removes elsewhere.
+Update: on Easy and Normal it starts on the Imperial landing apron at (2,9),
+11 hexes away, giving Han a turn to set up; Hard keeps it at (5,9).
+Measured (AI soak, careful player, Normal, 3 runs): Han fell on turns 4 and
+6 (before: turns 2-3), and the third run lasted to turn 16 without losing him.
 
 ## 4. Measured results
 
