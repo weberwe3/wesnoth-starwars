@@ -11,7 +11,7 @@ local PHASE = "main"
 local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "flanking", "ai_ranged", "check_ai_ranged",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "flanking", "ai_ranged", "check_ai_ranged",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "muzzle_flashes", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
@@ -513,6 +513,53 @@ local function plugin(events, context, info)
       check("hold-out missions have no swift victory", ach.HOLD_OUT.sw_hte_03_adrift and ach.HOLD_OUT.sw_tlc_02_the_smugglers_council)
       check("each campaign has a final mission", ach.FINALS.sw_hte_10_thrawns_gambit and ach.FINALS.sw_dfr_10_honoghrs_choice
         and ach.FINALS.sw_tlc_10_the_last_command)
+    end
+
+    -- Bonus objectives (lua/sw_bonus.lua).
+    function S.bonus_objectives()
+      swt.clear()
+      local b = sw_systems.bonus
+      local side = wesnoth.sides[1]
+      wml.variables.sw_bonus_bank = nil
+      -- villages
+      b.define("villages", "1", 40)
+      check("no village held: not met", not b.met(b.config()))
+      local vx, vy = 3, 14
+      wesnoth.wml_actions.terrain{ x = vx, y = vy, terrain = "Gg^Vh" }
+      if vx then
+        wesnoth.map.set_owner(vx, vy, 1)
+        check("a village held: met", b.met(b.config()))
+        b.on_victory()
+        check("victory banks the reward", tonumber(wml.variables.sw_bonus_bank) == 40, wml.variables.sw_bonus_bank)
+        b.on_victory()
+        check("paid once", tonumber(wml.variables.sw_bonus_bank) == 40)
+        wesnoth.map.set_owner(vx, vy, 0)
+        wesnoth.wml_actions.terrain{ x = vx, y = vy, terrain = "Gg" }
+      end
+      -- heroes
+      b.define("heroes", "t_bo_han", 40)
+      check("a named hero absent: not met", not b.met(b.config()))
+      swt.place("sw_hero_han", 1, 5, 5, "t_bo_han")
+      check("the named hero present: met", b.met(b.config()))
+      b.on_withdraw("t_bo_han")
+      check("a withdrawal loses it", b.config().failed == true and not b.met(b.config()))
+      -- undetected
+      b.define("undetected", "-", 50)
+      check("no alarm: met", b.met(b.config()))
+      b.on_alarm()
+      check("an alarm loses it", not b.met(b.config()))
+      -- payment needs a side that can recruit
+      local gold, recruit = side.gold, side.recruit
+      wml.variables.sw_bonus_bank = 40     -- as banked by a won mission
+      side.recruit = {}
+      b.on_start()
+      check("no recruiting: the bank waits", tonumber(wml.variables.sw_bonus_bank) == 40 and side.gold == gold)
+      side.recruit = { "sw_unit_nr_trooper" }
+      swt.place("sw_unit_nr_sergeant", 1, 7, 5, "t_bo_leader").canrecruit = true
+      b.on_start()
+      check("recruiting: paid in full", side.gold == gold + 40 and wml.variables.sw_bonus_bank == nil, side.gold - gold)
+      side.gold, side.recruit = gold, recruit
+      wml.variables.sw_bonus = nil
     end
 
     function S.flanking()

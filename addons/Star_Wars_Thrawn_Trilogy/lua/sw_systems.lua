@@ -48,10 +48,11 @@ local alert = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lu
 local range = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_range.lua")
 local achievements = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_achievements.lua")
 local tips = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua")
+local bonus = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_bonus.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips, bonus = bonus }
 
 -- Cross-system wiring (hooks are plain Lua tables, rebuilt on every load).
 ew.hooks.bonus = { doctrine.ew_bonus }
@@ -465,5 +466,12 @@ on("die", "sw_ach_die", achievements.on_die)
 
 -- Just-in-time tips (lua/sw_tips.lua): one Field Manual tip at most per player turn.
 on("side turn", "sw_tips_side_turn", tips.on_side_turn)
+
+-- Bonus objectives (lua/sw_bonus.lua, SW_BONUS / SW_BONUS_OBJECTIVE).
+on("start", "sw_bonus_start", bonus.on_start)
+on("victory", "sw_bonus_victory", bonus.on_victory)
+on("die", "sw_bonus_die", bonus.on_die)
+alert.hooks.on_alarm = alert.hooks.on_alarm or {}
+table.insert(alert.hooks.on_alarm, function() bonus.on_alarm() end)
 
 core.log("systems", "tactical systems loaded")
