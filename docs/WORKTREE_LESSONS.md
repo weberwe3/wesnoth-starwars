@@ -1092,3 +1092,46 @@ consecutive-failure ceiling; retain and increment its real diagnostic count.
 **Prevention:** Exercise at least seven failed runs, exact-worktree resumption,
 reload counts above three, and a new worktree identity. Continue enforcing the
 separate two-repair processing-run limit and non-retryable safety boundaries.
+
+### 2026-10-11 — Classifier negatives need a valid independent baseline
+
+**Symptom:** Correct native evidence failed positive classifier tests, while
+negative tests could fail for an unrelated missing warning or malformed sample.
+**Confirmed cause:** Samples omitted required request/outcome fields, used a
+different warning string, shared before/after objects, and assumed native
+recruit IDs equal type IDs or recruits begin with full movement.
+**Resolution:** Start each negative from an otherwise complete passing record,
+deep-copy snapshots, retain the exact native warning, and join paid recruitment
+to actual generated IDs, zero moves/attacks and native costs. Ten corrected
+classifier tests passed; installed command records support the recruit facts.
+**Prevention:** Assert the intended failure reason against independent snapshots
+and an otherwise valid baseline. Synthetic classifier tests do not prove a
+native route, balance, save compatibility or human play quality.
+
+### 2026-10-11 — Transport plugin execute output as a non-nil table
+
+**Symptom:** A native route exited `-11` after planning and before the expected
+identical-coordinate warning. **Confirmed cause:** The exact candidate's
+backtrace stopped in installed `luaW_copy_upvalues`; its copyback loop lacks
+handling for nil output upvalues, and planning captured ten optional nil scalars.
+**Resolution:** Return one initialized command table across the execute boundary
+and read optional keys after the required engine slice. The next native run
+emitted the expected warning, preserved the negative snapshot, executed ordinary
+commands and reached the next mission; a separate duplicate observer still made
+that overall run fail. **Prevention:** Keep transported output upvalues non-nil
+and preserve actual process failures. This diagnosis does not retroactively
+establish the cause of the earlier occupied-request crash.
+
+### 2026-10-11 — Observe each moveto delivery snapshot once
+
+**Symptom:** The real fourth delivery reached victory and the next mission, but
+the fixture emitted a fifth delivery and a false duplicate-delivery check.
+**Confirmed cause:** The all-delivered observer records the fourth delivery
+before endlevel cleanup, then the late moveto observer records the same snapshot.
+**Resolution:** Mark only that snapshot as observed and consume the moveto
+snapshot at the late observer; clear stale snapshots before the next event.
+The actual extracted observer function emits once when called twice with one
+snapshot, while a fresh duplicate still fails. **Prevention:** Retain the strict
+four-delivery classifier regression and require a fresh native run with unique
+deliveries, ordinary victory and the real next-scenario transition. Do not hide
+failed checks or suppress distinct production events with a global dedupe rule.
