@@ -282,10 +282,10 @@ local function plugin(events, context, info)
     if scenario == FINAL_SCENARIO then break end
   end
   out("done")
-  while info.name ~= "titlescreen" do
-    if info.name == "Dialog" then context.skip_dialog{} else context.quit{} end
+  -- Completion is evidence for the runner, not permission to ignore an engine
+  -- failure. Keep yielding until its recorded stop; do not drive interactive quit.
+  while true do
     events, context, info = wesnoth.plugin.next_slice()
   end
-  context.exit{code = 0}
 end
 return plugin

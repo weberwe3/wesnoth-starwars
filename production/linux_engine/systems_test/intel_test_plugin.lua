@@ -846,10 +846,10 @@ local function plugin(events, context, info)
     std_print("SW_TEST: saved")
   end
   std_print("SW_TEST: done")
-  while info.name ~= "titlescreen" do
-    if info.name == "Dialog" then context.skip_dialog{} elseif context.quit then context.quit{} end
+  -- Assertions and the save are complete. Yield for the runner's recorded
+  -- process stop instead of exercising interactive quit as part of this test.
+  while true do
     events, context, info = wesnoth.plugin.next_slice()
   end
-  context.exit{ code = 0 }
 end
 return plugin
