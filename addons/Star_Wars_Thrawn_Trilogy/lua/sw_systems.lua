@@ -50,10 +50,11 @@ local achievements = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_a
 local tips = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua")
 local bonus = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_bonus.lua")
 local debrief = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_debrief.lua")
+local command = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_command.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips, bonus = bonus, debrief = debrief }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips, bonus = bonus, debrief = debrief, command = command }
 
 -- Cross-system wiring (hooks are plain Lua tables, rebuilt on every load).
 ew.hooks.bonus = { doctrine.ew_bonus }
@@ -470,6 +471,9 @@ on("side turn", "sw_tips_side_turn", tips.on_side_turn)
 
 -- Bonus objectives (lua/sw_bonus.lua, SW_BONUS / SW_BONUS_OBJECTIVE).
 on("start", "sw_bonus_start", bonus.on_start)
+
+-- Command decisions (lua/sw_command.lua): once per campaign, then applied at every later start.
+on("start", "sw_command_start", command.on_start)
 -- One victory handler, in order: the bonus is decided, then the debrief reports it.
 on("victory", "sw_bonus_victory", function() bonus.on_victory() debrief.on_victory() end)
 on("die", "sw_bonus_die", function() bonus.on_die() debrief.on_die() end)

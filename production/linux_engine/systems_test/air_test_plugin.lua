@@ -11,7 +11,7 @@ local PHASE = "main"
 local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "flanking", "ai_ranged", "check_ai_ranged",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged", "check_ai_ranged",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "muzzle_flashes", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
@@ -538,6 +538,8 @@ local function plugin(events, context, info)
       check("hold-out missions have no swift victory", ach.HOLD_OUT.sw_hte_03_adrift and ach.HOLD_OUT.sw_tlc_02_the_smugglers_council)
       check("each campaign has a final mission", ach.FINALS.sw_hte_10_thrawns_gambit and ach.FINALS.sw_dfr_10_honoghrs_choice
         and ach.FINALS.sw_tlc_10_the_last_command)
+      local ok = pcall(ach.feat, "sw_feat_gambit")
+      check("a mission feat outside the campaigns is ignored without error", ok)
     end
 
     -- Bonus objectives (lua/sw_bonus.lua).
@@ -606,7 +608,58 @@ local function plugin(events, context, info)
       local summary = db.campaign_text(db.campaign_stats())
       check("campaign summary lists missions and bonus objectives",
         summary:find("Missions won: 1") ~= nil and summary:find("Bonus objectives earned: 1") ~= nil, summary)
+      wml.variables.sw_command = { choice = "counter", scenario = "earlier" }
+      summary = db.campaign_text(db.campaign_stats())
+      check("campaign summary names the command decision", summary:find("Command decision: Counter%-intelligence") ~= nil, summary)
+      wml.variables.sw_command = nil
       wml.variables.sw_bonus_result, wml.variables.sw_debrief, wml.variables.sw_campaign_stats = nil, nil, nil
+    end
+
+    -- Command decisions (lua/sw_command.lua).
+    function S.command_decisions()
+      swt.clear()
+      local cmd = sw_systems.command
+      local side = wesnoth.sides[1]
+      local gold, recruit = side.gold, side.recruit
+      wml.variables.sw_command = nil
+      side.recruit = { "sw_unit_nr_trooper", "sw_unit_nr_commando" }
+      swt.place("sw_unit_nr_sergeant", 1, 7, 5, "t_cd_leader").canrecruit = true
+      local best = wesnoth.unit_types.sw_unit_nr_commando.cost >= wesnoth.unit_types.sw_unit_nr_trooper.cost
+        and "sw_unit_nr_commando" or "sw_unit_nr_trooper"
+      local before = #wesnoth.units.find_on_map{ side = 1, type = best }
+      local placed = cmd.decide("cadre")
+      local cadre = wesnoth.units.find_on_map{ side = 1, type = best }
+      local loyal, half = 0, 0
+      for _i, c in ipairs(cadre) do
+        if c.upkeep == "loyal" or c.upkeep == 0 then loyal = loyal + 1 end
+        if c.experience == math.floor(c.max_experience / 2) then half = half + 1 end
+      end
+      check("cadre: two units of the best recruit join", placed == 2 and #cadre == before + 2, placed .. " " .. #cadre)
+      check("cadre units are loyal and half-way to their next level", loyal >= 2 and half >= 2, loyal .. "/" .. half)
+      check("the choice is recorded", cmd.current() == "cadre")
+      -- supply: paid at the start of a later mission where the player recruits
+      wml.variables.sw_command = { campaign = wml.variables["sw_command.campaign"], choice = "supply", scenario = "earlier" }
+      cmd.on_start()
+      check("supply convoy: +25 credits at a later start", side.gold == gold + cmd.SUPPLY_GOLD, side.gold - gold)
+      side.gold = gold
+      side.recruit = {}
+      cmd.on_start()
+      check("supply convoy: nothing without recruiting", side.gold == gold, side.gold - gold)
+      side.recruit = { "sw_unit_nr_trooper" }
+      wml.variables["sw_command.scenario"] = wesnoth.scenario.id
+      cmd.on_start()
+      check("supply convoy: not paid in the mission where it was chosen", side.gold == gold, side.gold - gold)
+      -- counter-intelligence: caps every enabled doctrine side
+      local doctrine = sw_systems.doctrine
+      local d = doctrine.load(2) or doctrine.enable(2)
+      local cap = d.cap
+      wml.variables.sw_command = nil
+      cmd.decide("counter")
+      check("counter-intelligence caps Thrawn's insight at 75", doctrine.load(2).cap == cmd.COUNTER_CAP, doctrine.load(2).cap)
+      check("the cap is below the top tier", cmd.COUNTER_CAP < 80)
+      doctrine.set_cap(2, cap)
+      side.gold, side.recruit = gold, recruit
+      wml.variables.sw_command = nil
     end
 
     function S.flanking()

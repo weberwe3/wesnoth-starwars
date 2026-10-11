@@ -416,6 +416,73 @@ After each campaign's finale a **campaign summary** follows: missions won,
 enemies destroyed, units lost, heroes withdrawn, bonus objectives earned and
 swift victories (`sw_campaign_stats`, carried between the missions).
 
+### 3.14 Finale twists (2026-10-11)
+
+The two space finales had no events once the battle began. Each now has a
+Thrawn move and an answer to it (Easy/Normal/Hard counts):
+
+| Mission | Thrawn's move | Relief |
+| --- | --- | --- |
+| Thrawn's Gambit | Turn 5: 2/3/3 TIE bombers (+1 interceptor on Hard) appear beside the warship with fewer defenders within 4 hexes, one turn from it | Turn 8: shipyard picket, 3/2/1 fighters |
+| The Last Command | Turn 4: 2/2/3 TIE interceptors appear in the corners behind the strike force | Turn 6: Karrde's smugglers, 3/2/2 fighters (Y-wings with ion cannons) |
+
+The bomber target rewards spreading the defence: piling every fighter on one
+warship invites the strike on the other. Honoghr's Choice already has its
+own turn 4 and turn 6 events.
+
+### 3.15 Mid-mission events in quiet missions (2026-10-11)
+
+Three more missions had no events after the opening. Each now has a
+pressure event and a relief event (Easy/Normal/Hard counts):
+
+| Mission | Pressure | Relief |
+| --- | --- | --- |
+| Battle for the Fleet | Turn 5: TIEs (2/3/4) sit on the jump point, so the escort must also clear the exit | Turn 8: Bel Iblis's fighters, 3/2/1 |
+| The Gates of Mount Tantiss | First attacker within 6 hexes of the generator: the gate opens and 2/3/4 troops (a Royal Guard from Normal) sortie | Turn 5: a Wayland war party, 3/3/2 Myneyrshi and Psadan |
+| The Bilbringi Shipyards | Turn 6: 1/2/3 new cloaked asteroids behind the screen, in the approach lanes | A destroyed platform's reactor blasts every adjacent ship for 10 (never lethal), Imperial guards included |
+
+Jomark and The Smugglers' Council follow in §3.16.
+### 3.16 The traitor and the second boat (2026-10-11)
+
+The last two missions without mid-mission events:
+
+- **The Smugglers' Council:**
+  - On turn 5 one surviving chief, chosen at random, turns traitor inside the walls, with a smuggler veteran bodyguard from Normal.
+  - He no longer counts as a chief.
+  - Killing him pays a 30-credit bounty.
+  - This plays out Karrde's opening line that "someone at this table brought them".
+- **Jomark:**
+  - On turn 5 a second raider boat (2/3/4, with a veteran from Normal) lands beside whichever southern village has fewer of Luke's units within 3 hexes.
+  - On a tie it lands at the south-east village.
+
+### 3.17 Command decisions (2026-10-11)
+
+Nothing the player chose shaped a campaign beyond its recruits. Each campaign
+now has one decision (`lua/sw_command.lua`), offered at the start of
+Shadows of Kashyyyk, The Senator's Men and The Palace Infiltrators, standing
+until the campaign ends:
+
+| Choice | Effect | Rough value |
+| --- | --- | --- |
+| Supply convoy | +25 credits at the start of each later mission where the player recruits | 4-5 missions: about 100-125 credits |
+| Veteran cadre | 2 loyal units of the best current recruit at once, half-way to their next level | about 40-60 credits now, no upkeep, and they carry over |
+| Counter-intelligence | Thrawn's Doctrine capped at 75 Insight: no Coordinated fire (+10% to hit against studied types) | matters in the Thrawn missions: HTE 9-10, DFR 9, TLC 9-10 |
+
+An AI-controlled player takes the supply convoy. The campaign summary after
+the finale names the decision.
+
+### 3.18 Mission feats (2026-10-11)
+
+Four achievements reward the hard way through the new mission events
+(`SW_FEAT`, `ach.feat`):
+
+| Feat | Mission | Condition |
+| --- | --- | --- |
+| Not One Hull | Thrawn's Gambit | win without losing a warship |
+| Fleet Intact | Battle for the Fleet | win without losing a Dreadnaught |
+| Bounty Paid | The Smugglers' Council | bring down the traitor |
+| Breaking the Line | The Last Command | win by destroying both escort Star Destroyers |
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

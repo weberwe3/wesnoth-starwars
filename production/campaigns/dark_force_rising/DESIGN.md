@@ -72,6 +72,8 @@ On Jomark, C'baoth asks Luke to help drive off raiders who have landed on the
 lake shore. C'baoth fights beside him, too eagerly.
 - Win: defeat the raid leader, with at least two of the three villages unharmed.
 - Lose: Luke dies; two villages are taken.
+- Twist: on turn 5 a second raider boat (2/3/4) lands beside whichever
+  southern village has fewer of Luke's units nearby.
 
 ### 4. The Senator's Men
 Han and Lando, chasing a lead on the Katana fleet, are cornered by Imperial
@@ -106,6 +108,8 @@ Inside the flagship, clone stormtroopers fight for every corridor.
 Thrawn arrives in force. Escort the captured Dreadnaughts to the jump point.
 - Win: two Dreadnaughts reach the eastern edge.
 - Lose: all captured Dreadnaughts are destroyed; Wedge, Luke, or Bel Iblis dies.
+- Twists: on turn 5 TIEs (2/3/4) sit on the jump point; on turn 8 Bel Iblis's
+  fighters (3/2/1) join the player.
 
 ### 10. Honoghr's Choice
 Leia returns to Honoghr with the truth about the decontamination droids. An

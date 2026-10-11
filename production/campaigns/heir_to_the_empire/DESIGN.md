@@ -216,6 +216,9 @@ the Imperial strike group's escorts, and force the Grand Admiral to withdraw.
 - Lose: all warships lost; Wedge or Luke dies.
 - Ending: Thrawn withdraws; a closing exchange mentions a lost fleet of
   Dreadnaughts — hook for Campaign II.
+- Twists: on turn 5 TIE bombers (2/3/3, plus an interceptor on Hard) jump in
+  beside whichever warship has fewer defenders within 4 hexes; on turn 8 the
+  shipyard picket joins the player (3/2/1 fighters).
 
 ## 5. Carryover and hero state
 
