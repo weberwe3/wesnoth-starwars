@@ -1262,3 +1262,58 @@ prefix, assigned-tree and non-ready-tree cases. **Prevention:** Keep strict
 harvest-to-assignment checks and qualify actual production outcomes separately
 from these planner regressions. Never accept a wrong assignment to turn a failed
 native route into a pass.
+
+### 2026-10-11 — Clear escort positions before spending their movement on combat
+
+**Symptom:** Leia had five moves at (2,6), but guards occupied the three-step
+route to (2,3); later a guard occupied that waypoint while Leia stood beside it.
+**Confirmed cause:** Escort endpoints could occupy her forward lane, and those
+guards fired before clearing it, consuming their native movement. The window 5
+repair 1 diagnostic records the blockers and their zero remaining moves.
+**Resolution:** Keep escort endpoints beside the lane and defer an occupying
+guard's attack until it clears an affordable native path. The extracted old
+planner fails that ordering case; the repair passes it. The next native run
+reached (2,3) and then (2,1) on turn 4 with Leia at 40 HP, before a separate
+navigation failure. **Prevention:** Check all known occupied path steps and
+escort stopping positions, including reached waypoints, and retain actual
+command budgets. A cleared lane does not establish a completed escape.
+
+### 2026-10-11 — Separate a public route corridor from a full native preferred path
+
+**Symptom:** After reaching (2,1), the fixture returned Leia through (2,2)
+and central combat instead of continuing along the top road. **Confirmed cause:**
+A distant waypoint alone did not constrain the native preferred path, and the
+planner rewarded endpoints along its southern detour. **Resolution:** Stage
+public road goals and require each candidate Leia path to stay on the top road
+between the western entrance and (19,1), retaining native visibility, cost,
+reachability and known-occupancy checks. Window 6's initial native run stayed
+on that road and reached (19,1) alive, but expired the unchanged 14-turn budget.
+
+That failed run exposed a second confirmed boundary: on turns 9–11, the native
+reach set included (7,1) at zero remaining moves while Leia stood at (6,1) with
+five moves. Its preferred full path to (12,1) instead began at (6,2), so the
+truncated path index rejected the legal short road step. Index the public road
+segment independently, then validate every candidate with its own ordinary
+native path and cost; guards must clear that segment even when the preferred
+full path detours. The actual extracted prior planner fails this observed
+short-step case; the repaired planner passes it, a native-cost-five budget case,
+and the companion guard-clearance case. **Prevention:** Test a legal short
+candidate that differs from the preferred full route, as well as forbidden
+detours. These focused cases establish policy boundaries, not survival or a
+native campaign victory; retain the separate actual campaign outcome.
+
+### 2026-10-11 — Keep the risk comparison when accepting forward evacuation moves
+
+**Symptom:** Leia advanced from (4,1) to (6,1), beside the surviving raid
+commander, and died during that enemy turn. **Confirmed cause:** The forward
+candidate condition accepted every objective move without comparing its computed
+visible-risk score with the current position. The trace records Leia at 33 HP
+and the commander at 18 HP before the fatal enemy turn; it does not identify
+the killer. **Resolution:** Require a better objective/risk score for Leia as
+well as ordinary escorts, retaining the explicit exception for an existing guard
+clearing her lane. The extracted prior planner fails the observed danger-increasing
+case; the repaired planner holds for cover and passes 14 policy cases, including
+legal short native progress and the flat-distance detour. **Prevention:** Test
+both affordable forward movement and deliberate holding beside a surviving
+visible threat. Preserve the separate native result; policy checks do not prove
+combat survival across ordinary random outcomes.

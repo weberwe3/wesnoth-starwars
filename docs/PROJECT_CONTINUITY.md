@@ -1927,3 +1927,59 @@ the native worktrees. These are execution-transport recoveries with recorded
 tool, source and result identities; they do not relax validation gates or prove
 that the underlying transport fault is fixed. Claude's machine-local settings
 were preserved byte-for-byte and excluded only by their exact local path.
+
+### 2026-10-11 — Published validator repair and preserved escape navigation work
+
+PR #387 published the qualified route/validator lessons and preceding handoff
+at merge `2cbe20c7e9df9ba1a11b967d5ca8e89144d8a055`; PR #388 published
+the corrected irrelevant-art-source-scan guard at merge
+`0dc2c97cfae7032b982d786f91a6f37f9ba7edf7`. Both passed CI on their exact
+candidate heads, protected merge, fresh installed-game checks of all 100
+contracts and the player-launcher revision gate. The original maintenance
+source commit `251ab0a8` remains preserved; PR #388's integrated candidate is
+`64c89063658e4e33c64d2dbed04534329c15ea6b`. The dashboard was restarted from
+the merged checkout, passed localhost health validation and preserved its
+session, authentication files and exact queued control state. These are
+completed maintenance publications, superseding the earlier unpublished status.
+
+The immutable Leia ticket remains `SOL-20261011-091455-LEIA`, generated contract
+03, in the preserved Windows-backed progression worktree, scoped to the two
+legal-route fixture files. Window 5's three native attempts failed and remain
+preserved. Its final repair cleared the previously observed guard blockade and
+reached (2,1) on turn 4, but then followed a southern detour into combat;
+Leia died at (5,6) on turn 6. Window 6's initial native run instead stayed on the
+top road and reached (19,1) alive at 20 HP on turn 14, then failed the ordinary
+turn limit. Its 733 records include an unused legally reachable (7,1) on turns
+9–11, identifying the full-path-prefix selection defect described in the lessons.
+Neither run established Falcon arrival, ordinary escape victory or mission three.
+
+Window 6 repair 1 independently indexed the public northern segment and passed
+13 extracted M2 cases, four M1 assignment cases, 27 classifier checks and official
+static/reference checks. Its fresh 509-record native run then failed: Leia reached
+(6,1) at 33 HP on turn 5 beside the raid commander, still at 18 HP, and died
+during that enemy turn. Its source and full FAIL evidence remain preserved.
+Repair 2 retains the native path, visibility, occupancy and budget checks and
+requires a better objective/risk score before advancing Leia. It passed 14 M2
+cases, the four M1 cases, all 27 classifier checks, syntax and official static
+validation; its candidate digest is
+`e723f3f29adec24c1c3b627700a7b33944c893d2ce447243c3339bc72de2a91b`.
+The fresh native campaign run is pending at this handoff. No escape candidate
+is ready for publication. A helper filename mistake was preserved and corrected:
+the original initial-run identities were restored from independently retained
+static/native-wrapper records and frozen source bytes; native results were
+unchanged. See `agent/runtime/codex-leia-escape-window6-helper-naming-recovery.json`.
+
+The Windows-to-Linux asset-copy setup failure is retained separately from
+gameplay failures. Later runs hash the unchanged static add-on bytes against
+the frozen Windows source using explicit POSIX path ordering, then rehash that
+same preserved Linux add-on with the official native runner before staging fresh
+userdata. They reuse no campaign state, saves, preferences, enemy controllers
+or RNG state. The ordinary engine and classifier remain authoritative.
+
+Continue autonomously without a consecutive-failure ceiling, retaining each
+processing window and its bounded source repairs. Root handles implementation
+and controller recovery; independent roles review frozen evidence. Preserve
+Claude's mission balance, achievements, tips, commands, debrief and hotkey work.
+Generated contract 04 remains next for observer/save compatibility and the
+post-preload save warning. Human balance, broader legal campaign routes,
+native save reload and interactive quit remain open playability evidence gaps.
