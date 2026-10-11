@@ -1135,3 +1135,32 @@ snapshot, while a fresh duplicate still fails. **Prevention:** Retain the strict
 four-delivery classifier regression and require a fresh native run with unique
 deliveries, ordinary victory and the real next-scenario transition. Do not hide
 failed checks or suppress distinct production events with a global dedupe rule.
+
+### 2026-10-11 — CLI seed does not bind ordinary campaign randomness
+
+**Symptom:** Two native routes requesting seed 1 produced different opening
+scout hitpoints and movement traits. **Confirmed cause:** Installed
+`wesnoth.cpp` applies the CLI option to `srand`; `seed_rng.cpp` independently
+uses `boost::random_device`, and ordinary synced actions request fresh seeds.
+The campaign configuration plugin exposes a launch callback without a seed
+setting. **Resolution:** Remove the fixture's fixed-campaign-seed claim and
+retain ordinary campaign/combat randomness without changing it. **Prevention:**
+Check the installed generator and configuration path before claiming repeatable
+traits or combat. Preserve the requested CLI value and actual opening state;
+do not select a lucky rerun or force combat outcomes to establish a route.
+
+### 2026-10-11 — Require progress and reconsider combat between moves
+
+**Symptom:** The failed native route repeatedly moved a carrier between the
+same nearby hexes until its movement reached zero; another carrier disappeared
+before the next player end-turn. **Confirmed cause:** Endpoint selection omitted
+the current hex's score, allowing non-improving moves. Attack selection ran only
+after all carrier movement, while the infantry had no movement policy.
+The failed trace did not identify the lost carrier's killer. **Resolution:**
+Require a strictly better objective/risk score for ordinary carrier and escort
+moves, retain separate shuttle-apron parking, reconsider visible legal blaster
+attacks before moving, and let infantry advance through native reachable paths.
+The actual extracted planner passes hold, progress, attack-first and escort
+regressions. **Prevention:** Preserve native request/outcome and death records;
+require a fresh full route result before claiming completion. These focused
+checks do not prove a human win, balance, or survival across random outcomes.
