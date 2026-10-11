@@ -35,6 +35,77 @@ VALID_ART_STATES = {
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 UNIT_SPRITE_DIMENSIONS = (72, 72)
 PORTRAIT_DIMENSIONS = (256, 256)
+# Owner-directed STATIC_ANIMS in production/tools/gen_hte_units.py. Only these
+# exact identities may omit unused animation wiring, and only while their WML
+# proves that they have zero movement and no attacks. All 13 PNGs still count.
+_STATIC_WIRED_STATES = {
+    "sw_unit_nr_docked_warship": frozenset({"standing", "idle-1", "idle-2", "death-1", "death-2", "portrait"}),
+    "sw_unit_ob_cloning_cylinder": frozenset({"standing", "idle-1", "idle-2", "death-1", "death-2", "portrait"}),
+    "sw_unit_ob_shipyard_platform": frozenset({"standing", "idle-1", "idle-2", "death-1", "death-2", "portrait"}),
+    "sw_unit_ob_shield_generator": frozenset({"standing", "idle-1", "idle-2", "defend", "death-1", "death-2", "portrait"}),
+    "sw_unit_ob_cloaked_asteroid": frozenset({"standing", "idle-1", "idle-2", "defend", "death-1", "death-2", "portrait"}),
+}
+_WML_TAG = re.compile(r"^\s*\[(/?)([A-Za-z_][A-Za-z0-9_]*)\]\s*$")
+
+
+def _direct_unit_fields(block: str) -> dict[str, list[str]] | None:
+    """Read direct properties only after checking the unit body's nesting."""
+
+    stack: list[str] = []
+    fields: dict[str, list[str]] = {}
+    for line in block.splitlines():
+        tag = _WML_TAG.fullmatch(line)
+        if tag:
+            closing, name = tag.groups()
+            if closing:
+                if not stack or stack.pop() != name:
+                    return None
+            else:
+                stack.append(name)
+        elif not stack:
+            field = re.match(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^\n#]+)', line)
+            if field:
+                fields.setdefault(field[1], []).append(field[2].strip().strip('"'))
+    return fields if not stack else None
+
+
+def _unit_art_source(source: str, unit_id: str) -> tuple[str, dict[str, list[str]]] | None:
+    """Bind wiring to one balanced unit_type with a unique direct identity.
+
+    This is deliberately a bounded source check, not a WML preprocessor. A
+    nested variation/ability id cannot impersonate the owning unit, and a
+    neighbouring unit's images cannot complete this unit's art contract.
+    """
+
+    matches: list[tuple[str, dict[str, list[str]]]] = []
+    uncommented = "\n".join(
+        line for line in source.splitlines()
+        if not line.lstrip().startswith("#")
+        or re.match(r"\s*#(?:if\w*|else|endif|define|enddef|undef|include)\b", line)
+    )
+    for block in re.findall(r"(?s)\[unit_type\](.*?)\[/unit_type\]", uncommented):
+        fields = _direct_unit_fields(block)
+        if fields is not None and fields.get("id") == [unit_id]:
+            matches.append((block, fields))
+    return matches[0] if len(matches) == 1 else None
+
+
+def _static_wired_states(unit_id: str, block: str, fields: dict[str, list[str]]) -> frozenset[str] | None:
+    """Fail closed when the known object's passive capabilities are uncertain."""
+
+    required = _STATIC_WIRED_STATES.get(unit_id)
+    if required is None or fields.get("movement") != ["0"]:
+        return None
+    # Inheritance, variations, preprocessing and unknown macros can introduce
+    # movement or weapons that this source-only proof cannot resolve. The
+    # installed core AMLA_DEFAULT only supplies HP/healing/XP effects.
+    if re.search(r"\[\+?(?:attack|base_unit|variation|modifications|object|effect|advancement|lua|event)\]", block):
+        return None
+    if any(macro.strip() != "AMLA_DEFAULT" for macro in re.findall(r"\{([^{}]*)\}", block)):
+        return None
+    if "#" in block or "{" in re.sub(r"\{AMLA_DEFAULT\}", "", block):
+        return None
+    return required
 
 
 def _safe_slug(value: str) -> str:
@@ -62,6 +133,39 @@ def _unit_definitions(sources: dict[str, str]) -> list[dict[str, str]]:
                 "source_path": path,
             })
     return units
+
+
+def _unique_unit_definitions(sources: dict[str, str]) -> tuple[dict[str, dict[str, str]], set[str]]:
+    """Require one identity across every add-on source before certifying art.
+
+    A dictionary alone silently selects the last duplicate. Count first,
+    including definitions outside units/, then retain only globally unique
+    units owned by the art queue's unit-source directory.
+    """
+
+    counts: dict[str, int] = {}
+    uncertain = False
+    for path, source in sources.items():
+        if not path.startswith(ADDON_ROOT + "/"):
+            continue
+        for block in re.findall(r"(?s)\[unit_type\](.*?)\[/unit_type\]", source):
+            fields = _direct_unit_fields(block)
+            identities = fields.get("id", []) if fields is not None else []
+            if len(identities) != 1:
+                uncertain = True
+                continue
+            counts[identities[0]] = counts.get(identities[0], 0) + 1
+    ambiguous = {unit_id for unit_id, count in counts.items() if count != 1}
+    owned = _unit_definitions(sources)
+    if uncertain:
+        # An unresolved definition must not let a neighbouring known identity
+        # be certified by silently disappearing from the global count.
+        ambiguous.update(unit["id"] for unit in owned)
+    unique = {
+        unit["id"]: unit for unit in owned
+        if counts.get(unit["id"]) == 1 and unit["id"] not in ambiguous
+    }
+    return unique, ambiguous
 
 
 def _unit_assets(unit_id: str) -> list[dict[str, str]]:
@@ -209,10 +313,19 @@ def _completion_failures(
     source_path: str,
     source: str,
     expected: list[dict[str, str]],
+    unit_id: str,
 ) -> list[dict[str, str]]:
     """Return bounded deterministic failures for one complete art state set."""
 
     failures: list[dict[str, str]] = []
+    identity = _unit_art_source(source, unit_id)
+    wiring_source = identity[0] if identity else ""
+    static_states = _static_wired_states(unit_id, *identity) if identity else None
+    if identity is None:
+        failures.append({
+            "path": source_path,
+            "detail": f"Completed art job is not fully wired: unique unit WML identity cannot be proved for {unit_id}",
+        })
     for asset in expected:
         relative = asset["path"]
         runtime_relative = relative.removeprefix("images/")
@@ -223,9 +336,11 @@ def _completion_failures(
                 "path": source_path,
                 "detail": f"Completed art job is missing valid PNG {relative}: {png_problem}",
             })
+        if static_states is not None and asset["state"] not in static_states:
+            continue
         if not re.search(
             rf'(?m)^\s*(?:image|icon|profile)\s*=\s*"?{re.escape(runtime_relative)}',
-            source,
+            wiring_source,
         ):
             failures.append({
                 "path": source_path,
@@ -335,7 +450,7 @@ def validate_art_queue(root: Path) -> dict[str, Any]:
             "complete": 0,
         }
     sources = _config_files(root)
-    live_units = {item["id"]: item for item in _unit_definitions(sources)}
+    live_units, ambiguous_units = _unique_unit_definitions(sources)
     seen: set[str] = set()
     public_jobs: list[dict[str, Any]] = []
     pending = 0
@@ -346,6 +461,12 @@ def validate_art_queue(root: Path) -> dict[str, Any]:
         unit_id = job.get("unit_id")
         state = job.get("state")
         assets = job.get("assets")
+        if isinstance(unit_id, str) and unit_id in ambiguous_units:
+            failures.append({
+                "path": ART_MANIFEST,
+                "detail": f"Art job {unit_id} has no unique unit WML identity across add-on source files",
+            })
+            continue
         if not isinstance(unit_id, str) or unit_id not in live_units or unit_id in seen:
             failures.append({"path": ART_MANIFEST, "detail": "Art queue contains an unknown or duplicate unit"})
             continue
@@ -359,7 +480,7 @@ def validate_art_queue(root: Path) -> dict[str, Any]:
         else:
             source = sources[live_units[unit_id]["source_path"]]
             failures.extend(_completion_failures(
-                root, live_units[unit_id]["source_path"], source, expected,
+                root, live_units[unit_id]["source_path"], source, expected, unit_id,
             ))
         public_jobs.append({
             "id": job.get("id"), "unit_id": unit_id, "unit_name": job.get("unit_name"),
@@ -389,7 +510,9 @@ def art_import_contract(root: Path, job_id: str) -> dict[str, Any]:
     job = matches[0]
     unit_id = job.get("unit_id")
     sources = _config_files(root)
-    units = {unit["id"]: unit for unit in _unit_definitions(sources)}
+    units, ambiguous_units = _unique_unit_definitions(sources)
+    if isinstance(unit_id, str) and unit_id in ambiguous_units:
+        return {"pass": False, "message": f"Art job {unit_id} has no unique unit WML identity across add-on source files"}
     if not isinstance(unit_id, str) or unit_id not in units or job.get("assets") != _unit_assets(unit_id):
         return {"pass": False, "message": "Art job contract does not match a current custom unit"}
     return {
@@ -412,7 +535,7 @@ def art_import_preflight(root: Path, job_id: str) -> dict[str, Any]:
     job = contract["job"]
     unit_id = contract["unit_id"]
     source_path = contract["source_path"]
-    failures = _completion_failures(root, source_path, contract["source"], contract["assets"])
+    failures = _completion_failures(root, source_path, contract["source"], contract["assets"], unit_id)
     if failures:
         detail = " ".join(item["detail"] for item in failures[:3])
         needs_wiring = any("not fully wired" in item["detail"] for item in failures)
@@ -424,7 +547,7 @@ def art_import_preflight(root: Path, job_id: str) -> dict[str, Any]:
         }
     return {
         "pass": True,
-        "message": "All 13 original art files are valid, correctly sized, alpha-capable, and wired into unit WML. No LLM follow-up is needed.",
+        "message": "All 13 original art files are valid, correctly sized and alpha-capable; every required unit animation and portrait is wired. No LLM follow-up is needed.",
         "requires_llm": False,
         "state": job.get("state"),
     }
