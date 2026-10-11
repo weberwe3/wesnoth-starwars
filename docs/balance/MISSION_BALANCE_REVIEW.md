@@ -470,6 +470,18 @@ until the campaign ends:
 
 An AI-controlled player takes the supply convoy.
 
+### 3.18 Mission feats (2026-10-11)
+
+Four achievements reward the hard way through the new mission events
+(`SW_FEAT`, `ach.feat`):
+
+| Feat | Mission | Condition |
+| --- | --- | --- |
+| Not One Hull | Thrawn's Gambit | win without losing a warship |
+| Fleet Intact | Battle for the Fleet | win without losing a Dreadnaught |
+| Bounty Paid | The Smugglers' Council | bring down the traitor |
+| Breaking the Line | The Last Command | win by destroying both escort Star Destroyers |
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

@@ -10093,7 +10093,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/09_battle_for_the_fleet.cfg",
-      "sha256": "bebf4b9127eb29e6db53b21c23d1fa304b92a94e18fbc91d7af932b0c17ff180"
+      "sha256": "66283f7289c0a64c3e031d43a3bfef370c9dc27e811c08a7d68293f25cd91fcb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/10_honoghrs_choice.cfg",
@@ -10137,7 +10137,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/10_thrawns_gambit.cfg",
-      "sha256": "dfdcae69071f76f8b45502a38a478c996c601e711f11bac03eed15a5b98cd9c2"
+      "sha256": "8c58dfa858020e789f0250e7656591e385c73bafd03870d99296b2cc2b57c4e3"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg",
@@ -10145,7 +10145,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg",
-      "sha256": "d9b45748d6a9e50d807139ef0275ecccabade457d0d9960e8275a2299da403ba"
+      "sha256": "c521cbc75d5ac75ca0466f6c4333c4fc29dacc81f2da4106f9e6c00db86320b6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg",
@@ -10177,7 +10177,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg",
-      "sha256": "183a6886a883dda7aa8ba0da55639deef1bf2a3f49d2b5c33b7913955069973d"
+      "sha256": "845becf4ebba87a379692312d5189d426a7eafba70eb0b282a5a855f8564ef19"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/00_sw_specials.cfg",
@@ -10233,7 +10233,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "e8b7b1e820401e60ac8d79551bf8c1bc4485fcfb4f87bcd7d80229d419c23fe1"
+      "sha256": "efdde64debf629e3b7006166c1b5f521685e20f4cf575ba654d24fae3a2cdb8f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10249,7 +10249,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_achievements.lua",
-      "sha256": "760e33db2d7efb4fc046050785695c9fa49144942e19e9e522aa549f4fd46a3b"
+      "sha256": "a8aac59d274a7e5050274e64098bbe4397fface616d6ad81e73977abd52488b4"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
