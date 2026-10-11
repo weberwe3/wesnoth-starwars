@@ -1736,3 +1736,43 @@ balance or native reload of every save. Integrated training scope, static, art
 and acceptance validation passed. Publication remains incomplete: normal CI,
 protected merge and player-launcher gates must pass before release. Historical
 failure evidence remains preserved.
+
+### 2026-10-10 — Veteran progression milestone published and tested
+
+The preparation entry above remains a historical snapshot. All four official
+queue records are now `published_and_tested`, with successful exact-head CI,
+required engine checks and real player-launch checks:
+
+- PR #363 (test lessons): `cedaddccd572a39f4a7063dd7dd7a26a10d3e67b`.
+- PR #364 (fixture lifecycle): `5a19ebcc1e6c1272844cc01592fd7506bad875b5`.
+- PR #365 (native phase evidence): `42a2482aafa71a167dba3635caa1da4d26420125`.
+- PR #366 (veteran training): `90cf293a52a434c89037894ff5848f719e02df76`.
+
+Final installed-game validation at exact `90cf293a` recorded engine exit `0`,
+93 passing gameplay contracts, passing ticket acceptance and a passing real
+player launcher with expected and actual SHA
+`90cf293a52a434c89037894ff5848f719e02df76`. Authoritative records are
+`agent/runtime/codex-progression-publication-complete-20261010.json` and
+`agent/runtime/codex-veteran-training-post-publish-final.json`.
+
+Eligible terminal mobile combat units retain default AMLA (+3 maximum HP) and
+can choose weapons drill (+1 offensive weapon damage, twice) or mobility drill
+(+1 movement, once, vision unchanged). Each choice fully heals, cures poison/slow and raises
+required XP by 20%; heroes, wildlife, objective objects and structures remain
+excluded. Reviewed local proofs include 70 native training checks, 188 strict
+air checks on each baseline/training build, and all three scripted campaign
+sequences with 30 transitions and actual validated saves. Rank behavior, caps
+and dedicated native save/reload are exercised. Earlier failed evidence remains
+preserved. Scripted sequences skip dialogs, and air assertions test generated
+summary text: these results do not prove legal human victories, human balance,
+native reload of every campaign save, on-screen finale presentation or a fix
+for the engine's interactive quit lifecycle.
+
+Current source is `370d422c27d4cc632bed74ecdf70e8d21735d9d4`: Claude's subsequent
+PR #368 updates Field Manual and rank-tip text to describe the drills, with two
+text edits and generated inventory. This newer source is distinct from the
+installed-game/player-launch evidence at `90cf293a`. Next work remains the
+documented legal-route, existing-save compatibility and playability gaps;
+Claude retains mission balance and active tips/debrief/hotkey work. Preserve
+that ownership and existing achievements work when selecting the next bounded
+ticket.
