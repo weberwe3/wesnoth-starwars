@@ -10137,7 +10137,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/10_thrawns_gambit.cfg",
-      "sha256": "10147f20bfeda6580434a7389ac7ecddbb09cea8a558c4b42f36b1b560f349ba"
+      "sha256": "dfdcae69071f76f8b45502a38a478c996c601e711f11bac03eed15a5b98cd9c2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg",
@@ -10177,7 +10177,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg",
-      "sha256": "e3492cb00d34cb5dc57a3eb1a29f5baf4e5fac883c88d3b0b5ddff3c7a8642ef"
+      "sha256": "62ff454fcbdc8af167cf5dc325ef505dd6d041148ff3785965be1731edc68ddb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/00_sw_specials.cfg",

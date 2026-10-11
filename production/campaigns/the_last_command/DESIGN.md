@@ -110,3 +110,6 @@ Thrawn commits his fleet. Hold until the Grand Admiral's plan collapses.
   the retreat, or destroy the Chimaera's escorts.
 - Lose: Wedge, Luke, or Mara dies.
 - Ending: Rukh's betrayal; Pellaeon's retreat; the trilogy closes.
+- Twists: on turn 4 Thrawn's reserve TIE interceptors (2/3/4) appear in the
+  corners behind the strike force; on turn 6 Karrde's smugglers join the
+  player (3/2/2 fighters).
