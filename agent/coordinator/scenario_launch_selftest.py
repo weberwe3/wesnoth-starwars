@@ -1935,6 +1935,11 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
             evidence = validate_declared_contracts(root, [item["path"] for item in contracts])
             self.assertTrue(evidence["pass"], evidence["diagnostic"])
             self.assertEqual(len(evidence["contracts"]), 3)
+            # Re-indenting or re-wrapping the statement keeps the contract.
+            root.joinpath(contracts[2]["path"]).write_text(
+                'if ready then\n\tlocal guard =\n\t\t"literal guard"\nend\n', encoding="utf-8")
+            evidence = validate_declared_contracts(root, [contracts[2]["path"]])
+            self.assertTrue(evidence["pass"], evidence["diagnostic"])
             root.joinpath(contracts[2]["path"]).write_text("local guard = false\n", encoding="utf-8")
             evidence = validate_declared_contracts(root, [contracts[2]["path"]])
             self.assertFalse(evidence["pass"])
