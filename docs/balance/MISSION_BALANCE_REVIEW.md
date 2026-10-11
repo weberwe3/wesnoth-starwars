@@ -430,6 +430,19 @@ The bomber target rewards spreading the defence: piling every fighter on one
 warship invites the strike on the other. Honoghr's Choice already has its
 own turn 4 and turn 6 events.
 
+### 3.16 The traitor and the second boat (2026-10-11)
+
+The last two missions without mid-mission events:
+
+- **The Smugglers' Council:**
+  - On turn 5 one surviving chief, chosen at random, turns traitor inside the walls, with a smuggler veteran bodyguard from Normal.
+  - He no longer counts as a chief.
+  - Killing him pays a 30-credit bounty.
+  - This plays out Karrde's opening line that "someone at this table brought them".
+- **Jomark:**
+  - On turn 5 a second raider boat (2/3/4, with a veteran from Normal) lands beside whichever southern village has fewer of Luke's units within 3 hexes.
+  - On a tie it lands at the south-east village.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

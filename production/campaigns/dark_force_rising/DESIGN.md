@@ -72,6 +72,8 @@ On Jomark, C'baoth asks Luke to help drive off raiders who have landed on the
 lake shore. C'baoth fights beside him, too eagerly.
 - Win: defeat the raid leader, with at least two of the three villages unharmed.
 - Lose: Luke dies; two villages are taken.
+- Twist: on turn 5 a second raider boat (2/3/4) lands beside whichever
+  southern village has fewer of Luke's units nearby.
 
 ### 4. The Senator's Men
 Han and Lando, chasing a lead on the Katana fleet, are cornered by Imperial
