@@ -468,7 +468,8 @@ until the campaign ends:
 | Veteran cadre | 2 loyal units of the best current recruit at once, half-way to their next level | about 40-60 credits now, no upkeep, and they carry over |
 | Counter-intelligence | Thrawn's Doctrine capped at 75 Insight: no Coordinated fire (+10% to hit against studied types) | matters in the Thrawn missions: HTE 9-10, DFR 9, TLC 9-10 |
 
-An AI-controlled player takes the supply convoy.
+An AI-controlled player takes the supply convoy. The campaign summary after
+the finale names the decision.
 
 ### 3.18 Mission feats (2026-10-11)
 

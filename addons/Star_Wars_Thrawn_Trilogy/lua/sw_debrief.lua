@@ -111,13 +111,20 @@ function debrief.record()
 end
 
 function debrief.campaign_text(st)
-	return table.concat({
+	local lines = {
 		tostring(_ "Missions won:") .. " " .. st.missions,
 		tostring(_ "Enemies destroyed:") .. " " .. st.kills .. "    " .. tostring(_ "Units lost:") .. " " .. st.losses ..
 			"    " .. tostring(_ "Heroes withdrawn:") .. " " .. st.withdrawn,
 		tostring(_ "Bonus objectives earned:") .. " " .. st.bonus .. "    " ..
 			tostring(_ "Swift victories:") .. " " .. st.swift,
-	}, "\n")
+	}
+	-- The campaign's command decision (lua/sw_command.lua).
+	local cmd = sw_systems and sw_systems.command
+	local choice = cmd and cmd.current()
+	if choice and cmd.NAMES[choice] then
+		table.insert(lines, tostring(_ "Command decision:") .. " " .. tostring(cmd.NAMES[choice]))
+	end
+	return table.concat(lines, "\n")
 end
 
 function debrief.on_victory()
