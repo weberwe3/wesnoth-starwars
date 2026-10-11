@@ -21,6 +21,61 @@ local ca = {}
 
 local MIN_RATING = 4
 
+local function can_act(u, side)
+	return u and u.side == side and u.hitpoints > 0 and u.max_attacks > 0
+		and u.attacks_left > 0 and not u.status.petrified
+end
+
+-- Weapon:matches has no opponent/combat-context argument (LuaAPI/types#Weapon).
+-- Do not query active specials through its context-free fallback. Conditional
+-- weapon filters requiring that context remain uncertain, rather than being
+-- mistaken for an inactive disable. Plain weapon filters use the native matcher.
+local function contextual_weapon_filter(cfg)
+	if cfg.special_active or cfg.special_id_active or cfg.special_type_active or cfg.formula then return true end
+	for _i, child in ipairs(cfg) do
+		if child[1] == "experimental_filter_specials" and child[2].active then return true end
+		if contextual_weapon_filter(child[2]) then return true end
+	end
+	return false
+end
+
+local function special_unit_matches(u, other, filter, weapon)
+	if not filter then return true end
+	if not u:matches(filter, other) then return false end
+	local wf = wml.get_child(filter, "filter_weapon")
+	if wf and weapon and not contextual_weapon_filter(wf) then return weapon:matches(wf) end
+	-- The defender's eventual retaliation weapon is not known to this model.
+	-- If its unit filter matches, a weapon-filtered disable may be active.
+	return true
+end
+
+-- AbilitiesWML: active_on defaults to both, apply_to to self; filters must
+-- match before [disable] takes effect. Mirror installed 1.19.27
+-- specials_context_t::is_special_active using native SUFs, not special IDs.
+-- Its deprecated adjacent filters are normalized into filter_self by core.
+-- Look-ahead uses a private clone, never a temporary change to the map. The
+-- authoritative check repeats with the actual units after ai.move/events.
+local function disabled_on_offense(u, a, target, x, y)
+	local self = u
+	for _i, sp in ipairs(a.specials or {}) do
+		local tag, cfg = sp[1], sp[2] or {}
+		if tag == "disable" and cfg.active_on ~= "defense"
+			and cfg.apply_to ~= "opponent" and cfg.apply_to ~= "defender" then
+			if self == u and (u.x ~= x or u.y ~= y) then
+				self = u:clone()
+				self.loc = { x, y }
+			end
+			if special_unit_matches(self, target, wml.get_child(cfg, "filter_self"), a)
+				and special_unit_matches(self, target, wml.get_child(cfg, "filter_attacker"), a)
+				and special_unit_matches(target, self, wml.get_child(cfg, "filter_opponent"))
+				and special_unit_matches(target, self, wml.get_child(cfg, "filter_defender")) then
+				return true
+			end
+		end
+	end
+	return false
+end
+
 -- Accuracy terms of a weapon from its specials: range falloff per hex beyond
 -- the first (0 for guided weapons) and the aimed-shot bonus.
 local function accuracy_terms(a)
@@ -38,7 +93,7 @@ end
 local function ranged_weapons(u)
 	local out = {}
 	for i, a in ipairs(u.attacks) do
-		if a.range == "ranged" and (a.max_range or 1) >= 2 then
+		if a.range == "ranged" and (a.max_range or 1) >= 2 and (a.attacks_used or 1) <= u.attacks_left then
 			local falloff, bonus = accuracy_terms(a)
 			table.insert(out, { index = i, min = math.max(2, a.min_range or 1), max = a.max_range, attack = a,
 				falloff = falloff, bonus = bonus })
@@ -102,7 +157,7 @@ local function best_attack(side, tried)
 	if #enemies == 0 then return nil end
 	local best = nil
 	for _i, u in ipairs(sorted_units{ side = side }) do
-		local weapons = (u.attacks_left > 0 and u.hitpoints > 0 and not tried[u.id]) and ranged_weapons(u) or {}
+		local weapons = (can_act(u, side) and not tried[u.id]) and ranged_weapons(u) or {}
 		if #weapons > 0 then
 			local maxr = 0
 			for _j, w in ipairs(weapons) do maxr = math.max(maxr, w.max) end
@@ -114,7 +169,8 @@ local function best_attack(side, tried)
 				return ay < by
 			end)
 			for _k, e in ipairs(enemies) do
-				if wesnoth.map.distance_between(u.x, u.y, e.x, e.y) <= u.moves + maxr then
+				if e.hitpoints > 0 and not e.status.petrified
+					and wesnoth.map.distance_between(u.x, u.y, e.x, e.y) <= u.moves + maxr then
 					local e_loc = { x = e.x, y = e.y }
 					for _l, loc in ipairs(reach) do
 						local x, y = loc[1] or loc.x, loc[2] or loc.y
@@ -122,14 +178,15 @@ local function best_attack(side, tried)
 						if not occupant or occupant.id == u.id then
 							local d = wesnoth.map.distance_between(x, y, e.x, e.y)
 							for _m, w in ipairs(weapons) do
-								if d >= w.min and d <= w.max then
+								if d >= w.min and d <= w.max and not disabled_on_offense(u, w.attack, e, x, y) then
 									local dealt = math.min(e.hitpoints,
 										expected(w.attack, w.falloff, w.bonus, d, e, e_loc, flank_bonus(e, x, y, u)))
 									local taken = math.min(u.hitpoints, return_fire(e, u, { x = x, y = y }, d))
 									local kill = dealt >= e.hitpoints * 0.9 and e.max_hitpoints * 0.3 or 0
 									local rating = dealt + kill - taken * 0.8
 									if rating >= MIN_RATING and (best == nil or rating > best.rating) then
-										best = { rating = rating, unit = u.id, x = x, y = y, target = e.id, weapon = w.index }
+										best = { rating = rating, unit = u.id, side = side, x = x, y = y,
+											target = e.id, weapon = w.index, weapon_name = w.attack.name }
 									end
 								end
 							end
@@ -161,13 +218,23 @@ function ca:execution(cfg, data)
 	data.sw_ranged_tried[best.unit] = true
 	local u = wesnoth.units.get(best.unit)
 	local target = wesnoth.units.get(best.target)
-	if not u or not target then return end
+	if best.side ~= wesnoth.current.side or not can_act(u, best.side) or not target then return end
 	if u.x ~= best.x or u.y ~= best.y then
 		ai.move(u, best.x, best.y)
 		u = wesnoth.units.get(best.unit)
 		target = wesnoth.units.get(best.target)
-		if not u or not target or u.x ~= best.x or u.y ~= best.y then return end
 	end
+	-- Movement can trigger ambushes or WML that changes either combatant and
+	-- its weapons. Reacquired IDs alone do not authorize the cached command.
+	if not can_act(u, best.side) or not target or target.hitpoints <= 0 or target.status.petrified
+		or u.x ~= best.x or u.y ~= best.y or not wesnoth.sides.is_enemy(u.side, target.side)
+		or not target:matches{ T.filter_vision{ side = u.side, visible = true } } then return end
+	local a = u.attacks[best.weapon]
+	if not a or a.name ~= best.weapon_name or a.range ~= "ranged"
+		or (a.attacks_used or 1) > u.attacks_left then return end
+	local d = wesnoth.map.distance_between(u.x, u.y, target.x, target.y)
+	if d < math.max(2, a.min_range or 1) or d > (a.max_range or 1)
+		or disabled_on_offense(u, a, target, u.x, u.y) then return end
 	if sw_systems and sw_systems.core then
 		sw_systems.core.log("ai", u.id .. " fires from " .. best.x .. "," .. best.y .. " at " .. target.id ..
 			string.format(" (rating %.1f)", best.rating))

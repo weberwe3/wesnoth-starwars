@@ -18,6 +18,8 @@ from production.contract_store import ContractStoreError, load_contracts
 
 ADDON_ROOT = "addons/Star_Wars_Thrawn_Trilogy"
 MAX_DIAGNOSTIC_CHARS = 6000
+MAX_SOURCE_TEXT_CHARS = 4096
+MAX_SOURCE_TEXT_BYTES = 2_000_000
 # Upper bound on the first-parent add-on commits the historical retention
 # check walks (a sanity limit on the inventory, not a project limit). Raised
 # from 200 when main reached 200 add-on commits (2026-10-11): at the limit
@@ -507,10 +509,50 @@ def _matches_value(text: str, key: str, expected: str) -> bool:
     ))
 
 
-def _contract_result(contract: dict[str, Any], sources: dict[str, str]) -> dict[str, Any]:
+def _source_text_result(contract: dict[str, Any], root: Path) -> dict[str, Any]:
+    """Check a bounded Lua literal without feeding Lua into the WML scanners."""
+    contract_id, path, literal = contract["id"], contract.get("path"), contract.get("contains")
+    result = {"id": contract_id, "pass": False, "detail": "Invalid source-text contract"}
+    if (set(contract) != {"id", "kind", "path", "contains"}
+            or not isinstance(literal, str) or not literal.strip()
+            or len(literal) > MAX_SOURCE_TEXT_CHARS or "\x00" in literal):
+        return result
+    # Validate POSIX repository spelling before using platform-dependent Path.
+    # Every component is checked, including add-on ancestors, so a symlinked
+    # directory cannot redirect a valid-looking declaration outside the source.
+    if (not isinstance(path, str) or len(path) > 512
+            or not path.startswith(ADDON_ROOT + "/") or not path.endswith(".lua")
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", path)
+            or any(part in {".", ".."} for part in path.split("/"))):
+        result["detail"] = "Invalid source-text Lua path"
+        return result
+    result["paths"] = [path]
+    try:
+        source = root
+        for part in path.split("/"):
+            source = source / part
+            if source.is_symlink():
+                raise OSError("symlinked Lua source path")
+        source.resolve(strict=True).relative_to((root / ADDON_ROOT).resolve(strict=True))
+        if not source.is_file() or source.stat().st_size > MAX_SOURCE_TEXT_BYTES:
+            raise OSError("missing or oversized Lua source")
+        text = _read_text(source)
+    except (OSError, ValueError, UnicodeError):
+        result["detail"] = f"Missing, unsafe or unreadable Lua source: {path}"
+        return result
+    result["pass"] = literal in text
+    result["detail"] = "Lua source literal contract passed" if result["pass"] else "Missing Lua source literal"
+    return result
+
+
+def _contract_result(contract: dict[str, Any], sources: dict[str, str], root: Path) -> dict[str, Any]:
     contract_id, path = contract.get("id"), contract.get("path")
     if not isinstance(contract_id, str) or not re.fullmatch(r"sw-[a-z0-9-]{3,80}", contract_id):
         return {"id": str(contract_id or "unknown"), "pass": False, "detail": "Invalid contract id"}
+    if contract.get("kind") == "source-text":
+        return _source_text_result(contract, root)
+    if contract.get("kind") not in ("source-id", "event-unit"):
+        return {"id": contract_id, "pass": False, "detail": "Unknown gameplay contract kind"}
     if not isinstance(path, str) or not path.startswith(ADDON_ROOT + "/"):
         return {"id": contract_id, "pass": False, "detail": "Invalid contract path"}
     text = sources.get(path)
@@ -542,7 +584,7 @@ def _contract_result(contract: dict[str, Any], sources: dict[str, str]) -> dict[
 
 
 def validate_declared_contracts(root: Path, required_paths: list[str] | None = None) -> dict[str, Any]:
-    """Validate explicit gameplay behavior contracts against current WML."""
+    """Validate WML outcomes and bounded Lua source literals with coverage."""
     evidence: dict[str, Any] = {"schema_version": 1, "kind": "declared-gameplay-contracts", "pass": False, "checks": {"contract_file_present": False, "contract_schema_valid": False, "map_data_syntax": False, "campaign_loader": False, "campaign_dependencies": False}, "contracts": [], "diagnostic": "", "diagnostic_paths": []}
     try:
         declared, _ = load_contracts(root)
@@ -566,7 +608,7 @@ def validate_declared_contracts(root: Path, required_paths: list[str] | None = N
     dependency_evidence = validate_campaign_dependencies(root, sources)
     evidence["campaign_dependencies"] = dependency_evidence
     evidence["checks"]["campaign_dependencies"] = dependency_evidence["pass"]
-    results = [_contract_result(item, sources) for item in contracts]
+    results = [_contract_result(item, sources, root) for item in contracts]
     failed = [item for item in results if not item["pass"]]
     evidence["contracts"] = results
     required = {

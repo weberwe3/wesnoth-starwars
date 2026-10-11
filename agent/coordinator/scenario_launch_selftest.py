@@ -1883,6 +1883,139 @@ class ScenarioLaunchSelfTests(unittest.TestCase):
                 f"addons/{ADDON_ID}/other.cfg"
             ])["pass"])
 
+    def _source_text_fixture(self, root: Path) -> tuple[Path, list[dict]]:
+        addon = root / "addons" / ADDON_ID
+        tests = addon / "tests"
+        tests.mkdir(parents=True)
+        addon.joinpath("_main.cfg").write_text(
+            "[campaign]\ndefine=CAMPAIGN_FIXTURE\n[/campaign]\n"
+            "#ifdef CAMPAIGN_FIXTURE\n"
+            "[binary_path]\npath=data/add-ons/Star_Wars_Thrawn_Trilogy\n[/binary_path]\n"
+            "[+units]\n{~add-ons/Star_Wars_Thrawn_Trilogy/units}\n[/units]\n"
+            "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios}\n#endif\n",
+            encoding="utf-8",
+        )
+        addon.joinpath("scenario.cfg").write_text(
+            "[scenario]\nid=sw_fixture\n[event]\nid=sw_fixture_event\n"
+            "name=turn 2\nfirst_time_only=yes\n[/event]\n[/scenario]\n",
+            encoding="utf-8",
+        )
+        lua = addon / "lua" / "fixture.lua"
+        lua.parent.mkdir()
+        # WML-looking Lua text must never enter map/loader/dependency scanners.
+        lua.write_text('local guard = "literal guard"\n-- map_data="center"\n'
+                       '-- [unit]\ntype=sw_unit_unknown\n[/unit]\n', encoding="utf-8")
+        contracts = [
+            {"id": "sw-fixture-source", "kind": "source-id",
+             "path": f"addons/{ADDON_ID}/scenario.cfg", "expected_id": "sw_fixture"},
+            {"id": "sw-fixture-event", "kind": "event-unit",
+             "path": f"addons/{ADDON_ID}/scenario.cfg", "event_id": "sw_fixture_event",
+             "expected": {"name": "turn 2", "first_time_only": "yes"}},
+            {"id": "sw-fixture-lua", "kind": "source-text",
+             "path": f"addons/{ADDON_ID}/lua/fixture.lua", "contains": 'local guard = "literal guard"'},
+        ]
+        tests.joinpath("gameplay-contracts.json").write_text(json.dumps({
+            "schema_version": 1, "contracts": contracts,
+        }), encoding="utf-8")
+        return tests, contracts
+
+    def test_source_text_index_preserves_wml_and_excludes_lua_from_wml_scanners(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tests, contracts = self._source_text_fixture(root)
+            shards = tests / "gameplay-contracts"
+            shards.mkdir()
+            for name, entries in (("lua.json", contracts[2:]), ("wml.json", contracts[:2])):
+                shards.joinpath(name).write_text(json.dumps({
+                    "schema_version": 1, "contracts": entries,
+                }), encoding="utf-8")
+            tests.joinpath("gameplay-contracts.json").write_text(json.dumps({
+                "schema_version": 2, "files": ["lua.json", "wml.json"],
+            }), encoding="utf-8")
+            evidence = validate_declared_contracts(root, [item["path"] for item in contracts])
+            self.assertTrue(evidence["pass"], evidence["diagnostic"])
+            self.assertEqual(len(evidence["contracts"]), 3)
+            root.joinpath(contracts[2]["path"]).write_text("local guard = false\n", encoding="utf-8")
+            evidence = validate_declared_contracts(root, [contracts[2]["path"]])
+            self.assertFalse(evidence["pass"])
+            self.assertIn("Missing Lua source literal", evidence["diagnostic"])
+            self.assertEqual(sum(item["pass"] for item in evidence["contracts"]), 2)
+
+    def test_source_text_rejects_malformed_literals_fields_and_kinds(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tests, contracts = self._source_text_fixture(root)
+            invalid = [
+                {"contains": ""}, {"contains": " \n\t"}, {"contains": "x" * 4097},
+                {"contains": True}, {"contains": ["literal guard"]}, {"contains": "\x00"},
+                {"contains": "literal.*guard"}, {"extra": "ignored"},
+                {"kind": "source-regex"}, {"kind": ["source-text"]},
+            ]
+            for mutation in invalid:
+                with self.subTest(mutation=repr(mutation)[:80]):
+                    tests.joinpath("gameplay-contracts.json").write_text(json.dumps({
+                        "schema_version": 1, "contracts": [*contracts[:2], {**contracts[2], **mutation}],
+                    }), encoding="utf-8")
+                    self.assertFalse(validate_declared_contracts(root, [contracts[2]["path"]])["pass"])
+            missing = dict(contracts[2])
+            del missing["contains"]
+            tests.joinpath("gameplay-contracts.json").write_text(json.dumps({
+                "schema_version": 1, "contracts": [*contracts[:2], missing],
+            }), encoding="utf-8")
+            self.assertFalse(validate_declared_contracts(root)["pass"])
+
+    def test_source_text_rejects_unsafe_or_missing_lua_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tests, contracts = self._source_text_fixture(root)
+            prefix = f"addons/{ADDON_ID}"
+            paths = [
+                root.joinpath(contracts[2]["path"]).as_posix(), "C:/fixture.lua",
+                f"{prefix}/lua/../lua/fixture.lua", f"{prefix}/./lua/fixture.lua",
+                f"{prefix}//lua/fixture.lua", contracts[2]["path"].replace("/", "\\"),
+                f"{prefix}/lua/missing.lua", f"{prefix}/scenario.cfg",
+                "addons/other/fixture.lua", f"{prefix}/" + "x" * 512 + ".lua",
+            ]
+            for path in paths:
+                with self.subTest(path=path[:100]):
+                    tests.joinpath("gameplay-contracts.json").write_text(json.dumps({
+                        "schema_version": 1, "contracts": [*contracts[:2], {**contracts[2], "path": path}],
+                    }), encoding="utf-8")
+                    self.assertFalse(validate_declared_contracts(root)["pass"])
+
+    def test_source_text_rejects_file_and_directory_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tests, contracts = self._source_text_fixture(root)
+            source = root / contracts[2]["path"]
+            target = root / "outside.lua"
+            target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+            source.unlink()
+            try:
+                source.symlink_to(target)
+            except OSError as exc:
+                self.skipTest(f"Symlink creation unavailable: {exc.__class__.__name__}")
+            self.assertFalse(validate_declared_contracts(root)["pass"])
+            source.unlink()
+            source.parent.rmdir()
+            outside = root / "outside"
+            outside.mkdir()
+            outside.joinpath("fixture.lua").write_text(target.read_text(encoding="utf-8"), encoding="utf-8")
+            source.parent.symlink_to(outside, target_is_directory=True)
+            self.assertFalse(validate_declared_contracts(root)["pass"])
+
+    def test_source_text_missing_declaration_cannot_cover_changed_lua(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tests, contracts = self._source_text_fixture(root)
+            tests.joinpath("gameplay-contracts.json").write_text(json.dumps({
+                "schema_version": 1, "contracts": contracts[:2],
+            }), encoding="utf-8")
+            self.assertTrue(validate_declared_contracts(root)["pass"])
+            evidence = validate_declared_contracts(root, [contracts[2]["path"]])
+            self.assertFalse(evidence["pass"])
+            self.assertIn("Missing declared gameplay contract", evidence["diagnostic"])
+
     def test_historical_retention_covers_every_published_addon_ticket(self) -> None:
         evidence = validate_historical_retention(Path(__file__).resolve().parents[2])
         self.assertTrue(evidence["pass"], evidence["diagnostic"])

@@ -9682,6 +9682,34 @@
   ],
   "gameplay_contract_ids": [
     {
+      "id": "sw-ai-ranged-actor-eligibility",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
+      "id": "sw-ai-ranged-candidate-disable-filter",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
+      "id": "sw-ai-ranged-offensive-disable",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
+      "id": "sw-ai-ranged-post-move-combatants",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
+      "id": "sw-ai-ranged-post-move-range-disable",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
+      "id": "sw-ai-ranged-post-move-reacquisition",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
+      "id": "sw-ai-ranged-post-move-weapon-budget",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
       "id": "sw-dfr-scenario-sw-dfr-01-the-noghri-prisoner",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/dark-force-rising.json"
     },
@@ -10253,7 +10281,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
-      "sha256": "40cb8abaa8a53a60eb800e1fdf26e7a76bb2c7e57168f908195832c6e486b208"
+      "sha256": "3c5000489c3c9e7df7e4ff67118b37700c871daf23451dd766694de094cb4feb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_air.lua",
@@ -10317,7 +10345,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
-      "sha256": "2d0c44a9a0a2bba94f74d471fa14b3c7cb0ee1fe7bced0624cf98f32aa35cd03"
+      "sha256": "5f82b51542da5264e83fb882da9454f38b4166db30f07111d5c8d34178fa9750"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/campaign.json",
@@ -10338,6 +10366,10 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json",
       "sha256": "673178cff89c58f43d9bb998eaa49a4a297ab8b2cbff7c7bbb57c57403252c06"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json",
+      "sha256": "de22b2dfcb2a232ca813bbfbe78a60ace5f4c08d78969eb808db85cb3d62288d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json",
