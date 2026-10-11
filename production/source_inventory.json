@@ -9699,6 +9699,14 @@
   ],
   "gameplay_contract_ids": [
     {
+      "id": "sw-ai-ew-synced-turn-refresh",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
+      "id": "sw-ai-ew-tactical-actions",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
       "id": "sw-ai-ranged-actor-eligibility",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
     },
@@ -10286,7 +10294,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "6bb62ace668554f5467d4e9b78e86a2ef2da47185a86acc7798be57f5762ebeb"
+      "sha256": "d5b5a7bc7f6b50bcabd14fbb6f63a3a052203ca67a70b90a859c629769d6b3c8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10338,7 +10346,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ew.lua",
-      "sha256": "e48dec1516cb260106617f7075416c863e67c047bf7f4c4b6ba52d653bf64ed9"
+      "sha256": "7693083df90eb01905ac7164449c61c49d946c1ba60b12443e39702713b245a8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_force.lua",
@@ -10362,7 +10370,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "bd3337ce9c7690a3950272f6171aa3301f06ff190dcd2d8d845a382ccb616862"
+      "sha256": "60e20623b34543dcfac9964d815f078ea486f79c5092ce54f115e08acf48557e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua",
@@ -10394,7 +10402,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json",
-      "sha256": "ca7aa87c372c8221585ce4c45f64e6c21ccfa5259acab6d8597b99c744c52cab"
+      "sha256": "ff5f11423bbe8d1c2cd9506449f8b3bd28969a86952ea75fba04d27fa9848eac"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json",

@@ -627,3 +627,84 @@ losses below are ordinary AI outcomes, not evidence of human difficulty balance.
 | sw_tlc_08_the_throne_room | Defeat | 7 |
 | sw_tlc_09_bilbringi | Victory | 14 |
 | sw_tlc_10_the_last_command | Defeat | 7 |
+
+
+## 7. Tactical AI electronic warfare (2026-10-11)
+
+Player impact: enemy scanners choose reachable unidentified contacts and sweep
+before combat so their allies can exploit the reading. Decoy carriers use spare
+attacks to place false contacts toward threats their team actually knows.
+
+One sweep and one decoy are allowed per AI side per turn. The budget is stored
+in ordinary WML state and included in the save/replay digest. Sweep selection
+uses contact positions and identification states, scanner range and scan rating;
+it does not look up hidden targets or inspect their cloak, health or units
+undetected by the team. Decoy placement uses the same public contacts and
+visually detected enemies, stays within the existing six-direction launch list,
+and avoids adjacency to known hostiles. It does not inspect hidden occupancy.
+
+Both actions spend the unit's existing attack, and decoys spend their finite
+unit charge. A scanner cannot also fire, enter overwatch or launch a decoy that
+turn. Sweeps retain their higher emissions, existing range/strength and next-turn
+expiry; decoys retain ordinary identification, adjacency and expiry counters.
+Human-controlled sides, petrified units, unaware guards, and units with no action
+are excluded. The existing sw_ew_ai=no switch disables both behaviors. No
+starting stats, mission events, difficulty, recruit lists, air/overwatch rules,
+hero defeat/withdrawal, achievements, tips, debrief or command choices change.
+
+Validation against the candidate on Wesnoth 1.19.27:
+
+| Existing gate | Actual result |
+| --- | --- |
+| Unit generator and inventory | Passed; 56 generated unit types |
+| Systems, all suites | 566 passed; 0 failed; 0 blocking engine errors |
+| Three campaign sequences | All passed: 30 scenario transitions and 30 saved-WML validations |
+| Declared gameplay contracts | 104 passed, including both changed Lua paths |
+| Careful-player AI soak, all 30 missions | 30 technical passes; 8 victories and 22 defeats |
+
+Systems tests exercise native AI preparation before combat, reachable scanner
+selection, action costs, side budgets, incapacitated/unaware exclusions, decoy
+contacts and player sweep counterplay. Saved action budgets survive a real
+engine reload, and both existing replay tests reproduce their state digests.
+The harness retained 12 known unsynced-controller warnings; no blocking
+engine error remained. The initial petrification fixture failure and diagnostic
+are retained in validation evidence; only its incorrect attack expectation was
+repaired, with the confirmed cause recorded in the worktree lessons.
+
+Campaign sequence victories are scripted route checks, with saved-WML validation;
+they do not demonstrate native reloads or human difficulty balance. The soak
+outcomes below are ordinary AI outcomes, including every loss. Mission events,
+starting forces and balance settings are unchanged.
+
+| Mission | AI outcome | Final turn |
+| --- | --- | --- |
+| sw_hte_01_ysalamiri_harvest | Defeat | 17 |
+| sw_hte_02_ambush_at_bpfassh | Defeat | 15 |
+| sw_hte_03_adrift | Defeat | 6 |
+| sw_hte_04_shadows_of_kashyyyk | Victory | 14 |
+| sw_hte_05_prisoner_of_myrkr | Defeat | 15 |
+| sw_hte_06_raid_on_karrdes_base | Defeat | 5 |
+| sw_hte_07_the_forest_crossing | Defeat | 6 |
+| sw_hte_08_nomad_city | Victory | 15 |
+| sw_hte_09_sluis_van_shipyards | Victory | 8 |
+| sw_hte_10_thrawns_gambit | Defeat | 6 |
+| sw_dfr_01_the_noghri_prisoner | Victory | 4 |
+| sw_dfr_02_honoghr | Defeat | 4 |
+| sw_dfr_03_jomark | Defeat | 6 |
+| sw_dfr_04_the_senators_men | Defeat | 8 |
+| sw_dfr_05_peregrines_nest | Defeat | 15 |
+| sw_dfr_06_the_mad_jedi | Defeat | 6 |
+| sw_dfr_07_the_dark_force | Defeat | 10 |
+| sw_dfr_08_aboard_the_katana | Defeat | 4 |
+| sw_dfr_09_battle_for_the_fleet | Defeat | 17 |
+| sw_dfr_10_honoghrs_choice | Victory | 3 |
+| sw_tlc_01_the_siege_of_coruscant | Victory | 10 |
+| sw_tlc_02_the_smugglers_council | Defeat | 5 |
+| sw_tlc_03_the_palace_infiltrators | Victory | 9 |
+| sw_tlc_04_landfall_on_wayland | Defeat | 5 |
+| sw_tlc_05_the_natives_of_wayland | Victory | 7 |
+| sw_tlc_06_the_gates_of_tantiss | Defeat | 16 |
+| sw_tlc_07_the_cloning_vats | Defeat | 15 |
+| sw_tlc_08_the_throne_room | Defeat | 5 |
+| sw_tlc_09_bilbringi | Defeat | 17 |
+| sw_tlc_10_the_last_command | Defeat | 5 |

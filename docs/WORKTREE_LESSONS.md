@@ -1332,3 +1332,17 @@ poison stabilization, and self/enemy exclusions. **Prevention:** Verify playable
 map bounds before placing fixture units and use a complete native turn cycle
 when checking turn-start effects. Do not alter gameplay to accommodate an
 out-of-bounds or incomplete-turn fixture.
+
+### 2026-10-11 — Compare petrified guards against native available attacks
+
+**Symptom:** The intelligence fixture reported that a petrified AI scanner could
+sweep. **Confirmed cause:** Setting native petrification immediately reports
+zero available attacks, while the new check expected the unit's maximum of one.
+The diagnostic recorded status=true, attacks=0, no sweep and no saved AI budget
+before and after preparation. The AI guard had correctly refused the action.
+**Resolution:** Capture the native available-attack value after petrification and
+require it to remain unchanged, with no sweep and no saved action-budget entry.
+The repaired check passes in the existing installed-engine intelligence suite.
+**Prevention:** Check native state after applying an incapacitating status before
+asserting action preservation; do not alter gameplay to satisfy a fixture's
+incorrect assumption about available attacks.

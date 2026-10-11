@@ -12,7 +12,7 @@ local PHASE = "main"
 local STEPS = {
   "profiles", "thresholds", "jamming", "sweep", "transitions", "real_move", "decoys", "terrain_env",
   "reveal", "leakage", "menu_show_if", "doctrine_gain", "doctrine_control", "doctrine_effects", "check_doctrine_effects",
-  "integration", "counter_deployment", "force_sense", "carryover", "ai_turn", "check_ai_turn", "prepare_save",
+  "integration", "counter_deployment", "force_sense", "carryover", "ai_ew_selection", "ai_ew_guards", "ai_ew_decoys", "ai_turn", "check_ai_turn", "prepare_save",
 }
 
 local function plugin(events, context, info)
@@ -62,7 +62,7 @@ local function plugin(events, context, info)
       for _, u in ipairs(wesnoth.units.find_on_map{}) do u:erase() end
       for _, side in ipairs{ 1, 2, 3 } do wml.variables["sw_doctrine_s" .. side] = nil end
       wml.variables.sw_doctrine_sides = nil
-      for _, name in ipairs{ "sw_ew_decoys", "sw_ew_reveals", "sw_ew_terrain" } do wml.array_access.set(name, {}) end
+      for _, name in ipairs{ "sw_ew_decoys", "sw_ew_reveals", "sw_ew_terrain", "sw_ew_ai_actions" } do wml.array_access.set(name, {}) end
       wml.variables.sw_ew_settings = nil
       swt.refresh()
     end
@@ -766,11 +766,113 @@ local function plugin(events, context, info)
       check("ysalamiri sources from an earlier mission are dropped (regression)", not force.is_suppressed_at(3, 3))
     end
 
+    -- Native action costs and knowledge boundaries for the tactical AI.
+    function S.ai_ew_selection()
+      swt.clear()
+      wesnoth.sides[2].controller = "ai"
+      local far = swt.place("sw_unit_im_star_destroyer", 2, 21, 12, "sw_test_ew_far",
+        { sensor = 0, sensor_range = 1, scan = 9, ecm = 0, decoys = 0 })
+      local near = swt.place("sw_unit_im_star_destroyer", 2, 18, 4, "sw_test_ew_near",
+        { sensor = 6, sensor_range = 8, scan = 6, ecm = 0, eccm = 0, decoys = 0 })
+      local alternate = swt.place("sw_unit_im_star_destroyer", 2, 18, 8, "sw_test_ew_alternate",
+        { sensor = 1, sensor_range = 8, scan = 3, ecm = 0, decoys = 0 })
+      local target = swt.place("sw_unit_nr_commando", 1, 12, 4, "sw_test_ew_target",
+        { cloak = 4, signature = 1, sensor = 0, sensor_range = 0 })
+      swt.refresh()
+      check("AI sweep starts with only an unknown, hidden contact", swt.state(IMP, target.id) == ew.CONTACT and not swt.seen(target.id, 2))
+      check("AI chooses the reachable scanner instead of an earlier distant ID", ew.ai_prepare_turn(2) and near.variables.sw_ew_sweep == true and far.variables.sw_ew_sweep ~= true)
+      check("chosen AI scanner commits its native attack", near.attacks_left == 0 and far.attacks_left == far.max_attacks)
+      check("AI sweep really identifies and reveals the cloaked target", swt.state(IMP, target.id) == ew.FULL and swt.seen(target.id, 2))
+      -- Renew uncertainty after the first action; another scanner can reach it.
+      ew.set_profile(target, { cloak = 8 })
+      swt.refresh()
+      check("renewed contact uncertainty remains known to the AI", swt.state(IMP, target.id) >= ew.CONTACT and swt.state(IMP, target.id) < ew.FULL)
+      check("repeated preparation cannot spend a second scanner's attack", not ew.ai_prepare_turn(2) and alternate.attacks_left == alternate.max_attacks)
+      near:erase()
+      ew.on_side_turn_end(2)
+      check("losing the first scanner does not grant another sweep", alternate.variables.sw_ew_sweep ~= true and alternate.attacks_left == alternate.max_attacks)
+      wesnoth.sides[2].controller = "human"
+    end
+
+    function S.ai_ew_guards()
+      swt.clear()
+      local scanner = swt.place("sw_unit_im_star_destroyer", 2, 18, 4, "sw_test_ew_guard",
+        { sensor = 6, sensor_range = 8, scan = 6, ecm = 0, decoys = 0 })
+      local target = swt.place("sw_unit_nr_commando", 1, 12, 4, "sw_test_ew_guard_target",
+        { cloak = 4, signature = 1, sensor = 0, sensor_range = 0 })
+      swt.refresh()
+      ew.on_side_turn_end(2)
+      check("human-controlled sides do not receive automatic EW actions", not ew.ai_prepare_turn(2) and scanner.attacks_left == scanner.max_attacks)
+      wesnoth.sides[2].controller = "ai"
+      wml.variables.sw_ew_ai = false
+      ew.on_side_turn_end(2)
+      check("existing AI EW disable switch blocks both phases", not ew.ai_prepare_turn(2) and scanner.attacks_left == scanner.max_attacks)
+      wml.variables.sw_ew_ai = nil
+      scanner.status.petrified = true
+      -- Native petrification reports zero available attacks immediately.
+      -- Preserve that native value instead of expecting the unit's maximum.
+      local petrified_attacks = scanner.attacks_left
+      ew.on_side_turn_end(2)
+      check("petrified AI scanners cannot sweep", not ew.ai_prepare_turn(2)
+        and scanner.attacks_left == petrified_attacks and scanner.variables.sw_ew_sweep ~= true
+        and #wml.array_access.get("sw_ew_ai_actions") == 0)
+      scanner.status.petrified = false
+      scanner.variables.sw_alert_state = "unaware"
+      ew.on_side_turn_end(2)
+      check("unaware guards cannot reveal the player by sweeping", not ew.ai_prepare_turn(2) and scanner.attacks_left == scanner.max_attacks)
+      scanner.variables.sw_alert_state = nil
+      scanner.attacks_left = 0
+      check("AI sensor preparation cannot restore a spent attack", not ew.ai_prepare_turn(2) and scanner.attacks_left == 0)
+      scanner.attacks_left = scanner.max_attacks
+      scanner:to_map(21, 12)
+      ew.set_profile(scanner, { sensor_range = 1 })
+      swt.place("sw_unit_im_star_destroyer", 2, 18, 4, "sw_test_ew_listener",
+        { sensor = 6, sensor_range = 8, scan = 0, ecm = 0, decoys = 0 })
+      swt.refresh()
+      check("known contact beyond boosted range does not waste a scan", swt.state(IMP, target.id) == ew.CONTACT and not ew.ai_prepare_turn(2) and scanner.attacks_left == scanner.max_attacks)
+      target:erase()
+      swt.refresh()
+      ew.on_side_turn_end(2)
+      check("AI with no known threat spends no EW action", not ew.ai_prepare_turn(2) and scanner.attacks_left == scanner.max_attacks and #wml.array_access.get("sw_ew_decoys") == 0)
+      wesnoth.sides[2].controller = "human"
+    end
+
+    function S.ai_ew_decoys()
+      swt.clear()
+      wesnoth.sides[2].controller = "ai"
+      local launch = swt.place("sw_unit_im_star_destroyer", 2, 18, 4, "sw_test_ew_decoy_a",
+        { sensor = 6, sensor_range = 8, scan = 0, ecm = 0, decoys = 2 })
+      local spare = swt.place("sw_unit_im_star_destroyer", 2, 18, 8, "sw_test_ew_decoy_b",
+        { sensor = 6, sensor_range = 8, scan = 0, ecm = 0, decoys = 2 })
+      swt.place("sw_unit_nr_trooper", 1, 12, 4, "sw_test_ew_decoy_threat")
+      local observer = swt.observer("sw_test_ew_decoy_observer", 4, 6, { sensor = 4, scan = 8 })
+      swt.refresh()
+      ew.on_side_turn_end(2)
+      local decoys = wml.array_access.get("sw_ew_decoys")
+      local decoy = decoys[1]
+      check("AI deploys a single decoy toward a known threat", #decoys == 1 and decoy and decoy.side == 2)
+      check("AI decoy spends an attack and a finite unit charge", launch.attacks_left == 0 and tonumber(launch.variables.sw_ew_decoys_used) == 1 and spare.attacks_left == spare.max_attacks)
+      check("AI decoy stays in the ordinary on-board launch list", decoy and wesnoth.current.map:on_board(decoy.x, decoy.y) and wesnoth.map.distance_between(launch.x, launch.y, decoy.x, decoy.y) == ew.settings().decoy_range)
+      check("AI avoids instantly exposing the decoy beside known hostiles", decoy and wesnoth.map.distance_between(12, 4, decoy.x, decoy.y) > 1 and wesnoth.map.distance_between(observer.x, observer.y, decoy.x, decoy.y) > 1)
+      check("the AI false contact is actually shown to the player", decoy and ew.record(REP, decoy.id) ~= nil and #swt.items_at(decoy.x, decoy.y) > 0)
+      ew.on_side_turn_end(2)
+      check("repeated end callbacks cannot buy another decoy", #wml.array_access.get("sw_ew_decoys") == 1 and spare.variables.sw_ew_decoys_used == nil)
+      ew.sweep(observer)
+      check("a player sensor sweep exposes the AI decoy", decoy and ew.record(REP, decoy.id) == nil and #swt.items_at(decoy.x, decoy.y) == 0)
+      wesnoth.sides[2].controller = "human"
+    end
+
     -- AI safety: side 2 plays a turn with EW units and doctrine enabled.
     function S.ai_turn()
       swt.clear()
       doctrine.enable(2)
       swt.place("sw_unit_im_star_destroyer", 2, 18, 4, "t_ai_sd")
+      local far = swt.place("sw_unit_im_star_destroyer", 2, 21, 2, "sw_test_ew_ai_far",
+        { sensor = 0, sensor_range = 1, scan = 9, decoys = 0 })
+      far.max_moves, far.moves = 0, 0
+      wesnoth.game_events.add{ name = "ai turn", id = "sw_test_ew_before_combat", first_time_only = true, action = function()
+        if wesnoth.current.side == 2 then swt.mem.ai_started_sweeping = u("t_ai_sd").variables.sw_ew_sweep == true end
+      end }
       swt.place("sw_unit_im_stormtrooper", 2, 21, 12, "t_ai_st")
       swt.place("sw_unit_nr_trooper", 1, 4, 12, "t_p1")
       -- A cloaked side-1 unit at contact range of the Star Destroyer's sensors.
@@ -786,6 +888,8 @@ local function plugin(events, context, info)
         swt.mem.ai_pre)
       local sd = u("t_ai_sd")
       check("AI capital ship swept for the unidentified contact", sd ~= nil and sd.variables.sw_ew_sweep == true)
+      check("native AI turn received the sweep before combat", swt.mem.ai_started_sweeping == true)
+      check("native AI turn leaves the distant scanner available", u("sw_test_ew_ai_far").variables.sw_ew_sweep ~= true)
       local d = doctrine.load(2)
       check("AI doctrine state stays valid", d ~= nil and type(d.insight) == "number" and d.insight >= 0 and d.insight <= d.cap)
       wesnoth.sides[2].controller = "human"
@@ -800,6 +904,8 @@ local function plugin(events, context, info)
       doctrine.enable(1)
       doctrine.seed(1, 33, { T.pattern{ category = "move", key = "ne", count = 5 } })
       swt.refresh()
+      wml.variables.sw_test_ew_saved_turn = wesnoth.current.turn
+      wml.array_access.set("sw_ew_ai_actions", { { side = 2, turn = wesnoth.current.turn, swept = true, decoy = true } })
       wml.variables.swt_digest = sw_systems.digest()
       std_print("SW_TEST: state prepared for save " .. wml.variables.swt_digest)
     end
@@ -817,6 +923,8 @@ local function plugin(events, context, info)
       local d = doctrine.load(1)
       check("save/load: doctrine Insight and patterns kept", d and d.insight == 33 and doctrine.pattern(d, "move") == "ne")
       check("save/load: EW ready after reload", ew.is_ready())
+      local budgets = wml.array_access.get("sw_ew_ai_actions")
+      check("save/load: spent AI sweep and decoy budgets are retained", #budgets == 1 and budgets[1].side == 2 and budgets[1].turn == wml.variables.sw_test_ew_saved_turn and budgets[1].swept == true and budgets[1].decoy == true)
     end
 
     function swt.step(name)

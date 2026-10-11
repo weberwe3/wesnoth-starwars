@@ -33,6 +33,7 @@
 -- State: WML arrays sw_ew_contacts (the pictures), sw_ew_decoys,
 -- sw_ew_reveals, container sw_ew_settings, array sw_ew_terrain; unit
 -- variables sw_ew_sweep, sw_ew_fired, sw_ew_decoys_used, sw_ew_<field>.
+-- sw_ew_ai_actions records each side's per-turn sweep/decoy budget for saves and replays.
 -- All mission state is stamped with the scenario id (sw_ew_scenario).
 
 local T = wml.tag
@@ -110,7 +111,7 @@ end
 function ew.ensure_scenario()
 	local id = core.scenario_id()
 	if wml.variables.sw_ew_scenario ~= id then
-		for _i, name in ipairs{ "sw_ew_contacts", "sw_ew_decoys", "sw_ew_reveals", "sw_ew_terrain" } do
+		for _i, name in ipairs{ "sw_ew_contacts", "sw_ew_decoys", "sw_ew_reveals", "sw_ew_terrain", "sw_ew_ai_actions" } do
 			wml.array_access.set(name, {})
 		end
 		wml.variables.sw_ew_settings = nil
@@ -742,20 +743,130 @@ function ew.on_attack()
 	end
 end
 
--- AI sides sweep at the end of their turn when a unit kept its attack and
--- the team holds unidentified contacts (so their overwatch can see them).
--- Disable with sw_ew_ai=no.
-function ew.on_side_turn_end(side)
-	if wml.variables.sw_ew_ai == false or wml.variables.sw_ew_ai == "no" then return end
-	if wesnoth.sides[side].controller ~= "ai" then return end
-	local team = core.team_key(side)
-	local unidentified = false
-	for _i, rec in ipairs(ew.contacts_of(team)) do
-		if core.number(rec.state, 0) < ew.FULL then unidentified = true end
+-- AI knowledge is the team's sensor picture plus units genuinely visible to
+-- its side. Partial contacts provide positions/states only: never look up a
+-- hidden target by ID, its cloak, HP, or the enemy team's sensor picture.
+local function ai_enabled(side)
+	return wml.variables.sw_ew_ai ~= false and wml.variables.sw_ew_ai ~= "no"
+		and wesnoth.sides[side] and wesnoth.sides[side].controller == "ai"
+end
+
+local function ai_can_act(u)
+	return u.hitpoints > 0 and u.max_attacks > 0 and u.attacks_left > 0
+		and not u.status.petrified and u.variables.sw_alert_state ~= "unaware"
+end
+
+local function ai_state(side)
+	for _i, st in ipairs(wml.array_access.get("sw_ew_ai_actions")) do
+		if core.number(st.side, 0) == side and core.number(st.turn, 0) == wesnoth.current.turn then return st end
 	end
-	if not unidentified then return end
+	return { side = side, turn = wesnoth.current.turn, swept = false, decoy = false }
+end
+
+local function save_ai_state(st)
+	local rows = {}
+	for _i, row in ipairs(wml.array_access.get("sw_ew_ai_actions")) do
+		if core.number(row.side, 0) ~= st.side then table.insert(rows, row) end
+	end
+	table.insert(rows, st)
+	table.sort(rows, function(a, b) return core.number(a.side, 0) < core.number(b.side, 0) end)
+	wml.array_access.set("sw_ew_ai_actions", rows)
+end
+
+local function best_ai_scanner(side)
+	local contacts, settings = ew.contacts_of(core.team_key(side)), ew.settings()
+	local best, best_score = nil, 0
 	for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ side = side })) do
-		if ew.can_sweep(u) then ew.sweep(u) return end
+		if ai_can_act(u) and ew.can_sweep(u) then
+			local p, score = ew.profile(u), 0
+			for _j, rec in ipairs(contacts) do
+				local state = core.number(rec.state, ew.NONE)
+				if not rec.visual and state >= ew.CONTACT and state < ew.FULL then
+					local d = wesnoth.map.distance_between(u.x, u.y, rec.x, rec.y)
+					if p.sensor_range > 0 and d <= p.sensor_range + settings.sweep_range then
+						-- Stronger scanners, nearby contacts and less certain readings
+						-- are worth more; equal scores keep the earlier sorted unit ID.
+						score = score + p.scan * (ew.FULL - state) / (d + 1)
+					end
+				end
+			end
+			if score > best_score then best, best_score = u, score end
+		end
+	end
+	return best
+end
+
+-- Called by the synced turn-refresh event after actions and the sensor picture
+-- refresh, not by "ai turn" (EventWML: that event does not run during replay).
+-- Spend one scanner's attack before combat so its team can act on the reading.
+function ew.ai_prepare_turn(side)
+	if not ai_enabled(side) then return false end
+	local st = ai_state(side)
+	if st.swept then return false end
+	local scanner = best_ai_scanner(side)
+	if scanner and ew.sweep(scanner) then
+		st.swept = true
+		save_ai_state(st)
+		return true
+	end
+	return false
+end
+
+local function ai_known_positions(side)
+	local positions, seen = {}, {}
+	local function add(x, y)
+		local key = x .. ":" .. y
+		if not seen[key] then seen[key] = true table.insert(positions, { x = x, y = y }) end
+	end
+	for _i, rec in ipairs(ew.contacts_of(core.team_key(side))) do
+		if core.number(rec.state, ew.NONE) >= ew.CONTACT then add(rec.x, rec.y) end
+	end
+	for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{
+		T.filter_side{ T.enemy_of{ side = side } }, T.filter_vision{ side = side, visible = true } })) do
+		if u.hitpoints > 0 then add(u.x, u.y) end
+	end
+	table.sort(positions, function(a, b) if a.x ~= b.x then return a.x < b.x end return a.y < b.y end)
+	return positions
+end
+
+local function best_ai_decoy(side)
+	local positions, settings = ai_known_positions(side), ew.settings()
+	local best, best_score = nil, 0
+	for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{ side = side })) do
+		if ai_can_act(u) and ew.can_decoy(u) then
+			local range = ew.profile(u).sensor_range + settings.decoy_range
+			-- The ordinary launch list checks map bounds, not occupancy. Checking
+			-- an unseen occupant here would let the AI infer a hidden unit.
+			for _j, hex in ipairs(ew.decoy_hexes(u)) do
+				local score, adjacent = 0, false
+				for _k, known in ipairs(positions) do
+					local from = wesnoth.map.distance_between(u.x, u.y, known.x, known.y)
+					local to = wesnoth.map.distance_between(hex.x, hex.y, known.x, known.y)
+					if to <= 1 then adjacent = true end -- instantly exposed by a known hostile
+					if from <= range then score = score + (range + 1 - from) / (to + 1) end
+				end
+				if not adjacent and score > best_score then
+					best, best_score = { unit = u, x = hex.x, y = hex.y }, score
+				end
+			end
+		end
+	end
+	return best
+end
+
+-- A scanner that became useful after movement can use its spare attack here.
+-- Then one decoy carrier can create a false contact toward a known threat.
+-- Both use the ordinary actions, costs and counterplay; the saved side budget
+-- prevents repeated callbacks or a lost scanner from buying extra actions.
+function ew.on_side_turn_end(side)
+	if not ai_enabled(side) then return end
+	ew.ai_prepare_turn(side)
+	local st = ai_state(side)
+	if st.decoy then return end
+	local decoy = best_ai_decoy(side)
+	if decoy and ew.deploy_decoy(decoy.unit, decoy.x, decoy.y) then
+		st.decoy = true
+		save_ai_state(st)
 	end
 end
 
