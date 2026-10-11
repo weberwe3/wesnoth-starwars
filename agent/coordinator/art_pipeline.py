@@ -361,6 +361,13 @@ def unit_ids_for_source_paths(root: Path, paths: list[str]) -> set[str]:
     """Return units declared by candidate-changed unit source files."""
 
     changed = set(paths)
+    # _unit_definitions owns only units/ CFGs. Avoid enumerating every add-on
+    # directory (including sprite trees on mounted worktrees) when none changed.
+    if not any(
+        path.startswith(ADDON_ROOT + "/units/") and path.casefold().endswith(".cfg")
+        for path in changed
+    ):
+        return set()
     return {
         unit["id"] for unit in _unit_definitions(_config_files(root))
         if unit["source_path"] in changed

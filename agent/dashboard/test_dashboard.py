@@ -45,11 +45,64 @@ import approval_queue  # noqa: E402
 from approval_queue import ApprovalQueue, QueueError  # noqa: E402
 import art_import_production  # noqa: E402
 from art_import_production import ArtImportProduction, public_status, update_status  # noqa: E402
+import art_pipeline  # noqa: E402
 from art_pipeline import public_art_queue  # noqa: E402
 from server import create_server, public_state  # noqa: E402
 
 
 class ArtImportProductionTests(unittest.TestCase):
+    def test_non_unit_candidates_do_not_enumerate_addon_sources(self) -> None:
+        candidates = [
+            [],
+            ["docs/WORKTREE_LESSONS.md"],
+            ["production/linux_engine/legal_route/legal_route_plugin.lua"],
+            [art_pipeline.ADDON_ROOT + "/scenarios/02_ambush_at_bpfassh.cfg"],
+            [art_pipeline.ADDON_ROOT + "/units/README.md"],
+            [art_pipeline.ADDON_ROOT + "/units-other/example.cfg"],
+        ]
+        with mock.patch.object(art_pipeline, "_config_files", side_effect=OSError("scan unavailable")) as scan:
+            for paths in candidates:
+                with self.subTest(paths=paths):
+                    self.assertEqual(art_pipeline.unit_ids_for_source_paths(ROOT, paths), set())
+        scan.assert_not_called()
+
+    def test_unit_candidates_keep_complete_source_scan_and_exact_selection(self) -> None:
+        changed = art_pipeline.ADDON_ROOT + "/units/nested/changed.cfg"
+        untouched = art_pipeline.ADDON_ROOT + "/units/untouched.cfg"
+        deleted = art_pipeline.ADDON_ROOT + "/units/deleted.cfg"
+        scenario = art_pipeline.ADDON_ROOT + "/scenarios/example.cfg"
+        sources = {
+            changed: "[unit_type]\nid=sw_unit_changed\n[/unit_type]\n",
+            untouched: "[unit_type]\nid=sw_unit_untouched\n[/unit_type]\n",
+            scenario: "[unit_type]\nid=sw_unit_non_unit_directory\n[/unit_type]\n",
+        }
+        with mock.patch.object(art_pipeline, "_config_files", return_value=sources) as scan:
+            self.assertEqual(
+                art_pipeline.unit_ids_for_source_paths(ROOT, [changed, scenario, "docs/WORKTREE_LESSONS.md"]),
+                {"sw_unit_changed"},
+            )
+            scan.assert_called_once_with(ROOT)
+            scan.reset_mock()
+            self.assertEqual(art_pipeline.unit_ids_for_source_paths(ROOT, [deleted]), set())
+            scan.assert_called_once_with(ROOT)
+
+    def test_unit_candidate_extensions_preserve_platform_glob_selection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            units = root / art_pipeline.ADDON_ROOT / "units"
+            units.mkdir(parents=True)
+            for filename, unit_id in (("lower.cfg", "sw_unit_lower"), ("upper.CFG", "sw_unit_upper")):
+                source = units / filename
+                source.write_text(f"[unit_type]\nid={unit_id}\n[/unit_type]\n", encoding="utf-8")
+                relative = source.relative_to(root).as_posix()
+                # Windows rglob includes .CFG; Linux keeps its case-sensitive
+                # result. The shortcut must preserve the old parser on both.
+                expected = {
+                    unit["id"] for unit in art_pipeline._unit_definitions(art_pipeline._config_files(root))
+                    if unit["source_path"] == relative
+                }
+                self.assertEqual(art_pipeline.unit_ids_for_source_paths(root, [relative]), expected)
+
     def test_art_import_builds_bounded_wml_acceptance_proof(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             production = ArtImportProduction(Path(directory), lambda *args, **kwargs: None)
