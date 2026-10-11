@@ -1164,3 +1164,40 @@ The actual extracted planner passes hold, progress, attack-first and escort
 regressions. **Prevention:** Preserve native request/outcome and death records;
 require a fresh full route result before claiming completion. These focused
 checks do not prove a human win, balance, or survival across random outcomes.
+
+### 2026-10-11 — Verify attack userdata properties on the installed engine
+
+**Symptom:** The mission-two route stopped with an unknown `offense_weight`
+property on attack userdata. **Confirmed cause:** Installed
+`lua_unit_attacks.cpp` exposes `attack_weight`; reading an unknown property
+throws before an `or` fallback can run. **Resolution:** Use `attack_weight`.
+Later native runs executed ordinary ranged attacks without that Lua error,
+then failed from Leia's actual combat death. **Prevention:** Check installed
+userdata getters before selecting a property, and retain both the corrected
+command evidence and the later failure. A working attack query does not prove
+a completed escape, combat balance, or survival across random outcomes.
+
+### 2026-10-11 — Emit terminal failure from the actual defeat callback
+
+**Symptom:** Leia's native defeat was observed but the fixture kept waiting
+until its external timeout. **Confirmed cause:** Its unsuccessful completion
+marker depended on another movable `Game` planning slice, which defeat no
+longer supplies. **Resolution:** Emit `done(false)` inside the read-only defeat
+callback. The next native defeat emitted that marker and the runner stopped
+its owned engine promptly while retaining a FAIL verdict. **Prevention:**
+Require unsuccessful terminal evidence for defeat without another planning
+slice. Runner-owned termination after `done(false)` never establishes success.
+
+### 2026-10-11 — Join dropped frames to production death and tree history
+
+**Symptom:** A frame carrier died before delivery, leaving its original fixture
+assignment unfinished. **Confirmed cause:** The production death handler
+regrows the frame at its original tree; `sw_frame_tree` is zero-based while the
+fixture tree ledger is one-based. **Resolution:** Observe the actual actor and
+frame before the handler, then observe its exact ready tree after the handler,
+with unchanged delivery count. Native evidence shows tree index 3 regrowing
+fixture tree 4 at (23,15), followed by ordinary reassignment and re-harvest.
+**Prevention:** Join every drop to its distinct recorded death, prior harvest,
+exact tree coordinates and subsequent living carrier. Do not infer completion
+from a reset alone: the preserved route later lost a second frame carrier and
+failed its then-current one-drop bound before the fourth delivery.
