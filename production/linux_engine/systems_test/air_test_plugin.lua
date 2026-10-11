@@ -560,6 +560,18 @@ local function plugin(events, context, info)
       check("recruiting: paid in full", side.gold == gold + 40 and wml.variables.sw_bonus_bank == nil, side.gold - gold)
       side.gold, side.recruit = gold, recruit
       wml.variables.sw_bonus = nil
+      -- Mission debrief (lua/sw_debrief.lua): counts and the bonus line.
+      local db = sw_systems.debrief
+      wml.variables.sw_debrief = nil
+      db.on_withdraw("t_bo_han")
+      wml.variables.sw_bonus_result = { scenario = wesnoth.scenario.id, state = "complete", gold = 40 }
+      local text = db.text()
+      check("debrief counts a withdrawal", text:find("Heroes withdrawn: 1") ~= nil, text)
+      check("debrief reports the bonus objective", text:find("Bonus objective complete: 40") ~= nil, text)
+      check("debrief shows the turn", text:find("Mission complete on turn") ~= nil or (wesnoth.scenario.turns or -1) <= 0)
+      wml.variables.sw_bonus_result = { scenario = wesnoth.scenario.id, state = "missed", gold = 40 }
+      check("debrief reports a missed bonus", db.text():find("Bonus objective missed") ~= nil)
+      wml.variables.sw_bonus_result, wml.variables.sw_debrief = nil, nil
     end
 
     function S.flanking()

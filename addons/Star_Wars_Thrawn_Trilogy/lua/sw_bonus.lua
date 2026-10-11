@@ -97,17 +97,17 @@ end
 -- victory: bank the reward.
 function bonus.on_victory()
 	local cfg = bonus.config()
-	if not cfg or not bonus.met(cfg) then return end
+	if not cfg or cfg.paid then return end
+	local met = bonus.met(cfg)
 	local gold = tonumber(cfg.gold) or 0
-	wml.variables.sw_bonus_bank = (tonumber(wml.variables.sw_bonus_bank) or 0) + gold
-	cfg.failed = true   -- paid once
-	save(cfg)
-	if wesnoth.sides[bonus.PLAYER_SIDE].controller == "human" then
-		wesnoth.wml_actions.message{ speaker = "narrator", image = "misc/sw-objective.png",
-			caption = _ "Bonus objective complete",
-			message = tostring(_ "Bonus objective complete! ") .. gold ..
-				tostring(_ " credits will be added in full at the start of the next mission where you can recruit.") }
+	if met then
+		wml.variables.sw_bonus_bank = (tonumber(wml.variables.sw_bonus_bank) or 0) + gold
 	end
+	cfg.paid = true      -- decided once
+	cfg.failed = true
+	save(cfg)
+	-- Reported by the mission debrief (lua/sw_debrief.lua).
+	wml.variables.sw_bonus_result = { scenario = wesnoth.scenario.id, state = met and "complete" or "missed", gold = gold }
 end
 
 local function can_recruit(side)
