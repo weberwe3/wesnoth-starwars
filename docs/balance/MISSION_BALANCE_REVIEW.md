@@ -400,6 +400,14 @@ Update: on Easy and Normal it starts on the Imperial landing apron at (2,9),
 Measured (AI soak, careful player, Normal, 3 runs): Han fell on turns 4 and
 6 (before: turns 2-3), and the third run lasted to turn 16 without losing him.
 
+### 3.13 Mission debrief (2026-10-11)
+
+A mission used to end with no word on how it went. At victory the player now
+sees one debrief (`lua/sw_debrief.lua`): the turn it was won on, enemies
+destroyed, units lost, heroes withdrawn, the bonus objective's result (it
+replaces the separate bonus message) and, where it applies, the Hit and Run
+target ("win by turn N for a swift victory"). Shown only to the human player.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and
