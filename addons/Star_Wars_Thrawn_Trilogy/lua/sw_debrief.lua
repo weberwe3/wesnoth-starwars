@@ -3,8 +3,10 @@
 -- At victory the player sees how the mission went: turns used, enemies
 -- destroyed, units lost, heroes withdrawn, the bonus objective (lua/sw_bonus.lua)
 -- and the Hit and Run target (lua/sw_achievements.lua). One message, shown only
--- to the human player; counting is the only state (sw_debrief, stamped with
--- the scenario id).
+-- to the human player. Each victory also adds to the campaign's totals, shown
+-- as a campaign summary after the finale. Counting is the only state:
+-- sw_debrief (this mission, stamped with the scenario id) and
+-- sw_campaign_stats (carried between the campaign's missions).
 
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
@@ -73,11 +75,62 @@ function debrief.text()
 	return table.concat(lines, "\n")
 end
 
+local function swift_now()
+	local ach = sw_systems and sw_systems.achievements
+	local turns = wesnoth.scenario.turns
+	return ach and ach.campaign_of(wesnoth.scenario.id) and not ach.HOLD_OUT[wesnoth.scenario.id]
+		and turns and turns > 0 and ach.is_swift(wesnoth.current.turn, turns)
+end
+
+local STAT_KEYS = { "missions", "kills", "losses", "withdrawn", "bonus", "swift" }
+
+function debrief.campaign_stats()
+	local raw = wml.variables.sw_campaign_stats
+	local st = { last = type(raw) == "table" and raw.last or "" }
+	for _i, k in ipairs(STAT_KEYS) do st[k] = type(raw) == "table" and tonumber(raw[k]) or 0 end
+	return st
+end
+
+-- Add this mission to the campaign totals, once.
+function debrief.record()
+	local st = debrief.campaign_stats()
+	if st.last == wesnoth.scenario.id then return st end
+	local d = load()
+	local result = wml.variables.sw_bonus_result
+	st.last = wesnoth.scenario.id
+	st.missions = st.missions + 1
+	st.kills = st.kills + d.kills
+	st.losses = st.losses + d.losses
+	st.withdrawn = st.withdrawn + d.withdrawn
+	if type(result) == "table" and result.scenario == wesnoth.scenario.id and result.state == "complete" then
+		st.bonus = st.bonus + 1
+	end
+	if swift_now() then st.swift = st.swift + 1 end
+	wml.variables.sw_campaign_stats = st
+	return st
+end
+
+function debrief.campaign_text(st)
+	return table.concat({
+		tostring(_ "Missions won:") .. " " .. st.missions,
+		tostring(_ "Enemies destroyed:") .. " " .. st.kills .. "    " .. tostring(_ "Units lost:") .. " " .. st.losses ..
+			"    " .. tostring(_ "Heroes withdrawn:") .. " " .. st.withdrawn,
+		tostring(_ "Bonus objectives earned:") .. " " .. st.bonus .. "    " ..
+			tostring(_ "Swift victories:") .. " " .. st.swift,
+	}, "\n")
+end
+
 function debrief.on_victory()
+	local st = debrief.record()
 	local side = wesnoth.sides[debrief.PLAYER_SIDE]
 	if not side or side.controller ~= "human" then return end
 	wesnoth.wml_actions.message{ speaker = "narrator", image = "misc/sw-objective.png",
 		caption = _ "Mission debrief", message = debrief.text() }
+	local ach = sw_systems and sw_systems.achievements
+	if ach and ach.FINALS[wesnoth.scenario.id] then
+		wesnoth.wml_actions.message{ speaker = "narrator", image = "misc/sw-objective.png",
+			caption = _ "Campaign summary", message = debrief.campaign_text(st) }
+	end
 end
 
 return debrief

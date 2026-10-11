@@ -309,7 +309,12 @@ player cannot judge them.
 
 - **The Last Command and The Throne Room** remain the hardest missions for the
   AI player. They are campaign finales: they should be the hardest, but a
-  person should confirm they are winnable on Normal.
+  person should confirm they are winnable on Normal. Soak 2026-10-11 (careful
+  AI player, Normal, 3 runs each): no early losses -- The Throne Room lost
+  Luke to Luuke on turns 5-6 (the duel; the AI player never uses Mara's
+  ysalamiri to strip the clone's powers), The Last Command lost Wedge to TIEs
+  on turns 5-6 (the AI player flies its leader into the fighting). Left
+  unchanged pending a human playtest.
 - **Raid on Karrde's Base** sometimes lost Han, the leader, on turn 2–3 to the
   starting AT-ST when he was pushed forward. Addressed in 3.12 (the walker
   starts further back on Easy and Normal); a person should confirm it.
@@ -407,6 +412,9 @@ sees one debrief (`lua/sw_debrief.lua`): the turn it was won on, enemies
 destroyed, units lost, heroes withdrawn, the bonus objective's result (it
 replaces the separate bonus message) and, where it applies, the Hit and Run
 target ("win by turn N for a swift victory"). Shown only to the human player.
+After each campaign's finale a **campaign summary** follows: missions won,
+enemies destroyed, units lost, heroes withdrawn, bonus objectives earned and
+swift victories (`sw_campaign_stats`, carried between the missions).
 
 ## 4. Measured results
 
