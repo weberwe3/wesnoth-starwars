@@ -1517,6 +1517,62 @@ def rank_variation(u: dict, n: int) -> str:
                       "    hide_help=yes", "    inherit=no"] + body + ["[/variation]"])
 
 
+def veteran_training_attacks(u: dict) -> list[str]:
+    """Names the drill may improve; aimed variants are separate native weapons.
+
+    Objective pieces and wildlife never learn military drills. Sentient alien
+    soldiers and mobile combat droids/craft use the same rules as infantry.
+    """
+    if (u["advances"] is not None or u["hero"] or u["mp"] <= 0
+            or u["id"].startswith(("sw_hero_", "sw_unit_ob_", "sw_unit_wl_"))
+            or u["mt"] == "sw_beast"
+            or u["race"] in {"sw_vornskr", "wolf", "falcon", "gryphon", "monster"}):
+        return []
+    return list(dict.fromkeys(a["name"] for a in expanded_attacks(u)
+                             if a["damage"] > 0 and a["number"] > 0
+                             and a.get("attack_weight", 1) > 0
+                             and a["name"] != "deflection"))
+
+
+def veteran_training_wml(u: dict) -> str:
+    """Native capped choices, also emitted by the full rank-variation rebuild.
+
+    UnitTypeWML max_times/strict_amla enforce eligibility. EffectWML movement
+    also changes vision by default, so preserve it explicitly for this drill.
+    """
+    names = veteran_training_attacks(u)
+    if not names:
+        return ""
+    return "\n".join([
+        "[advancement]",
+        "    id=sw_amla_weapons_drill",
+        "    strict_amla=yes",
+        "    max_times=2",
+        '    description= _ "Weapons drill: +1 weapon damage, full heal and cure, Max XP +20% (up to 2 drills)"',
+        '    image="icons/crossed_sword_and_hammer.png"',
+        "    [effect]",
+        "        apply_to=attack",
+        f"        name={','.join(names)}",
+        "        increase_damage=1",
+        "    [/effect]",
+        "    {AMLA_EFFECTS_HEAL_AND_RAISE_XP}",
+        "[/advancement]",
+        "[advancement]",
+        "    id=sw_amla_mobility_drill",
+        "    strict_amla=yes",
+        "    max_times=1",
+        '    description= _ "Mobility drill: +1 movement, vision unchanged, full heal and cure, Max XP +20% (once)"',
+        '    image="icons/boots_elven.png"',
+        "    [effect]",
+        "        apply_to=movement",
+        "        increase=1",
+        "        apply_to_vision=no",
+        "    [/effect]",
+        "    {AMLA_EFFECTS_HEAL_AND_RAISE_XP}",
+        "[/advancement]",
+    ])
+
+
 def unit_wml(u: dict, with_variations: bool = True) -> str:
     s = slug(u["id"])
     lines = [
@@ -1543,6 +1599,9 @@ def unit_wml(u: dict, with_variations: bool = True) -> str:
     ]
     if u["advances"] is None:
         lines.append("    {AMLA_DEFAULT}")
+        training = veteran_training_wml(u)
+        if training:
+            lines.append(indent(training, 4))
     if u["zoc"] == "no":
         lines.append("    zoc=no")
     if u["hero"]:
