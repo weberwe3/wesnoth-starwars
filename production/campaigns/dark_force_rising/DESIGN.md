@@ -106,6 +106,8 @@ Inside the flagship, clone stormtroopers fight for every corridor.
 Thrawn arrives in force. Escort the captured Dreadnaughts to the jump point.
 - Win: two Dreadnaughts reach the eastern edge.
 - Lose: all captured Dreadnaughts are destroyed; Wedge, Luke, or Bel Iblis dies.
+- Twists: on turn 5 TIEs (2/3/4) sit on the jump point; on turn 8 Bel Iblis's
+  fighters (3/2/1) join the player.
 
 ### 10. Honoghr's Choice
 Leia returns to Honoghr with the truth about the decontamination droids. An
