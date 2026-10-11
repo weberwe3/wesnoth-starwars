@@ -17,15 +17,18 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
 import time
+import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -116,7 +119,23 @@ FATAL_LOG = re.compile(
     r"Invalid WML|unknown unit type|could not find|Failed to load|traceback)",
     re.IGNORECASE,
 )
+NATIVE_FATAL_LOG = re.compile(
+    r"(Fatal glibc error|\bassertion\b.*\bfailed\b|\bterminate called\b|"
+    r"\bAborted\b|\bsegmentation fault\b|\bdouble free\b|\bcorrupted (?:size|double-linked)\b)",
+    re.IGNORECASE,
+)
+FATAL_DIAGNOSTIC = re.compile(
+    r"^\s*(?:(?:\[\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.,]\d+)?(?:Z|[+-]\d{2}:?\d{2})?\]|"
+    r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.,]\d+)?(?:Z|[+-]\d{2}:?\d{2})?|"
+    r"\d{8}\s+\d{2}:\d{2}:\d{2}(?:[.,]\d+)?|"
+    r"\[?\d{2}:\d{2}:\d{2}(?:[.,]\d+)?\]?)\s+)?fatal(?:\s+error)?\s*:\s*\S",
+    re.IGNORECASE,
+)
 DEFAULT_ENGINE = Path.home() / "opt/bin/wesnoth-linux"
+# The runner targets Linux; retain portable importability for Windows static
+# checks, where Python does not expose SIGKILL.
+_TERMINATE_EXIT = -int(signal.SIGTERM)
+_KILL_EXIT = -int(getattr(signal, "SIGKILL", 9))
 
 
 def sha256_tree(root: Path) -> str:
@@ -152,11 +171,12 @@ def parse(log_text: str) -> dict:
         elif current is not None and body.startswith("side1_gold "):
             current["side1_gold"] = int(body.split()[1])
         elif current is not None and body.startswith("saved "):
-            current["saved"] = True
+            current["saved"] = body == "saved " + current["id"]
         elif current is not None and body.startswith("win script ran "):
-            current["won"] = True
+            current["won"] = body == "win script ran " + current["id"]
         elif current is not None and body.startswith("left "):
-            current["left"] = body
+            if body.startswith("left " + current["id"] + " via "):
+                current["left"] = body
         elif current is not None and body.startswith("route "):
             current.setdefault("routes", []).append(body[len("route "):])
         else:
@@ -181,6 +201,8 @@ def evaluate(parsed: dict, log_text: str, expected: list[str] | None = None) -> 
             failures.append(f"{s['id']}: in-game save not confirmed")
         if not s["won"]:
             failures.append(f"{s['id']}: win script did not run")
+        if not s["left"]:
+            failures.append(f"{s['id']}: scenario transition not confirmed")
     for s in parsed["scenarios"]:
         for route in s.get("routes", []):
             match = re.search(r"turns=(\S+) limit=(\S+)", route)
@@ -198,9 +220,241 @@ def evaluate(parsed: dict, log_text: str, expected: list[str] | None = None) -> 
     if "done" not in parsed["notes"]:
         failures.append("probe did not finish")
     fatal = sorted({line.strip() for line in log_text.splitlines()
-                    if FATAL_LOG.search(line) and "could not open image" not in line})
+                    if NATIVE_FATAL_LOG.search(line) or FATAL_DIAGNOSTIC.search(line)
+                    or (FATAL_LOG.search(line) and "could not open image" not in line)})
     failures.extend(f"log: {line}"[:300] for line in fatal[:20])
     return failures
+
+
+def _serialized_value_fragment(fragment: str, quoted: bool, continuation: bool) -> tuple[bool, bool] | None:
+    """Recognize engine-written quoted/translated string concatenation.
+
+    A trailing + requires another quoted term, possibly translated (_"...").
+    Multiline terms retain their quoted state. Ordinary serialized scalar
+    properties remain single-line; a bare continuation is never accepted.
+    """
+
+    index = 0
+    after_term = False
+    initial_scalar = not quoted and not continuation
+    while True:
+        if quoted:
+            while index < len(fragment):
+                char = fragment[index]
+                if char == '"':
+                    if index + 1 < len(fragment) and fragment[index + 1] == '"':
+                        index += 2  # Native WML serializes embedded quotes twice.
+                        continue
+                    quoted = False
+                    index += 1
+                    after_term = True
+                    break
+                index += 1
+            if quoted:
+                return True, False
+        while index < len(fragment) and fragment[index].isspace():
+            index += 1
+        if after_term:
+            if index == len(fragment):
+                return False, False
+            if fragment[index] != "+":
+                return None
+            index += 1
+            continuation = True
+            after_term = False
+            initial_scalar = False
+            continue
+        if index == len(fragment):
+            return False, continuation
+        if fragment[index] == "_":
+            index += 1
+            while index < len(fragment) and fragment[index].isspace():
+                index += 1
+        if index < len(fragment) and fragment[index] == '"':
+            quoted = True
+            continuation = False
+            initial_scalar = False
+            index += 1
+            continue
+        if initial_scalar and not re.search(r'["+]', fragment):
+            return False, False
+        return None
+
+
+def _engine_save_diagnostic(path: Path, campaign: str, scenario: str) -> str | None:
+    """Check the observed 1.19 gzip/WML snapshot without certifying a reload.
+
+    Actual saves contain a top-level campaign, one snapshot with the scenario
+    id, map data and side children, plus serialized replay state. Gzip reading
+    verifies its checksum; bounded UTF-8 and balanced WML reject empty or
+    arbitrary compressed data. Installed-engine reload remains a separate test.
+    """
+
+    limit = 64 * 1024 * 1024
+    try:
+        if path.is_symlink() or not path.is_file() or not 0 < path.stat().st_size <= limit:
+            return "save is missing, empty, indirect or oversized"
+        with gzip.open(path, "rb") as stream:
+            payload = stream.read(limit + 1)
+        if not payload or len(payload) > limit:
+            return "decoded save is empty or oversized"
+        text = payload.decode("utf-8")
+    except (OSError, EOFError, UnicodeError, zlib.error) as error:
+        return f"save is not readable gzip UTF-8 WML ({type(error).__name__})"
+    stack: list[str] = []
+    quoted = False
+    continuation = False
+    campaigns: list[str] = []
+    snapshot_ids: list[str] = []
+    snapshots = 0
+    sides = 0
+    has_map = False
+    for line in text.splitlines():
+        fragment = line
+        if not quoted and not continuation:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            tag = re.fullmatch(r"\[(/?)([A-Za-z_][A-Za-z0-9_]*)\]", stripped)
+            if tag:
+                closing, name = tag.groups()
+                if closing:
+                    if not stack or stack.pop() != name:
+                        return "save WML has unbalanced tags"
+                else:
+                    if not stack and name == "snapshot":
+                        snapshots += 1
+                    if stack == ["snapshot"] and name == "side":
+                        sides += 1
+                    stack.append(name)
+                continue
+            field = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$", stripped)
+            if field is None:
+                return "save WML has an invalid property"
+            name, value = field.groups()
+            fragment = value
+            value = value.strip().strip('"')
+            if not stack and name == "campaign":
+                campaigns.append(value)
+            if stack == ["snapshot"]:
+                if name == "id":
+                    snapshot_ids.append(value)
+                if name == "map_data" and value:
+                    has_map = True
+        state = _serialized_value_fragment(fragment, quoted, continuation)
+        if state is None:
+            return "save WML has an invalid string or concatenation"
+        quoted, continuation = state
+    if quoted or continuation or stack:
+        return "save WML has an unfinished string, concatenation or tag"
+    if campaigns != [campaign]:
+        return "save campaign identity does not match the requested campaign"
+    if snapshots != 1 or snapshot_ids != [scenario]:
+        return "save snapshot identity does not match the expected scenario"
+    if not has_map or sides < 1:
+        return "save snapshot is missing map or side state"
+    return None
+
+
+def validate_sequence_saves(userdata: Path, campaign: str, expected: list[str]) -> dict:
+    """Bind every scenario to its exact save in the engine's sync directory."""
+
+    directory = userdata / "sync" / "saves"
+    checks = []
+    for scenario in expected:
+        filename = f"sw_seq_{scenario}.gz"
+        path = directory / filename
+        indirect = (userdata / "sync").is_symlink() or directory.is_symlink()
+        problem = "authoritative save directory is indirect" if indirect else _engine_save_diagnostic(path, campaign, scenario)
+        checks.append({"scenario": scenario, "filename": filename, "path": str(path),
+                       "pass": problem is None, "diagnostic": problem or "readable gzip WML with matching campaign and scenario snapshot"})
+    failures = [f"{item['scenario']}: {item['filename']}: {item['diagnostic']}" for item in checks if not item["pass"]]
+    return {"directory": str(directory), "checks": checks, "failures": failures,
+            "saves": sorted(p.name for p in directory.glob("sw_seq_*.gz") if p.is_file()), "pass": not failures}
+
+
+def _read_phase_logs(userdata: Path, stdout_path: Path, stderr_path: Path) -> tuple[str, str, str]:
+    engine_log = "\n".join(p.read_text(encoding="utf-8", errors="replace")
+                           for p in sorted((userdata / "logs").glob("*.log")))
+    return (engine_log, stdout_path.read_text(encoding="utf-8", errors="replace"),
+            stderr_path.read_text(encoding="utf-8", errors="replace"))
+
+
+def process_failures(phase: dict) -> list[str]:
+    """Certify only healthy exit or the exact runner-owned post-done signal."""
+
+    failures = []
+    if phase["timed_out"]:
+        failures.append(f"engine timed out after {phase['timeout_seconds']}s")
+    if not phase["done"]:
+        failures.append("engine phase missing exact SW_SEQ: done marker")
+    code = phase["exit_code"]
+    owned = phase["done_before_stop"] and not phase["timed_out"] and (
+        (phase["terminate_requested"] and not phase["kill_requested"] and code == _TERMINATE_EXIT)
+        or (phase["terminate_requested"] and phase["kill_requested"] and code == _KILL_EXIT)
+    )
+    if code != 0 and not owned:
+        failures.append(f"engine exited unexpectedly with code {code}")
+    if phase["terminate_requested"] and not phase["done_before_stop"] and not phase["timed_out"]:
+        failures.append("engine stop was not authorized by completion")
+    return failures
+
+
+def _run_engine_phase(command: list[str], workdir: Path, userdata: Path, environment: dict,
+                      timeout: float, *, completion_grace: float = 3.0,
+                      poll_interval: float = 0.25, stop_timeout: float = 20.0) -> dict:
+    """Capture the owned child and every output stream through final shutdown."""
+
+    stdout_path, stderr_path = workdir / "engine.stdout.log", workdir / "engine.stderr.log"
+    timed_out = False
+    done = False
+    done_before_stop = False
+    terminate_requested = False
+    kill_requested = False
+    deadline = time.monotonic() + timeout
+    with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open("w", encoding="utf-8") as stderr:
+        process = subprocess.Popen(command, cwd=workdir, env=environment, stdout=stdout, stderr=stderr)
+        while process.poll() is None:
+            streams = _read_phase_logs(userdata, stdout_path, stderr_path)
+            done = any("SW_SEQ: done" == line.strip() for stream in streams for line in stream.splitlines())
+            if done:
+                # Observe spontaneous failures after completion before sending
+                # any signal. A done marker never converts an abort to success.
+                try:
+                    process.wait(timeout=completion_grace)
+                except subprocess.TimeoutExpired:
+                    pass
+                break
+            if time.monotonic() >= deadline:
+                timed_out = True
+                break
+            time.sleep(poll_interval)
+        if process.poll() is None:
+            done_before_stop = done
+            terminate_requested = True
+            process.terminate()
+            try:
+                process.wait(timeout=stop_timeout)
+            except subprocess.TimeoutExpired:
+                kill_requested = True
+                process.kill()
+                process.wait()
+        exit_code = process.wait()
+    engine_log, stdout_text, stderr_text = _read_phase_logs(userdata, stdout_path, stderr_path)
+    done = any("SW_SEQ: done" == line.strip() for stream in (engine_log, stdout_text, stderr_text)
+               for line in stream.splitlines())
+    # std_print normally appears in engine logs. Select one marker stream so
+    # duplicate stdout capture cannot create duplicate campaign visits.
+    plugin_log = next((stream for stream in (engine_log, stdout_text, stderr_text)
+                       if any(line.startswith("SW_SEQ: ") for line in stream.splitlines())), "")
+    return {
+        "pid": process.pid, "exit_code": exit_code, "timed_out": timed_out,
+        "timeout_seconds": timeout, "done": done, "done_before_stop": done_before_stop,
+        "terminate_requested": terminate_requested, "kill_requested": kill_requested,
+        "stdout_path": str(stdout_path), "stderr_path": str(stderr_path),
+        "stdout_tail": stdout_text[-4000:], "stderr_tail": stderr_text[-4000:],
+        "log_text": plugin_log, "all_output": "\n".join((engine_log, stdout_text, stderr_text)),
+    }
 
 
 def run_sequence(addon: Path, engine: Path, workdir: Path, timeout: int = 2400,
@@ -226,37 +480,13 @@ def run_sequence(addon: Path, engine: Path, workdir: Path, timeout: int = 2400,
     environment = dict(os.environ)
     environment.setdefault("SDL_VIDEO_DRIVER", "offscreen")
     environment.setdefault("SDL_AUDIO_DRIVER", "dummy")
-    # The engine does not always exit after the plugin calls exit; once the
-    # probe reports "done" (or the deadline passes) the process is ended.
-    process = subprocess.Popen(
+    phase = _run_engine_phase(
         [str(engine), "--resolution", "1024x768", "--userdata-dir", str(userdata), "--plugin", str(plugin)],
-        cwd=workdir, env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        workdir, userdata, environment, timeout,
     )
-    timed_out = False
-    deadline = started + timeout
-    while process.poll() is None:
-        if any("SW_SEQ: done" in p.read_text(encoding="utf-8", errors="replace")
-               for p in (userdata / "logs").glob("*.log")):
-            time.sleep(3)
-            break
-        if time.time() > deadline:
-            timed_out = True
-            break
-        time.sleep(2)
-    if process.poll() is None:
-        process.terminate()
-        try:
-            process.wait(timeout=20)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
-    exit_code: int | None = None if timed_out else process.returncode
-    log_text = "\n".join(p.read_text(encoding="utf-8", errors="replace")
-                         for p in sorted((userdata / "logs").glob("*.log")))
-    parsed = parse(log_text)
-    failures = evaluate(parsed, log_text, expected)
-    if timed_out:
-        failures.append(f"engine timed out after {timeout}s")
+    parsed = parse(phase["log_text"])
+    save_evidence = validate_sequence_saves(userdata, campaign, expected)
+    failures = evaluate(parsed, phase["all_output"], expected) + process_failures(phase) + save_evidence["failures"]
     return {
         "schema_version": 1,
         "kind": "linux-gui-campaign-sequence",
@@ -264,10 +494,12 @@ def run_sequence(addon: Path, engine: Path, workdir: Path, timeout: int = 2400,
         "engine": str(engine),
         "addon_sha256": sha256_tree(addon),
         "plugin_sha256": hashlib.sha256(PLUGIN.read_bytes()).hexdigest(),
-        "exit_code": exit_code,
+        "exit_code": phase["exit_code"],
+        "process": {key: value for key, value in phase.items() if key not in {"log_text", "all_output"}},
         "seconds": round(time.time() - started, 1),
         "scenarios": parsed["scenarios"],
-        "saves": sorted(p.name for p in userdata.rglob("sw_seq_*.gz")),
+        "saves": save_evidence["saves"],
+        "save_validation": save_evidence,
         "failures": failures,
         "pass": not failures,
     }
