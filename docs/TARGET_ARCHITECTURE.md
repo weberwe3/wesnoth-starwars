@@ -280,7 +280,8 @@ manufacture changes or repeatedly spend code-repair attempts.
 
 Keep the existing two-attempt recovery limit per processing run. Retryable
 worktree failures resume after the cooldown without a consecutive-failure
-ceiling; their recorded counts remain diagnostic history. Provider failures
+ceiling; their recorded counts remain diagnostic history. The cooldown doubles with each consecutive failure, up to one hour, and every
+fifth consecutive failure raises a needs-attention event; automation stays on. Provider failures
 remain distinct from content defects. The scheduler
 must not work around a mandatory global pause by selecting an unrelated ticket.
 An unavailable asset capability may leave an ordinary dependency blocked while
