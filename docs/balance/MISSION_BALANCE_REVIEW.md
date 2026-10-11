@@ -416,6 +416,25 @@ After each campaign's finale a **campaign summary** follows: missions won,
 enemies destroyed, units lost, heroes withdrawn, bonus objectives earned and
 swift victories (`sw_campaign_stats`, carried between the missions).
 
+### 3.14 Specializations at each rank (2026-10-11)
+
+Owner goal: depth. A unit past its top level used to take the default AMLA
+(+3 HP) every time. Now the player chooses at each rank
+(`gen_hte_units.py SPECIALIZATIONS`), every choice keeping the default's
+full heal and +20% experience to the next:
+
+| Family | Option (max) | Option (max) | Option (max) |
+|---|---|---|---|
+| Soldiers, Noghri, smugglers | Marksman training: +1 ranged damage (3) | Field armor: +4 HP, +5% blade/pierce/impact/fire (3) | Light kit: +1 movement (1) |
+| Wookiees | Berserker: +1 melee damage (3) | Thick hide: +6 HP (3) | Tracker: +1 movement (1) |
+| Force users | Lightsaber forms: +1 melee damage (3) | Jedi resilience: +4 HP, +5% resistances (3) | Fleet of foot: +1 movement (1) |
+| Starfighters | Ace pilot: +1 ranged damage (3) | Reinforced hull: +6 HP (3) | Engine tuning: +1 movement (1) |
+
+A damage bonus for a range the unit lacks applies to its other range.
+Walkers, capital ships, creatures and natives keep the default AMLA. Movement
+is limited to one because it compounds across every turn. The AI picks
+among the same options. Ranks (insignia, rank designs) count any of them.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

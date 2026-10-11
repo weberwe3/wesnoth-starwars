@@ -1517,6 +1517,80 @@ def rank_variation(u: dict, n: int) -> str:
                       "    hide_help=yes", "    inherit=no"] + body + ["[/variation]"])
 
 
+# Specializations (owner goal 2026-10-11: depth). A unit past its top level
+# chooses how it improves at each rank instead of the default AMLA (+3 HP).
+# Every choice keeps the default's full heal and +20% experience to the next.
+# Two options stack up to three times, the movement option once (it compounds).
+# Families by movement type; others (walkers, capital ships, creatures,
+# natives) keep the default. Ranks (lua/sw_rank.lua) count any advancement.
+SPECIALIZATIONS = {
+    "infantry": [
+        ("sw_spec_marksman", "Marksman training", "+1 damage with ranged weapons", "attacks/sw-blaster-rifle.png", 3,
+         [("attack", "range=ranged", "increase_damage=1")]),
+        ("sw_spec_armor", "Field armor", "+4 max HP, +5% resistance to blade, pierce, impact and fire",
+         "icons/breastplate.png", 3, [("hitpoints", "", "increase_total=4"), ("resistance", "", "")]),
+        ("sw_spec_mobility", "Light kit", "+1 movement", "icons/boots_elven.png", 1, [("movement", "", "increase=1")]),
+    ],
+    "wookiee": [
+        ("sw_spec_berserker", "Berserker", "+1 damage with melee weapons", "attacks/fist-troll.png", 3,
+         [("attack", "range=melee", "increase_damage=1")]),
+        ("sw_spec_hide", "Thick hide", "+6 max HP", "icons/armor_leather.png", 3, [("hitpoints", "", "increase_total=6")]),
+        ("sw_spec_tracker", "Tracker", "+1 movement", "icons/boots_elven.png", 1, [("movement", "", "increase=1")]),
+    ],
+    "jedi": [
+        ("sw_spec_forms", "Lightsaber forms", "+1 damage with melee weapons", "attacks/sw-lightsaber-blue.png", 3,
+         [("attack", "range=melee", "increase_damage=1")]),
+        ("sw_spec_resilience", "Jedi resilience", "+4 max HP, +5% resistance to blade, pierce, impact and fire",
+         "icons/shield_polished.png", 3, [("hitpoints", "", "increase_total=4"), ("resistance", "", "")]),
+        ("sw_spec_fleet", "Fleet of foot", "+1 movement", "icons/boots_elven.png", 1, [("movement", "", "increase=1")]),
+    ],
+    "starfighter": [
+        ("sw_spec_ace", "Ace pilot", "+1 damage with ranged weapons", "attacks/sw-laser-cannon.png", 3,
+         [("attack", "range=ranged", "increase_damage=1")]),
+        ("sw_spec_hull", "Reinforced hull", "+6 max HP", "icons/shield_steel.png", 3, [("hitpoints", "", "increase_total=6")]),
+        ("sw_spec_engines", "Engine tuning", "+1 movement", "icons/boots_elven.png", 1, [("movement", "", "increase=1")]),
+    ],
+}
+SPEC_FAMILY = {"sw_infantry": "infantry", "sw_armored_trooper": "infantry", "sw_noghri": "infantry",
+               "sw_wookiee": "wookiee", "sw_jedi": "jedi", "sw_starfighter": "starfighter"}
+
+
+def amla_wml(u: dict) -> str:
+    family = SPEC_FAMILY.get(u["mt"])
+    if family is None or u["id"] in STATIONARY:
+        return "{AMLA_DEFAULT}"
+    ranged = any(a["range"] == "ranged" for a in u["attacks"])
+    melee = any(a["range"] == "melee" for a in u["attacks"])
+    out = []
+    for aid, name, desc, icon, times, effects in SPECIALIZATIONS[family]:
+        # A weapon bonus for a range the unit lacks goes to the range it has.
+        if any(k == "attack" for k, _f, _v in effects):
+            rng = "ranged" if "range=ranged" in effects[0][1] else "melee"
+            if (rng == "ranged" and not ranged) or (rng == "melee" and not melee):
+                rng = "melee" if rng == "ranged" else "ranged"
+                desc = f"+1 damage with {rng} weapons"
+                effects = [("attack", f"range={rng}", "increase_damage=1")]
+        body = [f"    strict_amla=yes", f"    max_times={times}", f"    id={aid}",
+                f"    description= _ \"{name}: {desc}\"", f"    image=\"{icon}\""]
+        for kind, filt, value in effects:
+            body.append("    [effect]")
+            body.append(f"        apply_to={kind}")
+            if kind == "resistance":
+                # replace=no adds to the damage-taken percentage (movetype.cpp
+                # resistances::merge), so 5% more resistance is -5.
+                body += ["        replace=no", "        [resistance]",
+                         "            blade=-5", "            pierce=-5", "            impact=-5", "            fire=-5",
+                         "        [/resistance]"]
+            else:
+                if filt:
+                    body.append(f"        {filt}")
+                body.append(f"        {value}")
+            body.append("    [/effect]")
+        body.append("    {AMLA_EFFECTS_HEAL_AND_RAISE_XP}")
+        out.append("[advancement]\n" + "\n".join(body) + "\n[/advancement]")
+    return "\n".join(out)
+
+
 def unit_wml(u: dict, with_variations: bool = True) -> str:
     s = slug(u["id"])
     lines = [
@@ -1542,7 +1616,7 @@ def unit_wml(u: dict, with_variations: bool = True) -> str:
         f"    description= _ \"{u['desc']}\"",
     ]
     if u["advances"] is None:
-        lines.append("    {AMLA_DEFAULT}")
+        lines.append(indent(amla_wml(u), 4))
     if u["zoc"] == "no":
         lines.append("    zoc=no")
     if u["hero"]:

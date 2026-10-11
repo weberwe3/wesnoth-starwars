@@ -81,7 +81,13 @@ local function plugin(events, context, info)
     function swt.level_up(id)
       local u = wesnoth.units.get(id)
       u.experience = u.max_experience
+      -- A human side is offered the specialization choice in a dialog; an AI
+      -- side picks one itself, so the test advances under AI control.
+      local side = wesnoth.sides[u.side]
+      local controller = side.controller
+      side.controller = "ai"
       u:advance(false, true)
+      side.controller = controller
       return wesnoth.units.get(id)
     end
     function swt.objects(u, id)
@@ -146,8 +152,37 @@ local function plugin(events, context, info)
       check("each AMLA raises the rank, capped at III", table.concat(shown, ",") == "1,2,3,3", table.concat(shown, ","))
       check("rank III insignia drawn last", tostring(c.image_mods):find("sw%-rank%-republic%-3") ~= nil)
       check("one insignia object per rank shown (none after the cap)", swt.objects(c, "sw_rank_insignia") == 3, swt.objects(c, "sw_rank_insignia"))
-      check("AMLA stats unchanged from the default: +3 max HP each, full heal",
-        c.max_hitpoints == hp0 + 12 and c.hitpoints == c.max_hitpoints, hp0 .. " -> " .. c.max_hitpoints)
+      -- Specializations (gen_hte_units.py SPECIALIZATIONS): each AMLA is one
+      -- of the commando's three, with the default's full heal.
+      local picked = {}
+      local mods = wml.get_child(c.__cfg, "modifications")
+      for _i, a in ipairs(mods and wml.child_array(mods, "advancement") or {}) do picked[a.id] = (picked[a.id] or 0) + 1 end
+      local known = 0
+      for id, n in pairs(picked) do
+        if id == "sw_spec_marksman" or id == "sw_spec_armor" or (id == "sw_spec_mobility" and n <= 1) then known = known + n end
+      end
+      check("each AMLA is a specialization (light kit at most once), full heal",
+        known == 4 and c.hitpoints == c.max_hitpoints, known)
+      -- Each specialization does what it says.
+      local function adv(type, aid)
+        for _i, a in ipairs(wml.child_array(wesnoth.unit_types[type].__cfg, "advancement")) do
+          if a.id == aid then return a end
+        end
+      end
+      local t = swt.place("sw_unit_nr_commando", 1, 3, 9, "t_spec")
+      local res0, hp0s = t:resistance_against("blade"), t.max_hitpoints
+      t:add_modification("advancement", adv("sw_unit_nr_commando", "sw_spec_armor"))
+      t = wesnoth.units.get("t_spec")
+      check("field armor: +5% blade resistance and +4 max HP",
+        t:resistance_against("blade") == res0 + 5 and t.max_hitpoints == hp0s + 4,
+        res0 .. "->" .. t:resistance_against("blade") .. " hp " .. hp0s .. "->" .. t.max_hitpoints)
+      local function ranged_damage(x)
+        for _i, a in ipairs(x.attacks) do if a.range == "ranged" then return a.damage end end
+      end
+      local d0 = ranged_damage(t)
+      t:add_modification("advancement", adv("sw_unit_nr_commando", "sw_spec_marksman"))
+      t = wesnoth.units.get("t_spec")
+      check("marksman training: +1 ranged damage", ranged_damage(t) == d0 + 1, d0 .. "->" .. ranged_damage(t))
       check("rank shown in Tactical status", rank.status_line(c) and rank.status_line(c):find("3/3") ~= nil)
       swt.place("sw_hero_han", 1, 5, 5, "t_han")
       check("heroes rank up too (Han: chevrons)", tostring(swt.level_up("t_han").image_mods):find("sw%-rank%-republic%-1") ~= nil)
