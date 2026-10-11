@@ -80,9 +80,34 @@ local function plugin(events, context, info)
     end
     function swt.level_up(id)
       local u = wesnoth.units.get(id)
+      local sw_options
+      if #u.advances_to == 0 then
+        -- Rank checks expect the core +3 HP AMLA. Native advancement opens a
+        -- dialog for multiple choices even with animate=false (installed
+        -- actions/advancement.cpp); offer its unchanged default config only.
+        sw_options = u.advancements
+        local sw_default
+        for _i, sw_option in ipairs(sw_options) do
+          if sw_option.id == "amla_default" then sw_default = sw_option; break end
+        end
+        assert(sw_default, "rank fixture requires native amla_default for " .. id)
+        u.advancements = { sw_default }
+      end
       u.experience = u.max_experience
       u:advance(false, true)
-      return wesnoth.units.get(id)
+      u = assert(wesnoth.units.get(id), "native advancement lost rank-test unit " .. id)
+      if sw_options then
+        -- Restore terminal choices after rank variations rebuild the unit.
+        -- Never restore a pre-promotion list onto the newly promoted type.
+        u.advancements = sw_options
+        local sw_restored = u.advancements
+        local sw_complete = #sw_restored == #sw_options
+        for sw_index, sw_option in ipairs(sw_options) do
+          sw_complete = sw_complete and sw_restored[sw_index].id == sw_option.id
+        end
+        swt.check("rank fixture restores every terminal AMLA option (" .. id .. ")", sw_complete)
+      end
+      return u
     end
     function swt.objects(u, id)
       local n = 0
@@ -988,10 +1013,10 @@ local function plugin(events, context, info)
     std_print("SW_TEST: saved")
   end
   std_print("SW_TEST: done")
-  while info.name ~= "titlescreen" do
-    if info.name == "Dialog" then context.skip_dialog{} elseif context.quit then context.quit{} end
+  -- Checks and the real save are complete. The runner owns this disposable
+  -- process and stops it after observing done; interactive quit is not tested.
+  while true do
     events, context, info = wesnoth.plugin.next_slice()
   end
-  context.exit{ code = 0 }
 end
 return plugin
