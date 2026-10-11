@@ -441,7 +441,7 @@ pressure event and a relief event (Easy/Normal/Hard counts):
 | The Gates of Mount Tantiss | First attacker within 6 hexes of the generator: the gate opens and 2/3/4 troops (a Royal Guard from Normal) sortie | Turn 5: a Wayland war party, 3/3/2 Myneyrshi and Psadan |
 | The Bilbringi Shipyards | Turn 6: 1/2/3 new cloaked asteroids behind the screen, in the approach lanes | A destroyed platform's reactor blasts every adjacent ship for 10 (never lethal), Imperial guards included |
 
-Still quiet: Jomark and The Smugglers' Council.
+Jomark and The Smugglers' Council follow in §3.16.
 ### 3.16 The traitor and the second boat (2026-10-11)
 
 The last two missions without mid-mission events:
