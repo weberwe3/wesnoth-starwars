@@ -18,14 +18,22 @@ difficulty.
 ## What is different from standard Wesnoth
 
 - Blasters, lightsabers, ion weapons, and torpedoes with Star Wars damage
-  roles; E-Web teams fire across two hexes.
+  roles. Ranged weapons reach beyond the next hex (rifles 2, heavy weapons
+  3), rifles can take aimed shots, and units on an enemy's far side flank it.
+- Tactical systems: Force powers (Push, Pull, Speed, Sense, Mind Trick),
+  overwatch (automatic for units that keep their attack), sensors, decoys
+  and jamming, off-map air support, stealth missions with guards and silent
+  takedowns, and Grand Admiral Thrawn's doctrine, which learns how you fight.
 - Space missions on custom open-space and asteroid terrain, with
   starfighters, capital ships, boarding shuttles, and cloaked asteroids.
 - Force users lose their Force abilities inside ysalamiri bubbles (violet
   hexes).
 - Noghri commandos hide in forest and at night; Wookiee lookouts reveal them.
 - Named heroes carry their experience between missions; who is present
-  depends on the story.
+  depends on the story. Only a mission's critical heroes lose it; the others
+  withdraw wounded and return next mission.
+- Veterans earn ranks past their top level, and many units and heroes change
+  their look as Seasoned veterans and Elites.
 - Blaster bolts show who is firing: red for the Imperial Remnant, blue or
   green for the New Republic and its allies, orange for independent
   smugglers. Lore colours win where they are fixed: TIE fighters and Star
@@ -34,9 +42,13 @@ difficulty.
   duracrete command bunkers, shuttle landing pads, and duracrete roads.
 - Original synthesized weapon sounds and an original orchestral score for every
   mission, with victory and defeat cues.
-- A **Field Manual** in the right-click menu of every mission explains the
-  Force and ysalamiri, blaster colours, space battles, bases, heroes, and
-  stealth.
+- Every mission (except the finales) has a **bonus objective** whose credits
+  are paid in full at the start of the next mission; a debrief follows each
+  victory and a campaign summary each finale.
+- **Achievements** for each campaign: completion, Hard, no hero withdrawn,
+  swift victories, starfighter aces, and tactics.
+- **Just-in-time tips** the first time each system matters, and a **Field
+  Manual** in the right-click menu of every mission that explains them all.
 
 ## Originality
 
