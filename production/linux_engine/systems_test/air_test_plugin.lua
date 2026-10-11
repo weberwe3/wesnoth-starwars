@@ -11,7 +11,7 @@ local PHASE = "main"
 local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "flanking", "ai_ranged", "check_ai_ranged",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "muzzle_flashes", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
@@ -676,6 +676,122 @@ local function plugin(events, context, info)
       check("the AI's ranged model sees the same +10%", ai.flank_bonus(st, fx, fy, tr) == 10)
     end
 
+    function S.ai_ranged_legality()
+      local ca = wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      swt.clear()
+      swt.place("sw_unit_nr_militia", 1, 10, 8, "t_legal_target")
+      local luke = swt.place("sw_hero_luke", 2, 12, 8, "t_legal_luke")
+      luke.moves = 0
+      check("stand-off AI excludes defensive-only Jedi deflection", ca.best_attack(2, {}) == nil)
+      luke:erase()
+      local shooter = swt.place("sw_unit_im_stormtrooper", 2, 12, 8, "t_legal_shooter")
+      shooter.moves = 0
+      shooter.status.petrified = true
+      check("stand-off AI excludes a petrified attacker", ca.best_attack(2, {}) == nil)
+      shooter.status.petrified = false
+
+      -- Keep the actual native aimed config, including its defense-only
+      -- disable. Removing other fixture weapons proves this weapon qualifies.
+      local aimed
+      for _i, a in ipairs(shooter.attacks) do
+        if a.name == "blaster_rifle_aimed" then aimed = a.__cfg end
+      end
+      assert(aimed, "AI fixture requires the native aimed rifle")
+      for i = #shooter.attacks, 1, -1 do shooter.attacks[i] = nil end
+      shooter.attacks[1] = aimed
+      local choice = ca.best_attack(2, {})
+      check("stand-off AI retains the defense-disabled aimed shot", choice and choice.weapon == 1)
+      local native_specials = shooter.attacks[1].specials
+      local function disable(body)
+        local specials = {}
+        for _i, sp in ipairs(native_specials) do specials[#specials + 1] = sp end
+        specials[#specials + 1] = T.disable(body)
+        shooter.attacks[1].specials = specials
+      end
+      disable{ T.filter_opponent{ id = "t_legal_target" } }
+      check("a matching conditional disable defaults to both and prevents offense", ca.best_attack(2, {}) == nil)
+      disable{ active_on = "offense", T.filter_opponent{ id = "t_other_target" } }
+      check("a nonmatching conditional disable still permits offense", ca.best_attack(2, {}) ~= nil)
+      disable{ active_on = "offense", apply_to = "opponent" }
+      check("an opponent-only disable does not disable the AI's own weapon", ca.best_attack(2, {}) ~= nil)
+      disable{ active_on = "offense", apply_to = "defender" }
+      check("a defender-only disable does not disable the attacker", ca.best_attack(2, {}) ~= nil)
+      disable{ active_on = "offense", apply_to = "attacker" }
+      check("an attacker-only disable prevents offense", ca.best_attack(2, {}) == nil)
+      disable{ active_on = "offense", apply_to = "both" }
+      check("a both-combatants disable also prevents the attacker's offense", ca.best_attack(2, {}) == nil)
+      disable{ active_on = "offense", T.filter_self{ T.filter_weapon{ name = "blaster_rifle_aimed" } } }
+      check("conditional disable matches the selected native weapon", ca.best_attack(2, {}) == nil)
+      disable{ active_on = "offense", T.filter_attacker{ T.filter_weapon{ name = "other_weapon" } } }
+      check("a nonmatching weapon-filtered disable permits the shot", ca.best_attack(2, {}) ~= nil)
+      disable{ active_on = "offense", T.filter_defender{ id = "t_legal_target" } }
+      check("conditional disable honors the native defender filter", ca.best_attack(2, {}) == nil)
+      disable{ active_on = "offense", T.filter_self{ x = 12, y = 8 } }
+      shooter.moves = 3
+      choice = ca.best_attack(2, {})
+      check("conditional self-location is evaluated at the proposed firing hex",
+        choice and (choice.x ~= 12 or choice.y ~= 8))
+
+      -- Exercise the real CA execution with native units and a bounded move
+      -- callback. Only movement/command delivery is intercepted; each mutation
+      -- represents WML or an ambush during movement. No invalid attack may be
+      -- submitted. The separate ai_ranged step retains the real AI-turn attack.
+      local cases = {
+        { "attacker petrified", function(a) a.status.petrified = true end },
+        { "attacker lost its attack", function(a) a.attacks_left = 0 end },
+        { "attacker changed side", function(a) a.side = 2 end },
+        { "attacker disappeared", function(a) a:erase() end },
+        { "move did not reach the firing hex", function(a) a:to_map(15, 8) end },
+        { "selected weapon replaced", function(a, _t, b) a.attacks[b.weapon].name = "sw_test_replaced_weapon" end },
+        { "selected weapon needs more attacks", function(a, _t, b) a.attacks[b.weapon].attacks_used = 2 end },
+        { "selected weapon range changed", function(a, _t, b)
+          a.attacks[b.weapon].min_range = 3; a.attacks[b.weapon].max_range = 3
+        end },
+        { "selected weapon became conditionally disabled", function(a, _t, b)
+          local sp = a.attacks[b.weapon].specials
+          sp[#sp + 1] = T.disable{ active_on = "offense", T.filter_self{ x = b.x, y = b.y } }
+          a.attacks[b.weapon].specials = sp
+        end },
+        { "target became friendly", function(_a, t) t.side = 1 end },
+        { "target disappeared", function(_a, t) t:erase() end },
+        { "target became petrified", function(_a, t) t.status.petrified = true end },
+        { "target moved out of range", function(_a, t) t:to_map(1, 1) end },
+        { "target became invisible", function(_a, t)
+          local id, x, y = t.id, t.x, t.y
+          t:add_modification("object", { id = "sw_test_ai_hidden",
+            T.effect{ apply_to = "new_ability", T.abilities{ T.hides{ id = "sw_test_ai_hidden", affect_self = true } } } })
+          -- The intercepted move bypasses native movement's status-cache
+          -- clearing after best_attack queried visibility. A native clone
+          -- starts with an empty invisibility cache (1.19.27 unit copy ctor).
+          t:clone():to_map(x, y)
+          t = assert(swt.u(id), "hidden-target fixture lost the replacement unit")
+          local hidden = not t:matches{ T.filter_vision{ side = 1, visible = true } }
+          check("post-move hidden-target fixture proves native invisibility", hidden)
+          assert(hidden, "hidden-target fixture must establish native invisibility before testing the guard")
+        end },
+      }
+      for _i, case in ipairs(cases) do
+        swt.clear()
+        local a = swt.place("sw_unit_nr_trooper", 1, 15, 8, "t_legal_move")
+        swt.place("sw_unit_nr_militia", 2, 10, 8, "t_legal_move_target")
+        local best = ca.best_attack(1, {})
+        local saved_ai, saved_command = ai, wesnoth.wml_actions.do_command
+        local moved, commands = false, 0
+        ai = { move = function(actor, x, y)
+          moved = true
+          actor:to_map(x, y)
+          case[2](swt.u(actor.id), swt.u("t_legal_move_target"), best)
+        end }
+        wesnoth.wml_actions.do_command = function() commands = commands + 1 end
+        local ok, err = pcall(function()
+          assert(best and (best.x ~= a.x or best.y ~= a.y), "fixture requires movement before firing")
+          ca:execution({}, { sw_ranged_fire = best, sw_ranged_tried = {} })
+        end)
+        ai, wesnoth.wml_actions.do_command = saved_ai, saved_command
+        check("post-move AI legality rejects " .. case[1], ok and moved and commands == 0, err or commands)
+      end
+    end
+
     -- AI fires from range at a target that cannot shoot back that far.
     function S.ai_ranged()
       swt.clear()
@@ -705,6 +821,8 @@ local function plugin(events, context, info)
       check("the AI attacked", shot ~= nil)
       check("the AI fired from 2 hexes, out of the pistol's reach", shot and shot.d == 2,
         shot and (shot.d .. " " .. tostring(shot.w)))
+      check("the real AI turn used an eligible offensive rifle", shot and
+        (shot.w == "blaster_rifle" or shot.w == "blaster_rifle_aimed"), shot and shot.w)
     end
 
     -- Guard alertness and stealth (lua/sw_alert.lua).
