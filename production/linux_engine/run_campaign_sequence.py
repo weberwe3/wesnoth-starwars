@@ -226,6 +226,12 @@ def evaluate(parsed: dict, log_text: str, expected: list[str] | None = None) -> 
     return failures
 
 
+# config::valid_tag / valid_attribute (installed 1.19.27 src/config.cpp):
+# ASCII letters, digits and underscores, any first character, but not a lone
+# underscore. Lua tables stored as WML variables can serialize keys such as "2".
+WML_NAME = r"(?!_(?![A-Za-z0-9_]))[A-Za-z0-9_]+"
+
+
 def _serialized_value_fragment(fragment: str, quoted: bool, continuation: bool) -> tuple[bool, bool] | None:
     """Recognize engine-written quoted/translated string concatenation.
 
@@ -315,7 +321,7 @@ def _engine_save_diagnostic(path: Path, campaign: str, scenario: str) -> str | N
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
-            tag = re.fullmatch(r"\[(/?)([A-Za-z_][A-Za-z0-9_]*)\]", stripped)
+            tag = re.fullmatch(r"\[(/?)(" + WML_NAME + r")\]", stripped)
             if tag:
                 closing, name = tag.groups()
                 if closing:
@@ -328,7 +334,7 @@ def _engine_save_diagnostic(path: Path, campaign: str, scenario: str) -> str | N
                         sides += 1
                     stack.append(name)
                 continue
-            field = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$", stripped)
+            field = re.match(r"(" + WML_NAME + r")\s*=\s*(.*)$", stripped)
             if field is None:
                 return "save WML has an invalid property"
             name, value = field.groups()

@@ -173,6 +173,26 @@ class CampaignSequenceEvidenceTests(unittest.TestCase):
             evidence = validate_sequence_saves(userdata, CAMPAIGN_I, [scenario])
             self.assertTrue(evidence["pass"], evidence)
 
+    def test_engine_valid_names_starting_with_digits_are_readable(self) -> None:
+        # Lua tables stored as WML variables serialize keys such as "2" or
+        # "1st"; the engine accepts any letters, digits and underscores.
+        scenario = EXPECTED[0]
+        with tempfile.TemporaryDirectory() as directory:
+            userdata = Path(directory) / "userdata"
+            saves = userdata / "sync/saves"
+            saves.mkdir(parents=True)
+            payload = gzip.decompress(engine_save(CAMPAIGN_I, scenario)).decode()
+            payload = payload.replace("[/snapshot]",
+                                      '[variables]\n[2]\n1st=5\n_hidden=yes\n2="two"\n[/2]\n[/variables]\n[/snapshot]')
+            (saves / f"sw_seq_{scenario}.gz").write_bytes(gzip.compress(payload.encode()))
+            evidence = validate_sequence_saves(userdata, CAMPAIGN_I, [scenario])
+            self.assertTrue(evidence["pass"], evidence)
+            for bad in ("_=1", "[_]\n[/_]", "bad-key=1", "[x y]\n[/x y]"):
+                broken = payload.replace("[/snapshot]", bad + "\n[/snapshot]", 1)
+                (saves / f"sw_seq_{scenario}.gz").write_bytes(gzip.compress(broken.encode()))
+                evidence = validate_sequence_saves(userdata, CAMPAIGN_I, [scenario])
+                self.assertFalse(evidence["pass"], bad)
+
     def test_serialized_string_continuation_must_be_valid_and_complete(self) -> None:
         scenario = EXPECTED[0]
         defects = (
