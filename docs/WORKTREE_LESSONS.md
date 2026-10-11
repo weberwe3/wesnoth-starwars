@@ -1051,3 +1051,32 @@ failures. A valid declaration must pass, and removing its literal must fail.
 Literal retention is static source evidence, distinct from the integrated native
 air suite's 227 checks. These maintenance checks do not establish exact-head CI,
 installed-game retry or player-launch success; those require separate evidence.
+
+### 2026-10-11 — Piped engine version output needs explicit console logging
+
+**Symptom:** The native route runner rejected its installed engine version even
+though the version subprocess returned `0`; its captured output was empty.
+**Confirmed cause:** Installed 1.19.27 initializes logging before processing
+`--version`, and non-interactive output defaults to file logging.
+**Resolution:** Add `--no-log-to-file` to the version subprocess. The coordinator
+recorded exit `0` and actual `1.19.27` text, and the next route attempt passed
+preflight and entered the campaign.
+**Prevention:** Require both the actual version text and real process exit;
+never infer the supported engine version from exit status alone.
+
+### 2026-10-11 — Plugin execute results require an engine-slice wait
+
+**Symptom:** The route fixture reported an unexpected scenario before entering
+its initialization, despite requesting the scenario ID through `plugin.execute`.
+**Confirmed cause:** Installed `application_lua_kernel.cpp` queues execute work
+through the context backend and returns immediately; the fixture read its local
+upvalue before the game-kernel callback ran. Core `next_slice` yields execution.
+**Resolution:** Pump an engine slice after scenario-query, initialization and
+planning execute calls before reading their returned state. The coordinator's
+next native attempt observed the actual mission-one opening, objective state,
+units and terrain instead of the premature nil-scenario failure.
+**Prevention:** Follow queued execute calls with the required slice boundary
+before consuming their results. The opening observation proves this repair;
+it does not prove a completed legal route. That attempt later exited `-11`
+after an occupied-hex request, whose crash cause remains unconfirmed and whose
+failure evidence is preserved separately.
