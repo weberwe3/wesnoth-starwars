@@ -430,6 +430,19 @@ The bomber target rewards spreading the defence: piling every fighter on one
 warship invites the strike on the other. Honoghr's Choice already has its
 own turn 4 and turn 6 events.
 
+### 3.15 Mid-mission events in quiet missions (2026-10-11)
+
+Three more missions had no events after the opening. Each now has a
+pressure event and a relief event (Easy/Normal/Hard counts):
+
+| Mission | Pressure | Relief |
+| --- | --- | --- |
+| Battle for the Fleet | Turn 5: TIEs (2/3/4) sit on the jump point, so the escort must also clear the exit | Turn 8: Bel Iblis's fighters, 3/2/1 |
+| The Gates of Mount Tantiss | First attacker within 6 hexes of the generator: the gate opens and 2/3/4 troops (a Royal Guard from Normal) sortie | Turn 5: a Wayland war party, 3/3/2 Myneyrshi and Psadan |
+| The Bilbringi Shipyards | Turn 6: 1/2/3 new cloaked asteroids behind the screen, in the approach lanes | A destroyed platform's reactor blasts every adjacent ship for 10 (never lethal), Imperial guards included |
+
+Still quiet: Jomark and The Smugglers' Council.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

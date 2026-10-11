@@ -84,6 +84,8 @@ the common enemy by breaking the garrison outpost that oppresses them.
 Han, Lando, Chewbacca, and Leia (with Noghri) assault the mountain entrance.
 - Win: destroy the shield generator.
 - Lose: Han, Leia, or Chewbacca dies; turns run out.
+- Twists: the garrison sorties (2/3/4 troops) when an attacker comes within 6
+  hexes of the generator; on turn 5 a Wayland war party (3/3/2) joins the player.
 
 ### 7. The Cloning Vats
 Inside the mountain, wreck the cloning cylinders before the garrison seals
@@ -103,6 +105,8 @@ The New Republic fleet strikes Thrawn's shipyard. Clear the cloaked-asteroid
 screen and destroy the shipyard platforms.
 - Win: destroy three shipyard platforms.
 - Lose: Wedge dies; turns run out.
+- Twists: a destroyed platform's reactor blasts adjacent ships for 10 (never
+  lethal); on turn 6 more cloaked asteroids (1/2/3) are seeded behind the screen.
 
 ### 10. The Last Command
 Thrawn commits his fleet. Hold until the Grand Admiral's plan collapses.
