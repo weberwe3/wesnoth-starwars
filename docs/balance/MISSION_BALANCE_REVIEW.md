@@ -416,6 +416,20 @@ After each campaign's finale a **campaign summary** follows: missions won,
 enemies destroyed, units lost, heroes withdrawn, bonus objectives earned and
 swift victories (`sw_campaign_stats`, carried between the missions).
 
+### 3.14 Finale twists (2026-10-11)
+
+The two space finales had no events once the battle began. Each now has a
+Thrawn move and an answer to it (Easy/Normal/Hard counts):
+
+| Mission | Thrawn's move | Relief |
+| --- | --- | --- |
+| Thrawn's Gambit | Turn 5: 2/3/3 TIE bombers (+1 interceptor on Hard) appear beside the warship with fewer defenders within 4 hexes, one turn from it | Turn 8: shipyard picket, 3/2/1 fighters |
+| The Last Command | Turn 4: 2/3/4 TIE interceptors appear in the corners behind the strike force | Turn 6: Karrde's smugglers, 3/2/2 fighters (Y-wings with ion cannons) |
+
+The bomber target rewards spreading the defence: piling every fighter on one
+warship invites the strike on the other. Honoghr's Choice already has its
+own turn 4 and turn 6 events.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and
