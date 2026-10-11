@@ -509,6 +509,10 @@ def _matches_value(text: str, key: str, expected: str) -> bool:
     ))
 
 
+def _collapse_whitespace(text: str) -> str:
+    return " ".join(text.split())
+
+
 def _source_text_result(contract: dict[str, Any], root: Path) -> dict[str, Any]:
     """Check a bounded Lua literal without feeding Lua into the WML scanners."""
     contract_id, path, literal = contract["id"], contract.get("path"), contract.get("contains")
@@ -540,7 +544,10 @@ def _source_text_result(contract: dict[str, Any], root: Path) -> dict[str, Any]:
     except (OSError, ValueError, UnicodeError):
         result["detail"] = f"Missing, unsafe or unreadable Lua source: {path}"
         return result
-    result["pass"] = literal in text
+    # Whitespace runs compare equal (a space, a newline and tab indentation), so
+    # re-indenting or re-wrapping a statement keeps its contract; any change to
+    # the code's tokens still fails it.
+    result["pass"] = _collapse_whitespace(literal) in _collapse_whitespace(text)
     result["detail"] = "Lua source literal contract passed" if result["pass"] else "Missing Lua source literal"
     return result
 
