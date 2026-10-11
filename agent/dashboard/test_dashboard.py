@@ -2375,9 +2375,76 @@ class CoordinationControlTests(unittest.TestCase):
                 worktree=Path("."), ticket=ticket, implementer_rc=0
             )
 
-        declared.assert_called_once_with(Path("."))
+        declared.assert_called_once_with(
+            Path("."), required_paths=["addons/example/scenario.cfg"]
+        )
         self.assertFalse(result["pass"])
         self.assertEqual(result["profile_result"]["declared_contracts"], mismatch)
+
+    def test_local_addon_validation_requires_actual_changed_lua_coverage(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            addon_path = "addons/Star_Wars_Thrawn_Trilogy"
+            addon = root / addon_path
+            tests = addon / "tests"
+            tests.mkdir(parents=True)
+            addon.joinpath("_main.cfg").write_text(
+                "[campaign]\ndefine=CAMPAIGN_FIXTURE\n[/campaign]\n"
+                "#ifdef CAMPAIGN_FIXTURE\n"
+                "[binary_path]\npath=data/add-ons/Star_Wars_Thrawn_Trilogy\n[/binary_path]\n"
+                "[+units]\n{~add-ons/Star_Wars_Thrawn_Trilogy/units}\n[/units]\n"
+                "{~add-ons/Star_Wars_Thrawn_Trilogy/scenarios}\n#endif\n",
+                encoding="utf-8",
+            )
+            scenario_path = f"{addon_path}/scenario.cfg"
+            lua_path = f"{addon_path}/lua/fixture.lua"
+            root.joinpath(scenario_path).write_text("[scenario]\nid=sw_fixture\n[/scenario]\n", encoding="utf-8")
+            root.joinpath(lua_path).parent.mkdir()
+            root.joinpath(lua_path).write_text("local legal = true\n", encoding="utf-8")
+            contracts = [{
+                "id": "sw-fixture-source", "kind": "source-id", "path": scenario_path,
+                "expected_id": "sw_fixture",
+            }]
+            index = tests / "gameplay-contracts.json"
+            index.write_text(json.dumps({"schema_version": 1, "contracts": contracts}), encoding="utf-8")
+            changed = [scenario_path, lua_path]
+            ticket = {
+                "allowed_paths": changed, "validation_profile": "wesnoth-addon-static",
+                "validation_root": addon_path,
+            }
+            passing = {"pass": True, "diagnostic": "PASS"}
+            # Keep the declared validator real: mocks isolate unrelated gates,
+            # so this proves the local caller forwards required Lua coverage.
+            with (
+                mock.patch.object(ticket_runner, "materialize_missing_project_images", return_value=passing),
+                mock.patch.object(ticket_runner, "read_git_changes", return_value=([], changed)),
+                mock.patch.object(ticket_runner, "unit_ids_for_source_paths", return_value=[]),
+                mock.patch.object(ticket_runner, "validate_art_queue", return_value=passing),
+                mock.patch.object(ticket_runner, "validate_scope", return_value=passing),
+                mock.patch.object(ticket_runner, "validate_static_files", return_value=passing),
+                mock.patch.object(ticket_runner, "validate_wesnoth_addon", return_value=passing),
+                mock.patch.object(ticket_runner, "validate_historical_retention", return_value=passing),
+                mock.patch.object(ticket_runner, "validate_ticket_acceptance", return_value=passing),
+                mock.patch.object(ticket_runner, "validate_declared_contracts",
+                                  wraps=ticket_runner.validate_declared_contracts) as declared,
+            ):
+                missing = ticket_runner.run_validation(worktree=root, ticket=ticket, implementer_rc=0)
+                self.assertFalse(missing["pass"])
+                self.assertIn(lua_path, missing["profile_result"]["declared_contracts"]["diagnostic"])
+                self.assertTrue(missing["profile_result"]["historical_retention"]["pass"])
+                contracts.append({
+                    "id": "sw-fixture-lua", "kind": "source-text", "path": lua_path,
+                    "contains": "local legal = true",
+                })
+                index.write_text(json.dumps({"schema_version": 1, "contracts": contracts}), encoding="utf-8")
+                covered = ticket_runner.run_validation(worktree=root, ticket=ticket, implementer_rc=0)
+                self.assertTrue(covered["pass"], covered)
+                root.joinpath(lua_path).write_text("local legal = false\n", encoding="utf-8")
+                altered = ticket_runner.run_validation(worktree=root, ticket=ticket, implementer_rc=0)
+                self.assertFalse(altered["pass"])
+                self.assertIn("Missing Lua source literal", altered["profile_result"]["declared_contracts"]["diagnostic"])
+            self.assertEqual(declared.call_count, 3)
+            declared.assert_called_with(root, required_paths=changed)
 
     def test_single_verified_remnant_avoids_sol_planning(self) -> None:
         proposal = AutonomyController._single_resume_proposal({

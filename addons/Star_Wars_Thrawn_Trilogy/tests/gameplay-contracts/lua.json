@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-ai-ranged-actor-eligibility",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
+      "contains": "return u and u.side == side and u.hitpoints > 0 and u.max_attacks > 0\n\t\tand u.attacks_left > 0 and not u.status.petrified"
+    },
+    {
+      "id": "sw-ai-ranged-offensive-disable",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
+      "contains": "if tag == \"disable\" and cfg.active_on ~= \"defense\"\n\t\t\tand cfg.apply_to ~= \"opponent\" and cfg.apply_to ~= \"defender\" then"
+    },
+    {
+      "id": "sw-ai-ranged-candidate-disable-filter",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
+      "contains": "if d >= w.min and d <= w.max and not disabled_on_offense(u, w.attack, e, x, y) then"
+    },
+    {
+      "id": "sw-ai-ranged-post-move-reacquisition",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
+      "contains": "ai.move(u, best.x, best.y)\n\t\tu = wesnoth.units.get(best.unit)\n\t\ttarget = wesnoth.units.get(best.target)"
+    },
+    {
+      "id": "sw-ai-ranged-post-move-combatants",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
+      "contains": "if not can_act(u, best.side) or not target or target.hitpoints <= 0 or target.status.petrified\n\t\tor u.x ~= best.x or u.y ~= best.y or not wesnoth.sides.is_enemy(u.side, target.side)\n\t\tor not target:matches{ T.filter_vision{ side = u.side, visible = true } } then return end"
+    },
+    {
+      "id": "sw-ai-ranged-post-move-weapon-budget",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
+      "contains": "local a = u.attacks[best.weapon]\n\tif not a or a.name ~= best.weapon_name or a.range ~= \"ranged\"\n\t\tor (a.attacks_used or 1) > u.attacks_left then return end"
+    },
+    {
+      "id": "sw-ai-ranged-post-move-range-disable",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
+      "contains": "if d < math.max(2, a.min_range or 1) or d > (a.max_range or 1)\n\t\tor disabled_on_offense(u, a, target, u.x, u.y) then return end"
+    }
+  ]
+}

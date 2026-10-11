@@ -1397,7 +1397,7 @@ def run_validation(
         # CI protects the immutable outcomes of earlier published gameplay
         # tickets. Run that same check locally before a candidate can consume
         # reviewer, queue, or publication resources.
-        declared = validate_declared_contracts(worktree)
+        declared = validate_declared_contracts(worktree, required_paths=changed_paths)
         retained = validate_historical_retention(worktree)
         acceptance_result = validate_ticket_acceptance(worktree, ticket)
         profile_result = {

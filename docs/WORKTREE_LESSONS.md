@@ -1029,3 +1029,25 @@ Lua weapon matching supplies no two-combatant active-special context; uncertain
 opponent/context-sensitive weapon filters remain conservative. Do not treat every
 conditional disable as unconditional or claim complete combat-rule coverage,
 human balance or publication from these bounded proofs.
+
+### 2026-10-11 — Local and publication gates must enforce the same Lua coverage
+
+**Symptom:** Merged AI legality changes passed local validation but failed the
+installed-game publication gate for missing declared Lua coverage.
+**Confirmed cause:** Required gameplay paths included `.lua`, while the declared
+validator read only `.cfg` and supported only WML `source-id`/`event-unit` kinds.
+Local add-on validation also omitted changed paths from the coverage requirement.
+**Resolution:** Add exact-field `source-text` declarations for bounded, nonblank
+literal containment in normalized add-on Lua paths. Reject unsafe paths, symlink
+components and missing/unreadable sources; keep map, loader and dependency
+scanners WML-only. Index seven unchanged AI guard literals and forward local
+changed paths to declared coverage. All 93 legacy contracts were preserved;
+100 total contracts, historical retention and static checks passed. Coordinator
+regressions passed 54 scenario, 207 dashboard and 10 acceptance tests, with actual
+exit `0`; runtime AI and the native fixture remained unchanged.
+**Prevention:** Exercise missing changed-Lua coverage through the real local
+validator, plus malformed schema/kinds, unsafe paths, symlinks and absent literal
+failures. A valid declaration must pass, and removing its literal must fail.
+Literal retention is static source evidence, distinct from the integrated native
+air suite's 227 checks. These maintenance checks do not establish exact-head CI,
+installed-game retry or player-launch success; those require separate evidence.
