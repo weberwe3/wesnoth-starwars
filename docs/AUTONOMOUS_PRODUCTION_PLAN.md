@@ -309,7 +309,8 @@ Keep original contracts, repair counters, global pauses, and publication orderin
 
 **Acceptance:** quota waits are bounded; fallback/circuit exhaustion and the
 two-attempt recovery limit per processing run remains enforced; retryable
-worktree failures resume after cooldown without a consecutive-failure ceiling.
+worktree failures resume after cooldown without a consecutive-failure ceiling. The cooldown doubles with each consecutive failure, up to one hour, and every
+fifth consecutive failure raises a needs-attention event; automation stays on.
 Restart cannot reset usage or bounded in-run attempts. Independent work bypasses only blockers already eligible under
 policy. Repeated no-progress outcomes produce one bounded planning review and a
 precise preserved stop. The completion cutoff prevents expansion without skipping

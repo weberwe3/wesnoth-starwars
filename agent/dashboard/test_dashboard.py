@@ -31,6 +31,7 @@ sys.path.insert(0, str(ROOT / "agent" / "dashboard"))
 from game_validation_state import gameplay_revalidation_required  # noqa: E402
 import bridge_mailbox  # noqa: E402
 import secure_ticket_bridge  # noqa: E402
+import autonomy  # noqa: E402
 from autonomy import (  # noqa: E402
     ACCEPTANCE_CLAIM_SCHEMA,
     AutonomyController,
@@ -4206,6 +4207,36 @@ class ApprovalQueueTests(unittest.TestCase):
                 controller._last_completion_monotonic = 39.0
                 self.assertTrue(controller._cooldown_complete())
 
+    def test_retry_cooldown_doubles_per_consecutive_failure_up_to_cap(self) -> None:
+        self.assertEqual(autonomy.retry_cooldown_seconds(0), 60)
+        self.assertEqual(autonomy.retry_cooldown_seconds(1), 60)
+        self.assertEqual(autonomy.retry_cooldown_seconds(2), 120)
+        self.assertEqual(autonomy.retry_cooldown_seconds(4), 480)
+        self.assertEqual(autonomy.retry_cooldown_seconds(7), 3600)
+        self.assertEqual(autonomy.retry_cooldown_seconds(500), 3600)
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            controller = AutonomyController(
+                base,
+                ControlStore(base / "control.json"),
+                ApprovalQueue(base, base / "queue.json"),
+            )
+            controller._record_autonomous_failure(
+                "agent/fixture", "reviewer_change_request", "Failing", "Repair it")
+            controller._record_autonomous_failure(
+                "agent/fixture", "reviewer_change_request", "Failing", "Repair it")
+            controller._record_autonomous_failure(
+                "agent/fixture", "reviewer_change_request", "Failing", "Repair it")
+            with mock.patch("autonomy.time.monotonic", return_value=1000.0):
+                controller._last_completion_monotonic = 1000.0 - 239.0
+                self.assertFalse(controller._cooldown_complete())
+                controller._last_completion_monotonic = 1000.0 - 240.0
+                self.assertTrue(controller._cooldown_complete())
+            controller._clear_failure_streak()
+            with mock.patch("autonomy.time.monotonic", return_value=1000.0):
+                controller._last_completion_monotonic = 1000.0 - 60.0
+                self.assertTrue(controller._cooldown_complete())
+
     def test_autonomous_worktree_retries_beyond_three_consecutive_failures(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
@@ -4257,6 +4288,15 @@ class ApprovalQueueTests(unittest.TestCase):
                     self.assertIn(f"Worktree retry {index} scheduled", state["run"]["summary"])
                     self.assertIn(f"Consecutive failure {index}", state["run"]["error"])
                     self.assertIsNone(state["activity"][-1]["recovery_limit"])
+                    attention = [
+                        item for item in state["activity"]
+                        if "needs attention" in str(item.get("message", ""))
+                    ]
+                    self.assertEqual(len(attention), 1 if index >= 5 else 0)
+                    self.assertIn(
+                        f"after a {autonomy.retry_cooldown_seconds(index)}-second cooldown",
+                        state["run"]["error"],
+                    )
                     if index in (1, 3, 4, 7):
                         retry = controller._failure_streak_resume_proposal({
                             "resumable_local_work": [{
