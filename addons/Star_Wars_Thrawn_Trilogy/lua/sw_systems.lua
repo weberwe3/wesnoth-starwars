@@ -140,6 +140,7 @@ on("turn refresh", "sw_sys_turn_refresh", function()
 	ew.on_side_turn(side)
 	doctrine.on_side_turn(side)
 	alert.on_side_turn(side)
+	ew.ai_prepare_turn(side)
 end)
 
 on("side turn end", "sw_sys_side_turn_end", function()
@@ -439,6 +440,9 @@ function sw_systems.digest()
 	table.sort(recs, function(a, b) return (a.team .. "|" .. a.key) < (b.team .. "|" .. b.key) end)
 	for _i, r in ipairs(recs) do add(r.team, r.key, r.x, r.y, r.state, r.class, r.type, r.image, r.score, r.identify) end
 	for _i, d in ipairs(wml.array_access.get("sw_ew_decoys")) do add(d.id, d.x, d.y, d.side, d.class, d.exposed, d.expires) end
+	for _i, st in ipairs(wml.array_access.get("sw_ew_ai_actions")) do
+		add("ew_ai", st.side, st.turn, st.swept == true, st.decoy == true)
+	end
 	for _i, d in ipairs(doctrine.enabled_sides()) do
 		add("doctrine", d.side, d.insight, d.tier_reached)
 		for _i, cat in ipairs(core.sorted_keys(d.patterns)) do

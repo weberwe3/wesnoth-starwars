@@ -48,6 +48,18 @@
       "kind": "source-text",
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_force.lua",
       "contains": "local focus = core.ability_cfg(u, \"sw_ability_hero_force_focus\")\n\treturn {\n\t\tfp_max = core.number(cfg.fp_max, 6) + core.number(focus and focus.fp_bonus, 0),"
+    },
+    {
+      "id": "sw-ai-ew-tactical-actions",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ew.lua",
+      "contains": "function ew.ai_prepare_turn(side)"
+    },
+    {
+      "id": "sw-ai-ew-synced-turn-refresh",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
+      "contains": "alert.on_side_turn(side)\n\tew.ai_prepare_turn(side)"
     }
   ]
 }
