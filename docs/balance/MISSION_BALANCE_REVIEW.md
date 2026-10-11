@@ -441,7 +441,19 @@ pressure event and a relief event (Easy/Normal/Hard counts):
 | The Gates of Mount Tantiss | First attacker within 6 hexes of the generator: the gate opens and 2/3/4 troops (a Royal Guard from Normal) sortie | Turn 5: a Wayland war party, 3/3/2 Myneyrshi and Psadan |
 | The Bilbringi Shipyards | Turn 6: 1/2/3 new cloaked asteroids behind the screen, in the approach lanes | A destroyed platform's reactor blasts every adjacent ship for 10 (never lethal), Imperial guards included |
 
-Still quiet: Jomark and The Smugglers' Council.
+Jomark and The Smugglers' Council follow in §3.16.
+### 3.16 The traitor and the second boat (2026-10-11)
+
+The last two missions without mid-mission events:
+
+- **The Smugglers' Council:**
+  - On turn 5 one surviving chief, chosen at random, turns traitor inside the walls, with a smuggler veteran bodyguard from Normal.
+  - He no longer counts as a chief.
+  - Killing him pays a 30-credit bounty.
+  - This plays out Karrde's opening line that "someone at this table brought them".
+- **Jomark:**
+  - On turn 5 a second raider boat (2/3/4, with a veteran from Normal) lands beside whichever southern village has fewer of Luke's units within 3 hexes.
+  - On a tie it lands at the south-east village.
 
 ## 4. Measured results
 

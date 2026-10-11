@@ -62,6 +62,8 @@ forces arrive to break up the meeting.
 - Win: hold until the last turn with at least three chiefs alive, or defeat
   the Imperial commander.
 - Lose: Karrde or Mara dies; three chiefs are killed.
+- Twist: on turn 5 a random surviving chief turns traitor inside the walls
+  (with a bodyguard from Normal); killing him pays 30 credits.
 
 ### 3. The Palace Infiltrators
 Imperial commandos slip into the Imperial Palace to take Leia's newborn twins.
