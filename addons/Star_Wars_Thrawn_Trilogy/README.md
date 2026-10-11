@@ -48,7 +48,7 @@ difficulty.
 - A **command decision** in each campaign: a supply convoy, a veteran cadre,
   or counter-intelligence against Thrawn's doctrine, for the rest of it.
 - **Achievements** for each campaign: completion, Hard, no hero withdrawn,
-  swift victories, starfighter aces, and tactics.
+  swift victories, starfighter aces, mission feats, and tactics.
 - **Just-in-time tips** the first time each system matters, and a **Field
   Manual** in the right-click menu of every mission that explains them all.
 

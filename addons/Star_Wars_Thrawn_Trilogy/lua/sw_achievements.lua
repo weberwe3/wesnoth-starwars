@@ -95,6 +95,12 @@ function ach.on_die()
 	if ut and ach.SHIPS[ut.__cfg.movement_type] and #victim.attacks > 0 then ach.progress(group, "sw_ace") end
 end
 
+-- A mission feat (SW_FEAT in the scenario), for the human player only.
+function ach.feat(id)
+	local group = ach.campaign_of(wesnoth.scenario.id)
+	if group and id and player_is_human() then ach.set(group, id) end
+end
+
 -- A tactic used by unit u (Force power, overwatch, sweep) or air support for a side.
 function ach.on_tactic(side, id)
 	if side ~= ach.PLAYER_SIDE or not ach.campaign_of(wesnoth.scenario.id) or not player_is_human() then return end
