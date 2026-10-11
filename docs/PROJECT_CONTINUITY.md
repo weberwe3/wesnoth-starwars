@@ -1852,6 +1852,16 @@ contracts are exhausted, use the governed backlog selection/refill process;
 preserve bounded worktrees, immutable scope, independent review and exact-head
 CI, installed-game and real player-launch gates.
 
+### 2026-10-11 — Back off repeated worktree retries
+
+Follow-up to the ceiling removal, at the owner's request after an independent
+review: without a ceiling, a retryable failure that cannot pass (for example a
+persistent reviewer change request) re-ran every minute. Automation still never
+stops on a count, but `retry_cooldown_seconds` doubles the 60-second cooldown
+with each consecutive failure up to one hour (`AUTONOMOUS_RETRY_BACKOFF_MAX_SECONDS`),
+and every fifth consecutive failure (`AUTONOMOUS_FAILURE_ATTENTION_EVERY`)
+queues a "needs attention" event. A success clears the streak and the cooldown.
+
 ### 2026-10-11 — Remove the consecutive worktree failure ceiling
 
 The owner explicitly removed the three-failure limit. Retryable continuous

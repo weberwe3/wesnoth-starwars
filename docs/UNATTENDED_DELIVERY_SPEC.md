@@ -171,7 +171,8 @@ explicit mappings for any added states:
 Keep the existing two-attempt recovery limit per processing run. Retryable
 worktree failures preserve and resume the exact worktree after the cooldown,
 without a consecutive-failure ceiling. Record failure counts as diagnostic
-history. Availability handling cannot reset budgets, rotate identities, or
+history. The cooldown doubles with each consecutive failure, up to one hour, and every
+fifth consecutive failure raises a needs-attention event; automation stays on. Availability handling cannot reset budgets, rotate identities, or
 choose unrelated work to escape another mandatory pause. Apply proposed policy
 changes only in a separate explicit governance ticket.
 
