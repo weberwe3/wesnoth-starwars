@@ -928,3 +928,73 @@ The coordinator recorded passing art regressions and current-roster validation.
 mobile/combat/unknown capability rejection, borrowed wiring, and duplicate direct
 IDs in the same file and across files, including quoted IDs and definitions
 outside `units/`. Never let a dictionary overwrite establish identity uniqueness.
+
+### 2026-10-10 — Native advancement fixtures must select among multiple AMLAs
+
+**Symptom:** A rank fixture aborted when a terminal unit gained additional native
+training choices, although its baseline with default AMLA alone passed.
+**Confirmed cause:** `unit:advance(false,true)` disables animation and retains
+advancement events; it still opens the native choice dialog when multiple
+eligible options exist. Skipping messages is not deterministic choice selection.
+**Resolution:** For the bounded fixture, temporarily expose the unchanged native
+default AMLA or selected native config, perform actual advancement, reacquire
+the unit, and restore its complete ordered options. Leave type promotion intact.
+**Prevention:** Verify option restoration, native limits, exact stats, healing,
+XP, rank variations and real save/reload. Do not simulate advancement with
+`add_modification`. Dedicated training and strict air probes passed these checks.
+
+### 2026-10-10 — Completion text cannot excuse a native process crash
+
+**Symptom:** A systems wrapper reported PASS after all assertions and `done`,
+although raw evidence showed a native abort during later fixture disposal.
+**Confirmed cause:** The wrapper discarded process exits and stdout/stderr and
+did not classify native fatal/assertion diagnostics. The engine abort's internal
+cause has not been established.
+**Resolution:** Record each phase's real exit, all output sources, completion,
+required checks, save evidence and bounded failure tails. The air and veteran
+fixtures idle after completion until the runner stops its own disposable process.
+Final strict Force and intelligence suites on frozen baseline and training builds
+also passed their main/reload phases with owned shutdown and no engine errors;
+the prior abort evidence remains preserved.
+**Prevention:** Only SIGTERM/SIGKILL actually requested after observed completion
+may be expected. Unexpected exits, fatal diagnostics, missing phases or timeouts
+remain failures even after `done`. Preserve abort races in simulated regressions;
+never claim this strategy fixes the engine's interactive quit lifecycle.
+
+### 2026-10-10 — Synthetic controller warnings need an exact classifier
+
+**Symptom:** Strict baseline phases passed their checks but failed on the known
+diagnostic produced by artificial controller hand-offs in isolated fixtures.
+**Confirmed cause:** Broad error classification included the synthetic
+`change_controller_wml` local-choice warning; the older replay classifier instead
+ignored every diagnostic containing that identifier, including possible failures.
+**Resolution:** Fullmatch only the complete known synthetic sentence, with its
+optional canonical timestamp, and retain it explicitly as a per-phase/top-level
+warning. All other replay errors remain errors.
+**Prevention:** Test exact warning retention and reject changed wording, actual
+OOS reports, appended fatals, controller-related assertions and unexpected exits.
+An identifier substring or namespace exclusion must never establish safety.
+
+### 2026-10-10 — Save selection must stay within the engine's authoritative directory
+
+**Symptom:** A native reload failed when the harness supplied an absolute save
+path. A broad search could also select a similarly named non-authoritative file.
+**Confirmed cause:** Wesnoth resolves `--load` against `<userdata>/sync/saves/`,
+as recorded in the earlier save/load lesson.
+**Resolution:** Bind the chosen file's resolved parent to that exact directory
+and pass only its bare filename. Keep the main save and reload phases distinct.
+**Prevention:** Reject missing or out-of-directory saves; require actual save
+creation and native reload checks rather than a successful main phase alone.
+Dedicated veteran and strict air save/reload evidence passed.
+
+### 2026-10-10 — Native save scanning must support serialized WML string expressions
+
+**Symptom:** Save compatibility required scanner support for the engine's real
+translated and multiline string representations, not only simple quoted values.
+**Confirmed cause:** Native WML serialization includes translation markers and
+concatenated string fragments across lines.
+**Resolution:** Preserve those WML expression forms when scanning saves. The
+coordinator's compatibility check passed all 30 actual campaign save artifacts.
+**Prevention:** Include translated/multiline concatenations in scanner regressions
+and check real engine saves. Scanner compatibility does not prove that every
+artifact has been reloaded, that a human can win, or that campaign balance is sound.

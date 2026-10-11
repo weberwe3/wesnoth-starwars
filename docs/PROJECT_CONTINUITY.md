@@ -1664,3 +1664,75 @@ plays all ten missions' scripted win paths, and package validation now runs
 all three campaigns. All 30 missions pass the per-scenario GUI probe. Open
 work: legal-route probes, balance playtesting, and Codex art for the
 remaining units.
+
+### 2026-10-10 — Veteran training and stricter native test evidence prepared
+
+This is a coordinator-verified snapshot at protected main
+`5c889134dd2e135c34d6ea74ac517222ce3e9d3c`. Claude's bonus objectives (PR #358)
+and mission debriefs (PR #359) are present. PR #360 passed exact-candidate CI,
+merged at this revision, and is officially `published_and_tested`: 93 gameplay
+contracts passed, and the real player-launcher path passed at exact `5c8891`
+after safe revalidation. The initial failed launcher evidence is preserved;
+the later pass does not erase it.
+
+Veteran training has passed local validation and remains an unpublished candidate,
+alongside the native phase
+evidence and fixture lifecycle repairs. It offers capped native weapon damage
+and mobility drills while retaining default AMLA, baseline stats, promotions
+and vision. In the recorded validation with PR #359, the dedicated native probe
+passed 70 checks, and the strict air suite passed 186 checks. Together these
+probes cover rank behavior, caps and real save/reload evidence. Native replay
+passed 25 checks. These results establish the exercised progression mechanics,
+not human balance or
+full legal victories across the trilogy.
+
+The strict harness captures real process exits and all output, requires phase
+completion/check/save evidence, retains only the exact known synthetic controller
+diagnostic as a warning, and rejects crashes even after `done`. Air and veteran
+fixtures have verified idle-after-completion behavior with runner-owned shutdown;
+the engine's interactive quit lifecycle is not claimed fixed. Lifecycle
+regressions passed 19 selftests, and scanner compatibility passed for all 30 real
+campaign saves, including translated/multiline WML string concatenations.
+That scanner result is distinct from native reload of every campaign save.
+
+Prior strict force and intel `-6` abort evidence remains preserved; the engine's
+internal cause is not established. With strict phase evidence and corrected
+fixture lifecycles, the final Force suites passed 141 checks and intelligence
+suites passed 158 checks on both frozen baseline and training builds at
+`5c889134dd2e135c34d6ea74ac517222ce3e9d3c`. Their actual main and reload phases
+ended with runner-owned `-15` exits and no engine errors. These passes verify
+the fixture disposal strategy, not an engine interactive-quit fix.
+
+All three native campaign scripted sequences passed on the frozen `5c889134`
+training build. `/tmp/sw-final-progression-native-20261010/results.json` and
+the individual campaign JSON files record 10 scenarios, scripted wins,
+transitions and actual validated saves per campaign: 30 of each across the
+trilogy. Each completed before runner-owned termination with process exit
+`-15`, no timeout and no failures; the final batch exited `0`. The frozen
+training manifest SHA is
+`60a79085284b18b769982e18fad0654120efcdcc645bed5cf52c8c79964eb4dd`.
+These results prove the exercised scripted transitions, carryover and save
+validation, not legal human victories, balance or native reload of every save.
+
+The reviewed PR #361 gameplay snapshot is
+`c6c7089fb8281e5b36bc805b17f56097b307d8eb`, including Claude's finale summary.
+Current source is `73016bf555ae514829f600b8dce2eb9b905728b6`, which also includes
+PR #362's README and server metadata/version `0.6.0` update; those are the only
+content differences from `c6c7089`. Strict baseline and training air on that
+PR #361 gameplay snapshot each passed 188 checks with zero failures or engine
+errors and runner-owned stops in both native main and reload phases. Dedicated
+native training staged actual `73016bf` source and passed 70 checks. All three
+PR #361 training campaign sequences also passed, each with 10 scenarios,
+transitions and actual validated saves, completion before owned `-15` shutdown,
+and no timeout or failures. Both final batches exited `0`. Evidence is in
+`/tmp/sw-pr361-progression-native-20261010/results.json`, `campaign-results.json`
+and the per-suite files. Manifest SHAs are baseline
+`fe1ea03239878d77af28f7238fec7e057764205d4f6940165fa3522d8248f8f9` and training
+`98fcf9457ec90fe8d624567176282b83c39eaed410dc106502737fcb1fec0d14`.
+
+These sequences skip dialogs; air assertions verify generated summary text.
+They do not establish on-screen finale dialog presentation, legal human wins,
+balance or native reload of every save. Integrated training scope, static, art
+and acceptance validation passed. Publication remains incomplete: normal CI,
+protected merge and player-launcher gates must pass before release. Historical
+failure evidence remains preserved.
