@@ -1101,3 +1101,63 @@ a win-rate improvement, a balance regression, or human difficulty. The verified
 benefit is access to previously sealed healing rooms and choices between a
 short central approach and longer, contestable flanks. Both sides gain those
 routes, so the player still needs to cover the announced boarding shafts.
+
+
+## Cloning-vat production bays (2026-10-12)
+
+The eight cylinders now sit in distinct durasteel production bays inside Mount
+Tantiss, joined by staggered doors, the existing central dispatch aisle and two
+hewn service passages. Fourteen equipment-cover hexes create defended positions
+for both sides. Cylinder locations, heroes, guards, reinforcements, recruitment,
+gold, turns and victory/defeat rules are unchanged. Han remains mission-critical.
+The passages connect to the eastern clone entry, so they are contestable.
+
+Layout checks confirm all 240 walkable hexes are connected, compared with
+244 in the old hall. Installed Wesnoth 1.19.27 confirms all eight cylinders have
+vacant adjacent attack positions reachable by Han, a New Republic trooper,
+a Noghri and a clone guard in unopposed native path checks. Han's original central advance to (23,9) still
+costs 20 MP; his cheapest approaches to the cylinders cost 9-18 MP. These
+measurements describe available routes, not a win or a safe route through guards.
+
+Han, Republic troopers and clones have 40% defense on these floors; the tested
+Noghri has 50%. Equipment cover gives all four tested types 60% defense, retains
+one-MP movement and grants no healing, income or recruitment. Bulkheads and
+surrounding rock walls remain impassable. Both sides can reach both service
+passages, including the eastern passage beside the unchanged reinforcement
+entries.
+
+A real native move from (6,9) to (7,5) spent five MP. Ordinary move commands were
+resumed when the engine paused along the route, using the remaining budget
+without teleports or refills. An actual save/reload retained the destination,
+zero remaining MP, all fourteen cover cells and all eight original cylinders.
+The initial diagnostic fixture assumed four MP, then assumed a single command
+would complete the route; both failed attempts are retained. Correcting those
+fixture assumptions passed 77 main-phase and 73 reload checks without changing
+the gameplay map.
+
+Inventory, unit and all three map-generator checks, scope/whitespace, 107
+declared contracts, 682 systems checks and all 30 campaign sequence stages
+passed. All 30 sequence saves were parsed as readable, matching saved WML.
+Systems logs retain 15 synthetic-controller warnings, with no engine errors;
+their six main/load phases and existing replay tests passed. Campaign sequence
+probes use scripted objectives and parsed saves, rather than human playtests
+or native reloads of every sequence save. All 29 other maps and all 30 scenario
+CFGs remain byte-identical to the base.
+
+Six careful-player AI soaks passed the existing technical gate:
+
+| Layout | Run | Recorded AI outcome | Turns played |
+| --- | --- | --- | --- |
+| Previous hall | 1 | result VICTORY turn 12 | 12 |
+| Previous hall | 2 | result VICTORY turn 10 | 10 |
+| Previous hall | 3 | result VICTORY turn 14 | 14 |
+| Production bays | 1 | result VICTORY turn 8 | 8 |
+| Production bays | 2 | result VICTORY turn 10 | 10 |
+| Production bays | 3 | result DEFEAT turn 4 | 4 |
+
+These are independent random runs, not paired seeds. The recorded outcomes
+remain a rough automated balance signal, with no claim of improved win rate
+or human difficulty. The verified player benefit is a readable industrial
+layout with choices between a direct central advance and compartment assaults
+using cover and contested flanks. Existing enemy numbers, target durability,
+hero-defeat rules, gold and turn limits are unchanged.
