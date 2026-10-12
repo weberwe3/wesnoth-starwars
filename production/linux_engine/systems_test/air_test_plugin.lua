@@ -13,7 +13,10 @@ local STEPS = {
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
-  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "muzzle_flashes", "attack_range", "prepare_save",
+  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw",
+  "wookiee_ranks", "wookiee_recruit_setup", "wookiee_recruit_check", "wookiee_normal", "wookiee_check_normal",
+  "wookiee_aimed", "wookiee_check_hit", "wookiee_target_turn", "wookiee_check_return", "wookiee_expiry",
+  "wookiee_miss", "wookiee_check_miss", "muzzle_flashes", "attack_range", "prepare_save",
 }
 local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, ai_withdraw = true, alert_ai = true }
 
@@ -1375,6 +1378,205 @@ local function plugin(events, context, info)
       check("Hide attack range clears it", #wml.array_access.get("sw_range_shown") == 0)
     end
 
+    -- Native slow (core WEAPON_SPECIAL_SLOW): on a hit, lasts through the
+    -- target's next turn; doubles terrain costs rather than halving max_moves.
+    -- Only fixture chance-to-hit specials are replaced to isolate hit/miss.
+    -- The shipped slow, range and aimed defense-disable remain intact.
+    local function sw_wk_idx(unit, name)
+      for i, attack in ipairs(unit.attacks) do if attack.name == name then return i end end
+      error("missing Wookiee fixture weapon: " .. name)
+    end
+    local function sw_wk_certainty(unit, name, value)
+      local idx = sw_wk_idx(unit, name)
+      local original, specials = unit.attacks[idx].specials, {}
+      for _, special in ipairs(original) do
+        if special[1] ~= "chance_to_hit" then specials[#specials + 1] = special end
+      end
+      specials[#specials + 1] = T.chance_to_hit{ id = "sw_test_wookiee_certainty", value = value, cumulative = false }
+      unit.attacks[idx].specials = specials
+      return idx, original
+    end
+    local function sw_wk_cost(unit, x, y)
+      local _, cost = wesnoth.paths.find_path(unit, x, y, { ignore_units = true })
+      return cost
+    end
+    local function sw_wk_damage(unit, target)
+      local _, _, weapon = wesnoth.simulate_combat(unit, sw_wk_idx(unit, "rifle_butt"), target)
+      return weapon.damage
+    end
+    -- Keep a concussive support recruit in the class-rank system without
+    -- adding weapons or duplicating its base Slow. Use real native AMLAs.
+    function S.wookiee_ranks()
+      swt.clear()
+      local function idx(unit, name)
+        for i, attack in ipairs(unit.attacks) do if attack.name == name then return i end end
+      end
+      local function count(unit, name, tag)
+        local n = 0
+        for _i, special in ipairs(unit.attacks[idx(unit, name)].specials) do
+          if special[1] == tag then n = n + 1 end
+        end
+        return n
+      end
+      local function cth(att, name, def)
+        local _a, _d, weapon = wesnoth.simulate_combat(att, idx(att, name), def)
+        return weapon.chance_to_hit
+      end
+      local unit = swt.place("sw_unit_wk_suppressor", 1, 8, 8, "sw_test_wookiee_ranked")
+      local ally = swt.place("sw_unit_nr_trooper", 1, 9, 8, "sw_test_wookiee_rank_ally")
+      local foe = swt.place("sw_unit_im_stormtrooper", 2, 10, 8, "sw_test_wookiee_rank_foe")
+      local n = #unit.attacks
+      local ranged0, melee0 = cth(ally, "blaster_rifle", foe), cth(ally, "rifle_butt", foe)
+      local own0 = cth(unit, "bowcaster", foe)
+      check("a fresh Suppressor has rank zero and no earned rank object", rank.of(unit) == 0
+        and swt.objects(unit, "sw_rank_ability_1") == 0)
+      unit = swt.level_up(unit.id)
+      check("Suppressor rank I grants thick hide through native advancement", rank.of(unit) == 1
+        and unit:matches{ ability = "sw_rank_steadfast" } and tonumber(unit.variables.sw_rank_ability) == 1)
+      check("thick hide doubles positive defense resistance", unit:resistance_against("blade", false) == 20
+        and unit:resistance_against("cold", false) == 40)
+      check("thick hide retains offensive resistance and fire vulnerability", unit:resistance_against("blade", true) == 10
+        and unit:resistance_against("cold", true) == 20 and unit:resistance_against("fire", false) == -10)
+      unit = swt.level_up(unit.id)
+      check("Suppressor rank II gives both bowcaster variants one first strike", rank.of(unit) == 2
+        and count(unit, "bowcaster", "firststrike") == 1 and count(unit, "bowcaster_aimed", "firststrike") == 1)
+      check("covering fire adds no first strike to the ryyk blade", count(unit, "ryyk_blade", "firststrike") == 0)
+      unit = swt.level_up(unit.id)
+      check("Suppressor rank III grants fire discipline", rank.of(unit) == 3
+        and unit:matches{ ability = "sw_rank_hit_aura" } and tonumber(unit.variables.sw_rank_ability) == 3)
+      check("elite Suppressor gives adjacent allies +10 percent ranged accuracy", cth(ally, "blaster_rifle", foe) == ranged0 + 10)
+      check("elite Suppressor does not improve allied melee or its own accuracy",
+        cth(ally, "rifle_butt", foe) == melee0 and cth(unit, "bowcaster", foe) == own0)
+      unit:to_map(8, 6)
+      check("Suppressor fire discipline stops beyond adjacency", cth(ally, "blaster_rifle", foe) == ranged0)
+      unit:to_map(8, 8)
+      check("Suppressor ranks retain exactly one Slow per bowcaster", count(unit, "bowcaster", "slow") == 1
+        and count(unit, "bowcaster_aimed", "slow") == 1)
+      check("Suppressor ranks add no attacks or movement", #unit.attacks == n and unit.max_moves == 5)
+      swt.mem.wk_rank_snapshot = unit.__cfg
+      unit = swt.level_up(unit.id)
+      rank.update(unit)
+      local once = true
+      for r = 1, 3 do once = once and swt.objects(unit, "sw_rank_ability_" .. r) == 1 end
+      check("Suppressor grants stay capped and unique after another AMLA and update", once and rank.of(unit) == 3
+        and count(unit, "bowcaster", "firststrike") == 1 and count(unit, "bowcaster", "slow") == 1)
+    end
+
+    function S.wookiee_recruit_setup()
+      swt.clear()
+      local side = wesnoth.sides[1]
+      swt.mem.wk_gold, swt.mem.wk_recruit = side.gold, side.recruit
+      swt.mem.wk_keep, swt.mem.wk_castle = wesnoth.current.map[{ 4, 4 }], wesnoth.current.map[{ 5, 4 }]
+      wesnoth.wml_actions.terrain{ x = 4, y = 4, terrain = "Kh" }
+      wesnoth.wml_actions.terrain{ x = 5, y = 4, terrain = "Ch" }
+      local leader = swt.place("sw_hero_leia", 1, 4, 4, "sw_test_wookiee_leader")
+      leader.canrecruit = true
+      side.gold, side.recruit = 100, { "sw_unit_wk_suppressor" }
+    end
+    function S.wookiee_recruit_check()
+      local unit = wesnoth.units.get(5, 4)
+      check("Suppressor recruits through a native paid command for 22 gold", unit and
+        unit.type == "sw_unit_wk_suppressor" and unit.side == 1 and not unit.canrecruit and wesnoth.sides[1].gold == 78)
+      check("a recruited Suppressor has spent movement and attack", unit and unit.moves == 0 and unit.attacks_left == 0)
+      wesnoth.sides[1].gold, wesnoth.sides[1].recruit = swt.mem.wk_gold, swt.mem.wk_recruit
+      wesnoth.wml_actions.terrain{ x = 4, y = 4, terrain = swt.mem.wk_keep }
+      wesnoth.wml_actions.terrain{ x = 5, y = 4, terrain = swt.mem.wk_castle }
+    end
+    function S.wookiee_normal()
+      swt.clear()
+      local shooter = swt.place("sw_unit_wk_suppressor", 1, 8, 8, "sw_test_wookiee_normal")
+      local target = swt.place("sw_unit_im_stormtrooper", 2, 10, 8, "sw_test_wookiee_target")
+      local victim = swt.place("sw_unit_nr_militia", 1, 10, 7, "sw_test_wookiee_victim")
+      check("Suppressor has the bounded generated profile", shooter.max_hitpoints == 34 and shooter.max_moves == 5
+        and shooter.max_experience == 48 and wesnoth.unit_types.sw_unit_wk_suppressor.cost == 22)
+      check("Suppressor does not replace lookout keen senses", not shooter:matches{ ability = "sw_ability_keen_senses" })
+      local normal, aimed = shooter.attacks[sw_wk_idx(shooter, "bowcaster")], shooter.attacks[sw_wk_idx(shooter, "bowcaster_aimed")]
+      check("Suppressor normal bowcaster is 4x2 at range 1-2", normal.damage == 4 and normal.number == 2 and normal.min_range == 1 and normal.max_range == 2)
+      check("Suppressor aimed bowcaster is 4x1 at range 2", aimed.damage == 4 and aimed.number == 1 and aimed.min_range == 2 and aimed.max_range == 2)
+      local _, _, nw = wesnoth.simulate_combat(shooter, sw_wk_idx(shooter, "bowcaster"), target)
+      local _, _, aw = wesnoth.simulate_combat(shooter, sw_wk_idx(shooter, "bowcaster_aimed"), target)
+      check("unmodified Suppressor aim adds 20 percent accuracy", aw.chance_to_hit == nw.chance_to_hit + 20)
+      swt.mem.wk_base_damage = sw_wk_damage(target, victim)
+      swt.mem.wk_base_cost = sw_wk_cost(target, 11, 8)
+      check("unslowed target has one-hex grass cost 1", swt.mem.wk_base_cost == 1, swt.mem.wk_base_cost)
+      swt.mem.wk_target_hp = target.hitpoints
+      local idx, original = sw_wk_certainty(shooter, "bowcaster", 100)
+      swt.mem.wk_normal_specials = original
+      local _, _, sure = wesnoth.simulate_combat(shooter, idx, target)
+      check("normal hit fixture establishes native 100 percent chance", sure.chance_to_hit == 100, sure.chance_to_hit)
+      wesnoth.wml_actions.do_command{ T.attack{ weapon = idx - 1, T.source{ x = 8, y = 8 }, T.destination{ x = 10, y = 8 } } }
+    end
+    function S.wookiee_check_normal()
+      local shooter, target = u("sw_test_wookiee_normal"), u("sw_test_wookiee_target")
+      shooter.attacks[sw_wk_idx(shooter, "bowcaster")].specials = swt.mem.wk_normal_specials
+      check("actual two-hex bowcaster hit deals damage and applies Slow", target and target.hitpoints < swt.mem.wk_target_hp and target.status.slowed)
+      check("actual Suppressor attack spends its native actions", shooter.attacks_left == 0 and shooter.moves == 0)
+      check("Slow halves the target's native attack damage", sw_wk_damage(target, u("sw_test_wookiee_victim")) == math.ceil(swt.mem.wk_base_damage / 2))
+      check("Slow doubles native grass path cost", sw_wk_cost(target, 11, 8) == 2)
+      swt.mem.wk_saved_shooter, swt.mem.wk_saved_target = shooter.__cfg, target.__cfg
+    end
+    function S.wookiee_aimed()
+      local shooter = swt.place("sw_unit_wk_suppressor", 1, 12, 8, "sw_test_wookiee_aimed")
+      local target = swt.place("sw_unit_im_stormtrooper", 2, 14, 8, "sw_test_wookiee_aimed_target")
+      swt.mem.wk_aimed_hp = target.hitpoints
+      local idx, original = sw_wk_certainty(shooter, "bowcaster_aimed", 100)
+      swt.mem.wk_aimed_specials = original
+      local _, _, shot = wesnoth.simulate_combat(shooter, idx, target)
+      check("aimed hit fixture establishes one certain native strike", shot.chance_to_hit == 100 and shot.num_blows == 1)
+      wesnoth.wml_actions.do_command{ T.attack{ weapon = idx - 1, T.source{ x = 12, y = 8 }, T.destination{ x = 14, y = 8 } } }
+    end
+    function S.wookiee_check_hit()
+      local shooter, target = u("sw_test_wookiee_aimed"), u("sw_test_wookiee_aimed_target")
+      shooter.attacks[sw_wk_idx(shooter, "bowcaster_aimed")].specials = swt.mem.wk_aimed_specials
+      check("actual aimed two-hex hit applies Slow and spends actions", target and target.hitpoints < swt.mem.wk_aimed_hp
+        and target.status.slowed and shooter.attacks_left == 0 and shooter.moves == 0)
+      -- Leave no spare attack for overwatch before the real side 2 turn.
+      u("sw_test_wookiee_victim").attacks_left = 0
+      local defender = swt.place("sw_unit_wk_suppressor", 1, 16, 8, "sw_test_wookiee_return")
+      defender.attacks_left = 0
+      swt.place("sw_unit_im_stormtrooper", 2, 17, 8, "sw_test_wookiee_return_target")
+      local _, original = sw_wk_certainty(defender, "bowcaster", 100)
+      swt.mem.wk_return_specials = original
+    end
+    function S.wookiee_target_turn()
+      local target = u("sw_test_wookiee_target")
+      check("actual target turn retains Slow after native refresh", wesnoth.current.side == 2 and target.status.slowed and target.moves > 0)
+      check("actual target turn retains doubled path cost and halved damage", sw_wk_cost(target, 11, 8) == 2
+        and sw_wk_damage(target, u("sw_test_wookiee_victim")) == math.ceil(swt.mem.wk_base_damage / 2))
+      local attacker = u("sw_test_wookiee_return_target")
+      wesnoth.wml_actions.do_command{ T.attack{ weapon = sw_wk_idx(attacker, "blaster_rifle") - 1,
+        T.source{ x = 17, y = 8 }, T.destination{ x = 16, y = 8 } } }
+    end
+    function S.wookiee_check_return()
+      local defender = u("sw_test_wookiee_return")
+      defender.attacks[sw_wk_idx(defender, "bowcaster")].specials = swt.mem.wk_return_specials
+      check("actual normal bowcaster return fire also applies Slow", defender and u("sw_test_wookiee_return_target").status.slowed)
+    end
+    function S.wookiee_expiry()
+      local target = u("sw_test_wookiee_target")
+      check("Slow expires after the actual target end turn", wesnoth.current.side == 1 and not target.status.slowed
+        and not u("sw_test_wookiee_aimed_target").status.slowed and not u("sw_test_wookiee_return_target").status.slowed)
+      check("native damage and grass cost recover after expiry", sw_wk_cost(target, 11, 8) == 1
+        and sw_wk_damage(target, u("sw_test_wookiee_victim")) == swt.mem.wk_base_damage)
+    end
+    function S.wookiee_miss()
+      swt.clear()
+      local shooter = swt.place("sw_unit_wk_suppressor", 1, 8, 8, "sw_test_wookiee_miss")
+      local target = swt.place("sw_unit_im_stormtrooper", 2, 10, 8, "sw_test_wookiee_miss_target")
+      swt.mem.wk_miss_hp = target.hitpoints
+      local idx, original = sw_wk_certainty(shooter, "bowcaster", 0)
+      swt.mem.wk_miss_specials = original
+      local _, _, shot = wesnoth.simulate_combat(shooter, idx, target)
+      check("miss fixture establishes native zero percent chance", shot.chance_to_hit == 0, shot.chance_to_hit)
+      wesnoth.wml_actions.do_command{ T.attack{ weapon = idx - 1, T.source{ x = 8, y = 8 }, T.destination{ x = 10, y = 8 } } }
+    end
+    function S.wookiee_check_miss()
+      local shooter, target = u("sw_test_wookiee_miss"), u("sw_test_wookiee_miss_target")
+      shooter.attacks[sw_wk_idx(shooter, "bowcaster")].specials = swt.mem.wk_miss_specials
+      check("an actual native miss does no damage and does not slow", target.hitpoints == swt.mem.wk_miss_hp and not target.status.slowed)
+      check("an actual native miss still spends the attack", shooter.attacks_left == 0 and shooter.moves == 0)
+    end
+
     function S.prepare_save()
       swt.clear()
       if swt.mem.retreat_saved then
@@ -1382,6 +1584,23 @@ local function plugin(events, context, info)
         soldier:to_map()
         wml.variables.swt_retreat_expected = { x = soldier.x, y = soldier.y, hp = soldier.hitpoints,
           moves = soldier.moves, attacks = soldier.attacks_left }
+      end
+      -- Reconstruct the real combat snapshots, with original weapon specials,
+      -- through native [unit] creation. Discard serialized internal identities
+      -- so each reconstructed unit receives a fresh one. No manual status.
+      if swt.mem.wk_saved_shooter and swt.mem.wk_saved_target then
+        swt.mem.wk_saved_shooter.underlying_id = nil
+        swt.mem.wk_saved_target.underlying_id = nil
+        wesnoth.wml_actions.unit(swt.mem.wk_saved_shooter)
+        wesnoth.wml_actions.unit(swt.mem.wk_saved_target)
+        local shooter, target = u("sw_test_wookiee_normal"), u("sw_test_wookiee_target")
+        wml.variables.swt_wookiee_expected = { hp = shooter.hitpoints, moves = shooter.moves, attacks = shooter.attacks_left,
+          target_hp = target.hitpoints, target_slowed = target.status.slowed }
+      end
+      if swt.mem.wk_rank_snapshot then
+        swt.mem.wk_rank_snapshot.underlying_id = nil
+        swt.mem.wk_rank_snapshot.x, swt.mem.wk_rank_snapshot.y = 18, 12
+        wesnoth.wml_actions.unit(swt.mem.wk_rank_snapshot)
       end
       local obs = swt.place("sw_unit_nr_commando", 1, 4, 4, "t_obs")
       for _i = 1, 2 do swt.level_up("t_obs") end
@@ -1393,6 +1612,24 @@ local function plugin(events, context, info)
     end
 
     function S.load()
+      local veteran = u("sw_test_wookiee_ranked")
+      check("actual reload keeps all three earned Suppressor rank objects", veteran and rank.of(veteran) == 3
+        and swt.objects(veteran, "sw_rank_ability_1") == 1 and swt.objects(veteran, "sw_rank_ability_2") == 1
+        and swt.objects(veteran, "sw_rank_ability_3") == 1 and veteran:matches{ ability = "sw_rank_hit_aura" })
+      local shooter, target, wk = u("sw_test_wookiee_normal"), u("sw_test_wookiee_target"), wml.variables.swt_wookiee_expected
+      check("actual reload retains Suppressor profile and spent actions", shooter and wk and shooter.type == "sw_unit_wk_suppressor"
+        and shooter.max_hitpoints == 34 and shooter.max_moves == 5 and shooter.x == 8 and shooter.y == 8
+        and shooter.hitpoints == wk.hp and shooter.moves == wk.moves and shooter.attacks_left == wk.attacks)
+      check("actual reload retains the native on-hit Slow snapshot", target and wk and wk.target_slowed and target.status.slowed
+        and target.x == 10 and target.y == 8 and target.hitpoints == wk.target_hp and sw_wk_cost(target, 11, 8) == 2)
+      local specials_ok, slow = true, false
+      if shooter then
+        for _, special in ipairs(shooter.attacks[sw_wk_idx(shooter, "bowcaster")].specials) do
+          if special[1] == "slow" then slow = true end
+          if special[2].id == "sw_test_wookiee_certainty" then specials_ok = false end
+        end
+      end
+      check("actual reload restores the shipped Slow weapon without fixture certainty", specials_ok and slow)
       local soldier, saved = u("t_real_retreat"), wml.variables.swt_retreat_expected
       check("real reload registers the withdrawal replay command", type(wesnoth.custom_synced_commands.sw_ai_withdraw_stand_down) == "function")
       check("real reload retains withdrawn troop position, health and spent actions", soldier and saved
@@ -1420,6 +1657,19 @@ local function plugin(events, context, info)
     local step = name
     wesnoth.plugin.execute(context, function() swt.step(step) end)
     settle()
+    if step == "wookiee_recruit_setup" then
+      context.synced_command{{ "recruit", { type = "sw_unit_wk_suppressor", x = 5, y = 4,
+        { "from", { x = 4, y = 4 } } } }}
+      settle()
+    end
+    if step == "wookiee_check_hit" or step == "wookiee_check_return" then
+      -- Both active fixture sides are human: explicitly end each native turn.
+      context.end_turn{}
+      local expected = step == "wookiee_check_hit" and 2 or 1
+      local g = 0
+      repeat settle(); g = g + 1
+      until (info.name == "Game" and info.current_side and info.current_side() == expected) or g > 50
+    end
     if END_TURN_AFTER[step] then
       context.end_turn{}
       local g = 0

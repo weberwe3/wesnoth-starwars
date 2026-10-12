@@ -340,6 +340,64 @@ return {
 				},
 			} },
 	},
+	sw_unit_wk_suppressor = {
+		[1] = { key = "thick_hide", name = _ "Thick hide", effects = {
+				T.effect {
+					apply_to = "new_ability",
+					T.abilities {
+						T.resistance {
+							id = "sw_rank_steadfast",
+							multiply = 2,
+							max_value = 50,
+							affect_self = "yes",
+							active_on = "defense",
+							name = _ "thick hide",
+							description = _ "Shrugs off blows that would fell others. This unit's resistances are doubled, up to 50%, when defending. Vulnerabilities are not affected.",
+							T.filter_base_value {
+								greater_than = 0,
+								less_than = 50,
+							},
+						},
+					},
+				},
+			} },
+		[2] = { key = "covering_fire", name = _ "Covering fire", effects = {
+				T.effect {
+					apply_to = "attack",
+					name = "bowcaster,bowcaster_aimed",
+					T.set_specials {
+						mode = "append",
+						T.firststrike {
+							id = "sw_rank_firststrike",
+							name = _ "covering fire",
+							description = _ "Fires first, from long habit. This attack always strikes first, even when defending.",
+						},
+					},
+				},
+			} },
+		[3] = { key = "fire_discipline", name = _ "Fire discipline", effects = {
+				T.effect {
+					apply_to = "new_ability",
+					T.abilities {
+						T.chance_to_hit {
+							id = "sw_rank_hit_aura",
+							add = 10,
+							cumulative = "no",
+							affect_self = "no",
+							affect_allies = "yes",
+							name = _ "fire discipline",
+							description = _ "Calls targets and keeps the squad's fire steady. Adjacent allies have +10% chance to hit with their ranged attacks.",
+							T.affect_adjacent {},
+							T.filter_student {
+								T.filter_weapon {
+									range = "ranged",
+								},
+							},
+						},
+					},
+				},
+			} },
+	},
 	sw_unit_wk_warrior = {
 		[1] = { key = "battle_roar", name = _ "Battle roar", effects = {
 				T.effect {

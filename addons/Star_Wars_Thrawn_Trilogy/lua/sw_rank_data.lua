@@ -9,6 +9,7 @@ return {
 	sw_unit_nr_militia = { style = "republic", base = 0, designs = {} },
 	sw_unit_wk_warrior = { style = "republic", base = 0, designs = {2, 3} },
 	sw_unit_wk_lookout = { style = "republic", base = 0, designs = {2, 3} },
+	sw_unit_wk_suppressor = { style = "republic", base = 0, designs = {} },
 	sw_unit_nr_xwing = { style = "republic", base = 0, designs = {2, 3} },
 	sw_unit_nr_awing = { style = "republic", base = 0, designs = {2, 3} },
 	sw_unit_nr_ywing = { style = "republic", base = 0, designs = {2} },

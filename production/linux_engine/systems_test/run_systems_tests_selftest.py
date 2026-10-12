@@ -21,6 +21,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import run_systems_tests as runner  # noqa: E402
 
 PLUGIN = "air_test_plugin.lua"
+SIGKILL = getattr(signal, "SIGKILL", 9)
+
+
+def simulated_stop(process, *, force=False):
+    """Simulated processes retain their configured native exit/race behavior."""
+    if force:
+        process.kill()
+    else:
+        process.terminate()
 
 
 def valid_output(phase: str) -> str:
@@ -33,8 +42,8 @@ def valid_output(phase: str) -> str:
 class SimulatedProcess:
     def __init__(self, stdout, stderr, specification: dict):
         self.returncode = specification.get("exit_code")
-        self.stop_code = specification.get("stop_code", -signal.SIGTERM)
-        self.kill_code = specification.get("kill_code", -signal.SIGKILL)
+        self.stop_code = specification.get("stop_code", runner._TERMINATE_EXIT)
+        self.kill_code = specification.get("kill_code", runner._KILL_EXIT)
         self.terminate_calls = 0
         self.kill_calls = 0
         stdout.write(specification.get("stdout", ""))
@@ -96,6 +105,7 @@ class NativePhaseEvidenceTests(unittest.TestCase):
     def phase(self, specification, phase="main"):
         extra = ["--load", "sw_air_test_save.gz"] if phase == "load" else []
         with patch.object(runner, "HERE", self.fixture), \
+             patch.object(runner, "request_engine_stop", side_effect=simulated_stop), \
              patch.object(runner.subprocess, "Popen", side_effect=self.factory(specification)), \
              patch.object(runner.time, "monotonic", side_effect=self.monotonic), \
              patch.object(runner.time, "sleep"):
@@ -104,6 +114,7 @@ class NativePhaseEvidenceTests(unittest.TestCase):
     def suite(self, specification):
         evidence = []
         with patch.object(runner, "HERE", self.fixture), \
+             patch.object(runner, "request_engine_stop", side_effect=simulated_stop), \
              patch.object(runner, "stage", return_value=self.userdata), \
              patch.object(runner.subprocess, "Popen", side_effect=self.factory(specification)), \
              patch.object(runner.time, "monotonic", side_effect=self.monotonic), \
@@ -119,7 +130,7 @@ class NativePhaseEvidenceTests(unittest.TestCase):
         self.assertTrue(result["termination_requested"])
         self.assertTrue(result["termination_after_completion"])
         self.assertTrue(result["owned_stop_after_completion"])
-        self.assertEqual(result["engine_exit_code"], -signal.SIGTERM)
+        self.assertEqual(result["engine_exit_code"], runner._TERMINATE_EXIT)
         self.assertEqual(self.processes[0].terminate_calls, 1)
         json.dumps(result)  # All retained phase evidence is JSON serializable.
 
@@ -134,10 +145,10 @@ class NativePhaseEvidenceTests(unittest.TestCase):
         self.assertTrue(result["pass"], result)
         self.assertTrue(result["kill_requested"])
         self.assertEqual(self.processes[0].kill_calls, 1)
-        self.assertEqual(result["engine_exit_code"], -signal.SIGKILL)
+        self.assertEqual(result["engine_exit_code"], runner._KILL_EXIT)
 
     def test_unrequested_signals_are_not_owned(self):
-        for code in (-signal.SIGTERM, -signal.SIGKILL):
+        for code in (runner._TERMINATE_EXIT, runner._KILL_EXIT, 1):
             with self.subTest(code=code):
                 result = self.phase({"stdout": valid_output("main"), "exit_code": code})
                 self.assertFalse(result["pass"])
@@ -152,7 +163,7 @@ class NativePhaseEvidenceTests(unittest.TestCase):
                 self.assertIn(f"unexpected engine exit: {code}", result["errors"])
 
     def test_abort_racing_with_owned_shutdown_still_fails(self):
-        for code in (-6, -11, -signal.SIGKILL):
+        for code in (-6, -11, -SIGKILL, 1):
             with self.subTest(code=code):
                 result = self.phase({"stdout": valid_output("main"), "stop_code": code})
                 self.assertTrue(result["termination_after_completion"])
@@ -351,6 +362,42 @@ class NativePhaseEvidenceTests(unittest.TestCase):
                                                        "sw_test_air_replay", 1, warnings)
                 self.assertIn(diagnostic, errors)
                 self.assertFalse(warnings)
+
+    def test_windows_native_log_supplies_replay_checkpoints(self):
+        text = self.replay_output("")
+        (self.userdata / "logs/native.out.log").write_text(text, encoding="utf-8")
+        for stdout in ("", text):
+            with self.subTest(mirrored=bool(stdout)):
+                process = subprocess.CompletedProcess(["simulated-engine"], 0, stdout=stdout, stderr="")
+                with patch.object(runner, "stage", return_value=self.userdata), \
+                     patch.object(runner.subprocess, "run", return_value=process):
+                    results, errors = runner.run_replay_test(Path("simulated-engine"), self.work,
+                                                            "sw_test_air_replay", 1)
+                self.assertFalse(errors)
+                self.assertFalse(any("] FAIL " in result for result in results), results)
+                self.assertTrue(any("reproduced by the replay: 4" in result for result in results))
+
+    def test_windows_replay_keeps_output_in_owned_pipes(self):
+        process = subprocess.CompletedProcess(["simulated-engine"], 0, stdout=self.replay_output(""), stderr="")
+        for windows in (False, True):
+            with self.subTest(windows=windows), patch.object(runner, "_WINDOWS_HOST", windows), \
+                 patch.object(runner, "stage", return_value=self.userdata), \
+                 patch.object(runner.subprocess, "run", return_value=process) as run:
+                _, errors = runner.run_replay_test(Path("simulated-engine"), self.work, "sw_test_air_replay", 1)
+                self.assertFalse(errors)
+                self.assertEqual("--wnoconsole" in run.call_args.args[0], windows)
+
+    def test_native_log_cannot_excuse_missing_checkpoint_or_fatal(self):
+        for text in (self.replay_output("").replace("SW_TEST: PASS checkpoint 3 (replay)\n", ""),
+                     self.replay_output("error engine: native replay failed")):
+            with self.subTest(text=text):
+                (self.userdata / "logs/native.out.log").write_text(text, encoding="utf-8")
+                process = subprocess.CompletedProcess(["simulated-engine"], 0, stdout="", stderr="")
+                with patch.object(runner, "stage", return_value=self.userdata), \
+                     patch.object(runner.subprocess, "run", return_value=process):
+                    results, errors = runner.run_replay_test(Path("simulated-engine"), self.work,
+                                                            "sw_test_air_replay", 1)
+                self.assertTrue(errors or any("] FAIL " in result for result in results))
 
     def test_top_level_json_explicitly_retains_phase_warnings(self):
         warning = runner.SYNTHETIC_CONTROLLER_DIAGNOSTIC

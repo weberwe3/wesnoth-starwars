@@ -322,6 +322,8 @@ ASSIGNMENTS = {
     "sw_unit_nr_eweb_team": {1: ("dug_in", None), 2: ("suppressing_fire", "eweb_repeater"),
                              3: ("armour_piercing", "eweb_repeater")},
     "sw_unit_nr_field_medic": {1: ("field_surgery", None), 2: ("field_dressings", None), 3: ("rapid_evac", None)},
+    "sw_unit_wk_suppressor": {1: ("thick_hide", None), 2: ("covering_fire", "bowcaster"),
+                              3: ("fire_discipline", None)},
     "sw_unit_wk_warrior": {1: ("battle_roar", None), 2: ("thick_hide", None), 3: ("wookiee_fury", "ryyk_blade")},
     "sw_unit_wk_lookout": {1: ("sniper_perch", "bowcaster"), 2: ("forest_ghost", None),
                            3: ("pinning_shot", "bowcaster")},

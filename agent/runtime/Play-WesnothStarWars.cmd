@@ -1,115 +1,108 @@
 @echo off
 setlocal EnableExtensions
-
-rem Launch the campaign from the exact published origin/main add-on revision.
-rem The launcher never silently opens a stale userdata snapshot or unpublished
-rem local game content. It synchronizes a clean local main, then mirrors only
-rem that verified add-on into isolated Wesnoth test userdata.
-set "DISTRO=Ubuntu-24.04"
+rem Local game launcher: native Git replaces WSL process transport.
+rem This preserves protected-main, clean-source and isolated-mirror checks.
+set "PROJECT_WINDOWS=\\wsl.localhost\Ubuntu-24.04\home\willj\projects\wesnoth-starwars"
 set "PROJECT_LINUX=/home/willj/projects/wesnoth-starwars"
+rem An operator running tests in a worktree may inherit Git selectors.
+rem Pin this local process to the actual published source checkout.
+set "GIT_DIR=%PROJECT_WINDOWS%\.git"
+set "GIT_WORK_TREE=%PROJECT_WINDOWS%"
+set "GIT_COMMON_DIR="
+set "GIT_INDEX_FILE="
+set "GIT_OBJECT_DIRECTORY="
+set "GIT_ALTERNATE_OBJECT_DIRECTORIES="
+set "GIT_NAMESPACE="
+set "GIT_EXE=C:\Users\willj\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd\git.exe"
+set "GIT_TERMINAL_PROMPT=0"
+set "GCM_INTERACTIVE=Never"
 set "ADDON_ID=Star_Wars_Thrawn_Trilogy"
 set "USERDATA=%LOCALAPPDATA%\WesnothStarWarsTest\userdata"
 set "ADDON_TARGET=%USERDATA%\data\add-ons\%ADDON_ID%"
+set "ADDON_SOURCE=%PROJECT_WINDOWS%\addons\%ADDON_ID%"
+set "CHECKS_DIR=%LOCALAPPDATA%\WesnothStarWarsTest\launcher-checks"
+set "CHECK_FILE=%CHECKS_DIR%\sync-%RANDOM%-%RANDOM%.txt"
 set "WESNOTH_EXE=%ProgramFiles(x86)%\Battle for Wesnoth 1.19.27\wesnoth.exe"
 if not exist "%WESNOTH_EXE%" set "WESNOTH_EXE=%ProgramFiles%\Battle for Wesnoth 1.19.27\wesnoth.exe"
 if not exist "%WESNOTH_EXE%" set "WESNOTH_EXE=%ProgramFiles(x86)%\Battle for Wesnoth\wesnoth.exe"
 if not exist "%WESNOTH_EXE%" set "WESNOTH_EXE=%ProgramFiles%\Battle for Wesnoth\wesnoth.exe"
-
-if not exist "%WESNOTH_EXE%" (
-  echo Battle for Wesnoth 1.19 executable was not found.
-  exit /b 2
-)
-
-for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% branch --show-current') do set "MAIN_BRANCH=%%I"
-if /i not "%MAIN_BRANCH%"=="main" (
-  echo Refusing to launch: the source checkout is not on protected main.
-  exit /b 3
-)
-
-rem Published-and-tested play must never be mixed with uncommitted content.
-set "SOURCE_DIRTY="
-for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% status --porcelain --untracked-files=all') do set "SOURCE_DIRTY=1"
-if defined SOURCE_DIRTY (
-  echo Refusing to launch: local main has unpublished changes.
-  echo Publish or discard those changes before using the published play launcher.
+if not exist "%WESNOTH_EXE%" exit /b 2
+if not exist "%GIT_EXE%" exit /b 3
+if /i not "%USERDATA%"=="C:\Users\willj\AppData\Local\WesnothStarWarsTest\userdata" (
+  echo Refusing to mirror outside the explicit local player userdata.
   exit /b 4
 )
-
-rem Refresh the remote publication reference, then advance only by a safe
-rem fast-forward. A divergent checkout is preserved and reported instead of
-rem being reset or overwritten by the launcher.
-wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% fetch --quiet origin main
-if errorlevel 1 (
-  echo Could not refresh the published origin/main reference.
-  exit /b 5
-)
-for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% rev-parse origin/main') do set "PUBLISHED_SHA=%%I"
-if not defined PUBLISHED_SHA (
-  echo Could not identify the published main revision.
+if not exist "%CHECKS_DIR%" mkdir "%CHECKS_DIR%"
+if not exist "%CHECKS_DIR%" exit /b 4
+if exist "%CHECK_FILE%" exit /b 4
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" branch --show-current > "%CHECK_FILE%"
+if errorlevel 1 exit /b 5
+set "MAIN_BRANCH="
+set /p MAIN_BRANCH=<"%CHECK_FILE%"
+if /i not "%MAIN_BRANCH%"=="main" (
+  echo Refusing to launch: the source checkout is not on protected main.
   exit /b 6
 )
-for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% rev-parse HEAD') do set "MAIN_SHA=%%I"
-if not defined MAIN_SHA (
-  echo Could not identify the current main revision.
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" status --porcelain --untracked-files=all > "%CHECK_FILE%"
+if errorlevel 1 exit /b 7
+for %%Z in ("%CHECK_FILE%") do if %%~zZ GTR 0 exit /b 7
+if errorlevel 1 (
+  echo Refusing to launch: local main has unpublished changes.
   exit /b 7
 )
-if /i not "%MAIN_SHA%"=="%PUBLISHED_SHA%" (
-  echo Synchronizing local main to published revision %PUBLISHED_SHA%...
-  wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% merge --ff-only origin/main
-  if errorlevel 1 (
-    echo Refusing to launch: local main cannot fast-forward to published main.
-    exit /b 8
-  )
-  for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% rev-parse HEAD') do set "MAIN_SHA=%%I"
-)
-if /i not "%MAIN_SHA%"=="%PUBLISHED_SHA%" (
-  echo Refusing to launch: local main does not match published origin/main.
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" fetch --quiet origin main
+if errorlevel 1 exit /b 8
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" rev-parse origin/main > "%CHECK_FILE%"
+if errorlevel 1 exit /b 8
+set "PUBLISHED_SHA="
+set /p PUBLISHED_SHA=<"%CHECK_FILE%"
+if not defined PUBLISHED_SHA exit /b 8
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" merge --ff-only origin/main
+if errorlevel 1 (
+  echo Refusing to launch: local main cannot fast-forward to published main.
   exit /b 9
 )
-for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- wslpath -w %PROJECT_LINUX%/addons/%ADDON_ID%') do set "ADDON_SOURCE=%%I"
-if not exist "%ADDON_SOURCE%\_main.cfg" (
-  echo The current main add-on source is unavailable.
-  exit /b 10
-)
-
-if not exist "%USERDATA%\data\add-ons" mkdir "%USERDATA%\data\add-ons"
-if not exist "%USERDATA%\data\add-ons" (
-  echo Could not prepare the isolated Wesnoth test userdata.
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" rev-parse HEAD > "%CHECK_FILE%"
+if errorlevel 1 exit /b 9
+set "MAIN_SHA="
+set /p MAIN_SHA=<"%CHECK_FILE%"
+if /i not "%MAIN_SHA%"=="%PUBLISHED_SHA%" exit /b 9
+if not exist "%ADDON_SOURCE%\_main.cfg" exit /b 10
+rem Canonical boundary and ancestor reparse checks occur before /MIR.
+rem This is a read-only inline check; no execution policy is changed.
+powershell.exe -NoLogo -NoProfile -NonInteractive -Command "$ErrorActionPreference='Stop';$s=[IO.Path]::GetFullPath($env:ADDON_SOURCE);$t=[IO.Path]::GetFullPath($env:ADDON_TARGET);$u=[IO.Path]::GetFullPath($env:USERDATA);if($s -ine ($env:PROJECT_WINDOWS+'\addons\'+$env:ADDON_ID) -or [IO.Path]::GetDirectoryName($t) -ine ($u+'\data\add-ons') -or [IO.Path]::GetFileName($t) -cne $env:ADDON_ID){exit 1};foreach($p in @($s,$t)){while($p){if(Test-Path -LiteralPath $p){if(((Get-Item -LiteralPath $p -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){exit 1}};$next=[IO.Path]::GetDirectoryName($p);if($next -eq $p){break};$p=$next}};exit 0"
+if errorlevel 1 (
+  echo Refusing an unsafe source or destination for the addon mirror.
   exit /b 11
 )
-
-rem /MIR is deliberately limited to this one add-on directory. It removes stale
-rem map/config files, but never touches saves, preferences, logs, or other add-ons.
+if not exist "%USERDATA%\data\add-ons" mkdir "%USERDATA%\data\add-ons"
+if not exist "%USERDATA%\data\add-ons" exit /b 11
 robocopy "%ADDON_SOURCE%" "%ADDON_TARGET%" /MIR /COPY:DAT /DCOPY:T /R:2 /W:1 /XJ /NFL /NDL /NJH /NJS >nul
-if errorlevel 8 (
-  echo Could not refresh the test add-on from local main.
-  exit /b 12
-)
-if not exist "%ADDON_TARGET%\_main.cfg" (
-  echo The refreshed add-on is incomplete.
-  exit /b 13
-)
-
-rem A concurrent publication must not race the mirror step. In that case the
-rem next launch will refresh the newer revision rather than opening ambiguity.
-for /f "delims=" %%I in ('wsl.exe -d %DISTRO% -- git -C %PROJECT_LINUX% rev-parse HEAD') do set "SOURCE_AFTER_COPY_SHA=%%I"
-if /i not "%SOURCE_AFTER_COPY_SHA%"=="%MAIN_SHA%" (
-  echo The published source changed while the add-on was being refreshed.
-  echo Launch it again to mirror the new published revision.
-  exit /b 14
-)
-
-set "LAUNCH_MANIFEST=%USERDATA%\wesnoth-starwars-launch.txt"
-> "%LAUNCH_MANIFEST%" (
+if errorlevel 8 exit /b 12
+if not exist "%ADDON_TARGET%\_main.cfg" exit /b 13
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" rev-parse HEAD > "%CHECK_FILE%"
+if errorlevel 1 exit /b 14
+set "AFTER_SHA="
+set /p AFTER_SHA=<"%CHECK_FILE%"
+if /i not "%AFTER_SHA%"=="%MAIN_SHA%" exit /b 14
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" rev-parse origin/main > "%CHECK_FILE%"
+if errorlevel 1 exit /b 14
+set "AFTER_SHA="
+set /p AFTER_SHA=<"%CHECK_FILE%"
+if /i not "%AFTER_SHA%"=="%MAIN_SHA%" exit /b 14
+"%GIT_EXE%" -c "safe.directory=%PROJECT_WINDOWS%" -c core.autocrlf=false -c core.filemode=false -C "%PROJECT_WINDOWS%" status --porcelain --untracked-files=all > "%CHECK_FILE%"
+if errorlevel 1 exit /b 14
+for %%Z in ("%CHECK_FILE%") do if %%~zZ GTR 0 exit /b 14
+if errorlevel 1 exit /b 14
+> "%USERDATA%\wesnoth-starwars-launch.txt" (
   echo add-on=%ADDON_ID%
   echo published_main=%MAIN_SHA%
   echo source=%PROJECT_LINUX%
 )
-echo Launching Star Wars: Thrawn Trilogy from published main %MAIN_SHA%.
+echo Refreshed Star Wars: Thrawn Trilogy from published main %MAIN_SHA%.
 if /i "%WESNOTH_PLAY_VALIDATE_ONLY%"=="1" (
-  echo Validation-only mode: the add-on was refreshed and the launch was not started.
+  echo Validation-only mode: the published add-on was refreshed and the launch was not started.
   exit /b 0
 )
 start "Wesnoth Star Wars" /wait "%WESNOTH_EXE%" --userdata-dir "%USERDATA%" --campaign "%ADDON_ID%"
-set "EXIT_CODE=%ERRORLEVEL%"
-exit /b %EXIT_CODE%
+exit /b %ERRORLEVEL%

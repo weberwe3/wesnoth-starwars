@@ -943,3 +943,98 @@ not establish the Slicer’s tactical value or human balance. Every loss is reta
 | sw_tlc_08_the_throne_room | Defeat | 5 |
 | sw_tlc_09_bilbringi | Victory | 11 |
 | sw_tlc_10_the_last_command | Defeat | 5 |
+
+## 10. Wookiee Suppressor
+
+Kashyyyk's two Wookiee recruits previously offered direct combat or detection.
+The new Suppressor adds control: an ordinary concussive bowcaster hit slows
+the target, reducing its damage and pursuit until it ends a turn.
+
+| Wookiee choice | Gold | HP | Move | Ryyk blade | Bowcaster | Role |
+| --- | --- | --- | --- | --- | --- | --- |
+| Existing Warrior | 18 | 48 | 5 | 8×3 | 10×2 | Direct combat |
+| Existing Lookout | 15 | 38 | 6 | 5×2 | 8×2 | Keen senses and sensors |
+| New Suppressor | 22 | 34 | 5 | 4×2 | 4×2, Slow | Control support |
+
+The bowcaster reaches two hexes; its aimed variant is 4×1 with +20% accuracy
+before distance penalties, available only on offense at two hexes. Slow is the
+native weapon special, triggered by a hit in ordinary combat, including return
+fire. It halves attack damage and doubles movement costs; it neither stuns
+nor prevents attacks. A miss still spends the attack and applies no status.
+The target clears Slow when it ends a turn. Overwatch uses the existing damage
+volley system and does not apply Slow, so reserving an attack trades control
+for reaction damage.
+
+Higher cost, fewer hitpoints and much weaker weapons prevent the specialist
+from replacing a Warrior. No keen-senses upgrade replaces the Lookout.
+Warriors screen it from assault; Lookouts expose hidden Noghri. Existing
+veteran training and rank rules apply without changing older units.
+
+Integration with Claude's class-specific ranks assigns this new type only:
+Veteran grants thick hide (positive defensive resistance doubled to at most
+50%, no change to vulnerabilities or offense); Seasoned veteran adds covering
+fire (first strike on the existing bowcaster and aimed variant, while aimed
+shots remain offense-only); Elite grants fire discipline (adjacent allies
++10 percentage points ranged hit chance, nonstacking, no self or melee bonus).
+The base Slow is retained once per bowcaster and no rank adds an attack.
+Every prior catalogue entry, assignment and rank-runtime behavior is preserved.
+The combined native run below includes these rank assignments and preserves
+Claude's original rank checks.
+
+Only the two player recruit declarations in HTE04 gain the new ID. Every old
+entry, starting force, gold amount, turn limit, difficulty, objective, reward,
+wave and Claude-owned mission event is retained. The fourteen original warm-brown
+Lookout sprite frames and portrait are reused byte-for-byte, with matching
+muzzle metadata and a new art-direction entry. Claude's later gray Warrior
+and Lookout artwork is preserved, keeping this recruit visually distinct.
+
+Native Windows Wesnoth 1.19.27 validation passed 682 systems checks, including
+all six main/load phases with real saves and reloads, with zero systems engine
+errors. 14 existing synthetic-controller warnings remain recorded. Both
+existing intelligence/air replay battles passed four original and four replay
+checkpoints each; these are not Suppressor-specific replay battles.
+
+Focused native checks recruited a Suppressor for 22 gold through the actual
+paid recruit command, then verified its spent actions, generated profile,
+legal normal and aimed attacks, unmodified aimed accuracy, on-hit Slow,
+halved damage, doubled grass movement cost, normal return-fire Slow, the
+target's next turn, native expiry, and an actual miss. Native AMLAs also verify all three rank
+effects, positive defensive resistances without altering offense or fire
+vulnerability, both bowcasters' first strike, the ranged-only adjacent allied
+accuracy aura, lack of self/melee/distant bonuses, no duplicate grants or
+specials, and the rank cap. The real reload retains an elite rank snapshot. Hit/miss tests temporarily
+force 100%/0% accuracy to isolate the mechanic and restore the shipped weapon
+specials afterward. Save/reload checks reconstruct the captured on-hit unit
+snapshots, remove only their private engine identities, then save and reload
+them; reconstruction is not another combat. The native reload retains HP,
+spent actions, coordinates, Slow and the original weapon without fixture certainty.
+
+All three campaign sequences passed all 30 stages and parsed 30 saves. These
+are scripted route checks and saved-WML parsing, not native reloads of every
+sequence save or a demonstration of human difficulty. The Windows systems-runner
+regression suite passed 29 tests; the sequence suite ran 21 tests with 19
+passes and two POSIX-only skips, including a passing actual Windows owned-stop test.
+The required runner repair retains crash, nonzero-exit and timeout failures.
+The proposed published-player CMD also passed all eight existing synchronization
+checks; installed delivery of the merged feature remains a publication gate.
+
+All ten HTE missions passed the existing careful-player AI soak gate: 3
+victories and 7 defeats, listed below. Kashyyyk ended in victory turn 12.
+The run does not record recruited types, so it does not establish that the AI
+used the Suppressor or measure its effect. Raw logs retain formula type-error messages: sw_hte_02_ambush_at_bpfassh (270), sw_hte_04_shadows_of_kashyyyk (264).
+Those diagnostics remain preserved; the existing soak gate passing does not
+prove that every AI evaluation succeeded. No new diagnostic exemption was added. These single-run outcomes are
+compatibility evidence, not a controlled balance comparison or human playtest.
+
+| Mission | AI outcome | Final turn |
+| --- | --- | --- |
+| sw_hte_01_ysalamiri_harvest | Defeat | 17 |
+| sw_hte_02_ambush_at_bpfassh | Defeat | 15 |
+| sw_hte_03_adrift | Defeat | 8 |
+| sw_hte_04_shadows_of_kashyyyk | Victory | 12 |
+| sw_hte_05_prisoner_of_myrkr | Defeat | 15 |
+| sw_hte_06_raid_on_karrdes_base | Defeat | 13 |
+| sw_hte_07_the_forest_crossing | Defeat | 5 |
+| sw_hte_08_nomad_city | Victory | 15 |
+| sw_hte_09_sluis_van_shipyards | Victory | 8 |
+| sw_hte_10_thrawns_gambit | Defeat | 6 |
