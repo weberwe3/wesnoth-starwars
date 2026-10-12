@@ -397,3 +397,27 @@ retried. Every result was reviewed by eye.
 unit types share a standing sprite or portrait; deliberate pairs are listed in
 it (Luke and his clone share the owner-supplied sheet, pending an owner
 decision).
+
+## Walls redrawn as walls (2026-10-12)
+
+Owner direction: walls looked malformed -- each wall hex was a hex-shaped
+texture with its own features centred on it or clipped at its edge (a stripe,
+conduits, a half-visible light), so a run of walls read as a honeycomb of
+separate plates. `production/tools/gen_wall_relief.py` now draws all wall art
+for all five wall terrains (timber, colony duracrete, palace, hewn rock,
+starship bulkhead) and the bunker parapet:
+
+- **Tops** that run unbroken from hex to hex. Every hex of a terrain uses the
+  same image, and hexes sit 54 px apart across and 36 px apart (half a hex)
+  down, so a pattern that repeats on those periods continues across a whole
+  wall: steel plates with seams and rivets, duracrete blocks in a running
+  bond, sandstone slabs with gold inlay, rough stone with cracks, log planks
+  with staggered joints. Nothing is centred on a hex.
+- **Front faces**: a taller (22 px), darker vertical face in each family's
+  material (steel ribs, block courses, rough stone, planks), lit from above,
+  with a lip in the top's colour and a near-black line at its foot.
+- **Far edges**: a slightly brighter coping, outlined in near-black.
+- **Shadows** on the floor below a wall are longer and darker.
+
+The Codex tile-variety jobs for wall tops and the old coded bulkhead were
+retired so they cannot overwrite this art.
