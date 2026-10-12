@@ -808,6 +808,10 @@
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
     },
     {
+      "id": "sw_unit_wy_field_medic",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+    },
+    {
       "id": "sw_unit_wy_myneyrshi",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
     },
@@ -1212,6 +1216,12 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wl-vornskr.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wy-field-medic.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
       ]
     },
     {
@@ -9378,6 +9388,90 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/move-3.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/move-4.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
@@ -10203,6 +10297,14 @@
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/heir-to-the-empire.json"
     },
     {
+      "id": "sw-myneyrshi-medic-rank-abilities",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
+      "id": "sw-myneyrshi-medic-rank-registry",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
       "id": "sw-new-republic-field-engineer-team",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json"
     },
@@ -10422,7 +10524,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/06_the_gates_of_tantiss.cfg",
-      "sha256": "c54bdf731ca02ea83e24425f9e43376f03c8dcce811723504257dc2e4ee7b8fa"
+      "sha256": "4878ad7c8ccbfcdf3a6e750a11b713257cc6570d49abb611999cd170afb35225"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/07_the_cloning_vats.cfg",
@@ -10486,7 +10588,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "b85164e514a3cc66aac8d76082797848865a79a852408a71fa62b5500b67ecf4"
+      "sha256": "d2b86d1be0a93810f767b42094aae32dfbb486590cbbd3ec7b228d5fcdda488a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
@@ -10494,7 +10596,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "0f0f2d3b476a6b0f6cbc9250bd77b8760a5215ec20fa155a788515b24132033d"
+      "sha256": "1248bef145179725d5e96b8ba0f28a1dbf47a6fbf8b3fa2f413b8689565a988b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10566,11 +10668,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_abilities.lua",
-      "sha256": "7d7b30f373a3fa7519925d4f6b5420599ad1b53c07b67fe95307261bea1d98bc"
+      "sha256": "d08d9c9417f15502e1511ef0980b8c0844f5645b3a64846a0f81e536e2d3fe4a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_data.lua",
-      "sha256": "9a2f980b8638a1b12ace08632907fd71582e23665816c563e20263c62a2a26b9"
+      "sha256": "760a5221fd7cb85b3a20f0d2f83f89395ffd399d0f0353159122b2e4c13082c0"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
@@ -10606,7 +10708,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json",
-      "sha256": "30ead14c3f556342479757367184609cd0f273f1928268ed7f3ecf54f75e8ee5"
+      "sha256": "f64373427cf4b23fe9979e8ed69a0676d67e81414cd041205bc5a476e18f02fb"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json",
@@ -10867,6 +10969,10 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wl-vornskr.png",
       "sha256": "2a0defec02a23000d00beb9bdbe726b72fbfcd05f189230514b6f76b0d109f11"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wy-field-medic.png",
+      "sha256": "daf4b9529e3ddd5c8c8d2aa3eb2f264bca1ab8d50ceb9d754e071e3c513ee854"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-wy-myneyrshi.png",
@@ -16303,6 +16409,62 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wl-vornskr/standing.png",
       "sha256": "9856f7b1d86ba5a4887c142de019a10678376afadd2b577314c92e2db876df3d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/death-1.png",
+      "sha256": "5b9702d7032e6dfb1fc6a9b5127271d6b4b1e0df5b594ee1d5f400e97b8873c2"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/death-2.png",
+      "sha256": "34cee8eedb06f719714ee91607bfa0f75b9b9c6bd5c8aedaab6dfbbd61aa96be"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/defend.png",
+      "sha256": "069287fecdb6bb4cdfb34f85d84c000d163b4954c93ecab850a7c7083e214e2f"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/idle-1.png",
+      "sha256": "c266c64f6145f18e9aeb8fd163368682f3bf0809d7915a17a786edf647bc1c92"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/idle-2.png",
+      "sha256": "efc459dbba2ecff5a3355763240df06dc275d488dbfe3c4e2650463cefcabe89"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/melee-1.png",
+      "sha256": "8c17b01167b993f8ddce5d4b4b31fbafdffbc57ceab01c005df0c55cf99b018a"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/melee-2.png",
+      "sha256": "8764f6eb8719716792ae8151c6bf85395e2e5d948ba3dc73c30d5bd795ab1204"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/move-1.png",
+      "sha256": "4c2ddceceebc2beb120d64742b7ee6ca739690e33d7a645746d55ad45f305960"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/move-2.png",
+      "sha256": "cf1ebafe5361c586a3fea9d92d22f0c34f4abb605550df731971f35d8d0efcce"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/move-3.png",
+      "sha256": "2cf8fa6f414824da25eaf026682da6167350a97c9405890aef600fba4a60ebff"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/move-4.png",
+      "sha256": "cfe454c0f539013a0aab3508411d46c8fe700174540e5ed54485307ecf9474f1"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/ranged-1.png",
+      "sha256": "ff2c50eea4b1aaf2884d58f6ea066fe1e14f0197e3008673640c7a5a851926d4"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/ranged-2.png",
+      "sha256": "c9e091e47fa0b8e2983492d931e91581f8a98c2e7e8f9a07c0562d386c42d074"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-field-medic/standing.png",
+      "sha256": "5939f0c4ba9750534a7efa85ecf6b1f00d40c1539017a5458bef85493a09565f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-wy-myneyrshi/death-1.png",

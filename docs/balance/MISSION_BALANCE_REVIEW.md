@@ -1429,3 +1429,64 @@ covering two flanks and keeping reserves near the generator. Han's critical
 death, Lando/Bel Iblis withdrawal, Imperial generator-entry defeat, Tierce
 alternative victory, survival turns, gold, income, air support and optional
 objective remain exactly as Claude authored them.
+
+
+## Myneyrshi Field Medic forest support (2026-10-12)
+
+The Wayland native roster gains one optional healer in The Gates of Tantiss.
+Its 20-gold cost, 28 HP, 6 movement, 48 XP and weak 4x2 spear/bow trade combat
+power for keeping up with forest troops. Existing sw_wookiee forest cost1
+contrasts with the Republic Field Medic's cost2 and five movement. Both pay2
+on hills; fire vulnerability110% remains. Base adjacent healing4 slows poison
+without curing or self-healing, and does not add together with other healers.
+RankI forest ghost, II field surgery (healing8 replaces4), III rapid evacuation
+(skirmisher). No new attacks. The Republic medic reaches healing8 at rankI;
+its earlier treatment and lower cost remain useful alongside the mobile option.
+
+Only two existing TLC06 player recruit declarations gain this ID. Every prior
+unit and rank assignment, other scenario byte, map, event, reinforcement,
+objective, difficulty, gold, turn limit and reward remains unchanged. Fourteen
+original Myneyrshi animation frames and portrait are reused byte-for-byte;
+the shared silhouette is a presentation limitation, with role identified by
+the unit name, native healing ability and Field Manual.
+
+Native Wesnoth 1.19.27 checks confirm paid recruitment spends 20 gold and
+all native recruit actions. An ordinary forest move spends one MP without
+refilling movement; the Republic medic pays two on the same terrain. Real
+side transitions show healing waits for the healer's own turn. Two healing4
+sources give four HP rather than eight. Poison damage is stopped without
+curing or restoring HP; the healer itself, distant allies and enemies are
+excluded. Rank II gives eight rather than twelve HP on the next native turn.
+
+Native AMLAs grant forest concealment, one healing8 ability replacing4, and
+skirmisher without adding attacks. A further AMLA/update retains one object
+per earned rank. Actual save/reload retains the type and all three abilities,
+and the loaded medic heals an adjacent wounded ally for8 on its next turn.
+A separate actual Gates of Tantiss launch buys the optional unit from Han's
+original keep, then an actual reload retains its position, spent actions and
+paid gold. All nine original mission units retain their positions.
+
+Inventory, unit and all map generators, whitespace, official static contracts,
+711 systems checks and all 30 campaign sequence stages passed.
+All 30 sequence saves were parsed as matching readable saved WML. Systems
+logs retain 15 synthetic-controller warnings with no engine
+errors. Existing replay checks passed. Scripted sequences and parsed saves
+do not establish human difficulty or reload every campaign-sequence save.
+
+Six independent careful-player AI soaks of Gates of Tantiss passed the
+existing technical gate:
+
+| Roster | Run | Recorded AI outcome | Turns played |
+| --- | --- | --- | --- |
+| Previous roster | 1 | result DEFEAT turn 14 | 14 |
+| Previous roster | 2 | result DEFEAT turn 9 | 9 |
+| Previous roster | 3 | result VICTORY turn 15 | 15 |
+| Optional forest medic | 1 | result DEFEAT turn 9 | 9 |
+| Optional forest medic | 2 | result DEFEAT turn 6 | 6 |
+| Optional forest medic | 3 | result DEFEAT turn 12 | 12 |
+
+These are independent random runs, not paired seeds or a human win-rate
+estimate. Recruited types are not established by the soak report, so no
+outcome is attributed to the medic. All wins and losses are reported. Native
+functional checks establish the new choice; no enemy forces, objective,
+turn, gold, reward or Claude-owned mission event was adjusted.

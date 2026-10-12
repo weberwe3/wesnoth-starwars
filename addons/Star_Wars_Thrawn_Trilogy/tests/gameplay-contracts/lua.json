@@ -78,6 +78,18 @@
       "kind": "source-text",
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_abilities.lua",
       "contains": "sw_unit_wk_suppressor = {"
+    },
+    {
+      "id": "sw-myneyrshi-medic-rank-registry",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_data.lua",
+      "contains": "sw_unit_wy_field_medic = { style = \"independent\", base = 0, designs = {} },"
+    },
+    {
+      "id": "sw-myneyrshi-medic-rank-abilities",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_abilities.lua",
+      "contains": "sw_unit_wy_field_medic = {"
     }
   ]
 }

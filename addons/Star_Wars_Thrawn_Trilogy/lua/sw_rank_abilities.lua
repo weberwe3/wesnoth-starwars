@@ -1352,6 +1352,64 @@ return {
 				},
 			} },
 	},
+	sw_unit_wy_field_medic = {
+		[1] = { key = "forest_ghost", name = _ "Forest ghost", effects = {
+				T.effect {
+					apply_to = "new_ability",
+					T.abilities {
+						T.hides {
+							id = "sw_rank_hides",
+							affect_self = "yes",
+							name = _ "forest ghost",
+							description = _ "Vanishes into the canopy. This unit is hidden from enemies while it stands in forest or jungle, unless an enemy is next to it. An enemy that discovers it loses its remaining movement.",
+							T.filter {
+								T.filter_location {
+									terrain = "*^F*",
+								},
+							},
+						},
+					},
+				},
+			} },
+		[2] = { key = "field_surgery", name = _ "Field surgery", effects = {
+				T.effect {
+					apply_to = "remove_ability",
+					T.abilities {
+						T.heals {
+							id = "healing",
+						},
+					},
+				},
+				T.effect {
+					apply_to = "new_ability",
+					T.abilities {
+						T.heals {
+							id = "healing",
+							value = 8,
+							affect_allies = "yes",
+							affect_self = "no",
+							poison = "slowed",
+							name = _ "field surgery",
+							description = _ "Trained in field surgery: adjacent allies recover up to 8 HP at the start of this unit's turn (replaces heals +4). Poison is slowed, not cured.",
+							T.affect_adjacent {},
+						},
+					},
+				},
+			} },
+		[3] = { key = "rapid_evac", name = _ "Rapid evacuation", effects = {
+				T.effect {
+					apply_to = "new_ability",
+					T.abilities {
+						T.skirmisher {
+							id = "sw_rank_skirmisher",
+							affect_self = "yes",
+							name = _ "rapid evacuation",
+							description = _ "Reaches the wounded through any gap in the line. This unit ignores enemy zones of control.",
+						},
+					},
+				},
+			} },
+	},
 	sw_unit_wy_psadan = {
 		[1] = { key = "stone_hide", name = _ "Stone hide", effects = {
 				T.effect {

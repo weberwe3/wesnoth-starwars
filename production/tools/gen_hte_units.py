@@ -852,6 +852,12 @@ ROSTER = [
       file="tlc_units", level=1, hp=38, mp=6, xp=42, cost=15, mt="sw_wookiee", race="sw_myneyrshi",
       attacks=[attack("spear", "spear", "pierce", "melee", 7, 3, specials=["firststrike"]),
                attack("bow", "bow", "pierce", "ranged", 6, 3)]),
+    U("sw_unit_wy_field_medic", "Myneyrshi Field Medic",
+      "Wayland volunteers carry field dressings through the forest to keep their allies moving. They restore up to 4 HP to adjacent allies at the start of their turn, or stop poison damage without curing it. Healing does not affect the medic itself and does not add together with other healers. Six movement and one-point forest travel let them follow Myneyrshi hunters; weak spear and bow attacks and vulnerability to blaster fire require a screen.",
+      file="tlc_units", level=1, hp=28, mp=6, xp=48, cost=20, mt="sw_wookiee", race="sw_myneyrshi",
+      usage="healer", abilities=["heals4"],
+      attacks=[attack("spear", "spear", "pierce", "melee", 4, 2),
+               attack("bow", "bow", "pierce", "ranged", 4, 2)]),
     U("sw_unit_wy_psadan", "Psadan Elder",
       "Slow, armored Psadans who wade into a fight and do not leave it.",
       file="tlc_units", level=1, hp=52, mp=4, xp=44, cost=17, mt="sw_armored_trooper", race="sw_psadan",
@@ -1155,6 +1161,7 @@ DEATH_SOUNDS = {
     "sw_starfighter": "sw-death-fighter.wav", "sw_capital": "sw-death-capital.wav",
 }
 DEATH_OVERRIDES = {
+    "sw_unit_wy_field_medic": "sw-death-soft.wav",
     "sw_unit_wy_myneyrshi": "sw-death-soft.wav", "sw_unit_wy_psadan": "sw-death-soft.wav",
     "sw_unit_im_decon_droid": "sw-death-droid.wav", "sw_unit_ob_cloning_cylinder": "sw-death-glass.wav",
     "sw_unit_ob_cloaked_asteroid": "sw-death-rock.wav", "sw_unit_ob_shield_generator": "sw-death-vehicle.wav",

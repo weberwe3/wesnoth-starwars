@@ -4640,6 +4640,82 @@
       ]
     },
     {
+      "id": "art-sw-unit-wy-field-medic",
+      "unit_id": "sw_unit_wy_field_medic",
+      "unit_name": "sw unit wy field medic",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
+      "state": "complete",
+      "generation": "codex_quota_interactive_only",
+      "prompt_path": "assets/prompts/sw-unit-wy-field-medic.md",
+      "assets": [
+        {
+          "state": "standing",
+          "path": "images/units/sw-unit-wy-field-medic/standing.png",
+          "purpose": "Base standing sprite"
+        },
+        {
+          "state": "idle-1",
+          "path": "images/units/sw-unit-wy-field-medic/idle-1.png",
+          "purpose": "Idle animation frame one"
+        },
+        {
+          "state": "idle-2",
+          "path": "images/units/sw-unit-wy-field-medic/idle-2.png",
+          "purpose": "Idle animation frame two"
+        },
+        {
+          "state": "move-1",
+          "path": "images/units/sw-unit-wy-field-medic/move-1.png",
+          "purpose": "Movement animation frame one"
+        },
+        {
+          "state": "move-2",
+          "path": "images/units/sw-unit-wy-field-medic/move-2.png",
+          "purpose": "Movement animation frame two"
+        },
+        {
+          "state": "melee-1",
+          "path": "images/units/sw-unit-wy-field-medic/melee-1.png",
+          "purpose": "Melee attack wind-up frame"
+        },
+        {
+          "state": "melee-2",
+          "path": "images/units/sw-unit-wy-field-medic/melee-2.png",
+          "purpose": "Melee attack follow-through frame"
+        },
+        {
+          "state": "ranged-1",
+          "path": "images/units/sw-unit-wy-field-medic/ranged-1.png",
+          "purpose": "Ranged attack aiming frame"
+        },
+        {
+          "state": "ranged-2",
+          "path": "images/units/sw-unit-wy-field-medic/ranged-2.png",
+          "purpose": "Ranged attack firing frame"
+        },
+        {
+          "state": "defend",
+          "path": "images/units/sw-unit-wy-field-medic/defend.png",
+          "purpose": "Defend or hit-reaction sprite"
+        },
+        {
+          "state": "death-1",
+          "path": "images/units/sw-unit-wy-field-medic/death-1.png",
+          "purpose": "Death animation frame one"
+        },
+        {
+          "state": "death-2",
+          "path": "images/units/sw-unit-wy-field-medic/death-2.png",
+          "purpose": "Death animation frame two"
+        },
+        {
+          "state": "portrait",
+          "path": "images/portraits/sw-unit-wy-field-medic.png",
+          "purpose": "Unit profile portrait"
+        }
+      ]
+    },
+    {
       "id": "art-sw-unit-wy-psadan",
       "unit_id": "sw_unit_wy_psadan",
       "unit_name": "sw unit wy psadan",

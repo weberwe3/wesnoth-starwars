@@ -1524,3 +1524,27 @@ incorrect assumption about available attacks.
 - Prevention: measure routes with the actual movetype and hex parity; inspect
   the resulting position and action budget before asserting completion. Verify
   both again after a real reload, and preserve failed fixture attempts.
+
+
+### 2026-10-12 - native art synchronization must precede frozen readers
+
+**Symptom:** The Myneyrshi Field Medic gameplay candidate's static art writer
+failed with Windows access denied while a concurrent gate hashed its files;
+the gate then rejected an orphan temporary file. A sequential run reached
+whitespace validation but rejected regenerated CRLF art briefs.
+
+**Confirmed cause:** Native Windows readers can deny atomic replacement of an
+open target. An isolated reproduction returned WinError5 while the target was
+open, and the same replacement passed after the reader closed. Python's native
+text writer also expands LF to CRLF, differing from the retained Linux bytes.
+
+**Resolution:** Preserve the exact orphan outside add-on inputs, synchronize
+art before freezing source readers, and delegate the original generator through
+a local LF transport that restores its exact UTF-8 payload before the unchanged
+validator runs. All109 contracts and the completed-art validation pass; all69
+existing prompts retain their bytes. The new manifest job is the sole intended
+art-registration addition. No gate, timeout or production validator was relaxed.
+
+**Prevention:** Treat run_validation art synchronization as a mutation. Finish
+it before concurrent frozen checks, use LF for native generated text, and bind
+the resulting files before tests and publication.
