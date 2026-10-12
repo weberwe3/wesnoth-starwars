@@ -780,6 +780,10 @@
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
     },
     {
+      "id": "sw_unit_sm_slicer",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+    },
+    {
       "id": "sw_unit_sm_smuggler",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
     },
@@ -1162,6 +1166,12 @@
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-shipyard-platform.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-sm-slicer.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
       ]
     },
     {
@@ -8266,6 +8276,90 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/death-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/death-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/defend.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/idle-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/idle-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/melee-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/melee-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/move-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/move-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/move-3.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/move-4.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/ranged-1.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/ranged-2.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/standing.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-smuggler/death-1.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg"
@@ -10031,6 +10125,10 @@
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json"
     },
     {
+      "id": "sw-slicer-rank-registry",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
+    },
+    {
       "id": "sw-thrawn-campaign-registration",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/campaign.json"
     },
@@ -10206,7 +10304,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg",
-      "sha256": "c521cbc75d5ac75ca0466f6c4333c4fc29dacc81f2da4106f9e6c00db86320b6"
+      "sha256": "5acfd514df364c15e1ec0dc1dca648859ccb44ebd0147433e15ef403b66ca835"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg",
@@ -10270,7 +10368,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
-      "sha256": "94a3086d308fb0149b056235d23553f4a0566e2161d4549150fe2d0ae8aa6719"
+      "sha256": "6728ba4fab1e39b9ec35ddad674db6bc342fcb8a6c19acd068449c98dc4f9292"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
@@ -10294,7 +10392,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "99f6cd050f64ce5078c059e4dd5d4190ac7374387a98d074a6fd679c2ece3001"
+      "sha256": "0a9b6cbe94f3f07178ece783a230cfc5f28c3ecd4d2441589b9ebeb0949d2f8d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10366,7 +10464,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_data.lua",
-      "sha256": "2b7a20086902b3fcc045f0e78e772dc11738cd84c87de2d40ee70dd8521962f7"
+      "sha256": "a8004b976ef36d174c0efc835f10d15d7e7b4cdeedc9c4173dc41a67ce55105b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
@@ -10402,7 +10500,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json",
-      "sha256": "ff5f11423bbe8d1c2cd9506449f8b3bd28969a86952ea75fba04d27fa9848eac"
+      "sha256": "c30b6511f950cc34d36629f936f7ba812333db83f7df8706c48230892b7a77a9"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json",
@@ -10635,6 +10733,10 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-ob-shipyard-platform.png",
       "sha256": "b0e3697fa04570c93e6a83ad33d691a2efa04a83dea0fa59dc31f21426e0fffb"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-sm-slicer.png",
+      "sha256": "fd8f973a70e4e251d6bfe547c9048fa90a5a24666a04fb0029f57976175af361"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/portraits/sw-unit-sm-smuggler.png",
@@ -15363,6 +15465,62 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-ob-shipyard-platform/standing.png",
       "sha256": "178a88ddcb23e5c841c6fe314adb24c0c0d025abc9ae13b3441fd7c78f49c531"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/death-1.png",
+      "sha256": "990361df269aebcb079768345d641d39b966413ed51772b431951ae657ca2ae9"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/death-2.png",
+      "sha256": "bf665014f6f93a295c4ed8a82b9502f07e7de8704cddfe392329bd87e3113d17"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/defend.png",
+      "sha256": "1ca50d2b14a655cad3e982bdaa9ab34caa10906e3f57aeadd20903a322d17282"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/idle-1.png",
+      "sha256": "5e1710b841bfea9c2b0ec6c3b42f71807ac172958e3e2413c04885f29aad1a9d"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/idle-2.png",
+      "sha256": "c1847d4c23e90e9e4386de7b9d47685a3f401f582d207b0e40873f85556ce401"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/melee-1.png",
+      "sha256": "9f6112dee0bb5612cbf8d679b7df2697529becfa1efb50a2a6a3b15e0fe1a205"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/melee-2.png",
+      "sha256": "2410b0349cf4a820c45a850b1c62820e63875eb42b8a3490e4db2dea8823b59c"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/move-1.png",
+      "sha256": "8ffeaaa439b3a072cec1e8adbc4c854e9b6c628734957c2f121289d549279cec"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/move-2.png",
+      "sha256": "0a0dfec0283ab2380cb532e03ff2cf7af893d9ab423498f0bf8334a28df2190e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/move-3.png",
+      "sha256": "11ddc88c8aa6fb18c040fc29aeca2caf9bfca206fce3c7a2787f8198ec0c6486"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/move-4.png",
+      "sha256": "05e0b1ce0f6b7f4c9b919c323e757ca84e285d7bed814aafe58890d430bdbcc6"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/ranged-1.png",
+      "sha256": "06c0e2b9b37a10346cbf43f2c8342ee2a649690a709d7a3bdddbdac378f0b8f0"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/ranged-2.png",
+      "sha256": "f60ec128da2595861cf160e9e9cb3916999129656e6061156864ea7532537cff"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-slicer/standing.png",
+      "sha256": "647b3fdc276558a1e4e4fcdce3848fa93be0bfd032a07cabc237a6251e7f3e15"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-sm-smuggler/death-1.png",

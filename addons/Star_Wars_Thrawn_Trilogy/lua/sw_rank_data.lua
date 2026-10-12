@@ -51,4 +51,5 @@ return {
 	sw_unit_im_minelayer = { style = "imperial", base = 0, designs = {} },
 	sw_unit_sm_smuggler = { style = "independent", base = 0, designs = {} },
 	sw_unit_sm_veteran = { style = "independent", base = 1, designs = {2, 3} },
+	sw_unit_sm_slicer = { style = "independent", base = 0, designs = {} },
 }

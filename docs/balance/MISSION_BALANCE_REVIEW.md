@@ -787,3 +787,82 @@ starting forces, recruitment and difficulty settings are unchanged.
 | sw_tlc_08_the_throne_room | Defeat | 6 |
 | sw_tlc_09_bilbringi | Victory | 13 |
 | sw_tlc_10_the_last_command | Defeat | 6 |
+
+
+## 9. Smuggler Slicer
+
+Karrde's existing roster has two gunfighters. The new directly recruitable
+Smuggler Slicer offers reconnaissance and deception in The Smugglers' Council:
+it can recover contacts through interference, improve identification with a
+sweep, or expend a finite decoy instead of firing. It uses the existing EW
+systems and their existing action costs.
+
+| Choice | Cost | HP | Move | Pistol | Vibroknife | Sensors | Counter-jamming | Sweep | Decoys |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Existing Smuggler | 13 | 34 | 6 | 7×2 | 5×3 | 2 / 3 hexes | 0 | 0 | 0 |
+| New Smuggler Slicer | 18 | 28 | 6 | 5×2 | 4×2 | 3 / 5 hexes | 1 | +2 | 2 finite charges |
+
+The extra five gold buys information rather than durability or gun damage.
+Its adjacent-only pistol cannot answer a rifle at two hexes. Gunhands screen
+the specialist while its contacts help the team. A sweep spends the attack,
+raises sensors to 5 and range to 7 until the next turn, and increases emissions.
+A decoy also spends an attack and one finite charge. Neither action adds
+movement, healing, damage or accuracy. Stronger enemy sensors and physical
+contact still answer deception.
+
+Only the two player recruit declarations in TLC02 gain the new ID; their
+existing entries are retained. Existing unit statistics, advancement chains,
+mission events, starting forces, objectives, difficulty, rewards and Claude's
+polish behavior are preserved. The new type cannot arise from HTE06's old
+Smuggler advancement chain, so its rescue/debrief type filters stay unchanged.
+All fourteen Smuggler sprite frames and its portrait are reused byte-for-byte
+under the new unit's own paths, with its painted muzzle metadata retained.
+
+Validation against the candidate on Wesnoth 1.19.27:
+
+| Existing gate | Actual result |
+| --- | --- |
+| Unit generator and inventory | Passed; 57 generated unit types |
+| Systems, all suites | 620 passed; 0 failed; 0 blocking engine errors |
+| Three campaign sequences | All passed: 30 scenario transitions and 30 saved-WML checks |
+| Declared gameplay contracts | 105 passed, including the generated Lua registry row |
+| Existing art/wiring validation | All 14 sprite frames and the portrait passed |
+| Careful-player AI soak, all ten TLC missions | 10 technical passes; 3 victories and 7 defeats |
+
+The native paid recruit command charges 18 gold and creates the Slicer with
+spent movement and attack, preventing an immediate sweep or decoy. The existing
+intel fixture checks its generated equipment, jammed contact recovery, sweep
+identification, attack costs, and exhaustion after two decoys. Explicit fixture
+action refreshes isolate the finite-charge limit; they are not proof of multiple
+legal native-turn launches. Actual save/reload retains its type, position, health,
+equipment, spent movement and attack, and the remaining charge. Both existing
+replay cases pass and reproduce four state digest checkpoints each; these are
+system-wide replay checks, not a separate Slicer-specific replay route.
+The harness retains 15 unsynced-controller warnings with the same message
+as the previous candidate; no blocking engine error remained.
+
+The touched TLC02 soak ended in defeat on turn 3, compared with turn 5 in
+the preceding candidate. Allied chiefs died while Karrde and Mara still had
+full health. Recruited unit types are not recorded, so the Slicer’s contribution
+cannot be established; this is not a controlled balance comparison. Both TLC02
+logs retain ten pre-existing formula type-error messages. Raw logs remain
+available: a technical pass is not proof that every AI evaluation is correct.
+
+Campaign sequences are scripted route checks and saved-WML parsing. They do
+not reload every sequence save or establish human difficulty. The soak includes
+all ten TLC missions to check compatibility with possible later roster carryover.
+Its single automated player profile may choose other recruits; its outcomes do
+not establish the Slicer’s tactical value or human balance. Every loss is retained.
+
+| Mission | AI outcome | Final turn |
+| --- | --- | --- |
+| sw_tlc_01_the_siege_of_coruscant | Victory | 12 |
+| sw_tlc_02_the_smugglers_council | Defeat | 3 |
+| sw_tlc_03_the_palace_infiltrators | Victory | 9 |
+| sw_tlc_04_landfall_on_wayland | Defeat | 4 |
+| sw_tlc_05_the_natives_of_wayland | Defeat | 6 |
+| sw_tlc_06_the_gates_of_tantiss | Defeat | 14 |
+| sw_tlc_07_the_cloning_vats | Defeat | 17 |
+| sw_tlc_08_the_throne_room | Defeat | 5 |
+| sw_tlc_09_bilbringi | Victory | 11 |
+| sw_tlc_10_the_last_command | Defeat | 5 |
