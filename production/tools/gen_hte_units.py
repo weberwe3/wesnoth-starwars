@@ -21,6 +21,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import rank_abilities  # noqa: E402
+
 UNITS_DIR = ROOT / "addons/Star_Wars_Thrawn_Trilogy/units"
 HEADER = (
     "#textdomain wesnoth-Star_Wars_Thrawn_Trilogy\n"
@@ -1695,7 +1698,7 @@ def unit_wml(u: dict, with_variations: bool = True) -> str:
         f"    advances_to={u['advances'] or 'null'}",
         f"    cost={u['cost']}",
         f"    usage={u['usage']}",
-        f"    description= _ \"{u['desc']}\"",
+        f"    description= _ \"{u['desc']}{rank_abilities.description_suffix(u['id'])}\"",
     ]
     if u["advances"] is None:
         lines.append("    {AMLA_DEFAULT}")
@@ -1772,6 +1775,7 @@ def render() -> dict[str, str]:
         body += [unit_wml(u) + "\n" for u in units]
         files[f"{fname}.cfg"] = "\n".join(body)
     files["../lua/sw_rank_data.lua"] = rank_data_lua()
+    files["../lua/sw_rank_abilities.lua"] = rank_abilities.lua(ROSTER, expanded_attacks)
     return files
 
 

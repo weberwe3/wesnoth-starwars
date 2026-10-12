@@ -45,6 +45,8 @@ difficulty.
 - Every mission (except the finales) has a **bonus objective** whose credits
   are paid in full at the start of the next mission; a debrief follows each
   victory and a campaign summary each finale.
+- **Rank abilities**: every rank a veteran earns brings a new ability for its
+  class, from a sergeant's fire discipline to a pilot's ace marksmanship.
 - A **command decision** in each campaign: a supply convoy, a veteran cadre,
   or counter-intelligence against Thrawn's doctrine, for the rest of it.
 - **Achievements** for each campaign: completion, Hard, no hero withdrawn,
