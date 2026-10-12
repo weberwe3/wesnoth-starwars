@@ -251,10 +251,34 @@ def m09() -> HexMap:
 
 # 10. Honoghr's Choice -- Nystao, 26x18 --------------------------------------
 def m10() -> HexMap:
-    m = HexMap(26, 18, "Gd", seed=3010)
-    m.scatter("Rb", 0.2)
+    m = HexMap(26, 18, "Rb", seed=3010)
+    m.interior = "timber"
+    m.scatter("Gd", 0.2)
     m.scatter("Hhd", 0.1)
     m.disc((13, 9), 3, "Rd")
+    # Broken earthworks leave both the central approach and village flanks open.
+    for x in (7, 19):
+        m.rect(x, 4, x, 7, "Hhd")
+        m.rect(x, 11, x, 14, "Hhd")
+    for breach in ((7, 6), (7, 12), (19, 5), (19, 13)):
+        m.set(*breach, "Rd")
+    m.path([(2, 9), (11, 9)], "Rd")
+    m.path([(15, 9), (25, 9)], "Rd")
+    m.path([(6, 9), (9, 6), (13, 5), (17, 6), (21, 9)], "Rd")
+    m.path([(6, 9), (9, 13), (13, 13), (17, 13), (21, 9)], "Rd")
+    # Native Gt floors and Xt walls; four doors can be contested from outside.
+    m.rect(11, 7, 15, 11, "Isr")
+    for y in (7, 11):
+        m.rect(11, y, 15, y, "Xos")
+    for x in (11, 15):
+        m.rect(x, 8, x, 10, "Xos")
+    for door in ((11, 9), (15, 9), (12, 7), (14, 11)):
+        m.set(*door, "Isr")
+    for cover in ((9, 6), (17, 6), (9, 13), (17, 13), (12, 6), (14, 12)):
+        m.set(*cover, "Rd^Qcr")
+    for cover in ((12, 10), (14, 10)):
+        m.set(*cover, "Isr^Qcr")
+    # Keep every original village, recruiting hex and shuttle landing zone.
     ring(m, (13, 9), "Kh", "Ch", 5)
     for v in ((10, 7), (16, 7), (10, 12), (16, 12), (13, 5), (13, 13)):
         m.set(*v, "Rd^Vhh")
@@ -265,7 +289,6 @@ def m10() -> HexMap:
     m.start(2, 2, 9)
     keys("dfr_10_honoghrs_choice", dukha=(13, 9), west_lz=(2, 9), east_lz=(25, 9))
     return m
-
 
 BUILDERS = {
     "dfr_01_the_noghri_prisoner": m01,

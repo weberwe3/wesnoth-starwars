@@ -1161,3 +1161,63 @@ or human difficulty. The verified player benefit is a readable industrial
 layout with choices between a direct central advance and compartment assaults
 using cover and contested flanks. Existing enemy numbers, target durability,
 hero-defeat rules, gold and turn limits are unchanged.
+
+
+## Nystao clan-house defense (2026-10-12)
+
+Honoghr's Choice now has a timber clan house with four entrances, connected
+village tracks across dark poisoned soil, broken earthworks and eight supply
+crate cover hexes. The six original villages and all recruiting terrain remain.
+Both landing zones can contest the entrances and village approaches. Leia is
+still mission-critical; the east shuttle on turn4, Noghri allies on turn6, force
+counts, recruitment, gold, turn limits and mission rules are unchanged.
+
+All 456 remaining walkable hexes connect; the previous layout had 468.
+Twelve impassable timber wall hexes define the clan house, with four entrances.
+Installed Wesnoth 1.19.27 confirms Leia, Chewbacca, Khabarakh and the western
+clone can reach every entrance, all six villages and both landing zones in
+unopposed native path checks. Leia reaches either west/east door in two MP
+and the north/south door in two/three MP; her routes to the landing-zone keeps
+cost eleven/twelve MP. These paths describe access, not safety through enemies.
+
+The timber floor and dirt retain one-MP movement for all four tested types.
+Chewbacca and the clone have 40% floor defense and 60% crate defense;
+Khabarakh has 50%/60%, while Leia has 50%/70%. These are actual native unit
+defenses, not uniform terrain guarantees. Dry hills cost Khabarakh one MP and
+the other three tested units two MP, with 60% defense for Leia/Khabarakh and
+50% for Chewbacca/the clone. Crates grant no healing, income or recruitment;
+the original six dukhas still provide village healing and income.
+
+A normal native Chewbacca move from (13,10) through cover at (14,10) to the
+south entrance (14,11) spent two MP, leaving three of five. A real save/reload
+retained his destination and remaining moves, all four doors, eight covers,
+twelve wall hexes, six villages and the original other hero positions.
+
+The fresh-mission and actual reload phases passed 100 and 98 checks respectively, without engine errors or warnings.
+
+Inventory, unit and all map-generator checks, scope/whitespace, 107 declared
+contracts, 682 systems checks and all 30 campaign sequence stages passed.
+All 30 sequence saves were parsed as readable matching saved WML. Systems
+logs retain 15 warnings from the existing synthetic-controller fixtures, with no engine
+errors; the main/load phases and existing replay tests passed. Sequence probes
+use scripted objectives and parsed saves, rather than human playtests or actual
+reloads of every sequence save. The other 29 maps and all 30 scenario CFGs
+remain byte-identical to the base.
+
+Six careful-player AI soaks passed the existing technical gate:
+
+| Layout | Run | Recorded AI outcome | Turns played |
+| --- | --- | --- | --- |
+| Previous settlement | 1 | result VICTORY turn 3 | 3 |
+| Previous settlement | 2 | result VICTORY turn 4 | 4 |
+| Previous settlement | 3 | result VICTORY turn 3 | 3 |
+| Clan-house defense | 1 | result VICTORY turn 4 | 4 |
+| Clan-house defense | 2 | result DEFEAT turn 7 | 7 |
+| Clan-house defense | 3 | result VICTORY turn 5 | 5 |
+
+These are independent random runs, not paired seeds or a human win-rate
+estimate. Terrain and route changes affect tactics; no claim is made that
+human difficulty has improved. The player now chooses between holding the
+house entrances, contesting the surrounding healing villages and covering the
+eastern landing approach. The announced eastern shuttle, turn6 Noghri allies,
+enemy numbers, recruitment, gold, turn limits and victory/defeat rules remain.
