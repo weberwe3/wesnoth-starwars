@@ -317,7 +317,7 @@ def duracrete_plaza(seed: int = 109) -> Image.Image:
 
 TILES = {
     "interior-deck": interior_deck,
-    "bulkhead": bulkhead,
+    # "bulkhead": the wall top is drawn by gen_wall_relief.py since 2026-10-12.
     "throne-floor": throne_floor,
     "bunker": bunker,
     "bunker-keep": bunker_keep,

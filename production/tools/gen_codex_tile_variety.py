@@ -88,15 +88,8 @@ INTERIOR = [
 add(["interior-deck", "interior-deck2", "interior-deck3", "interior-deck4"], "texture", "metal",
     lambda i: INTERIOR[i - 1])
 
-BULKHEAD = [
-    "the top of a thick starship bulkhead wall: heavy dark gray armoured plates with bolted seams and a bundle "
-    "of pipes along it, clearly a solid wall",
-    "the top of a thick starship bulkhead wall: dark armoured plating with conduits, a warning stripe and a "
-    "small status light, clearly a solid wall",
-    "the top of a thick starship bulkhead wall: reinforced dark metal with structural ribs and cable runs, "
-    "clearly a solid wall",
-]
-add(["bulkhead", "bulkhead2", "bulkhead3"], "texture", "metal", lambda i: BULKHEAD[i - 1])
+# Wall tops (bulkhead, wall-*) are drawn by gen_wall_relief.py since 2026-10-12, as
+# seamless textures that run unbroken from hex to hex; they are not variety jobs.
 
 add(["hangar", "hangar2"], "texture", "metal",
     lambda i: ("a starship hangar bay floor: dark gray deck with painted white landing markings, tie-down "
@@ -133,14 +126,6 @@ add(["floor-palace2"], "texture", "built", lambda i: "a grand palace floor: poli
     "border inlay")
 add(["floor-rock2"], "texture", "built", lambda i: "a tunnel floor cut into a mountain: smoothed dark stone with a "
     "shallow drainage groove and grit")
-add(["wall-timber2"], "texture", "built", lambda i: "the top of a thick wall of dark logs with a crossbeam and iron "
-    "brackets, clearly a solid wall")
-add(["wall-colony2"], "texture", "built", lambda i: "the top of a thick duracrete wall with a metal cap and a small "
-    "conduit, clearly a solid wall")
-add(["wall-palace2"], "texture", "built", lambda i: "the top of a thick palace wall of carved pale stone with a "
-    "fluted moulding, clearly a solid wall")
-add(["wall-rock2"], "texture", "built", lambda i: "solid raw mountain rock with a vein of pale quartz and deep "
-    "cracks, clearly impassable")
 
 # Settlement variants: same kind of place per biome, each visibly distinct.
 VILLAGES = {
