@@ -1221,3 +1221,66 @@ human difficulty has improved. The player now chooses between holding the
 house entrances, contesting the surrounding healing villages and covering the
 eastern landing approach. The announced eastern shuttle, turn6 Noghri allies,
 enemy numbers, recruitment, gold, turn limits and victory/defeat rules remain.
+
+
+## Bilbringi docking piers and asteroid approaches (2026-10-12)
+
+The Bilbringi Shipyards now has four two-row docking piers joined by a narrow
+service spine. Six visible asteroid formations offer fighters slower cover
+approaches, with open channels for capital ships. The central and outer routes
+remain open, but the original cloaked mine screen still makes nearby space
+hazardous. All four original platforms, seven starting mines, turn6 seed
+coordinates, heroes, recruitment terrain, force counts, gold, turn limits and
+mission events/rules remain unchanged. Victory still requires three platforms.
+
+All 660 fighter-passable hexes connect, and all 610 capital-passable hexes
+connect without crossing an asteroid. The layout has 50 visible asteroid
+terrain hexes, compared with seven before, and 71 docking-deck hexes, compared
+with 82 before. Four two-row piers replace the broad slab. Every original
+platform has open attack approaches from either side of its west-facing edge;
+all eleven original recruiting hexes retain their terrain and no villages,
+healing or additional recruitment terrain were added.
+
+Installed Wesnoth 1.19.27 confirms Wedge, Luke's X-wing, ordinary X-wings and
+TIE fighters pay one MP in open space or on docks and two MP in asteroids.
+Their actual native defenses are 50% in open space, 60% in asteroids and 40%
+on docking decks. Death's Head pays one MP in space or on docks, cannot enter
+asteroid terrain, and retains 10% defense. Native unopposed path checks for
+all five types reach every platform approach and the full-length channels.
+These paths describe access, not safety through enemies or the mine screen.
+
+A normal native X-wing test unit moved from (7,6) to asteroid cover at (9,5),
+spending four MP and retaining four of its normal eight. A real save/reload
+retained that destination and spent movement, both original heroes, Death's
+Head, all four platforms, all seven starting cloaked mines and all 50 visible
+asteroid terrain cells. Test units were added only to the isolated fixture;
+production scenario forces and recruitment remain unchanged.
+
+Fresh-mission and actual reload phases passed 143 and 141 native checks, without engine errors or warnings.
+
+Inventory, unit and all map-generator checks, scope/whitespace, 107 declared
+contracts, 682 systems checks and all 30 campaign sequence stages passed.
+All 30 sequence saves were parsed as readable matching saved WML. Systems
+logs retain 15 warnings from the existing synthetic-controller fixtures,
+with no engine errors; existing replay tests passed. Sequence probes use
+scripted objectives and parsed saves rather than human playtests or actual
+reloads of every sequence save. Other 29 maps and all 30 scenario CFGs remain
+byte-identical to the base.
+
+Six careful-player AI soaks passed the existing technical gate:
+
+| Layout | Run | Recorded AI outcome | Turns played |
+| --- | --- | --- | --- |
+| Previous dock slab | 1 | result VICTORY turn 12 | 12 |
+| Previous dock slab | 2 | result DEFEAT turn 8 | 8 |
+| Previous dock slab | 3 | result VICTORY turn 14 | 14 |
+| Piers and asteroid approaches | 1 | result VICTORY turn 16 | 16 |
+| Piers and asteroid approaches | 2 | result VICTORY turn 14 | 14 |
+| Piers and asteroid approaches | 3 | result VICTORY turn 13 | 13 |
+
+These are independent random runs, not paired seeds or a human win-rate
+estimate. All wins and losses are reported; no claim is made that human
+difficulty has improved. Players now choose between faster open routes,
+slower fighter cover and dock approaches with less fighter defense. The
+existing cloaked hazards, platform blast events, turn6 seeds, enemy forces,
+gold, turn limits, bonus objective and three-platform victory rule remain.

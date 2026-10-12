@@ -202,17 +202,29 @@ def m08() -> HexMap:
 # 9. The Bilbringi Shipyards -- orbital, 30x22 ---------------------------------
 def m09() -> HexMap:
     m = HexMap(30, 22, SPACE, seed=3909)
+    # A service spine joins four docking piers instead of a solid deck slab.
+    m.rect(26, 3, 27, 19, DECK)
+    for y in (4, 9, 14, 19):
+        m.rect(23, y - 1, 29, y, DECK)
+    # Fighters can trade speed for cover; capital ships use open channels.
+    for field in ((8, 3, 11, 5), (15, 4, 18, 7), (12, 7, 14, 8),
+                  (8, 17, 11, 19), (15, 15, 18, 18), (12, 13, 14, 14)):
+        m.rect(*field, ROCKS)
+    for channel in ((10, 3, 10, 5), (17, 4, 17, 7),
+                    (10, 17, 10, 19), (17, 15, 17, 18)):
+        m.rect(*channel, SPACE)
+    for gap in ((13, 8), (13, 13)):
+        m.set(*gap, SPACE)
+    # Preserve the terrain beneath every original cloaked asteroid and seed.
+    for mine in (*SCREEN, (10, 7), (9, 15), (11, 11)):
+        m.set(*mine, SPACE)
     ring(m, (3, 11), "Qsk", "Qsc", 5)
-    m.rect(23, 3, 27, 19, DECK)
     ring(m, (27, 11), "Qsk", "Qsc", 4)
-    m.disc((9, 4), 1, ROCKS, prob=0.5)
-    m.disc((8, 18), 1, ROCKS, prob=0.5)
     platforms = ((22, 4), (22, 9), (22, 14), (22, 19))
     m.start(1, 3, 11)
     m.start(2, 27, 11)
     keys("tlc_09_bilbringi", wedge_keep=(3, 11), shipyard_keep=(27, 11), platforms=platforms, screen=SCREEN)
     return m
-
 
 # 10. The Last Command -- orbital, 30x22 ---------------------------------------
 def m10() -> HexMap:
