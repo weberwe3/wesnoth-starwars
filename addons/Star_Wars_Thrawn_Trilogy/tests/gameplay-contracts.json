@@ -8,6 +8,7 @@
     "heroes.json",
     "infantry.json",
     "lua.json",
+    "ranged-ai.json",
     "the-last-command.json"
   ]
 }

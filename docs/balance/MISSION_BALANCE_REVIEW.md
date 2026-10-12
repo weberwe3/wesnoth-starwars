@@ -1696,3 +1696,59 @@ All 30 careful-player AI soaks passed the existing technical gate. Every raw log
 | sw_tlc_10_the_last_command | result DEFEAT turn 4 | 4 | 0 | 1 |
 
 These independent random runs recorded 9 victories and 21 defeats. They are unpaired and do not establish a human win rate or a change in difficulty. Defeats and all raw warnings remain recorded; mission difficulty still warrants human playtests. All 30 scenario CFGs/maps and unit/rank data retain their base bytes. The fixture changes only test setup, and ECM/ECCM and other numeric rules remain unchanged.
+
+
+## 3.26 - Ranged AI approaches around visible overwatch (2026-10-12)
+
+Enemy ranged troops now reject a firing position if the ordinary native path to it crosses a visible active hostile overwatch lane. Reaction fire interrupts the move even on a miss, so the planner does not credit a shot from an endpoint it would fail to reach. It can choose a safe worthwhile alternative or fire from its current position. If no such ranged shot exists, the ordinary AI remains available; this change does not make every enemy move avoid reactions.
+
+Only publicly visible hostile watchers count, with reactions remaining, current range and arc, disabled states and the per-move duplicate guard. The check is deliberately cautious about a visible lane: it does not inspect the opponent's fog, hidden sensors or contact picture to decide whether a concealed mover would be seen. Native visibility, cloak, powers and hooks still resolve actual reactions. All combat numbers, native terrain and zones of control, mission forces/objectives/difficulty and saved formats remain intact.
+
+Current-main native baseline (Wesnoth 1.19.27): an ordinary 36-HP, five-MP stormtrooper at (6,8) selected a four-MP firing position at (10,7) against a smuggler at (12,8). Arming the visible E-Web at (5,6), range three, did not change that choice or its 14.5 rating. Its path entered the firing lane at (7,8), while (10,8) was a safe four-MP alternative. This is an isolated tactical fixture, not a mission difficulty result.
+
+Measured validation on installed Wesnoth 1.19.27 with Claude's wall-art update retained:
+
+- Generators, unit-art uniqueness, inventory, scope and whitespace passed. The unchanged full systems/replay suite passed 1269 checks with no failed assertions or engine errors and 19 warnings classified by the unchanged runner. All raw native diagnostics, including fixture animation/event warnings, are retained separately. Six native main/reload phases completed within their original deadlines.
+- Public-path cases cover active/inactive/spent/hidden/allied/disabled watchers, duplicate movement serials, range, all six front facings and both column parities. Every entered hex is checked against native reaction eligibility; the source is excluded and stationary fire remains available. When all moving shots are covered, this candidate returns no shot and leaves ordinary AI available.
+- The ordinary native AI turn follows its complete native planned path, spends four MP, reaches (10,8), and attacks with the shipped rifle without drawing the visible E-Web's volley. Arrival and attack events separately record movement and reactions. The real saved game retains watcher state, units and actions, and reproduces the same safe firing choice after loading.
+- The initial focused run retained three failed fixture assertions and its aggregate main-phase failure. The fixture had assumed one E-Web reaction instead of the native ability's two and measured movement at the attack event after combat had spent it. The repair snapshots native reactions and records moveto arrival before attack; the same behavior checks pass without changing the planner or a gate.
+- All three scripted campaign sequences passed 30 stages and 30 matching parsed saves. They do not reload each sequence save and do not represent human playtests.
+
+All 30 careful-player AI soaks passed the existing technical gate. All raw logs were scanned without changing the matcher, exceptions, timeout or verdict:
+
+| Mission | Recorded AI outcome | Turns | Formula diagnostic lines | Other raw diagnostic lines |
+| --- | --- | --- | --- | --- |
+| sw_hte_01_ysalamiri_harvest | result DEFEAT turn 17 | 17 | 0 | 1 |
+| sw_hte_02_ambush_at_bpfassh | result DEFEAT turn 15 | 15 | 0 | 2 |
+| sw_hte_03_adrift | result DEFEAT turn 8 | 8 | 0 | 1 |
+| sw_hte_04_shadows_of_kashyyyk | result VICTORY turn 15 | 15 | 0 | 1 |
+| sw_hte_05_prisoner_of_myrkr | result DEFEAT turn 15 | 15 | 0 | 1 |
+| sw_hte_06_raid_on_karrdes_base | result DEFEAT turn 16 | 16 | 0 | 3 |
+| sw_hte_07_the_forest_crossing | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_hte_08_nomad_city | result VICTORY turn 15 | 15 | 0 | 9 |
+| sw_hte_09_sluis_van_shipyards | result VICTORY turn 7 | 7 | 0 | 1 |
+| sw_hte_10_thrawns_gambit | result DEFEAT turn 11 | 11 | 0 | 1 |
+| sw_dfr_01_the_noghri_prisoner | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_dfr_02_honoghr | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_dfr_03_jomark | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_dfr_04_the_senators_men | result DEFEAT turn 6 | 6 | 0 | 5 |
+| sw_dfr_05_peregrines_nest | result VICTORY turn 16 | 16 | 0 | 10 |
+| sw_dfr_06_the_mad_jedi | result DEFEAT turn 6 | 6 | 0 | 1 |
+| sw_dfr_07_the_dark_force | result DEFEAT turn 17 | 17 | 0 | 14 |
+| sw_dfr_08_aboard_the_katana | result DEFEAT turn 17 | 17 | 0 | 1 |
+| sw_dfr_09_battle_for_the_fleet | result DEFEAT turn 16 | 16 | 0 | 1 |
+| sw_dfr_10_honoghrs_choice | result VICTORY turn 3 | 3 | 0 | 1 |
+| sw_tlc_01_the_siege_of_coruscant | result VICTORY turn 8 | 8 | 0 | 1 |
+| sw_tlc_02_the_smugglers_council | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_tlc_03_the_palace_infiltrators | result VICTORY turn 9 | 9 | 0 | 1 |
+| sw_tlc_04_landfall_on_wayland | result DEFEAT turn 7 | 7 | 0 | 1 |
+| sw_tlc_05_the_natives_of_wayland | result DEFEAT turn 5 | 5 | 0 | 1 |
+| sw_tlc_06_the_gates_of_tantiss | result DEFEAT turn 11 | 11 | 0 | 3 |
+| sw_tlc_07_the_cloning_vats | result VICTORY turn 12 | 12 | 0 | 1 |
+| sw_tlc_08_the_throne_room | result DEFEAT turn 6 | 6 | 0 | 1 |
+| sw_tlc_09_bilbringi | result VICTORY turn 10 | 10 | 0 | 2 |
+| sw_tlc_10_the_last_command | result DEFEAT turn 6 | 6 | 0 | 1 |
+
+These independent random runs recorded 9 victories and 21 defeats. They are unpaired and do not establish a human win rate or a difficulty change. All defeats and raw warnings are retained. Mission scenarios/maps, unit statistics, rank abilities and overwatch resolution retain their integrated-base bytes.
+
+Source coverage records a literal; native execution supplies behavioral evidence.

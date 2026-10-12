@@ -10018,6 +10018,10 @@
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
     },
     {
+      "id": "sw-ai-ranged-visible-overwatch-path",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/ranged-ai.json"
+    },
+    {
       "id": "sw-air-target-centered-jamming",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/air-support.json"
     },
@@ -10605,7 +10609,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "dda2409b7b5d204a3aaf9f753c7c3c1b9248b50c147efe55f33f6c6a12483ae6"
+      "sha256": "d577134053f7c521875498ed2c8793d75cc4410837968629e65fee3cfb875654"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10625,7 +10629,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua",
-      "sha256": "56c42964d0bdccc6f1c046ec2ff438c0e4810caaad563619d382975319085710"
+      "sha256": "330fa117487082986cc011f44e2d13e4897763847de924355c3ab9eb2dc95269"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_air.lua",
@@ -10693,7 +10697,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
-      "sha256": "39db54538bbe733997e112921ff365c02a47f8b3dd89881494f72515abf49a9b"
+      "sha256": "e31373de17a89cd9454776f871b2fc374b1ac322edc957da898519036b36db23"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/air-support.json",
@@ -10722,6 +10726,10 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json",
       "sha256": "f64373427cf4b23fe9979e8ed69a0676d67e81414cd041205bc5a476e18f02fb"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/ranged-ai.json",
+      "sha256": "0fa1a684d12197cdcf9223bcebdcce772675b1c16111d6d079b4087c5b9d10dd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/the-last-command.json",
