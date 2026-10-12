@@ -51,10 +51,11 @@ local tips = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua"
 local bonus = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_bonus.lua")
 local debrief = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_debrief.lua")
 local command = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_command.lua")
+local move_sound = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_move_sound.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips, bonus = bonus, debrief = debrief, command = command }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips, bonus = bonus, debrief = debrief, command = command, move_sound = move_sound }
 
 -- Keep command registration in this dynamically loaded file: existing saves
 -- contain an older expansion of SW_TACTICAL_SYSTEMS, but still call this loader.
@@ -139,12 +140,14 @@ on("prestart", "sw_sys_prestart", function()
 end)
 
 on("enter_hex", "sw_sys_enter_hex", function()
+	move_sound.on_enter_hex()   -- display only: engine sound for moves that start out of view
 	overwatch.on_enter_hex()
 	local ctx = wesnoth.current.event_context
 	if mover_matters(wesnoth.units.get(ctx.x1, ctx.y1)) then force.refresh_fields() end
 end)
 
 on("moveto", "sw_sys_moveto", function()
+	move_sound.on_moveto()
 	overwatch.on_moveto()
 	force.refresh_fields()
 	ew.refresh()

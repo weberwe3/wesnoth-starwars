@@ -9,7 +9,7 @@ local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"
 local PHASE = "main"
 
 local STEPS = {
-  "rank_promotion", "rank_amla", "rank_abilities", "safe_backstab", "air_basics", "air_accuracy", "air_ecm_origin", "air_ecm_ai", "check_air_ecm_ai", "air_strafe", "check_strafe",
+  "move_sounds", "rank_promotion", "rank_amla", "rank_abilities", "safe_backstab", "air_basics", "air_accuracy", "air_ecm_origin", "air_ecm_ai", "check_air_ecm_ai", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_ow_path_rules", "ai_ow_path", "check_ai_ow_path", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
@@ -141,6 +141,34 @@ local function plugin(events, context, info)
     swt.steps = S
 
     -- Promotion to a new type: the promoted type starts at rank I.
+    -- Engine sounds for moves that start out of view (lua/sw_move_sound.lua).
+    function S.move_sounds()
+      swt.clear()
+      local ms = sw_systems.move_sound
+      check("a speeder's take-off sound is read from its type", ms.sound_of("sw_unit_im_scout_trooper") == "sw-move-speeder.wav",
+        tostring(ms.sound_of("sw_unit_im_scout_trooper")))
+      check("infantry have no engine sound", ms.sound_of("sw_unit_nr_trooper") == nil)
+      local played, real_play = {}, ms.play
+      ms.play = function(sound) table.insert(played, sound) end
+      local sp = swt.place("sw_unit_im_scout_trooper", 2, 3, 3, "t_ms_sp")
+      ms.finish(sp)
+      ms.step(sp, false, false)
+      check("out of view at the start and still unseen: silent", #played == 0)
+      ms.step(sp, false, true)
+      check("comes into view: the engine sound plays", #played == 1 and played[1] == "sw-move-speeder.wav", table.concat(played, ","))
+      ms.step(sp, false, true)
+      check("only once per move", #played == 1)
+      ms.finish(sp)
+      ms.step(sp, true, true)
+      check("a move that starts in view is left to the take-off animation", #played == 1)
+      ms.finish(sp)
+      local own = swt.place("sw_unit_im_scout_trooper", 1, 5, 3, "t_ms_own")
+      swt.move_to("t_ms_own", 5, 7)
+      check("a real move of a visible speeder adds no second sound", #played == 1, #played)
+      ms.play = real_play
+      swt.clear()
+    end
+
     function S.rank_promotion()
       swt.clear()
       local t = swt.place("sw_unit_nr_trooper", 1, 3, 3, "t_tr")
