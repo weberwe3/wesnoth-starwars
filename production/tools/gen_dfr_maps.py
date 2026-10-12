@@ -141,6 +141,44 @@ def m05() -> HexMap:
     m.start(1, 21, 10)
     m.start(2, 3, 10)
     keys("dfr_05_peregrines_nest", han_keep=(21, 10), generator=(25, 10), imperial_keep=(3, 10))
+    from hte_mapkit import reskin
+
+    original = dict(m.cells)
+    m.interior = "rock"
+    # Sheer ridges make a central canyon; outer trails reach the side gates.
+    # Installed Mm^Xm uses the worst Mt/Xt alias, so walkers cannot cross it.
+    for ridge in ((7, 5, 10, 7), (12, 5, 16, 7),
+                  (7, 13, 10, 15), (12, 13, 16, 15)):
+        m.rect(*ridge, "Mm^Xm")
+    for trail in ([(4, 8), (8, 4), (14, 4), (18, 7)],
+                  [(4, 12), (7, 16), (14, 16), (18, 13)]):
+        m.path(trail, "Re")
+    m.set(13, 6, original[(13, 6)])
+    m.set(13, 7, "Re")  # leave the northern hill depot accessible
+
+    # Hewn base rooms surround the durasteel generator-control deck.
+    m.rect(24, 8, 27, 12, "Qid")
+    for room in ((23, 5, 23, 7), (23, 12, 23, 15)):
+        m.rect(*room, "Xos")
+    for door in ((23, 6), (23, 13)):
+        m.set(*door, "Isr")
+    for gate in ((18, 7), (18, 10), (18, 13)):
+        m.set(*gate, "Isr")
+    # Existing cargo cover changes defense without adding healing or recruits.
+    for crate in ((19, 6), (19, 14), (20, 8), (20, 12),
+                  (24, 7), (24, 13), (26, 7), (26, 13),
+                  (8, 8), (8, 12), (14, 8), (14, 12)):
+        m.set(*crate, "Isr^Qcr")
+
+    # Preserve exact original healing/recruit terrain and scripted unit tiles.
+    castles = ("Kh", "Ch", "Ke", "Ce")
+    for pos, terrain in original.items():
+        if terrain in castles or "^V" in terrain:
+            m.set(*pos, terrain if pos[0] <= 18 or terrain in castles
+                  else reskin(terrain))
+    for pos in ((21, 10), (22, 10), (24, 10), (19, 9), (19, 11),
+                (3, 10), (5, 9), (5, 11), (25, 10)):
+        m.set(*pos, reskin(original[pos]))
     return m
 
 
