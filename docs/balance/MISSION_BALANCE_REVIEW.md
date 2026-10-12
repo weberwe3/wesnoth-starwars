@@ -1038,3 +1038,66 @@ compatibility evidence, not a controlled balance comparison or human playtest.
 | sw_hte_08_nomad_city | Victory | 15 |
 | sw_hte_09_sluis_van_shipyards | Victory | 8 |
 | sw_hte_10_thrawns_gambit | Defeat | 6 |
+
+### Katana compartment routes — 2026-10-12
+
+The previous map put all four supply villages in sealed rooms. The installed
+1.19.27 engine returned no path from Luke's airlock to any of them. Aboard the
+Katana now connects those rooms through a northern maintenance passage and a
+southern cargo passage. The central spine remains the shortest bridge approach;
+the longer routes provide healing access and space to approach defenders from
+the side. Cargo crates use the existing native cover terrain: ordinary infantry
+get castle-level defense, but crates neither heal nor permit recruiting.
+
+The 26×18 playable footprint, original walkable cells, airlock, bridge, four
+villages, initial forces, reinforcement positions/timing, difficulty values,
+objectives, hero conditions, rewards and all mission scripts are preserved.
+Both sides can use the side routes, including troops arriving at the existing
+northern and southern boarding shafts. Old saved missions retain their saved
+map; start this mission afresh to get the new layout.
+
+Native Windows Wesnoth 1.19.27 passed 30 main and 30 actual save/reload
+checks with no engine errors or warnings. Luke and clone infantry can reach
+all four preserved villages. Luke's village routes cost 9, 13, 19 and 8 MP;
+the clone's cost 7, 8, 12 and 9 MP respectively. Both existing boarding shafts
+remain reachable. The original bridge route still costs 21 MP; northern and
+southern routes that exclude the middle spine cost 26 and 24 MP. These are
+unopposed geometry checks, comfortably inside both Normal's 16-turn and Hard's
+15-turn limits, not mission victories. A normal native move from (6,9) to the
+north junction at (6,5) spent four MP and retained its location and one remaining
+MP after an actual save and reload. All twelve cargo-cover cells survived that
+reload. Infantry movement is one MP on deck and crates, with 40% and 60% defense
+respectively; crates grant no healing, village income or recruitment.
+
+The existing gates passed: inventory, all unit/map generator checks, scope,
+whitespace, 107 declared contracts, 682 systems checks, and all 30 stages across
+the three campaign sequences with 30 readable saved-WML snapshots. Systems
+logs retain 15 synthetic-controller warnings, with no engine errors. Their
+six main/load phases and both existing replay battles passed. Sequence checks
+use scripted routes and parse saved WML; they are not human playtests or native
+reloads of every sequence save. All 29 other maps and all 30 scenario CFGs are
+byte-identical to the base.
+
+Three careful-player AI soaks of the old layout and three of this layout all
+passed the existing technical gate, but all six ended in defeat:
+
+| Layout | Run | AI outcome | Final turn |
+| --- | --- | --- | --- |
+| Previous | 1 | Defeat — Luke killed | 13 |
+| Previous | 2 | Defeat — Luke killed | 5 |
+| Previous | 3 | Defeat — Luke killed | 5 |
+| Connected compartments | 1 | Defeat — Luke killed | 2 |
+| Connected compartments | 2 | Defeat — turn limit | 17 |
+| Connected compartments | 3 | Defeat — Luke killed | 5 |
+
+The candidate's second run cleared all defenders by turn 14 and retained Luke
+at 47/52 HP on turn 16, but did not reach the bridge before the limit. Every
+candidate trace retained Luke at 52/52 HP at the start of turn 2; the first
+run's early loss followed its side-1 attack on that turn. Opening threat
+estimates recorded at most one enemy with 24 potential damage against Luke
+on both layouts. These samples use independent random runs, not paired seeds.
+The outcome spread and the turn-2 loss remain recorded; they do not establish
+a win-rate improvement, a balance regression, or human difficulty. The verified
+benefit is access to previously sealed healing rooms and choices between a
+short central approach and longer, contestable flanks. Both sides gain those
+routes, so the player still needs to cover the announced boarding shafts.

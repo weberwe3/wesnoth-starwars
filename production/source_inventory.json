@@ -10494,7 +10494,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "f9f11d462a15fc8e032759c715317b046a5daa9c0a7a90ff9d2935f174bd5214"
+      "sha256": "663e67a1bdd04789a02ef6f11a5ebfedc87e6ebb19c880f25d814006e00f875f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -16446,7 +16446,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_08_aboard_the_katana.map",
-      "sha256": "4862ec3788de36e65a7a9de4d71ab15ed9525ac6a5c7bfa4de35b28f09e87226"
+      "sha256": "88cd47fe31747f9718eb3573f58c3192f7c4b005d44a37a012e85656a6208332"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_09_battle_for_the_fleet.map",
