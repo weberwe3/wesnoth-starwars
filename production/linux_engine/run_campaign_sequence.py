@@ -132,10 +132,22 @@ FATAL_DIAGNOSTIC = re.compile(
     re.IGNORECASE,
 )
 DEFAULT_ENGINE = Path.home() / "opt/bin/wesnoth-linux"
-# The runner targets Linux; retain portable importability for Windows static
-# checks, where Python does not expose SIGKILL.
-_TERMINATE_EXIT = -int(signal.SIGTERM)
-_KILL_EXIT = -int(getattr(signal, "SIGKILL", 9))
+# Windows' ordinary Popen.terminate exit 1 is also a common failure code.
+# Use distinct native exit codes for our own stops; crashes cannot match them.
+_WINDOWS_HOST = sys.platform == "win32"
+_TERMINATE_EXIT = 0x53570001 if _WINDOWS_HOST else -int(signal.SIGTERM)
+_KILL_EXIT = 0x53570002 if _WINDOWS_HOST else -int(getattr(signal, "SIGKILL", 9))
+
+
+def request_engine_stop(process: subprocess.Popen, *, force: bool = False) -> None:
+    """Stop only the runner-owned process, with a verifiable native exit."""
+    if _WINDOWS_HOST:
+        import _winapi
+        _winapi.TerminateProcess(process._handle, _KILL_EXIT if force else _TERMINATE_EXIT)
+    elif force:
+        process.kill()
+    else:
+        process.terminate()
 
 
 def sha256_tree(root: Path) -> str:
@@ -438,12 +450,12 @@ def _run_engine_phase(command: list[str], workdir: Path, userdata: Path, environ
         if process.poll() is None:
             done_before_stop = done
             terminate_requested = True
-            process.terminate()
+            request_engine_stop(process)
             try:
                 process.wait(timeout=stop_timeout)
             except subprocess.TimeoutExpired:
                 kill_requested = True
-                process.kill()
+                request_engine_stop(process, force=True)
                 process.wait()
         exit_code = process.wait()
     engine_log, stdout_text, stderr_text = _read_phase_logs(userdata, stdout_path, stderr_path)

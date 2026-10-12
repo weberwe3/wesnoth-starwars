@@ -463,6 +463,13 @@
   ],
   "kind": "posed"
  },
+ "sw-unit-wk-suppressor": {
+  "blit": [
+   56,
+   28
+  ],
+  "kind": "posed"
+ },
  "sw-unit-wk-warrior": {
   "blit": [
    57,

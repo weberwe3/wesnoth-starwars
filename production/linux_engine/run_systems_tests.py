@@ -35,7 +35,10 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from run_campaign_sequence import ADDON, ADDON_ID, CAMPAIGNS, DEFAULT_ENGINE  # noqa: E402
+from run_campaign_sequence import (  # noqa: E402
+    ADDON, ADDON_ID, CAMPAIGNS, DEFAULT_ENGINE,
+    _WINDOWS_HOST, _TERMINATE_EXIT, _KILL_EXIT, request_engine_stop,
+)
 
 HERE = Path(__file__).resolve().parent / "systems_test"
 ENGINE_ERRORS = re.compile(
@@ -148,12 +151,12 @@ def run_phase(engine: Path, userdata: Path, plugin_name: str, phase: str, timeou
         if proc.poll() is None:
             termination_requested = True
             termination_after_completion = completed
-            proc.terminate()
+            request_engine_stop(proc)
             try:
                 proc.wait(timeout=15)
             except subprocess.TimeoutExpired:
                 kill_requested = True
-                proc.kill()
+                request_engine_stop(proc, force=True)
                 proc.wait()
         else:
             proc.wait()
@@ -167,8 +170,8 @@ def run_phase(engine: Path, userdata: Path, plugin_name: str, phase: str, timeou
     errors, warnings = classify_diagnostics(text)
     completed = completed and has_done(text)
     owned_stop = (termination_requested and termination_after_completion and
-                  (proc.returncode == -signal.SIGTERM or
-                   (kill_requested and proc.returncode == -signal.SIGKILL)))
+                  (proc.returncode == _TERMINATE_EXIT or
+                   (kill_requested and proc.returncode == _KILL_EXIT)))
     if timed_out:
         errors.append("phase timed out before completion")
     if not completed:
@@ -288,14 +291,19 @@ def run_replay_test(engine: Path, work: Path, test: str, timeout: int,
     userdata = stage(work, None, True)
     env = dict(os.environ, SDL_VIDEO_DRIVER="offscreen", SDL_AUDIO_DRIVER="dummy")
     try:
-        proc = subprocess.run([str(engine), "--userdata-dir", str(userdata), "--log-strict=error",
+        # -u implies console logging. --wnoconsole keeps Windows output in the
+        # owned pipes instead of reopening CONOUT$, where we cannot capture it.
+        console = ["--wnoconsole"] if _WINDOWS_HOST else []
+        proc = subprocess.run([str(engine), "--userdata-dir", str(userdata), *console, "--log-strict=error",
                                "-u", test], cwd=work, env=env, capture_output=True, text=True,
                               timeout=timeout)
         out, code = proc.stdout + proc.stderr, proc.returncode
     except subprocess.TimeoutExpired as exc:
         out = (exc.stdout or b"").decode(errors="replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
         code = -1
-    logs = "\n".join(p.read_text(encoding="utf-8", errors="replace") for p in (userdata / "logs").glob("*.log"))
+    native_streams = [p.read_text(encoding="utf-8", errors="replace")
+                      for p in sorted((userdata / "logs").glob("*.log"))]
+    logs = "\n".join(native_streams)
     text = out + "\n" + logs
     lines = sorted({l for l in text.splitlines() if l.startswith("SW_TEST: ")})
     tag = f"[replay:{test}]"
@@ -303,7 +311,11 @@ def run_replay_test(engine: Path, work: Path, test: str, timeout: int,
     infos = [l[len("SW_TEST: INFO "):] for l in lines if l.startswith("SW_TEST: INFO ")]
     # Count every checkpoint line on the engine's output (two checkpoints
     # may legitimately produce the same digest).
-    out_lines = [l for l in out.splitlines() if l.startswith("SW_TEST: ")]
+    # Windows GUI builds redirect stdout to a native .out.log. Select one
+    # authoritative marker stream, avoiding mirrored duplicate checkpoints.
+    checkpoint_stream = next((stream for stream in [out, *native_streams]
+                              if any(l.startswith("SW_TEST: ") for l in stream.splitlines())), "")
+    out_lines = [l for l in checkpoint_stream.splitlines() if l.startswith("SW_TEST: ")]
     original = [l for l in out_lines if "(original)" in l and "PASS" in l]
     replayed = [l for l in out_lines if "(replay)" in l and "PASS" in l]
     verdict = re.search(r"(PASS TEST|FAIL TEST|BROKE STRICT)[^\n]*", text)

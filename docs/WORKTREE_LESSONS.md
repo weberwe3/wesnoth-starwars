@@ -1430,3 +1430,51 @@ incorrect assumption about available attacks.
 - Prevention: include the art-direction registry when enumerating a new roster
   unit's generator and asset dependencies, even when all artwork is reused.
   Run the existing roster-art self-test before publication.
+
+
+## 2026-10-12: Preserve native Windows process and replay evidence
+
+- Symptom: systems checks finished, but Windows' ordinary termination returned
+  generic exit 1; replay markers were absent from the runner's captured pipes.
+- Confirmed cause: Windows termination does not use POSIX signal exit codes,
+  and the engine's -u console mode reopens CONOUT$, bypassing those pipes.
+- Resolution: terminate only an owned completed process with a distinct native
+  exit marker, accepted only after its completion sentinel. Use --wnoconsole
+  for Windows unit tests and select one actual marker stream without counting
+  mirrored checkpoints twice. Preserve raw output and all diagnostic failures.
+  Process-scoped installed font configuration and English locale eliminated the
+  separately observed startup font/collator diagnostics.
+- Prevention: test completed, crashed, timed-out and raced processes separately.
+  Never accept generic exit 1 as completion. Require actual replay verdicts and
+  matching original/replay checkpoints. Native regressions and the full systems
+  gate passed; governing CI passed before this lesson was recorded.
+
+## 2026-10-12: Reconstruct snapshots with fresh private engine identities
+
+- Symptom: a captured on-hit fixture snapshot could not be retrieved by its
+  public ID after reconstruction, so the real reload gate failed.
+- Confirmed cause: serialized private underlying_id values from synthetic
+  units exceeded Lua's exact serialized integer range. Reusing them broke
+  native unit identity lookup.
+- Resolution: remove only underlying_id before native snapshot reconstruction;
+  the engine assigns a fresh private identity. Retain public ID, coordinates,
+  HP, action budgets, modifications and the actual captured Slow status.
+  The repaired fixture passed real save/reload, including earned rank objects.
+- Prevention: do not copy private engine identity into reconstructed test units.
+  Verify lookup immediately and disclose that snapshot reconstruction is not an
+  additional combat. Never assign the expected combat status manually.
+
+## 2026-10-12: Pin the published-player launcher's Git context
+
+- Symptom: normal player synchronization failed when WSL could not launch;
+  an initial native repair inherited the validator's agent-worktree Git context.
+- Confirmed cause: the CMD depended on WSL for Git, and git -C does not override
+  inherited GIT_DIR/GIT_WORK_TREE. A subsequent batch-label lookup also failed.
+- Resolution: use installed native Git, explicitly select the primary checkout,
+  clear conflicting Git selectors, and use direct CMD Git calls. Retain clean
+  protected-main checks, actual fetch, fast-forward-only synchronization,
+  freshly fetched HEAD equality, canonical mirror boundaries and source-race
+  checks. The actual candidate passed all eight existing launcher checks.
+- Prevention: exercise the real CMD from an inherited worktree context, then
+  repeat against merged main. Keep credentials, execution policy and global
+  Git configuration unchanged. Validate mirror targets before filesystem writes.

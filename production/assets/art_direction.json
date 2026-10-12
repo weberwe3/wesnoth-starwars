@@ -65,7 +65,8 @@
     "sw_unit_ob_cloaked_asteroid": "A rough gray-brown asteroid shimmering faintly at its edges with a half-visible stealth field.",
     "sw_unit_ob_shield_generator": "A squat armored planetary shield generator: a gray dome on a fortified base with glowing blue emitter vanes.",
     "sw_unit_ob_cloning_cylinder": "A tall glass cloning cylinder filled with pale green fluid and a vague human shape, on a metal base with cables and pipes.",
-    "sw_unit_ob_shipyard_platform": "A large orbital shipyard platform: a skeletal gray framework with work lights, cranes, and a half-built hull inside."
+    "sw_unit_ob_shipyard_platform": "A large orbital shipyard platform: a skeletal gray framework with work lights, cranes, and a half-built hull inside.",
+    "sw_unit_wk_suppressor": "A Wookiee support gunner: a tall, lean, shaggy, ape-like forest defender covered in long light-brown fur, with a flat primate face (not canine, no snout), a leather shoulder strap, and a crossbow-like energy bowcaster firing green concussive bolts. Reuse the project-owned Wookiee Lookout artwork."
   },
   "portrait_from_sprite": [],
   "portrait_policy": "Every speaking character gets a head-and-shoulders portrait for dialogue. Faces are original designs that must not resemble any real actor or person; identity comes from the lore-described costume, hair and equipment. A pilot hero whose unit is a starfighter uses the portrait subject below, not the craft. If the image service refuses a character, the code-painted master supplies the portrait (production/tools/paint_hero_masters.py).",

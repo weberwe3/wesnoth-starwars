@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from unittest import mock
+import run_campaign_sequence as sequence
 
 from run_campaign_sequence import (
     CAMPAIGN_I, EXPECTED, REQUIRED_HEROES, _KILL_EXIT, _TERMINATE_EXIT,
@@ -278,7 +279,6 @@ class CampaignSequenceEvidenceTests(unittest.TestCase):
         self.assertIsInstance(phase["exit_code"], int)
         self.assertTrue(process_failures(phase))
 
-    @unittest.skipUnless(os.name == "posix", "Linux signal exit evidence")
     def test_actual_owned_post_completion_termination_is_recorded(self) -> None:
         phase = self.phase("import time; print('SW_SEQ: done', flush=True); time.sleep(30)")
         self.assertTrue(phase["done_before_stop"])
@@ -286,6 +286,19 @@ class CampaignSequenceEvidenceTests(unittest.TestCase):
         self.assertFalse(phase["kill_requested"])
         self.assertEqual(phase["exit_code"], _TERMINATE_EXIT)
         self.assertEqual(process_failures(phase), [])
+
+    def test_native_windows_stop_uses_distinct_owned_codes(self) -> None:
+        process = mock.Mock()
+        winapi = mock.Mock()
+        for force, expected in ((False, 0x53570001), (True, 0x53570002)):
+            with self.subTest(force=force), mock.patch.object(sequence, "_WINDOWS_HOST", True), \
+                 mock.patch.object(sequence, "_TERMINATE_EXIT", 0x53570001), \
+                 mock.patch.object(sequence, "_KILL_EXIT", 0x53570002), \
+                 mock.patch.dict(sys.modules, {"_winapi": winapi}):
+                sequence.request_engine_stop(process, force=force)
+                winapi.TerminateProcess.assert_called_with(process._handle, expected)
+        process.terminate.assert_not_called()
+        process.kill.assert_not_called()
 
     @unittest.skipUnless(os.name == "posix", "Linux signal exit evidence")
     def test_actual_owned_kill_escalation_is_recorded(self) -> None:
