@@ -1568,3 +1568,11 @@ the resulting files before tests and publication.
 - Integration cause: the first inventory regeneration rejected a new coverage shard absent from the index. Add its basename to the existing index and retain every previous shard; coverage is separate from native behavior proof.
 - Fixture cause and resolution: native defense_on returns actual avoidance, the complement of CFG hit chance. The first flat-terrain fixture measured9.0/12.6 instead of the intended AI threshold boundary. Equal forest cover, direct native defense50 checks and restoration preserve that boundary and pass the native rerun. The original failure and aggregate phase verdict are retained.
 - Prevention: preserve intent separately from sorted traversal order, reuse existing persistent coordinates, check old-save behavior through a real native load, and finish shard/index updates before inventory generation. Keep failed attempts and their actual outcomes.
+
+
+## 2026-10-12: Measure native overwatch approach budgets before combat
+
+- Symptom: the actual AI followed the safe native path and attacked, but three fixture checks failed on reactions and remaining MP.
+- Confirmed cause: the E-Web's native ability arms two reactions, while the fixture hardcoded one; native combat spends remaining movement before the attack event.
+- Resolution: snapshot the native armed reaction count, assert planning and approach preserve it, and record moveto arrival separately from the actual attack. The unchanged full native suite and real reload pass without modifying combat, movement, watcher rules or the planner.
+- Prevention: compare against the shipped ability and measure action budgets at the relevant native event. Keep path tracing, pre-attack HP, watcher state and actual attack checks; preserve the failed run and aggregate verdict.

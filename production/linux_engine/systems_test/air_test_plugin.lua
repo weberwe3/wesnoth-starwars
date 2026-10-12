@@ -12,7 +12,7 @@ local STEPS = {
   "rank_promotion", "rank_amla", "rank_abilities", "safe_backstab", "air_basics", "air_accuracy", "air_ecm_origin", "air_ecm_ai", "check_air_ecm_ai", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
-  "ai_target_priority", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
+  "ai_target_priority", "ai_ow_path_rules", "ai_ow_path", "check_ai_ow_path", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw",
   "myneyrshi_medic_ranks", "myneyrshi_medic_recruit_setup", "myneyrshi_medic_recruit_check",
   "myneyrshi_medic_move_setup", "myneyrshi_medic_move_check", "myneyrshi_medic_heal_setup", "myneyrshi_medic_enemy_turn", "myneyrshi_medic_heal_check",
@@ -20,7 +20,7 @@ local STEPS = {
   "wookiee_aimed", "wookiee_check_hit", "wookiee_target_turn", "wookiee_check_return", "wookiee_expiry",
   "wookiee_miss", "wookiee_check_miss", "muzzle_flashes", "attack_range", "prepare_save",
 }
-local END_TURN_AFTER = { air_ecm_ai = true, ai_avoid = true, ai_air = true, ai_ranged = true, ai_withdraw = true, alert_ai = true }
+local END_TURN_AFTER = { air_ecm_ai = true, ai_avoid = true, ai_air = true, ai_ranged = true, ai_ow_path = true, ai_withdraw = true, alert_ai = true }
 
 local function plugin(events, context, info)
   local function pump()
@@ -1183,6 +1183,213 @@ local function plugin(events, context, info)
         and after.target == best.target and after.x == best.x and after.y == best.y and after.rating == best.rating)
     end
 
+    local function sw_ow_scene(prefix, shift)
+      swt.clear()
+      local d = shift or 0
+      local mover = swt.place("sw_unit_im_stormtrooper", 2, 6+d, 8, prefix .. "_mover")
+      local target = swt.place("sw_unit_sm_smuggler", 1, 12+d, 8, prefix .. "_target")
+      local watcher = swt.place("sw_unit_nr_eweb_team", 1, 5+d, 6, prefix .. "_watcher")
+      return mover, target, watcher
+    end
+    function S.ai_ow_path_rules()
+      local ca = wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      local ow = sw_systems.overwatch
+      local mover, target, watcher = sw_ow_scene("sw_test_ow_rules")
+      local off = assert(ca.best_attack(2, {}))
+      check("inactive watcher retains native baseline firing position", off.target == target.id and off.x == 10 and off.y == 7)
+      check("inactive watcher permits the native baseline path", ca.sw_path_avoids_overwatch(mover, 10, 7))
+      assert(ow.enter(watcher, true))
+      local sw_rules_shots = watcher.variables.sw_ow_shots
+      check("native arm spends the watcher's ordinary attack and movement", watcher.attacks_left == 0 and watcher.moves == 0)
+      check("visible active watcher vetoes the path before its otherwise safe endpoint",
+        not ca.sw_path_avoids_overwatch(mover, 10, 7) and wesnoth.map.distance_between(5,6,10,7) > 3)
+      local best = assert(ca.best_attack(2, {}))
+      check("ranged AI selects the safe equal-cost firing position", best.target == target.id and best.x == 10 and best.y == 8)
+      local _, old_cost = wesnoth.paths.find_path(mover, 10, 7, {viewing_side=2})
+      local _, safe_cost = wesnoth.paths.find_path(mover, best.x, best.y, {viewing_side=2})
+      check("both tactical approaches cost four native MP", old_cost == 4 and safe_cost == 4)
+      local again = ca.best_attack(2, {})
+      check("safe firing selection is deterministic", again and again.x == best.x and again.y == best.y and again.rating == best.rating)
+      check("overwatch choice adds no attack damage or accuracy", best.rating == off.rating)
+      check("planning preserves ordinary mover and watcher budgets", mover.moves == 5 and mover.attacks_left == 1
+        and watcher.variables.sw_ow_shots == sw_rules_shots and sw_rules_shots == ow.config(watcher).reactions
+        and sw_rules_shots > 0 and watcher.attacks_left == 0)
+      watcher.variables.sw_ow_shots = 0
+      check("spent watcher cannot veto the path", ca.sw_path_avoids_overwatch(mover, 10, 7))
+      watcher.variables.sw_ow_shots = 1
+      watcher.status.petrified = true
+      check("petrified watcher cannot veto the path", ca.sw_path_avoids_overwatch(mover, 10, 7))
+      watcher.status.petrified = false
+      watcher.status.stunned = true
+      check("stunned watcher cannot veto the path", ca.sw_path_avoids_overwatch(mover, 10, 7))
+      watcher.status.stunned = false
+      watcher.variables.sw_dazed_active = true
+      check("dazed watcher cannot veto the path", ca.sw_path_avoids_overwatch(mover, 10, 7))
+      watcher.variables.sw_dazed_active = nil
+      watcher.side = 2
+      check("allied watcher cannot veto the path", ca.sw_path_avoids_overwatch(mover, 10, 7))
+      watcher.side = 1
+      watcher.variables.sw_ow_fired = mover.id .. "#0"
+      check("same movement serial prevents a duplicate predicted reaction", ca.sw_path_avoids_overwatch(mover, 10, 7))
+      mover.variables.sw_move_serial = 1
+      check("the next movement serial restores the reaction risk", not ca.sw_path_avoids_overwatch(mover, 10, 7))
+      watcher.variables.sw_ow_fired = nil
+      mover.variables.sw_move_serial = nil
+      watcher.variables.sw_ow_range = 0
+      check("a zero-range watcher does not cover entered path cells", ca.sw_path_avoids_overwatch(mover, 10, 7))
+      watcher.variables.sw_ow_range = 3
+      watcher.variables.sw_ow_arc = "front"
+      local path = wesnoth.paths.find_path(mover, 10, 7, {viewing_side=2})
+      for _, facing in ipairs{"n","ne","se","s","sw","nw"} do
+        watcher.variables.sw_ow_facing = facing
+        local covered = false
+        for i=2,#path do
+          local x,y=path[i][1] or path[i].x,path[i][2] or path[i].y
+          if wesnoth.map.distance_between(watcher.x,watcher.y,x,y)<=3
+            and ow.in_arc(watcher,{x=x,y=y}) then covered=true end
+        end
+        check("native front arc respected for "..facing, ca.sw_path_avoids_overwatch(mover,10,7)==not covered)
+      end
+      watcher.variables.sw_ow_arc = "all"
+      watcher:add_modification("object",{id="sw_test_ow_hiding",
+        T.effect{apply_to="new_ability",T.abilities{T.hides{id="sw_test_ow_hiding",affect_self=true}}}})
+      watcher:clone():to_map(watcher.x,watcher.y)
+      watcher = u("sw_test_ow_rules_watcher")
+      check("native watcher is actually concealed from the acting side", not watcher:matches{T.filter_vision{side=2,visible=true}})
+      local hidden_on = ca.best_attack(2,{})
+      ow.clear(watcher)
+      local hidden_off = ca.best_attack(2,{})
+      check("arming a hidden watcher changes neither target, position nor rating", hidden_on and hidden_off
+        and hidden_on.target==hidden_off.target and hidden_on.x==hidden_off.x and hidden_on.y==hidden_off.y
+        and hidden_on.rating==hidden_off.rating)
+      check("hidden watcher cannot veto a public planned path", ca.sw_path_avoids_overwatch(mover,10,7))
+      for shift=0,1 do
+        mover,target,watcher = sw_ow_scene("sw_test_ow_parity"..shift,shift)
+        assert(ow.enter(watcher,true))
+        local reach = wesnoth.paths.find_reach(mover,{viewing_side=2})
+        for _,hex in ipairs(reach) do
+          local x,y=hex[1] or hex.x,hex[2] or hex.y
+          if not wesnoth.units.get(x,y) or (x==mover.x and y==mover.y) then
+            local p,cost = wesnoth.paths.find_path(mover,x,y,{viewing_side=2})
+            local covered = false
+            for i=2,#p do
+              local clone=mover:clone();clone.loc={p[i][1] or p[i].x,p[i][2] or p[i].y}
+              if ow.eligible(watcher,clone) then covered=true;break end
+            end
+            check("public lane agrees with native eligible path at parity"..shift.." "..x..","..y,
+              ca.sw_path_avoids_overwatch(mover,x,y)==(cost<=mover.moves and not covered))
+          end
+        end
+      end
+      mover,target,watcher = sw_ow_scene("sw_test_ow_stay")
+      assert(ow.enter(watcher,true))
+      watcher.variables.sw_ow_range = 20 -- isolated all-paths-blocked control
+      check("no exposed endpoint is credited when all moving shots are covered", ca.best_attack(2,{})==nil)
+      mover.loc={10,8}
+      check("remaining on the source hex draws no movement reaction", ca.sw_path_avoids_overwatch(mover,10,8))
+      best=ca.best_attack(2,{})
+      check("an already positioned rifle can still make a worthwhile stationary shot", best and best.x==10 and best.y==8
+        and best.target==target.id)
+    end
+
+    function S.ai_ow_path()
+      local ca=wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      local mover,target,watcher=sw_ow_scene("sw_test_ow_real")
+      assert(sw_systems.overwatch.enter(watcher,true))
+      local best=assert(ca.best_attack(2,{}))
+      local path,cost=wesnoth.paths.find_path(mover,best.x,best.y,{viewing_side=2})
+      local expected={}
+      for i=2,#path do expected[#expected+1]=(path[i][1] or path[i].x)..","..(path[i][2] or path[i].y) end
+      swt.mem.ow_real={expected=table.concat(expected,";"),trace={},x=best.x,y=best.y,target=best.target,cost=cost,
+        hp=mover.hitpoints,attacks=mover.attacks_left,moves=mover.moves,shots=watcher.variables.sw_ow_shots}
+      wesnoth.game_events.add{name="enter_hex",id="sw_test_ow_actual_move",first_time_only=false,action=function()
+        local ec=wesnoth.current.event_context
+        local moving=wesnoth.units.get(ec.x1,ec.y1);local m=swt.mem.ow_real
+        if moving and moving.id=="sw_test_ow_real_mover" and not m.attack then
+          m.trace[#m.trace+1]=moving.x..","..moving.y
+        end
+      end}
+      -- moveto observes the remaining movement before native combat spends it.
+      wesnoth.game_events.add{name="moveto",id="sw_test_ow_actual_arrival",first_time_only=false,action=function()
+        local ec=wesnoth.current.event_context
+        local moving=wesnoth.units.get(ec.x1,ec.y1);local m=swt.mem.ow_real
+        if moving and moving.id=="sw_test_ow_real_mover" and not m.attack then
+          local watch=u("sw_test_ow_real_watcher")
+          m.arrival={x=moving.x,y=moving.y,hp=moving.hitpoints,moves=moving.moves,
+            shots=watch and watch.variables.sw_ow_shots,fired=watch and watch.variables.sw_ow_fired}
+        end
+      end}
+      wesnoth.game_events.add{name="attack",id="sw_test_ow_actual_shot",first_time_only=false,action=function()
+        local ec=wesnoth.current.event_context
+        local firing=wesnoth.units.get(ec.x1,ec.y1);local victim=wesnoth.units.get(ec.x2,ec.y2)
+        local m=swt.mem.ow_real
+        if firing and firing.id=="sw_test_ow_real_mover" and not m.attack then
+          local watch=u("sw_test_ow_real_watcher")
+          m.attack={x=firing.x,y=firing.y,target=victim and victim.id,hp=firing.hitpoints,moves=firing.moves,
+            shots=watch and watch.variables.sw_ow_shots,fired=watch and watch.variables.sw_ow_fired,
+            weapon=(wml.get_child(ec,"weapon") or {}).name}
+        end
+      end}
+      check("ordinary AI-turn setup uses the verified safe firing position", best.x==10 and best.y==8 and best.target==target.id)
+      wesnoth.sides[2].controller="ai"
+    end
+    function S.check_ai_ow_path()
+      wesnoth.game_events.remove("sw_test_ow_actual_move")
+      wesnoth.game_events.remove("sw_test_ow_actual_shot")
+      wesnoth.game_events.remove("sw_test_ow_actual_arrival")
+      wesnoth.sides[2].controller="human"
+      local m=swt.mem.ow_real;local a=m.attack
+      check("ordinary native AI turn reached the safe hex and attacked", a and a.x==m.x and a.y==m.y and a.target==m.target)
+      check("ordinary ai.move followed the planner's complete native path", table.concat(m.trace,";")==m.expected,
+        table.concat(m.trace,";").." versus "..m.expected)
+      local arrival=m.arrival
+      check("safe native approach spent the expected four MP", arrival and arrival.x==m.x and arrival.y==m.y
+        and arrival.moves==m.moves-m.cost and m.cost==4, arrival and arrival.moves)
+      check("safe approach did not draw the visible overwatch volley", arrival and a and arrival.hp==m.hp
+        and arrival.shots==m.shots and arrival.fired==nil and a.hp==m.hp and a.shots==m.shots and a.fired==nil)
+      check("the native attack spends remaining movement after arrival", a and a.moves==0, a and a.moves)
+      check("actual safe ranged attack used a shipped offensive rifle", a and (a.weapon=="blaster_rifle" or a.weapon=="blaster_rifle_aimed"))
+      local mover=u("sw_test_ow_real_mover")
+      check("the native safe attack spent the mover's attack", mover and mover.attacks_left==0)
+    end
+
+    local function sw_ow_saved_choice(ca,mover)
+      local tried={}
+      for _,other in ipairs(wesnoth.units.find_on_map{side=2}) do
+        if other.id~=mover.id then tried[other.id]=true end
+      end
+      return ca.best_attack(2,tried)
+    end
+    local function sw_prepare_ow_save()
+      local ca=wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      local mover=swt.place("sw_unit_im_stormtrooper",2,14,3,"sw_test_ow_saved_mover")
+      local target=swt.place("sw_unit_sm_smuggler",1,20,3,"sw_test_ow_saved_target")
+      local watcher=swt.place("sw_unit_nr_eweb_team",1,13,1,"sw_test_ow_saved_watcher")
+      assert(sw_systems.overwatch.enter(watcher,true))
+      local best=assert(sw_ow_saved_choice(ca,mover))
+      wml.variables.sw_test_ow_saved={x=best.x,y=best.y,target=best.target,weapon=best.weapon_name,rating=best.rating,
+        mover_x=mover.x,mover_y=mover.y,moves=mover.moves,attacks=mover.attacks_left,hp=mover.hitpoints,
+        watcher_x=watcher.x,watcher_y=watcher.y,shots=watcher.variables.sw_ow_shots,range=watcher.variables.sw_ow_range,
+        arc=watcher.variables.sw_ow_arc,facing=watcher.variables.sw_ow_facing}
+      check("real save fixture has a safe nonstationary native firing choice", (best.x~=mover.x or best.y~=mover.y)
+        and ca.sw_path_avoids_overwatch(mover,best.x,best.y))
+    end
+    local function sw_check_ow_reload()
+      local ca=wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      local e=wml.variables.sw_test_ow_saved
+      local mover,watcher=u("sw_test_ow_saved_mover"),u("sw_test_ow_saved_watcher")
+      check("real reload retains the native overwatch mover and unspent actions", e and mover and mover.x==e.mover_x
+        and mover.y==e.mover_y and mover.moves==e.moves and mover.attacks_left==e.attacks and mover.hitpoints==e.hp)
+      check("real reload retains active watcher position and spent actions", e and watcher and watcher.x==e.watcher_x
+        and watcher.y==e.watcher_y and watcher.variables.sw_ow_active and watcher.moves==0 and watcher.attacks_left==0)
+      check("real reload retains reactions, range, arc and facing", e and watcher and watcher.variables.sw_ow_shots==e.shots
+        and watcher.variables.sw_ow_range==e.range and watcher.variables.sw_ow_arc==e.arc and watcher.variables.sw_ow_facing==e.facing)
+      local best=mover and sw_ow_saved_choice(ca,mover)
+      check("real reload reproduces the same public safe firing choice", e and best and best.x==e.x and best.y==e.y
+        and best.target==e.target and best.weapon_name==e.weapon and best.rating==e.rating)
+      check("real reload's firing path remains outside the visible lane", best and ca.sw_path_avoids_overwatch(mover,best.x,best.y))
+    end
+
     function S.ai_withdraw_rules()
       swt.clear()
       local ca = wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
@@ -1895,6 +2102,7 @@ local function plugin(events, context, info)
       wml.variables.sw_test_ecm_saved={x=8,y=4,jamming=10,chance=chance,hp=jammer.hitpoints}
       check("save fixture bombing preview uses selected-target ECM", air.preview(1,"bombing",u("t_obs"),8,4).terms.jamming==10)
       air.call(1, "bombing", u("t_obs"), 8, 4)
+      sw_prepare_ow_save()
       wml.variables.swt_digest = sw_systems.digest()
       std_print("SW_TEST: state prepared for save")
     end
@@ -1914,6 +2122,7 @@ local function plugin(events, context, info)
         and u("sw_test_native_medic_reloaded_ally").hitpoints==18)
     end
     function S.load()
+      sw_check_ow_reload()
       local med=u("sw_test_native_medic_ranked")
       check("actual reload retains native medic type and all three earned abilities", med and med.type=="sw_unit_wy_field_medic"
         and rank.of(med)==3 and med:matches{ability="sw_rank_hides"} and med:matches{ability="sw_rank_skirmisher"}

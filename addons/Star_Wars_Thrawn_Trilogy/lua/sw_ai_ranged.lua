@@ -16,6 +16,8 @@
 -- Registered for every side at prestart by lua/sw_systems.lua.
 
 local T = wml.tag
+local sw_ow = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_overwatch.lua")
+local sw_force = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_force.lua")
 
 local ca = {}
 
@@ -181,6 +183,44 @@ local function target_priority(target, known)
 	return wounded + math.max(0, 4 - support * 2)
 end
 
+-- A reaction interrupts native movement even when every shot misses. The
+-- planned endpoint attack would then be skipped by execution's location guard.
+-- Only visible hostile watchers contribute: never inspect another team's fog,
+-- hidden sensors or contacts. Their public firing lanes are conservative risks;
+-- actual visibility, cloak and hooks remain the reaction resolver's decision.
+local function sw_visible_watchers(side, known)
+	local watchers = {}
+	for _i, u in ipairs(known) do
+		if wesnoth.sides.is_enemy(u.side, side) and u.hitpoints > 0
+			and u.variables.sw_ow_active and (tonumber(u.variables.sw_ow_shots) or 0) > 0
+			and not u.status.petrified and not u.status.stunned and not sw_force.is_dazed(u) then
+			watchers[#watchers + 1] = u
+		end
+	end
+	return watchers
+end
+
+local function sw_path_avoids_overwatch(u, x, y, watchers)
+	if u.x == x and u.y == y then return true end -- no entered hex when staying put
+	if not watchers then watchers = sw_visible_watchers(u.side, known_units(u.side)) end
+	if #watchers == 0 then return true end
+	-- LuaAPI/paths: this ordinary path includes source and destination; the
+	-- acting side's visibility retains hidden-unit ignorance, terrain and ZOC.
+	local path, cost = wesnoth.paths.find_path(u, x, y, { viewing_side = u.side })
+	if #path < 2 or cost > u.moves then return false end
+	local serial = u.id .. "#" .. (tonumber(u.variables.sw_move_serial) or 0)
+	for i = 2, #path do
+		local px, py = path[i][1] or path[i].x, path[i][2] or path[i].y
+		for _j, watcher in ipairs(watchers) do
+			if watcher.variables.sw_ow_fired ~= serial
+				and wesnoth.map.distance_between(watcher.x, watcher.y, px, py)
+				 <= (tonumber(watcher.variables.sw_ow_range) or 1)
+				and sw_ow.in_arc(watcher, { x = px, y = py }) then return false end
+		end
+	end
+	return true
+end
+
 local function can_withdraw(u, side)
 	return u and u.side == side and u.hitpoints > 0 and u.moves > 0
 		and not u.canrecruit and not u.status.petrified and not unaware(u)
@@ -269,6 +309,7 @@ end
 -- Best stand-off attack for the side, or nil. tried: unit ids to skip.
 local function best_attack(side, tried)
 	local known, occupied = known_units(side)
+	local watchers = sw_visible_watchers(side, known)
 	local enemies = sorted_units{ T.filter_side{ T.enemy_of{ side = side } },
 		T.filter_vision{ side = side, visible = true } }
 	if #enemies == 0 then return nil end
@@ -278,6 +319,15 @@ local function best_attack(side, tried)
 	for _i, u in ipairs(sorted_units{ side = side }) do
 		local weapons = (can_act(u, side) and not tried[u.id]) and ranged_weapons(u) or {}
 		if #weapons > 0 then
+			-- One native path per worthwhile destination in this evaluation only.
+			local sw_path_cache = {}
+			local function sw_clear_path(x, y)
+				local key = x .. "," .. y
+				if sw_path_cache[key] == nil then
+					sw_path_cache[key] = sw_path_avoids_overwatch(u, x, y, watchers)
+				end
+				return sw_path_cache[key]
+			end
 			local maxr = 0
 			for _j, w in ipairs(weapons) do maxr = math.max(maxr, w.max) end
 			local reach = wesnoth.paths.find_reach(u)
@@ -303,10 +353,12 @@ local function best_attack(side, tried)
 									local taken = math.min(u.hitpoints, return_fire(e, u, { x = x, y = y }, d))
 									local kill = dealt >= e.hitpoints * 0.9 and e.max_hitpoints * 0.3 or 0
 									local rating = dealt + kill - taken * 0.8
-									if rating >= MIN_RATING then rating = rating + priorities[e.id] end
-									if rating >= MIN_RATING and (best == nil or rating > best.rating) then
-										best = { rating = rating, unit = u.id, side = side, x = x, y = y,
-											target = e.id, weapon = w.index, weapon_name = w.attack.name }
+									if rating >= MIN_RATING and sw_clear_path(x, y) then
+										rating = rating + priorities[e.id]
+										if best == nil or rating > best.rating then
+											best = { rating = rating, unit = u.id, side = side, x = x, y = y,
+												target = e.id, weapon = w.index, weapon_name = w.attack.name }
+										end
 									end
 								end
 							end
@@ -391,5 +443,6 @@ ca.best_attack = best_attack
 ca.flank_bonus = flank_bonus
 ca.best_withdrawal = best_withdrawal
 ca.target_priority = target_priority
+ca.sw_path_avoids_overwatch = sw_path_avoids_overwatch
 
 return ca
