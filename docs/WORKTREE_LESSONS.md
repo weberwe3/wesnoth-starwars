@@ -1478,3 +1478,19 @@ incorrect assumption about available attacks.
 - Prevention: exercise the real CMD from an inherited worktree context, then
   repeat against merged main. Keep credentials, execution policy and global
   Git configuration unchanged. Validate mirror targets before filesystem writes.
+
+
+## 2026-10-12: Check playable compartments from the actual entry point
+
+- Symptom: all four Katana supply villages were present on the map but could
+  not be reached from Luke's airlock in the installed engine.
+- Confirmed cause: the generator carved their rooms without connecting doors;
+  native pathfinding returned no path and cost 42424242 for every village.
+- Resolution: connect the rooms through two contestable side passages, preserve
+  the original bridge spine and scripted coordinates, and use existing cargo
+  cover. Native paths now reach every village from both sides; a normal move,
+  movement costs, cover and the layout survive a real save/reload.
+- Prevention: check connectivity from the playable entry point after terrain
+  overlays, then validate native movement for each faction. A rendered village
+  and a passable objective route do not prove its compartment is accessible.
+  Keep AI defeats visible and separate route availability from balance claims.

@@ -190,11 +190,44 @@ def m08() -> HexMap:
     m.rect(18, 2, 19, 5, DECK)
     m.rect(3, 13, 4, 16, DECK)
     m.rect(22, 6, 25, 12, DECK)
+    # Port maintenance passage: a longer approach through the northern
+    # supply compartments, rejoining the bridge from above the main spine.
+    # One-hex doorways keep the spine useful for moving a whole boarding party.
+    m.rect(6, 5, 21, 5, DECK)
+    m.path([(21, 5), (23, 6)], DECK)
+    # Starboard cargo passage: wider bays offer room to flank or stage a
+    # medic, but the route crosses the southern Imperial boarding shaft.
+    m.rect(6, 13, 21, 13, DECK)
+    m.path([(21, 13), (23, 12)], DECK)
+    m.rect(7, 12, 9, 14, DECK)
+    m.rect(17, 12, 19, 14, DECK)
+    m.set(5, 14, DECK)  # door into the existing western supply room
+    # Existing crate terrain offers castle-level cover without turning cargo
+    # into a healing/recruit hex. Both forces can contest these firing positions.
+    for pos in ((8, 5), (14, 5), (18, 5), (7, 13), (9, 14), (11, 13),
+                (17, 13), (19, 13), (21, 13), (8, 8), (13, 10), (18, 8)):
+        m.set(*pos, "Qsd^Qcr")
     for v in ((8, 3), (14, 15), (19, 3), (4, 14)):
         m.set(*v, "Qsd^Vov")
     ring(m, (3, 9), "Qsk", "Qsc", 3)
     m.set(24, 9, "Qsc")
     m.start(1, 3, 9)
+    # Every compartment must be part of the playable ship. The previous
+    # four supply-room islands had no door, despite showing healing villages.
+    reachable, pending = {(3, 9)}, [(3, 9)]
+    while pending:
+        for pos in neighbors(*pending.pop()):
+            if m.inside(*pos) and pos not in reachable and m.get(*pos) != "Xos":
+                reachable.add(pos)
+                pending.append(pos)
+    walkable = {pos for pos, code in m.cells.items() if code != "Xos"}
+    assert reachable == walkable, "Katana has an inaccessible compartment"
+    for pos in ((8, 3), (14, 15), (19, 3), (4, 14)):
+        assert m.get(*pos) == "Qsd^Vov", "Katana supply room moved or overwritten"
+    for pos in ((3, 9), (4, 9), (3, 10), (4, 8), (11, 9), (16, 9),
+                (21, 8), (21, 10), (23, 9), (16, 4), (11, 14),
+                (22, 7), (24, 9), (21, 2), (21, 16)):
+        assert pos in reachable, "Katana start, defender or boarding hex cut off"
     keys("dfr_08_aboard_the_katana", airlock=(3, 9), bridge=(24, 9))
     return m
 
