@@ -344,3 +344,18 @@ before installing; off-model redraws were rejected and redone.
   a cast shadow, and bunker aprons a low parapet (`gen_wall_relief.py`;
   `images/terrain/sw/wall-relief-*.png`, `wall-shadow-*.png`).
   `render_map_preview.py` draws them with the game's neighbour rules.
+
+## Wookiee fur colours (2026-10-12)
+
+Owner direction: the Wookiee units need clear visual distinction. The Wookiee
+Warrior, Wookiee Lookout and Chewbacca were drawn from one reference and shared
+the same auburn fur, so at 72 px they looked alike. Each line now has its own
+fur colour in every frame of all three tiers and in its portrait, keeping the
+approved drawings, shading and animation: the **Warrior is slate** (dark
+grey-brown) and the **Lookout silver** (mid grey), matching their portraits,
+which already showed grey Wookiees; Chewbacca keeps his auburn fur. Made with
+`production/tools/recolor_unit_fur.py` (warm pixels only; gear colours stay;
+the Wookiee muzzle flash is blitted by the game, so none is painted). The
+hashes of the recoloured files are in `recolor_unit_fur.json`, so the tool
+never shifts them twice. The Warrior's rank III feathered headdress turns
+slate with the fur and keeps its silhouette and teal armour.
