@@ -1,0 +1,41 @@
+{
+ "_note": "New units drawn as variants of an existing unit's art (gen_codex_unit_variants.py). 'from' is the source art folder; 'design' the stated changes (no names or setting terms; prompt_scrub checks). Portrait-only jobs repaint 'portrait_from' as the unit shown by its own installed idle sprite.",
+ "sw-unit-sm-slicer": {
+  "from": "sw-unit-sm-smuggler",
+  "design": "a slimmer person with short pale blond hair and a pair of goggles pushed up on the forehead, wearing a dark blue-grey padded vest over a light grey shirt instead of the brown jacket, with a bulky boxy backpack that has a tall thin bent antenna sticking up above the head, holding a small handheld screen that glows bright cyan in the left hand and a small pistol lowered in the right hand",
+  "portrait": true,
+  "poses": {
+   "melee-1": "drawing a short knife from the belt with the right hand, the glowing handheld screen held low at the side in the left hand",
+   "melee-2": "a quick slash forward with the short knife, the glowing handheld screen still held low at the side",
+   "ranged-1": "raising the small pistol in the right hand and aiming it forward, the glowing handheld screen held low at the side in the left hand, not pointed at anything",
+   "ranged-2": "firing the small pistol forward, with a small bright {flash} muzzle flash at the pistol's tip; the glowing handheld screen stays low at the side and does not fire"
+  }
+ },
+ "sw-unit-wk-suppressor": {
+  "from": "sw-unit-wk-lookout",
+  "design": "a broad, heavy-set furry person of the same kind with golden-tan fur instead of grey, wearing a padded brown leather shoulder guard on one shoulder and a wide belt of round grey ammunition canisters across the chest instead of the white belt, holding a bulky heavy crossbow-rifle with a large round drum magazine at the hip in both hands",
+  "portrait": true,
+  "poses": {
+   "melee-1": "lifting the heavy crossbow-rifle to swing its stock",
+   "melee-2": "a short heavy swing with the crossbow-rifle's stock",
+   "ranged-1": "bracing the heavy crossbow-rifle at the hip and aiming it forward",
+   "ranged-2": "firing the heavy crossbow-rifle from the hip, with a small bright {flash} muzzle flash at its tip"
+  }
+ },
+ "sw-unit-wy-field-medic": {
+  "from": "sw-unit-wy-myneyrshi",
+  "design": "the same kind of tall slender person, wearing a pale cream wrap and a white cloth headband instead of the tan clothing, with a large leather satchel full of bandage rolls and small bottles hung across the body, holding a short spear in one hand and a small bow in the other",
+  "portrait": true,
+  "poses": {
+   "melee-1": "drawing back the short spear",
+   "melee-2": "a quick jab forward with the short spear",
+   "ranged-1": "drawing the small bow with an arrow nocked, aimed forward",
+   "ranged-2": "loosing an arrow from the small bow, the arrow just leaving the string, with no flash"
+  }
+ },
+ "sw-unit-wk-warrior": {
+  "portrait_only": true,
+  "portrait": true,
+  "portrait_from": "sw-unit-wk-lookout"
+ }
+}

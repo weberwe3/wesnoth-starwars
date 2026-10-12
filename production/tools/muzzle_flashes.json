@@ -435,9 +435,9 @@
  "sw-unit-sm-slicer": {
   "blit": [
    54,
-   31
+   32
   ],
-  "color": "orange",
+  "color": "blue",
   "kind": "painted"
  },
  "sw-unit-sm-smuggler": {
@@ -465,8 +465,8 @@
  },
  "sw-unit-wk-suppressor": {
   "blit": [
-   56,
-   28
+   58,
+   27
   ],
   "kind": "posed"
  },

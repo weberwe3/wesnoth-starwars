@@ -359,3 +359,41 @@ the Wookiee muzzle flash is blitted by the game, so none is painted). The
 hashes of the recoloured files are in `recolor_unit_fur.json`, so the tool
 never shifts them twice. The Warrior's rank III feathered headdress turns
 slate with the fur and keeps its silhouette and teal armour.
+
+## Distinct art for new units (2026-10-12)
+
+Owner rule: every unit must be told apart on the map, so a new unit needs its
+own art made by the house rules, never a copy of another unit's files.
+`production/tools/gen_codex_unit_variants.py` (jobs in
+`unit_variant_jobs.json`) applies the same rules as the rank designs: the
+source unit's idle sprite is Codex's only reference, the prompt asks for a
+redraw as a different person of the same kind with stated changes (no names,
+no setting terms), the new idle sprite is then redrawn as the full frame set,
+and the source portrait is repainted to match. Jobs may name which held item
+each attack uses, and portraits that come back as pixel art are rejected and
+retried. Every result was reviewed by eye.
+
+- `sw-unit-sm-slicer` (was a copy of the Smuggler): a slimmer, fair-haired
+  specialist with goggles, a padded vest, a backpack with a bent antenna and a
+  glowing handheld screen; the knife and pistol are the weapons, the screen
+  stays low. Its painted flash is blue, so its bolts are blue.
+- `sw-unit-wy-field-medic` (was a copy of the Myneyrshi Warrior): cream wraps,
+  a white headband and a satchel of dressings, with a short spear and bow.
+- `sw-unit-wk-suppressor` (was the Lookout's superseded auburn art): golden-tan
+  fur, a shoulder guard, a belt of ammunition canisters and a heavy drum-fed
+  crossbow-rifle; mirrored to face right like every unit, with the game's
+  flash blitted at the rifle tip (`posed_firing_frames.json`).
+- Portrait repaints: the Wookiee Warrior's portrait read as an ape and was
+  repainted after the silver Lookout's portrait. Chewbacca's placeholder
+  portrait was to be repainted from an owner-supplied likeness
+  (`~/art-references/owner-chewbacca-portrait.png`), but the image safety
+  system blocked all six attempts at the output stage; it was not retried
+  around, so the placeholder remains.
+- Clean-up of the new frames: enclosed holes up to 30 px (60 for the
+  Suppressor) filled from their neighbours, and pink key-colour fringe removed
+  from the medic's outline.
+
+`production/tools/check_unique_unit_art.py` (run by CI) fails if two playable
+unit types share a standing sprite or portrait; deliberate pairs are listed in
+it (Luke and his clone share the owner-supplied sheet, pending an owner
+decision).

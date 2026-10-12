@@ -93,6 +93,9 @@ jobs:
           python3 production/contract_store_selftest.py
           python3 production/inventory.py --check
 
+      - name: Check every playable unit has its own art
+        run: python3 production/tools/check_unique_unit_art.py
+
       - name: Test unattended charter admission
         run: |
           python3 production/charter_selftest.py
