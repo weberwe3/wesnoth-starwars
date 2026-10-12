@@ -9,7 +9,7 @@ local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"
 local PHASE = "main"
 
 local STEPS = {
-  "rank_promotion", "rank_amla", "rank_abilities", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
+  "rank_promotion", "rank_amla", "rank_abilities", "safe_backstab", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
@@ -212,6 +212,71 @@ local function plugin(events, context, info)
       local vhp = v.max_hitpoints
       v = swt.level_up("t_vor")
       check("creatures gain the AMLA but wear no insignia", v.max_hitpoints == vhp + 3 and not tostring(v.image_mods):find("sw%-rank"))
+    end
+
+    -- Shipped base backstab: core identity, all directions and negative cases.
+    function S.safe_backstab()
+      swt.clear()
+      local opposite={n="s",s="n",ne="sw",sw="ne",se="nw",nw="se"}
+      local directions={"n","ne","se","s","sw","nw"}
+      local victim=swt.place("sw_unit_nr_trooper",2,12,8,"t_bs_victim")
+      local function loc(dir)
+        local p=wesnoth.map.get_direction({12,8},dir)
+        return p.x or p[1],p.y or p[2]
+      end
+      for _,profile in ipairs{{type="sw_unit_im_noghri"},{type="sw_hero_khabarakh"},
+        {type="sw_hero_khabarakh",variation="rank2"},{type="sw_hero_khabarakh",variation="rank3"},
+        {type="sw_unit_im_infiltrator"}} do
+        local label=profile.type.."/"..(profile.variation or "base")
+        wesnoth.wml_actions.unit{type=profile.type,variation=profile.variation,side=1,x=12,y=7,
+          id="t_bs_attacker",random_traits=false,generate_name=false}
+        local actor=u("t_bs_attacker")
+        local special,count=nil,0
+        for _,sp in ipairs(actor.attacks[1].specials) do
+          if sp[1]=="damage" and sp[2].id=="backstab" then special=sp[2];count=count+1 end
+        end
+        local filter=special and wml.get_child(special,"filter_opponent")
+        check(label.." exactly one native offense-only double-damage backstab",
+          count==1 and special.multiply==2 and special.active_on=="offense")
+        check(label.." absent secondary opponent safely fails filter",filter and not victim:matches(filter))
+        for _,dir in ipairs(directions) do
+          local ax,ay=loc(opposite[dir]);local bx,by=loc(dir)
+          actor:to_map(ax,ay);actor.facing=dir
+          local _,_,solo=wesnoth.simulate_combat(actor,1,victim)
+          check(label.." empty opposite "..dir.." preserves base damage",solo.damage==actor.attacks[1].damage)
+          local f=swt.place("sw_unit_nr_trooper",1,bx,by,"t_bs_flanker")
+          local _,_,flank=wesnoth.simulate_combat(actor,1,victim)
+          check(label.." hostile opposite "..dir.." doubles knife damage",flank.damage==2*solo.damage)
+          check(label.." armed flanker "..dir.." retains independent accuracy",flank.chance_to_hit==solo.chance_to_hit+10)
+          f.status.petrified=true
+          local _,_,stone=wesnoth.simulate_combat(actor,1,victim)
+          check(label.." petrified opposite "..dir.." gives no bonus",
+            stone.damage==solo.damage and stone.chance_to_hit==solo.chance_to_hit)
+          f.status.petrified=false;f.side=2
+          local _,_,friendly=wesnoth.simulate_combat(actor,1,victim)
+          check(label.." target ally opposite "..dir.." gives no backstab",friendly.damage==solo.damage)
+          f.side=1
+          f:add_modification("object",{id="sw_test_backstab_unarmed",T.effect{apply_to="remove_attacks"}})
+          check(label.." unarmed fixture "..dir.." has no native attacks",#f.attacks==0)
+          local _,_,unarmed=wesnoth.simulate_combat(actor,1,victim)
+          check(label.." unarmed hostile opposite "..dir.." retains native damage bonus",
+            unarmed.damage==2*solo.damage and unarmed.chance_to_hit==solo.chance_to_hit)
+          f:erase()
+          local wrong
+          for _,d in ipairs(directions) do if d~=dir and d~=opposite[dir] then wrong=d;break end end
+          local wx,wy=loc(wrong)
+          f=swt.place("sw_unit_nr_trooper",1,wx,wy,"t_bs_wrong")
+          local _,_,offaxis=wesnoth.simulate_combat(actor,1,victim)
+          check(label.." off-axis hostile "..dir.." does not double damage",offaxis.damage==solo.damage)
+          f:erase()
+          f=swt.place("sw_unit_nr_trooper",1,bx,by,"t_bs_defense_support")
+          local _,_,_,defense=wesnoth.simulate_combat(victim,1,actor,1)
+          check(label.." return fire "..dir.." keeps ordinary knife damage",defense.damage==actor.attacks[1].damage)
+          f:erase()
+        end
+        actor:erase()
+      end
+      swt.clear()
     end
 
     -- Rank abilities (lua/sw_rank_abilities.lua, production/tools/rank_abilities.py).

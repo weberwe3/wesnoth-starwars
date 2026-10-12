@@ -282,6 +282,12 @@
       "kind": "source-id",
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
       "expected_id": "sw_unit_im_star_destroyer"
+    },
+    {
+      "id": "sw-shared-native-flanking-specials",
+      "kind": "source-id",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/units/00_sw_specials.cfg",
+      "expected_id": "sw_special_flanking"
     }
   ]
 }

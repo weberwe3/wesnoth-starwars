@@ -10321,6 +10321,10 @@
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/infantry.json"
     },
     {
+      "id": "sw-shared-native-flanking-specials",
+      "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/heir-to-the-empire.json"
+    },
+    {
       "id": "sw-slicer-rank-registry",
       "source_path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/lua.json"
     },
@@ -10544,11 +10548,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/00_sw_specials.cfg",
-      "sha256": "22bd0a3e5c043b3272970428a367e3f24f9aeca24a1ad21468d8a8f7d62f4b94"
+      "sha256": "8cd4a7cdadad2b54a58fc01e39eb6dffff5f22b9f30b933d6fa17cec24201a2e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "sha256": "5a7be9f2885a004f0ccb9249b656d0853efe3b47a08db25e5cb7f8b62c74b4d4"
+      "sha256": "2e62c2a8e633018508d33d3c269275d3fea6501e1e2293e7bd8597d91e835873"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
@@ -10564,7 +10568,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "sha256": "22b6a283b93fbd39e7e87005b9ec4ae49b9008bc79b86cae7f09719b8f82b0b9"
+      "sha256": "cfcb0bbb53065a43a525e86473f4fa02c3682481dc101fffddad22b1ef890b1f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
@@ -10588,7 +10592,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "d2b86d1be0a93810f767b42094aae32dfbb486590cbbd3ec7b228d5fcdda488a"
+      "sha256": "af093e78484677435f5b764b85d8ae1987c753f832ae21f3e8a469863a86cfb0"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
@@ -10596,7 +10600,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "2772f75f7e626301044c80a33f8b4c61a578fe078b1cfd7eb7ff97850ce3b5ad"
+      "sha256": "913d99187a237adfbfff21b8c6db49d2b0f9e8ae7cd1edb1fa1332b20cbf5c49"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10696,7 +10700,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/heir-to-the-empire.json",
-      "sha256": "05951bc02e95bba78140c2a07ed84004eea903c86f5ba4bc84565e17abec2d17"
+      "sha256": "15629098c4ea696b1b2cd0c684b05b7d4dfb9ada404055fb9f52a2e6f52433e8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts/heroes.json",
