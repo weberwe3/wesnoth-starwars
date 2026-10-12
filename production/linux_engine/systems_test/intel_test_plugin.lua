@@ -10,7 +10,7 @@ local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"
 local PHASE = "main"
 
 local STEPS = {
-  "profiles", "thresholds", "jamming", "sweep", "transitions", "real_move", "decoys", "terrain_env",
+  "slicer_recruit_setup", "slicer_recruit_check", "slicer_ew", "profiles", "thresholds", "jamming", "sweep", "transitions", "real_move", "decoys", "terrain_env",
   "reveal", "leakage", "menu_show_if", "doctrine_gain", "doctrine_control", "doctrine_effects", "check_doctrine_effects",
   "integration", "counter_deployment", "force_sense", "carryover", "ai_ew_selection", "ai_ew_guards", "ai_ew_decoys", "ai_turn", "check_ai_turn", "prepare_save",
 }
@@ -114,6 +114,78 @@ local function plugin(events, context, info)
     local REP, IMP = "republic", "imperial"
     local S = {}
     swt.steps = S
+
+    -- Use the existing native recruit command, with a real leader/connected
+    -- keep and castle. core/terrain.cfg: Kh recruits from, Ch recruits onto.
+    function S.slicer_recruit_setup()
+      swt.clear()
+      local side = wesnoth.sides[1]
+      swt.mem.slicer_old_gold, swt.mem.slicer_old_recruit = side.gold, side.recruit
+      swt.mem.slicer_keep_terrain = wesnoth.current.map[{ 4, 4 }]
+      swt.mem.slicer_castle_terrain = wesnoth.current.map[{ 5, 4 }]
+      wesnoth.wml_actions.terrain{ x = 4, y = 4, terrain = "Kh" }
+      wesnoth.wml_actions.terrain{ x = 5, y = 4, terrain = "Ch" }
+      local leader = swt.place("sw_hero_karrde", 1, 4, 4, "sw_test_slicer_recruit_leader")
+      leader.canrecruit = true
+      side.gold, side.recruit = 100, { "sw_unit_sm_slicer" }
+    end
+    function S.slicer_recruit_check()
+      local unit = wesnoth.units.get(5, 4)
+      check("Slicer recruits through a native paid command", unit and unit.side == 1 and
+        unit.type == "sw_unit_sm_slicer" and not unit.canrecruit and wesnoth.sides[1].gold == 82)
+      check("a recruited Slicer has ordinary spent actions", unit and unit.moves == 0 and unit.attacks_left == 0)
+      check("a recruited Slicer cannot sweep or launch a decoy immediately", unit and
+        not ew.can_sweep(unit) and not ew.can_decoy(unit))
+      wesnoth.sides[1].gold, wesnoth.sides[1].recruit = swt.mem.slicer_old_gold, swt.mem.slicer_old_recruit
+      wesnoth.wml_actions.terrain{ x = 4, y = 4, terrain = swt.mem.slicer_keep_terrain }
+      wesnoth.wml_actions.terrain{ x = 5, y = 4, terrain = swt.mem.slicer_castle_terrain }
+    end
+    function S.slicer_ew()
+      swt.clear()
+      local gunhand = swt.place("sw_unit_sm_smuggler", 1, 5, 4, "sw_test_slicer_gunhand")
+      swt.cloaked("sw_test_slicer_target", 5, 7, 4, 4)
+      swt.place("sw_unit_im_stormtrooper", 2, 5, 9, "sw_test_slicer_jammer",
+        { ecm = 2, ecm_range = 2, sensor = 0, sensor_range = 0 })
+      swt.refresh()
+      check("a gunhand loses the contact under ECM 2", swt.state(REP, "sw_test_slicer_target") == ew.NONE)
+      gunhand:erase()
+      local unit = swt.place("sw_unit_sm_slicer", 1, 5, 4, "sw_test_slicer_operator")
+      local p = ew.profile(unit)
+      check("generated Slicer has its support equipment", p.class == "infantry" and p.sensor == 3 and
+        p.sensor_range == 5 and p.eccm == 1 and p.scan == 2 and p.decoys == 2)
+      check("Slicer trades durability and gun strength for support", unit.max_hitpoints == 28 and
+        unit.max_moves == 6 and wesnoth.unit_types.sw_unit_sm_slicer.cost == 18)
+      swt.refresh()
+      local rec = ew.record(REP, "sw_test_slicer_target")
+      check("native Slicer equipment restores a jammed team contact", rec and
+        rec.jam == 1 and rec.score == 1 and rec.state == ew.CONTACT, rec and rec.score)
+      local menu = swt.probe_at(5, 4)
+      check("Slicer exposes the existing sweep and decoy menus", menu.sweep == true and menu.decoy == true)
+      local moves, hp = unit.moves, unit.hitpoints
+      check("Slicer can make a normal sweep", ew.sweep(unit))
+      rec = ew.record(REP, "sw_test_slicer_target")
+      check("Slicer sweep classifies that contact", rec and rec.score == 3 and rec.state == ew.PARTIAL)
+      check("Slicer sweep spends its attack without extra movement or healing",
+        unit.attacks_left == 0 and unit.moves == moves and unit.hitpoints == hp)
+      local hex = ew.decoy_hexes(unit)[1]
+      check("Slicer has a legal on-board decoy direction", hex ~= nil)
+      check("Slicer cannot repeat a sweep or buy a decoy with spent actions", not ew.sweep(unit) and
+        hex and ew.deploy_decoy(unit, hex.x, hex.y) == nil and unit.variables.sw_ew_decoys_used == nil)
+      -- Fixture action refreshes isolate the finite charge limit; native
+      -- recruitment above and the real reload below cover engine costs/state.
+      ew.on_side_turn(1)
+      unit.attacks_left = unit.max_attacks
+      local first = hex and ew.deploy_decoy(unit, hex.x, hex.y)
+      check("Slicer first decoy spends an attack and one charge", first ~= nil and
+        unit.attacks_left == 0 and tonumber(unit.variables.sw_ew_decoys_used) == 1 and unit.moves == moves)
+      unit.attacks_left = unit.max_attacks
+      local second = hex and ew.deploy_decoy(unit, hex.x, hex.y)
+      check("Slicer second decoy spends its last finite charge", second ~= nil and
+        unit.attacks_left == 0 and tonumber(unit.variables.sw_ew_decoys_used) == 2)
+      unit.attacks_left = unit.max_attacks
+      check("available attacks cannot refill exhausted Slicer decoys", not ew.can_decoy(unit) and
+        hex and ew.deploy_decoy(unit, hex.x, hex.y) == nil and #wml.array_access.get("sw_ew_decoys") == 2)
+    end
 
     -- Unit-type profiles from the generated sw_ability_ew and class defaults.
     function S.profiles()
@@ -903,6 +975,9 @@ local function plugin(events, context, info)
       ew.add_decoy{ x = 12, y = 9, side = 2, class = "starfighter" }
       doctrine.enable(1)
       doctrine.seed(1, 33, { T.pattern{ category = "move", key = "ne", count = 5 } })
+      local slicer = swt.place("sw_unit_sm_slicer", 1, 8, 6, "sw_test_slicer_saved")
+      slicer.hitpoints, slicer.moves, slicer.attacks_left = 21, 3, 0
+      slicer.variables.sw_ew_decoys_used = 1
       swt.refresh()
       wml.variables.sw_test_ew_saved_turn = wesnoth.current.turn
       wml.array_access.set("sw_ew_ai_actions", { { side = 2, turn = wesnoth.current.turn, swept = true, decoy = true } })
@@ -923,6 +998,16 @@ local function plugin(events, context, info)
       local d = doctrine.load(1)
       check("save/load: doctrine Insight and patterns kept", d and d.insight == 33 and doctrine.pattern(d, "move") == "ne")
       check("save/load: EW ready after reload", ew.is_ready())
+      local slicer = u("sw_test_slicer_saved")
+      check("save/load: generated Slicer type, position and health survive", slicer and
+        slicer.type == "sw_unit_sm_slicer" and slicer.x == 8 and slicer.y == 6 and
+        slicer.hitpoints == 21 and slicer.max_hitpoints == 28)
+      local profile = slicer and ew.profile(slicer)
+      check("save/load: Slicer equipment and remaining charge survive", profile and
+        profile.sensor == 3 and profile.sensor_range == 5 and profile.eccm == 1 and
+        profile.scan == 2 and profile.decoys - tonumber(slicer.variables.sw_ew_decoys_used) == 1)
+      check("save/load: Slicer movement and spent attack survive", slicer and
+        slicer.moves == 3 and slicer.attacks_left == 0 and not ew.can_decoy(slicer))
       local budgets = wml.array_access.get("sw_ew_ai_actions")
       check("save/load: spent AI sweep and decoy budgets are retained", #budgets == 1 and budgets[1].side == 2 and budgets[1].turn == wml.variables.sw_test_ew_saved_turn and budgets[1].swept == true and budgets[1].decoy == true)
     end
@@ -939,6 +1024,12 @@ local function plugin(events, context, info)
     local step = name
     wesnoth.plugin.execute(context, function() swt.step(step) end)
     settle()
+    if step == "slicer_recruit_setup" then
+      -- Same ordinary synced recruit/from command as the legal-route fixture.
+      context.synced_command{{ "recruit", { type = "sw_unit_sm_slicer", x = 5, y = 4,
+        { "from", { x = 4, y = 4 } } } }}
+      settle()
+    end
     if step == "ai_turn" then
       -- End side 1's turn; side 2 (AI) and side 3 (AI) play; back to side 1.
       context.end_turn{}

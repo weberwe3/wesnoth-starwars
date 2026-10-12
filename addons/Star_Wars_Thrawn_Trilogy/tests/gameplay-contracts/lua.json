@@ -60,6 +60,12 @@
       "kind": "source-text",
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
       "contains": "alert.on_side_turn(side)\n\tew.ai_prepare_turn(side)"
+    },
+    {
+      "id": "sw-slicer-rank-registry",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_data.lua",
+      "contains": "sw_unit_sm_slicer = { style = \"independent\", base = 0, designs = {} },"
     }
   ]
 }

@@ -432,6 +432,14 @@
   "color": null,
   "kind": "painted"
  },
+ "sw-unit-sm-slicer": {
+  "blit": [
+   54,
+   31
+  ],
+  "color": "orange",
+  "kind": "painted"
+ },
  "sw-unit-sm-smuggler": {
   "blit": [
    54,
