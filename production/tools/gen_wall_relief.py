@@ -22,9 +22,14 @@ wall. Walls must look like walls and be identified at a glance.
 
 2. Edges (sw/wall-relief-<family>-<dir>.png, utils/hte_terrain.cfg
    SW_WALL_RELIEF), on a wall hex along each edge it shares with floor:
-     s, se, sw  the wall's front face -- a tall, dark vertical face in the
-                family's face material, a bright lip where the top ends and
-                a near-black line at its foot;
+     s, se, sw  the wall's front face: the edge raised straight up by the
+                same height everywhere (2026-10-12: faces measured
+                perpendicular to each edge met in notches at the corners),
+                so the top lines of neighbouring faces join into one line;
+                each direction is shaded a little differently so corners read
+                as creases. A slanted face that turns an inside corner
+                reaches into the neighbouring wall hex: its -ext image is
+                placed only when that neighbour is a wall;
      n, ne, nw  a slightly brighter coping on the top, outlined in near-black.
    Neighbouring walls get no edge between them, so a run of walls is one
    raised mass with a crisp silhouette. (bunker: the castle hexes round a
@@ -179,14 +184,17 @@ FACE = {   # base colour of the vertical face, and its pattern
 }
 
 
-def face_rgb(family: str, t: np.ndarray, seed: int = 5) -> np.ndarray:
-    """Face colour at height t (0 = foot, 1 = top lip)."""
+def face_rgb(family: str, h: np.ndarray, t: np.ndarray, turn: float, seed: int = 5) -> np.ndarray:
+    """Face colour at height h px above the foot (t = h / face height, 0 at
+    the foot, 1 at the lip). turn: brightness of this face's direction."""
     base, pattern = FACE[family]
-    shade = 0.78 + 0.32 * t           # light falls from above: brighter near the top
+    shade = (0.78 + 0.32 * t) * turn     # light falls from above: brighter near the top
+    hi = np.floor(h).astype(int)
     if pattern == "ribs":
         shade = shade * np.where(XS % 6 == 0, 0.7, np.where(XS % 6 == 1, 1.15, 1.0))
     elif pattern == "courses":
-        shade = shade * np.where((YS % 7) == 0, 0.8, 1.0)
+        # Courses run parallel to the foot, so they continue round corners.
+        shade = shade * np.where(hi % 7 == 0, 0.8, 1.0)
     elif pattern == "planks":
         shade = shade * np.where((XS % 9) == 0, 0.65, 1.0)
     else:
@@ -195,23 +203,57 @@ def face_rgb(family: str, t: np.ndarray, seed: int = 5) -> np.ndarray:
     return colour(base, shade)
 
 
+# The foot of each front face: the hex edge as y = f(x) over its x range.
+FOOT = {
+    "s": (18, 54, lambda x: np.full_like(x, 72.0)),
+    "se": (54, 72, lambda x: 72.0 - 2.0 * (x - 54)),
+    "sw": (0, 18, lambda x: 36.0 + 2.0 * x),
+}
+# Each face direction catches the light differently, so where two faces meet
+# at an angle the corner reads as a clean crease.
+TURN = {"s": 1.0, "se": 0.8, "sw": 0.92}
+
+
+def front_face(family: str, direction: str, height: float = 1.0, extend: bool = False) -> Image.Image:
+    """The wall's front face along a south edge: the edge raised straight up
+    by the face height (screen pixels), the same for every face, so the top
+    lines of neighbouring faces join into one line and corners meet cleanly.
+
+    A slanted face (se, sw) reaches past its own hex at the upper end, into
+    the hex to the north-east or north-west. extend=True draws that part too
+    (sw/wall-relief-<family>-<dir>-ext.png, placed only when that neighbour is
+    also a wall: the inside corner where the wall turns); otherwise the face
+    is clipped to its own hex."""
+    face_h = max(5, round(SOUTH["s"] * height))
+    x0, x1, foot = FOOT[direction]
+    xc = XS + 0.5
+    yc = YS + 0.5
+    within = (xc >= x0) & (xc <= x1)
+    y_edge = foot(np.clip(xc, x0, x1))
+    h = y_edge - yc                       # height above the foot
+    region = within & (h > 0) & (h <= face_h)
+    if not extend:
+        region &= hex_mask()
+    t = np.clip(h / face_h, 0, 1)
+    rgb = face_rgb(family, h, t, TURN[direction])
+    lip = within & (h > face_h) & (h <= face_h + 1.8)
+    if not extend:
+        lip &= hex_mask()
+    top = TOPS.get(family, TOPS["bulkhead"])(117)
+    rgb[lip] = np.minimum(255, top[lip] * 1.15 + 10)
+    rgb[region & (h <= 1.2)] = (16, 16, 18)
+    out = np.zeros((S, S, 4))
+    out[..., :3] = rgb
+    out[..., 3] = np.where(region | lip, 255, 0)
+    return Image.fromarray(out.astype(np.uint8), "RGBA")
+
+
 def relief(family: str, direction: str, height: float = 1.0) -> Image.Image:
     inside = hex_mask()
     d = edge_distance(direction)
     out = np.zeros((S, S, 4))
     if direction in SOUTH:
-        depth = max(5, round(SOUTH[direction] * height))
-        t = np.clip(d / depth, 0, 1)
-        rgb = face_rgb(family, t)
-        band = inside & (d >= 0) & (d < depth)
-        foot = inside & (d >= 0) & (d < 1.2)
-        lip = inside & (d >= depth - 0.2) & (d < depth + 1.8)
-        # The lip where the top ends: the top's own colour, a little brighter.
-        top = TOPS.get(family, TOPS["bulkhead"])(117)
-        rgb[lip] = np.minimum(255, top[lip] * 1.15 + 10)
-        rgb[foot] = (16, 16, 18)
-        out[..., :3] = rgb
-        out[..., 3] = np.where(band | lip, 255, 0)
+        return front_face(family, direction, height)
     else:
         # The far edge: the top's own colour, a little brighter where the
         # coping catches the light, outlined in near-black.
@@ -246,6 +288,10 @@ def main() -> int:
         for direction in EDGES:
             relief(family, direction, HEIGHT.get(family, 1.0)).save(
                 OUT / f"wall-relief-{family}-{direction}.png", optimize=True)
+            n += 1
+        for direction in ("se", "sw"):
+            front_face(family, direction, HEIGHT.get(family, 1.0), extend=True).save(
+                OUT / f"wall-relief-{family}-{direction}-ext.png", optimize=True)
             n += 1
     for direction in EDGES:
         shadow(direction).save(OUT / f"wall-shadow-{direction}.png", optimize=True)

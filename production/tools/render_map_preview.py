@@ -67,24 +67,35 @@ def draw_relief(img: Image.Image, grid: list[list[str]]) -> None:
         if 0 <= y < len(grid) and 0 <= x < len(grid[y]):
             return grid[y][x].partition("^")[0]
         return None
+    # The game draws all shadows (layer -450), then all faces (-400), then the
+    # inside-corner face extensions (-399), each layer top to bottom.
+    draws = []
     for y, row in enumerate(grid):
         for x in range(len(row)):
             here = base(x, y)
             pos = (54 * x, 72 * y + (36 if x % 2 else 0))
-            for d, (nx, ny) in neighbours(x, y).items():
+            nb = neighbours(x, y)
+            for d, (nx, ny) in nb.items():
                 there = base(nx, ny)
                 if there is None:
                     continue
-                name = None
+                name, layer = None, 0
                 if here in WALLS and there not in WALLS and not there.startswith("X"):
-                    name = f"wall-relief-{WALLS[here]}-{d}"
+                    name, layer = f"wall-relief-{WALLS[here]}-{d}", -400
+                    if d in ("se", "sw"):
+                        corner = base(*nb["ne" if d == "se" else "nw"])
+                        if corner in WALLS:
+                            draws.append((-399, pos[1], pos[0], f"wall-relief-{WALLS[here]}-{d}-ext"))
                 elif here == "Qcb" and there not in ("Qcb", "Qkb"):
-                    name = f"wall-relief-bunker-{d}"
+                    name, layer = f"wall-relief-bunker-{d}", -400
                 elif here not in WALLS and not here.startswith("X") and there in WALLS:
-                    name = f"wall-shadow-{d}"
-                t = tile(f"sw/{name}") if name else None
-                if t is not None:
-                    img.alpha_composite(t, pos)
+                    name, layer = f"wall-shadow-{d}", -450
+                if name:
+                    draws.append((layer, pos[1], pos[0], name))
+    for _layer, py, px, name in sorted(draws):
+        t = tile(f"sw/{name}")
+        if t is not None:
+            img.alpha_composite(t, (px, py))
 
 
 def render(map_path: Path, symbols: dict[str, str], scale: float) -> Image.Image:
