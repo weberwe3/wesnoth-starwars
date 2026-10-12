@@ -46,6 +46,7 @@ return {
 	sw_unit_im_boarding_shuttle = { style = "imperial", base = 0, designs = {} },
 	sw_hero_luuke = { style = "darkside", base = 0, designs = {} },
 	sw_unit_wy_myneyrshi = { style = "independent", base = 0, designs = {} },
+	sw_unit_wy_field_medic = { style = "independent", base = 0, designs = {} },
 	sw_unit_wy_psadan = { style = "independent", base = 0, designs = {} },
 	sw_unit_im_royal_guard = { style = "imperial", base = 0, designs = {} },
 	sw_unit_im_infiltrator = { style = "imperial", base = 0, designs = {} },

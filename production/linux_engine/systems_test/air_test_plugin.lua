@@ -14,7 +14,9 @@ local STEPS = {
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw",
-  "wookiee_ranks", "wookiee_recruit_setup", "wookiee_recruit_check", "wookiee_normal", "wookiee_check_normal",
+  "myneyrshi_medic_ranks", "myneyrshi_medic_recruit_setup", "myneyrshi_medic_recruit_check",
+  "myneyrshi_medic_move_setup", "myneyrshi_medic_move_check", "myneyrshi_medic_heal_setup", "myneyrshi_medic_enemy_turn", "myneyrshi_medic_heal_check",
+  "myneyrshi_medic_upgrade_setup", "myneyrshi_medic_upgrade_enemy_turn", "myneyrshi_medic_upgrade_check", "wookiee_ranks", "wookiee_recruit_setup", "wookiee_recruit_check", "wookiee_normal", "wookiee_check_normal",
   "wookiee_aimed", "wookiee_check_hit", "wookiee_target_turn", "wookiee_check_return", "wookiee_expiry",
   "wookiee_miss", "wookiee_check_miss", "muzzle_flashes", "attack_range", "prepare_save",
 }
@@ -1406,6 +1408,127 @@ local function plugin(events, context, info)
     end
     -- Keep a concussive support recruit in the class-rank system without
     -- adding weapons or duplicating its base Slow. Use real native AMLAs.
+    -- Wayland support troops use native healing at the start of their side's
+    -- turn (AbilitiesWML), not a manual heal action or mission event.
+    local function sw_med_heals(unit)
+      local values = {}
+      for _, cfg in ipairs(wml.child_array(wml.get_child(unit.__cfg, "abilities") or {}, "heals")) do
+        values[#values + 1] = tonumber(cfg.value)
+      end
+      return values
+    end
+    function S.myneyrshi_medic_ranks()
+      swt.clear()
+      local med = swt.place("sw_unit_wy_field_medic", 1, 14, 12, "sw_test_native_medic_ranked")
+      local old = #med.attacks
+      check("Myneyrshi medic is a fragile 20-gold healer", med.max_hitpoints == 28 and med.max_moves == 6
+        and med.max_experience == 48 and wesnoth.unit_types.sw_unit_wy_field_medic.cost == 20)
+      check("fresh native medic heals4 without hiding or skirmisher", #sw_med_heals(med) == 1
+        and sw_med_heals(med)[1] == 4 and not med:matches{ ability = "sw_rank_hides" }
+        and not med:matches{ ability = "sw_rank_skirmisher" })
+      check("native medic retains Wayland forest mobility and fire vulnerability",
+        med:movement_on(wesnoth.current.map[{15,12}]) == 1 and med:resistance_against("fire") == -10)
+      local other = swt.place("sw_unit_nr_field_medic", 1, 16, 12, "sw_test_native_medic_compare")
+      check("ordinary Republic medic pays2 for the same forest", other:movement_on(wesnoth.current.map[{15,12}]) == 2)
+      med = swt.level_up(med.id)
+      check("native medic rankI grants forest concealment", rank.of(med) == 1
+        and med:matches{ ability = "sw_rank_hides" } and sw_med_heals(med)[1] == 4)
+      med = swt.level_up(med.id)
+      check("native medic rankII replaces healing4 with exactly one healing8",
+        rank.of(med) == 2 and #sw_med_heals(med) == 1 and sw_med_heals(med)[1] == 8)
+      med = swt.level_up(med.id)
+      check("native medic rankIII grants rapid evacuation", rank.of(med) == 3
+        and med:matches{ ability = "sw_rank_skirmisher" } and #med.attacks == old and med.max_moves == 6)
+      swt.mem.native_medic_ranked = med.__cfg
+      med = swt.level_up(med.id)
+      rank.update(med)
+      local once = rank.of(med) == 3 and #sw_med_heals(med) == 1
+      for r = 1,3 do once = once and swt.objects(med, "sw_rank_ability_" .. r) == 1 end
+      check("native medic rank grants stay unique and add no weapons", once and #med.attacks == old)
+    end
+    function S.myneyrshi_medic_recruit_setup()
+      swt.clear()
+      swt.mem.med_gold, swt.mem.med_recruit = wesnoth.sides[1].gold, wesnoth.sides[1].recruit
+      swt.mem.med_keep, swt.mem.med_castle = wesnoth.current.map[{4,4}], wesnoth.current.map[{5,4}]
+      wesnoth.wml_actions.terrain{ x=4, y=4, terrain="Kh" }
+      wesnoth.wml_actions.terrain{ x=5, y=4, terrain="Ch" }
+      local leader = swt.place("sw_hero_han", 1, 4, 4, "sw_test_native_medic_leader")
+      leader.canrecruit = true
+      wesnoth.sides[1].gold, wesnoth.sides[1].recruit = 100, {"sw_unit_wy_field_medic"}
+    end
+    function S.myneyrshi_medic_recruit_check()
+      local med = wesnoth.units.get(5,4)
+      check("native paid recruitment buys Myneyrshi medic for20 gold", med and med.type == "sw_unit_wy_field_medic"
+        and wesnoth.sides[1].gold == 80 and med.side == 1 and not med.canrecruit)
+      check("a recruited native medic has spent movement and attack", med and med.moves == 0 and med.attacks_left == 0)
+      wesnoth.sides[1].gold, wesnoth.sides[1].recruit = swt.mem.med_gold, swt.mem.med_recruit
+      wesnoth.wml_actions.terrain{ x=4, y=4, terrain=swt.mem.med_keep }
+      wesnoth.wml_actions.terrain{ x=5, y=4, terrain=swt.mem.med_castle }
+    end
+    function S.myneyrshi_medic_move_setup()
+      swt.clear()
+      local med = swt.place("sw_unit_wy_field_medic", 1, 14, 12, "sw_test_native_medic")
+      swt.mem.native_medic_move_before = med.moves
+      -- Native movement animates and may end this execute slice. Inspect its
+      -- result in the next step, after the plugin settles the game.
+      swt.move_to(med.id,15,12)
+    end
+    function S.myneyrshi_medic_move_check()
+      local med = u("sw_test_native_medic")
+      check("ordinary native forest move costs one MP without refill",
+        med.x == 15 and med.y == 12 and med.moves == swt.mem.native_medic_move_before - 1 and med.attacks_left == 1)
+    end
+    function S.myneyrshi_medic_heal_setup()
+      swt.clear()
+      local med = swt.place("sw_unit_wy_field_medic", 1, 14, 12, "sw_test_native_medic")
+      local ally = swt.place("sw_unit_wy_myneyrshi", 1, 15, 12, "sw_test_native_medic_ally")
+      local second = swt.place("sw_unit_nr_field_medic", 1, 16, 12, "sw_test_native_medic_second")
+      local poison = swt.place("sw_unit_wy_myneyrshi", 1, 14, 13, "sw_test_native_medic_poison")
+      local distant = swt.place("sw_unit_wy_myneyrshi", 1, 18, 12, "sw_test_native_medic_distant")
+      local enemy = swt.place("sw_unit_im_stormtrooper", 2, 13, 12, "sw_test_native_medic_enemy")
+      for _, unit in ipairs{med,ally,second,poison,distant,enemy} do
+        unit.hitpoints, unit.resting, unit.attacks_left = 10, false, 0
+      end
+      poison.status.poisoned = true
+      check("native healing probes have real adjacency and no villages",
+        wesnoth.map.distance_between(14,12,15,12) == 1 and wesnoth.map.distance_between(16,12,15,12) == 1
+        and wesnoth.map.distance_between(14,12,14,13) == 1
+        and not wesnoth.terrain_types[wesnoth.current.map[{15,12}]].village)
+    end
+    function S.myneyrshi_medic_enemy_turn()
+      check("native healing waits for its own turn", wesnoth.current.side == 2
+        and u("sw_test_native_medic_ally").hitpoints == 10)
+    end
+    function S.myneyrshi_medic_heal_check()
+      check("two native healing4 sources do not add together", wesnoth.current.side == 1
+        and u("sw_test_native_medic_ally").hitpoints == 14, u("sw_test_native_medic_ally").hitpoints)
+      check("native healing stops poison damage without curing or healing",
+        u("sw_test_native_medic_poison").hitpoints == 10 and u("sw_test_native_medic_poison").status.poisoned)
+      check("native healing does not heal itself, distant allies or enemies",
+        u("sw_test_native_medic").hitpoints == 10 and u("sw_test_native_medic_distant").hitpoints == 10
+        and u("sw_test_native_medic_enemy").hitpoints == 10)
+    end
+    function S.myneyrshi_medic_upgrade_setup()
+      local med = swt.level_up("sw_test_native_medic")
+      med = swt.level_up(med.id)
+      for _, id in ipairs{"sw_test_native_medic","sw_test_native_medic_ally","sw_test_native_medic_second",
+        "sw_test_native_medic_poison","sw_test_native_medic_distant","sw_test_native_medic_enemy"} do
+        local unit = u(id)
+        unit.hitpoints, unit.resting, unit.attacks_left = 10, false, 0
+      end
+    end
+    function S.myneyrshi_medic_upgrade_enemy_turn()
+      check("rankII medic still waits for its own native turn", wesnoth.current.side == 2
+        and u("sw_test_native_medic_ally").hitpoints == 10)
+    end
+    function S.myneyrshi_medic_upgrade_check()
+      check("native rankII healing8 replaces4 rather than stacking to12", wesnoth.current.side == 1
+        and u("sw_test_native_medic_ally").hitpoints == 18, u("sw_test_native_medic_ally").hitpoints)
+      check("field surgery keeps native poison slowed and no self-healing",
+        u("sw_test_native_medic_poison").hitpoints == 10 and u("sw_test_native_medic_poison").status.poisoned
+        and u("sw_test_native_medic").hitpoints == 10)
+    end
+
     function S.wookiee_ranks()
       swt.clear()
       local function idx(unit, name)
@@ -1602,6 +1725,11 @@ local function plugin(events, context, info)
         swt.mem.wk_rank_snapshot.x, swt.mem.wk_rank_snapshot.y = 18, 12
         wesnoth.wml_actions.unit(swt.mem.wk_rank_snapshot)
       end
+      if swt.mem.native_medic_ranked then
+        swt.mem.native_medic_ranked.underlying_id = nil
+        swt.mem.native_medic_ranked.x, swt.mem.native_medic_ranked.y = 21,12
+        wesnoth.wml_actions.unit(swt.mem.native_medic_ranked)
+      end
       local obs = swt.place("sw_unit_nr_commando", 1, 4, 4, "t_obs")
       for _i = 1, 2 do swt.level_up("t_obs") end
       air.grant(1, "strafe", 2, "sw_unit_nr_xwing")
@@ -1611,7 +1739,27 @@ local function plugin(events, context, info)
       std_print("SW_TEST: state prepared for save")
     end
 
+    function S.myneyrshi_medic_reload_setup()
+      local med=u("sw_test_native_medic_ranked")
+      med.hitpoints,med.resting,med.attacks_left=10,false,0
+      local ally=swt.place("sw_unit_wy_myneyrshi",1,22,12,"sw_test_native_medic_reloaded_ally")
+      ally.hitpoints,ally.resting,ally.attacks_left=10,false,0
+    end
+    function S.myneyrshi_medic_reload_enemy_turn()
+      check("reloaded medic waits for its normal healing turn", wesnoth.current.side==2
+        and u("sw_test_native_medic_reloaded_ally").hitpoints==10)
+    end
+    function S.myneyrshi_medic_reload_check()
+      check("actual reload retains functional native healing8 on next turn", wesnoth.current.side==1
+        and u("sw_test_native_medic_reloaded_ally").hitpoints==18)
+    end
     function S.load()
+      local med=u("sw_test_native_medic_ranked")
+      check("actual reload retains native medic type and all three earned abilities", med and med.type=="sw_unit_wy_field_medic"
+        and rank.of(med)==3 and med:matches{ability="sw_rank_hides"} and med:matches{ability="sw_rank_skirmisher"}
+        and #sw_med_heals(med)==1 and sw_med_heals(med)[1]==8)
+      check("actual reload retains exactly one native medic object per rank", med and swt.objects(med,"sw_rank_ability_1")==1
+        and swt.objects(med,"sw_rank_ability_2")==1 and swt.objects(med,"sw_rank_ability_3")==1)
       local veteran = u("sw_test_wookiee_ranked")
       check("actual reload keeps all three earned Suppressor rank objects", veteran and rank.of(veteran) == 3
         and swt.objects(veteran, "sw_rank_ability_1") == 1 and swt.objects(veteran, "sw_rank_ability_2") == 1
@@ -1652,11 +1800,24 @@ local function plugin(events, context, info)
   end)
   settle()
 
-  local steps = PHASE == "main" and STEPS or { "load" }
+  local steps = PHASE == "main" and STEPS or { "load", "myneyrshi_medic_reload_setup", "myneyrshi_medic_reload_enemy_turn", "myneyrshi_medic_reload_check" }
   for _, name in ipairs(steps) do
     local step = name
     wesnoth.plugin.execute(context, function() swt.step(step) end)
     settle()
+    if step == "myneyrshi_medic_recruit_setup" then
+      context.synced_command{{ "recruit", { type="sw_unit_wy_field_medic", x=5, y=4, {"from",{x=4,y=4}} } }}
+      settle()
+    end
+    if step == "myneyrshi_medic_heal_setup" or step == "myneyrshi_medic_upgrade_setup"
+      or step == "myneyrshi_medic_enemy_turn" or step == "myneyrshi_medic_upgrade_enemy_turn"
+      or step == "myneyrshi_medic_reload_setup" or step == "myneyrshi_medic_reload_enemy_turn" then
+      context.end_turn{}
+      local expected = (step == "myneyrshi_medic_heal_setup" or step == "myneyrshi_medic_upgrade_setup"
+        or step == "myneyrshi_medic_reload_setup") and 2 or 1
+      local g=0
+      repeat settle(); g=g+1 until (info.name=="Game" and info.current_side and info.current_side()==expected) or g>50
+    end
     if step == "wookiee_recruit_setup" then
       context.synced_command{{ "recruit", { type = "sw_unit_wk_suppressor", x = 5, y = 4,
         { "from", { x = 4, y = 4 } } } }}

@@ -485,6 +485,14 @@
   "color": null,
   "kind": "painted"
  },
+ "sw-unit-wy-field-medic": {
+  "blit": [
+   58,
+   22
+  ],
+  "color": null,
+  "kind": "painted"
+ },
  "sw-unit-wy-myneyrshi": {
   "blit": [
    58,

@@ -355,6 +355,7 @@ ASSIGNMENTS = {
     "sw_unit_sm_slicer": {1: ("slip_away", None), 2: ("overload_shot", "blaster_pistol"),
                           3: ("street_camouflage", None)},
     "sw_unit_wy_myneyrshi": {1: ("bow_mastery", "bow"), 2: ("steady", None), 3: ("war_cry", None)},
+    "sw_unit_wy_field_medic": {1: ("forest_ghost", None), 2: ("field_surgery", None), 3: ("rapid_evac", None)},
     "sw_unit_wy_psadan": {1: ("stone_hide", None), 2: ("crushing_blow", "war_club"), 3: ("recuperation", None)},
     # Heroes.
     "sw_hero_luke": {1: ("jedi_reflexes", None), 2: ("lightsaber_form", "lightsaber"), 3: ("jedi_serenity", None)},
