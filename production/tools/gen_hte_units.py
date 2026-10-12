@@ -540,7 +540,7 @@ ABILITY_BUILDERS = {
 SPECIALS = {
     "firststrike": "{WEAPON_SPECIAL_FIRSTSTRIKE}",
     "marksman": "{WEAPON_SPECIAL_MARKSMAN}",
-    "backstab": "{WEAPON_SPECIAL_BACKSTAB}",
+    "backstab": "{SW_SPECIAL_BACKSTAB}",
     "slow": "{WEAPON_SPECIAL_SLOW}",
     "magical": "{WEAPON_SPECIAL_MAGICAL}",
     "deflection": (
@@ -1419,6 +1419,7 @@ def flanking_specials_wml() -> str:
         "#define SW_SPECIAL_FLANKING\n"
         + "".join(tiers)
         + "#enddef\n"
+        + '\n# Keep core backstab identity, text and numbers. Its empty rear-hex lookup\n# needs lazy if guards: WFL and/or evaluate both operands.\n#define SW_SPECIAL_BACKSTAB\n    {WEAPON_SPECIAL_BACKSTAB}\n    [+damage]\n        [+filter_opponent]\n            formula="if(other = null(), false, if(unit_at(direction_from(loc, other.facing)) = null(), false, enemy_of(self, unit_at(direction_from(loc, other.facing))) and not unit_at(direction_from(loc, other.facing)).petrified))"\n        [/filter_opponent]\n    [/damage]\n#enddef\n'
     )
 
 

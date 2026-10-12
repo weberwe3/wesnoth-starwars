@@ -1584,3 +1584,61 @@ than unique error sites; they must not be treated as a human balance result.
 | Covered building passages | 1 | 330 | 1 | 2 |
 | Covered building passages | 2 | 520 | 1 | 1 |
 | Covered building passages | 3 | 268 | 1 | 0 |
+
+
+### Safe base backstab combat evaluation (2026-10-12)
+
+Noghri commandos, Khabarakh (all three visual ranks) and Imperial infiltrators now use a guarded base knife special. Only the native backstab opponent filter changes: no opponent or empty opposite hex safely fails, instead of passing a null object to enemy_of. Core special identity, labels, double damage and offense-only activation remain. All mission CFGs/maps and Claude’s rank assignments and rank-special guards retain their bytes.
+
+Current-main native diagnosis on Wesnoth 1.19.27 reproduced three null-object events (six TYPE ERROR/formula diagnostic lines) for three solo knife previews. The guarded private-unit control had zero diagnostics: Noghri and Khabarakh stayed at 9 damage alone and 18 with a valid opposite hostile unit; infiltrator stayed at 7 and 14. Petrified support gave ordinary damage. This confirms the isolated evaluation repair; final full systems, native combat/reload, campaign sequence and AI results follow. It does not establish improved AI win rates or human difficulty. Existing units cached in older saves may retain their serialized old special.
+
+The initial full systems run is preserved as FAIL: the unarmed-flanker fixture attempted to assign Lua unit.attacks, a read-only property. The fixture now uses the supported native remove_attacks object effect and independently asserts an empty attack list before the damage/accuracy check. No shipped damage formula, native special or combat expectation was relaxed. The fresh required run below verifies the fixture repair.
+
+
+The first systems run retained one failing unarmed fixture; the repaired full run uses the supported native remove_attacks effect and a direct zero-attack check. The original failure and raw logs are retained.
+
+Measured final validation on installed Wesnoth 1.19.27:
+
+- Existing unit/all-map/inventory/scope/whitespace gates passed; 110 declared contracts retain all 109 previous declarations.
+- The full systems suite passed 991 assertions, with no failures or engine errors and 15 retained synthetic-controller warnings. Both existing replay comparisons passed. New native regressions cover all six directions in five shipped profiles (the three base families and Khabarakh rank2/rank3), absent opponent, empty/opposite hostile/target ally/petrified/unarmed/off-axis support, and return fire. The separate accuracy-flanking special and Claudeâ€™s original rank cases remain intact.
+- Native actual combat and real reload passed 38 checks (22 main + 16 reload), without diagnostics. The Noghri solo attack dealt ordinary knife damage; Khabarakh and the infiltrator dealt doubled knife damage with valid support. Every actual attack spent movement and its attack, and the save/reload retained positions, HP, spent actions, the shipped guarded special and the same native preview. Test-only 100% hit chance and high-HP targets ensured all planned strikes could be checked; original weapon specials were restored before saving. No combat snapshot was reconstructed, no victory was preset, and this isolated fixture does not establish mission difficulty.
+- All three scripted campaign sequences passed 30 stages and 30 parsed matching WML saves. These do not reload each sequence save or constitute human playtests.
+
+All 30 careful-player AI soaks passed the existing technical gate. Every raw log was also scanned separately without modifying the matcher, exemption, timeout or verdict; all 30 had zero TYPE ERROR/formula diagnostic lines. Other raw diagnostics and every outcome remain recorded:
+
+| Mission | Recorded AI outcome | Turns | Formula diagnostic lines | Other raw diagnostic lines |
+| --- | --- | --- | --- | --- |
+| sw_hte_01_ysalamiri_harvest | result DEFEAT turn 17 | 17 | 0 | 1 |
+| sw_hte_02_ambush_at_bpfassh | result DEFEAT turn 15 | 15 | 0 | 4 |
+| sw_hte_03_adrift | result DEFEAT turn 7 | 7 | 0 | 1 |
+| sw_hte_04_shadows_of_kashyyyk | result VICTORY turn 13 | 13 | 0 | 1 |
+| sw_hte_05_prisoner_of_myrkr | result DEFEAT turn 15 | 15 | 0 | 1 |
+| sw_hte_06_raid_on_karrdes_base | result DEFEAT turn 16 | 16 | 0 | 5 |
+| sw_hte_07_the_forest_crossing | result DEFEAT turn 7 | 7 | 0 | 1 |
+| sw_hte_08_nomad_city | result VICTORY turn 15 | 15 | 0 | 6 |
+| sw_hte_09_sluis_van_shipyards | result VICTORY turn 13 | 13 | 0 | 1 |
+| sw_hte_10_thrawns_gambit | result DEFEAT turn 7 | 7 | 0 | 1 |
+| sw_dfr_01_the_noghri_prisoner | result DEFEAT turn 3 | 3 | 0 | 1 |
+| sw_dfr_02_honoghr | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_dfr_03_jomark | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_dfr_04_the_senators_men | result DEFEAT turn 9 | 9 | 0 | 5 |
+| sw_dfr_05_peregrines_nest | result DEFEAT turn 9 | 9 | 0 | 15 |
+| sw_dfr_06_the_mad_jedi | result DEFEAT turn 8 | 8 | 0 | 1 |
+| sw_dfr_07_the_dark_force | result DEFEAT turn 17 | 17 | 0 | 24 |
+| sw_dfr_08_aboard_the_katana | result DEFEAT turn 17 | 17 | 0 | 1 |
+| sw_dfr_09_battle_for_the_fleet | result DEFEAT turn 17 | 17 | 0 | 1 |
+| sw_dfr_10_honoghrs_choice | result VICTORY turn 4 | 4 | 0 | 1 |
+| sw_tlc_01_the_siege_of_coruscant | result VICTORY turn 8 | 8 | 0 | 1 |
+| sw_tlc_02_the_smugglers_council | result DEFEAT turn 5 | 5 | 0 | 1 |
+| sw_tlc_03_the_palace_infiltrators | result VICTORY turn 8 | 8 | 0 | 1 |
+| sw_tlc_04_landfall_on_wayland | result DEFEAT turn 5 | 5 | 0 | 1 |
+| sw_tlc_05_the_natives_of_wayland | result VICTORY turn 5 | 5 | 0 | 1 |
+| sw_tlc_06_the_gates_of_tantiss | result DEFEAT turn 11 | 11 | 0 | 2 |
+| sw_tlc_07_the_cloning_vats | result VICTORY turn 8 | 8 | 0 | 1 |
+| sw_tlc_08_the_throne_room | result DEFEAT turn 8 | 8 | 0 | 1 |
+| sw_tlc_09_bilbringi | result DEFEAT turn 9 | 9 | 0 | 3 |
+| sw_tlc_10_the_last_command | result DEFEAT turn 4 | 4 | 0 | 1 |
+
+These independent random runs recorded 8 victories and 22 defeats. They are not paired with earlier runs and do not establish a human win rate or better difficulty. The defeat count remains a playability concern for human mission playtests; this unpaired sample cannot attribute it to the repair. Raw controller-change and fake air-route warnings are preserved. The current source repair eliminates the confirmed null-object knife evaluation, while base unit numbers and all mission WML remain byte-identical. Older cached units can retain the old serialized special until rebuilt; no save migration is claimed.
+
+The first unchanged static gate failed because the shared-specials CFG lacked a declaration. One declaration for its existing flanking identity, within the original immutable ticketâ€™s generated contract-shard scope, restores coverage while preserving all prior declarations. This source-coverage check is not native behavior proof; the actual combat, six-direction cases and AI logs provide that evidence.

@@ -1548,3 +1548,13 @@ art-registration addition. No gate, timeout or production validator was relaxed.
 **Prevention:** Treat run_validation art synchronization as a mutation. Finish
 it before concurrent frozen checks, use LF for native generated text, and bind
 the resulting files before tests and publication.
+
+
+## 2026-10-12: Safe native backstab evaluation and unarmed combat fixtures
+
+- Symptom: native solo knife previews for Noghri, Khabarakh and infiltrators emitted enemy_of null-object formula errors when the opposite hex was empty. The isolated current-main run reproduced three errors.
+- Confirmed cause: the installed 1.19.27 core backstab filter calls enemy_of on unit_at without testing for an absent unit. WFL and/or operands are evaluated without short-circuiting.
+- Resolution: retain the core backstab special and replace only its opponent formula with lazy if guards for absent secondary and rear units. Preserve double damage, offense-only activation, hostile support and petrified exclusion.
+- Fixture symptom and cause: the first full systems run stopped on an invalid modifiable property of unit: attacks error because the unarmed fixture assigned the read-only attack list.
+- Fixture resolution: remove attacks with the native object remove_attacks effect and assert the resulting list is empty. The repaired isolated fixture passed all 280 cases; the completed full suite, actual attacks/reload and all-30-mission raw logs are recorded in the same gameplay balance entry.
+- Prevention: use lazy if for nullable WFL unit operands; use native modification effects for read-only unit properties. Verify empty, hostile, allied, petrified, unarmed, off-axis and defensive cases across six directions with the shipped specials, and retain initial failures alongside repaired evidence.
