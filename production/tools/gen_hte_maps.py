@@ -115,6 +115,18 @@ def m02() -> HexMap:
     m.path([(20, 1), (19, 5), (19, 10)], "Ww")
     m.set(19, 3, "Ww^Bsb|")
     m.set(19, 9, "Ww^Bsb|")
+    # Colony passages link the southern streets to the plaza and east district.
+    # Open only existing building cells; the ambush parks and canal stay intact.
+    for floor in ((4, 14), (4, 15), (5, 14),
+                  (9, 13), (10, 13), (11, 13),
+                  (20, 7), (21, 7), (21, 8), (22, 7)):
+        assert m.get(*floor) == "Xos"
+        m.set(*floor, "Isr")
+    for crate in ((4, 14), (10, 13), (21, 7)):
+        m.set(*crate, "Isr^Qcr")
+    for crate in ((6, 12), (8, 13), (14, 12), (17, 10), (23, 6), (24, 5)):
+        assert m.get(*crate) == "Rr"
+        m.set(*crate, "Rr^Qcr")
     # Imperial landing area in the north-west.
     castle_ring(m, (7, 1), "Ke", "Ce", 4)
     m.start(1, 2, 16)

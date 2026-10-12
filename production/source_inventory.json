@@ -10596,7 +10596,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "1248bef145179725d5e96b8ba0f28a1dbf47a6fbf8b3fa2f413b8689565a988b"
+      "sha256": "2772f75f7e626301044c80a33f8b4c61a578fe078b1cfd7eb7ff97850ce3b5ad"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -16624,7 +16624,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_02_ambush_at_bpfassh.map",
-      "sha256": "5daee896afc5b11e91f3d0d6d932d502dd64e42c860077c55d81ce7763bdb9bb"
+      "sha256": "02fd3fef7db7c4f81c8435702c17252510adc7df63ad131ef6ca0a33acf56bc1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_03_adrift.map",

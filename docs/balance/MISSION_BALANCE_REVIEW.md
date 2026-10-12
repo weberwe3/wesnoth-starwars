@@ -1490,3 +1490,97 @@ estimate. Recruited types are not established by the soak report, so no
 outcome is attributed to the medic. All wins and losses are reported. Native
 functional checks establish the new choice; no enemy forces, objective,
 turn, gold, reward or Claude-owned mission event was adjusted.
+
+
+## Bpfassh colony passages and evacuation cover (2026-10-12)
+
+Three formerly solid colony buildings have through-passages with cargo cover,
+linked by six street cover positions. They offer staging positions for screening
+Leia through the southern district, militia plaza and east district toward the
+Falcon, alongside every original exposed route. Ten walls open as floors and
+six street cells gain crates: exactly16 altered playable hexes and9 cover cells.
+All original villages, recruitment terrain, canal bridges, ambush parks, scripted
+positions and scenario CFG bytes remain. Claude's events, forces, difficulty,
+objectives, rewards, achievements and tips are preserved. Native unit-specific
+cover and route costs will be reported; geometry alone does not prove safer
+play or a win-rate improvement.
+
+The 26x18 playable map changes exactly 16 interior cells: ten previously
+impassable wall cells become colony floor, including three crate positions,
+and six road cells gain crates. There are now 83 colony wall cells and nine
+cargo cover hexes. All nine existing village positions, original streets,
+keeps and recruiting hexes, both canal bridges, three ambush parks, militia
+plaza, opening party and Falcon extraction hex retain their exact terrain
+or placement. No healing, village or recruiting terrain is added by crates.
+
+Installed Wesnoth 1.19.27 measured the following unit-specific defence
+(chance to avoid an attack), with one MP paid for road, colony floor or crate
+terrain by all ten tested unit types:
+
+| Tested unit type | Road / colony floor | Cargo crates |
+| --- | --- | --- |
+| Leia | 50% | 70% |
+| Han, Chewbacca, New Republic trooper, commando, medic and E-web team | 40% | 60% |
+| Imperial officer | 40% | 60% |
+| Noghri warrior | 50% | 60% |
+| Imperial repulsor scout | 40% | 40% |
+
+Walls remain impassable to those types. Unopposed native path checks reach
+all new floors, the plaza, lower canal bridge and Falcon. Leia's unopposed
+route to the Falcon costs 29 MP. These checks ignore units and their zones
+of control; they do not establish a safe escape through enemies. Four
+additional actual-type probes (commando, medic, E-web and scout) were private
+unplaced unit objects, with no extra mapped or recalled units.
+
+Han made an ordinary native move from (3,16) through (4,15) to covered
+colony floor at (4,14), spending two of his normal six MP. A real save/reload
+kept his destination and four remaining MP, the layout, original party,
+militia and Noghri. Main and reload phases passed 213 and 210 checks
+(423 total), with no engine errors or warnings. Normal still starts with
+120 gold and 14 turns. Existing saves retain their stored map; a fresh
+Bpfassh mission uses the new passages.
+
+Inventory, unit and all map-generator checks, scope/whitespace, 109 declared
+contracts, 711 systems checks and all 30 campaign sequence stages passed.
+All 30 sequence saves were parsed as readable matching saved WML. Systems
+logs retain 15 synthetic-controller warnings, with no engine
+errors; existing replay checks passed. Scripted sequences and parsed saves
+do not establish human difficulty or reload every sequence save. All 30
+scenario CFGs, other 29 maps and all other HTE map builders retain base bytes.
+
+Six independent careful-player AI soaks of Ambush at Bpfassh passed the
+existing technical gate:
+
+| Layout | Run | Recorded AI outcome | Turns played |
+| --- | --- | --- | --- |
+| Previous solid buildings | 1 | result DEFEAT turn 15 | 15 |
+| Previous solid buildings | 2 | result DEFEAT turn 15 | 15 |
+| Previous solid buildings | 3 | result DEFEAT turn 15 | 15 |
+| Covered building passages | 1 | result DEFEAT turn 15 | 15 |
+| Covered building passages | 2 | result DEFEAT turn 15 | 15 |
+| Covered building passages | 3 | result DEFEAT turn 15 | 15 |
+
+These are independent random runs, not paired seeds or a human win-rate
+estimate. All wins and losses are reported. The new passage and cover
+positions provide choices for escort screening and regrouping; no claim is
+made that human difficulty improved. Enemy forces, AI, gold/turns,
+victory/loss conditions, objectives, rewards, achievements, tips and
+Claude-owned mission event behavior retain their base bytes.
+
+Raw careful-player soak logs also retain repeated enemy_of formula type
+diagnostics (expected object but found null) on both the unchanged baseline
+and the candidate, plus the synthetic controller-change warning and occasional
+fake air-sortie route warnings. The existing technical validator reports PASS
+for these runs; no matcher, error exemption, deadline or verdict was changed
+for this ticket. PASS therefore does not establish error-free AI play. The
+formula counts below count both printed TYPE ERROR/formula messages, rather
+than unique error sites; they must not be treated as a human balance result.
+
+| Layout | Run | Formula diagnostic lines | Synthetic controller lines | Fake air-route warnings |
+| --- | --- | --- | --- | --- |
+| Previous solid buildings | 1 | 542 | 1 | 3 |
+| Previous solid buildings | 2 | 318 | 1 | 3 |
+| Previous solid buildings | 3 | 294 | 1 | 1 |
+| Covered building passages | 1 | 330 | 1 | 2 |
+| Covered building passages | 2 | 520 | 1 | 1 |
+| Covered building passages | 3 | 268 | 1 | 0 |
