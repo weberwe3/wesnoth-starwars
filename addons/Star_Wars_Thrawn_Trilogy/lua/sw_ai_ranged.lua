@@ -1,4 +1,4 @@
--- Star Wars: Thrawn Trilogy -- AI candidate action: stand-off ranged fire.
+-- Star Wars: Thrawn Trilogy -- AI candidate action: ranged fire and withdrawal.
 --
 -- The engine's default AI only attacks from adjacent hexes, so it would
 -- never use weapon ranges (rifles reach 2 hexes, heavy weapons 3). This
@@ -24,6 +24,20 @@ local MIN_RATING = 4
 local function can_act(u, side)
 	return u and u.side == side and u.hitpoints > 0 and u.max_attacks > 0
 		and u.attacks_left > 0 and not u.status.petrified
+end
+
+-- Planning has the same information a player on this side could see. In
+-- particular, a hidden occupant must not silently veto a reachable hex.
+local function known_units(side)
+	local list = wesnoth.units.find_on_map{ T.filter_vision{ side = side, visible = true } }
+	table.sort(list, function(a, b) return a.id < b.id end)
+	local occupied = {}
+	for _i, u in ipairs(list) do occupied[u.x .. "," .. u.y] = u end
+	return list, occupied
+end
+
+local function unaware(u)
+	return sw_systems and sw_systems.alert and sw_systems.alert.is_unaware(u)
 end
 
 -- Weapon:matches has no opponent/combat-context argument (LuaAPI/types#Weapon).
@@ -107,12 +121,13 @@ end
 -- armed, non-petrified unit hostile to the target adjacent to it and farther
 -- from the attacking hex than the target is, at most +20%. mover is the
 -- attacking unit, which leaves its current hex to fire, so it never counts.
-local function flank_bonus(target, x, y, mover)
+local function flank_bonus(target, x, y, mover, occupied)
+	if not occupied then local _known; _known, occupied = known_units(mover.side) end
 	local d = wesnoth.map.distance_between(x, y, target.x, target.y)
 	local n = 0
 	for _i, loc in ipairs(wesnoth.map.find{ T.filter_adjacent_location{ x = target.x, y = target.y } }) do
 		local lx, ly = loc[1] or loc.x, loc[2] or loc.y
-		local f = wesnoth.units.get(lx, ly)
+		local f = occupied[lx .. "," .. ly]
 		if f and f.id ~= mover.id and wesnoth.map.distance_between(lx, ly, x, y) > d
 			and wesnoth.sides.is_enemy(f.side, target.side) and not f.status.petrified and #f.attacks > 0 then
 			n = n + 1
@@ -150,11 +165,115 @@ local function sorted_units(filter)
 	return list
 end
 
+-- These are preferences between otherwise worthwhile, legal attacks, never
+-- damage or accuracy bonuses. Nearby armed allies protect a target; invisible
+-- support cannot influence this rating. Each term is capped at four points.
+local function target_priority(target, known)
+	local support = 0
+	for _i, friend in ipairs(known) do
+		if friend.id ~= target.id and friend.hitpoints > 0 and not friend.status.petrified
+			and #friend.attacks > 0 and not wesnoth.sides.is_enemy(friend.side, target.side)
+			and wesnoth.map.distance_between(friend.x, friend.y, target.x, target.y) <= 2 then
+			support = support + 1
+		end
+	end
+	local wounded = 4 * math.max(0, 1 - target.hitpoints / math.max(1, target.max_hitpoints))
+	return wounded + math.max(0, 4 - support * 2)
+end
+
+local function can_withdraw(u, side)
+	return u and u.side == side and u.hitpoints > 0 and u.moves > 0
+		and not u.canrecruit and not u.status.petrified and not unaware(u)
+		and u.hitpoints <= u.max_hitpoints * 0.4
+end
+
+-- Core's ca_retreat_injured primarily sends non-regenerating troops to healing
+-- locations. This covers wounded troops exposed on maps without reachable
+-- healing: move beyond visible weapons and toward cover/support, then stand
+-- down for this turn. Native reach retains terrain costs and zones of control.
+local function best_withdrawal(side, tried, avoid)
+	local wounded = {}
+	for _i, u in ipairs(sorted_units{ side = side }) do
+		if can_withdraw(u, side) and not tried[u.id] then wounded[#wounded + 1] = u end
+	end
+	if #wounded == 0 then return nil end
+	local known, occupied = known_units(side)
+	local enemies, blocked = {}, {}
+	for _i, u in ipairs(known) do
+		if wesnoth.sides.is_enemy(u.side, side) and u.hitpoints > 0
+			and not u.status.petrified and #u.attacks > 0 then
+			local range = 1
+			for _j, weapon in ipairs(u.attacks) do range = math.max(range, weapon.max_range or 1) end
+			enemies[#enemies + 1] = { unit = u, range = range }
+		end
+	end
+	if #enemies == 0 then return nil end
+	for _i, loc in ipairs(avoid or {}) do
+		blocked[(loc[1] or loc.x) .. "," .. (loc[2] or loc.y)] = true
+	end
+	local function distances(x, y)
+		local nearest, exposed = math.huge, false
+		for _i, threat in ipairs(enemies) do
+			local d = wesnoth.map.distance_between(x, y, threat.unit.x, threat.unit.y)
+			nearest = math.min(nearest, d)
+			if d <= threat.range then exposed = true end
+		end
+		return nearest, exposed
+	end
+	local best
+	for _i, u in ipairs(wounded) do
+		if can_withdraw(u, side) and not tried[u.id] then
+			local nearest = distances(u.x, u.y)
+			local near_threat = false
+			for _j, threat in ipairs(enemies) do
+				if wesnoth.map.distance_between(u.x, u.y, threat.unit.x, threat.unit.y) <= threat.range + 1 then
+					near_threat = true
+				end
+			end
+			if near_threat then
+				local reach = wesnoth.paths.find_reach(u, { viewing_side = side })
+				table.sort(reach, function(a, b)
+					local ax, ay, bx, by = a[1] or a.x, a[2] or a.y, b[1] or b.x, b[2] or b.y
+					return ax < bx or (ax == bx and ay < by)
+				end)
+				for _j, loc in ipairs(reach) do
+					local x, y = loc[1] or loc.x, loc[2] or loc.y
+					local distance, exposed = distances(x, y)
+					local key = x .. "," .. y
+					if not occupied[key] and not blocked[key] and not exposed and distance >= nearest + 2 then
+						local support = 0
+						for _k, friend in ipairs(known) do
+							if friend.id ~= u.id and not wesnoth.sides.is_enemy(friend.side, side)
+								and friend.hitpoints > 0 and not friend.status.petrified and #friend.attacks > 0
+								and wesnoth.map.distance_between(x, y, friend.x, friend.y) <= 2 then
+									support = support + 1
+								end
+						end
+						local terrain = wesnoth.current.map[{x, y}]
+						local healing = wesnoth.terrain_types[terrain].healing or 0
+						local rating = math.min(6, distance) * 3 + u:defense_on(terrain) / 20
+							+ math.min(2, support) * 2 + ((healing == true or healing > 0) and 4 or 0)
+							- wesnoth.map.distance_between(u.x, u.y, x, y) * 0.25
+						if not best or rating > best.rating then
+							best = { kind = "withdraw", rating = rating, unit = u.id, side = side,
+								x = x, y = y, turn = wesnoth.current.turn }
+						end
+					end
+				end
+			end
+		end
+	end
+	return best
+end
+
 -- Best stand-off attack for the side, or nil. tried: unit ids to skip.
 local function best_attack(side, tried)
+	local known, occupied = known_units(side)
 	local enemies = sorted_units{ T.filter_side{ T.enemy_of{ side = side } },
 		T.filter_vision{ side = side, visible = true } }
 	if #enemies == 0 then return nil end
+	local priorities = {}
+	for _i, e in ipairs(enemies) do priorities[e.id] = target_priority(e, known) end
 	local best = nil
 	for _i, u in ipairs(sorted_units{ side = side }) do
 		local weapons = (can_act(u, side) and not tried[u.id]) and ranged_weapons(u) or {}
@@ -174,16 +293,17 @@ local function best_attack(side, tried)
 					local e_loc = { x = e.x, y = e.y }
 					for _l, loc in ipairs(reach) do
 						local x, y = loc[1] or loc.x, loc[2] or loc.y
-						local occupant = wesnoth.units.get(x, y)
+						local occupant = occupied[x .. "," .. y]
 						if not occupant or occupant.id == u.id then
 							local d = wesnoth.map.distance_between(x, y, e.x, e.y)
 							for _m, w in ipairs(weapons) do
 								if d >= w.min and d <= w.max and not disabled_on_offense(u, w.attack, e, x, y) then
 									local dealt = math.min(e.hitpoints,
-										expected(w.attack, w.falloff, w.bonus, d, e, e_loc, flank_bonus(e, x, y, u)))
+										expected(w.attack, w.falloff, w.bonus, d, e, e_loc, flank_bonus(e, x, y, u, occupied)))
 									local taken = math.min(u.hitpoints, return_fire(e, u, { x = x, y = y }, d))
 									local kill = dealt >= e.hitpoints * 0.9 and e.max_hitpoints * 0.3 or 0
 									local rating = dealt + kill - taken * 0.8
+									if rating >= MIN_RATING then rating = rating + priorities[e.id] end
 									if rating >= MIN_RATING and (best == nil or rating > best.rating) then
 										best = { rating = rating, unit = u.id, side = side, x = x, y = y,
 											target = e.id, weapon = w.index, weapon_name = w.attack.name }
@@ -205,7 +325,8 @@ function ca:evaluation(cfg, data)
 	if data.sw_ranged_turn ~= wesnoth.current.turn or data.sw_ranged_side ~= wesnoth.current.side then
 		data.sw_ranged_turn, data.sw_ranged_side, data.sw_ranged_tried = wesnoth.current.turn, wesnoth.current.side, {}
 	end
-	local best = best_attack(wesnoth.current.side, data.sw_ranged_tried)
+	local best = best_withdrawal(wesnoth.current.side, data.sw_ranged_tried, ai.aspects.avoid)
+		or best_attack(wesnoth.current.side, data.sw_ranged_tried)
 	if not best then return 0 end
 	data.sw_ranged_fire = best
 	return cfg.max_score or 100010
@@ -216,6 +337,26 @@ function ca:execution(cfg, data)
 	data.sw_ranged_fire = nil
 	if not best then return end
 	data.sw_ranged_tried[best.unit] = true
+	if best.kind == "withdraw" then
+		local u = wesnoth.units.get(best.unit)
+		if best.side ~= wesnoth.current.side or best.turn ~= wesnoth.current.turn
+			or not can_withdraw(u, best.side) then return end
+		local x, y = u.x, u.y
+		ai.move_full(u, best.x, best.y)
+		u = wesnoth.units.get(best.unit)
+		-- An ambush may interrupt the move. Stop the surviving withdrawing unit
+		-- at its actual hex so default combat cannot send it straight back.
+		if u and u.side == best.side and u.hitpoints > 0 and (u.x ~= x or u.y ~= y) then
+			-- A native stopunit is AI-local and is omitted from replay. End-turn
+			-- air/overwatch must see the same spent actions in play and playback.
+			wesnoth.sync.invoke_command("sw_ai_withdraw_stand_down", {
+				unit = u.id, side = u.side, x = u.x, y = u.y, turn = wesnoth.current.turn })
+			if sw_systems and sw_systems.core then
+				sw_systems.core.log("ai", u.id .. " withdraws to " .. u.x .. "," .. u.y)
+			end
+		end
+		return
+	end
 	local u = wesnoth.units.get(best.unit)
 	local target = wesnoth.units.get(best.target)
 	if best.side ~= wesnoth.current.side or not can_act(u, best.side) or not target then return end
@@ -248,5 +389,7 @@ end
 -- Exposed for the engine tests.
 ca.best_attack = best_attack
 ca.flank_bonus = flank_bonus
+ca.best_withdrawal = best_withdrawal
+ca.target_priority = target_priority
 
 return ca

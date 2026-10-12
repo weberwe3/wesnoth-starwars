@@ -56,6 +56,35 @@ local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
 sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips, bonus = bonus, debrief = debrief, command = command }
 
+-- Keep command registration in this dynamically loaded file: existing saves
+-- contain an older expansion of SW_TACTICAL_SYSTEMS, but still call this loader.
+-- Native AI stopunit actions are not replay commands. Spending a
+-- withdrawal's actions must also reach synced end-turn systems
+-- (air observers and overwatch), so record this explicit command.
+-- Register at top level on new games, loads and replays, even when
+-- replay playback never evaluates the ranged-fire candidate action.
+-- Direct proxy assignments leave an empty undo action that core
+-- cleans out of the replay. The native fire_event command commits
+-- this registered event and retains the enclosing custom command.
+wesnoth.game_events.add{
+    name = "sw_ai_withdraw_stand_down", id = "sw_ai_withdraw_stand_down",
+    first_time_only = false, action = function()
+        local ctx = wesnoth.current.event_context
+        local u = wesnoth.units.get(ctx.x1, ctx.y1)
+        if u and u.hitpoints > 0 and u.side == wesnoth.current.side then
+            u.moves, u.attacks_left = 0, 0
+        end
+    end }
+wesnoth.custom_synced_commands.sw_ai_withdraw_stand_down = function(cfg)
+    local u = wesnoth.units.get(cfg.unit)
+    if not u or u.hitpoints <= 0 or u.side ~= cfg.side
+        or u.x ~= cfg.x or u.y ~= cfg.y
+        or wesnoth.current.side ~= cfg.side
+        or wesnoth.current.turn ~= cfg.turn then return end
+    wesnoth.sync.invoke_command("fire_event", {
+        raise = "sw_ai_withdraw_stand_down", wml.tag.source{ x = u.x, y = u.y } })
+end
+
 -- Cross-system wiring (hooks are plain Lua tables, rebuilt on every load).
 ew.hooks.bonus = { doctrine.ew_bonus }
 ew.hooks.on_decoy_exposed = { doctrine.on_decoy_exposed }
