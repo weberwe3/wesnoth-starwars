@@ -12,9 +12,10 @@ local STEPS = {
   "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
+  "ai_target_priority", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
   "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw", "muzzle_flashes", "attack_range", "prepare_save",
 }
-local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, alert_ai = true }
+local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, ai_withdraw = true, alert_ai = true }
 
 local function plugin(events, context, info)
   local function pump()
@@ -878,6 +879,159 @@ local function plugin(events, context, info)
         (shot.w == "blaster_rifle" or shot.w == "blaster_rifle_aimed"), shot and shot.w)
     end
 
+    function S.ai_target_priority()
+      swt.clear()
+      local ca = wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      local target = swt.place("sw_unit_im_stormtrooper", 1, 10, 8, "t_focus_target")
+      local support = swt.place("sw_unit_im_stormtrooper", 1, 9, 8, "t_focus_support")
+      local support2 = swt.place("sw_unit_im_stormtrooper", 1, 10, 9, "t_focus_support2")
+      check("isolated full-health target preference is four points", ca.target_priority(target, {target}) == 4)
+      check("one nearby armed ally halves the isolation preference", ca.target_priority(target, {target, support}) == 2)
+      check("two nearby armed allies remove the isolation preference", ca.target_priority(target, {target, support, support2}) == 0)
+      target.hitpoints = 1
+      local rating = ca.target_priority(target, {target})
+      check("wounded and isolated target preferences stay below eight points", rating > 4 and rating < 8, rating)
+      target.hitpoints = target.max_hitpoints
+      support2.status.petrified = true
+      check("petrified troops do not protect a target in the model", ca.target_priority(target, {target, support2}) == 4)
+
+      -- Equal native rifles on flat ground give less than the four-point
+      -- baseline after return fire. Preferences must not authorize that duel.
+      swt.clear()
+      local full = swt.place("sw_unit_im_stormtrooper", 1, 10, 8, "t_a_full")
+      local wounded = swt.place("sw_unit_im_stormtrooper", 1, 12, 8, "t_z_wounded")
+      wounded.hitpoints = math.floor(wounded.max_hitpoints * 0.7)
+      local shooter = swt.place("sw_unit_im_stormtrooper", 2, 11, 10, "t_focus_shooter")
+      shooter.moves = 0
+      check("native focus fixture has equally distant rifle targets",
+        wesnoth.map.distance_between(shooter.x, shooter.y, full.x, full.y) == 2
+        and wesnoth.map.distance_between(shooter.x, shooter.y, wounded.x, wounded.y) == 2)
+      local best = ca.best_attack(2, {})
+      check("target preferences never authorize a below-baseline rifle duel", best == nil)
+      -- Change only the fixture defenders' reach to one hex. Both now offer
+      -- worthwhile, equivalent shots without return fire; wounded preference
+      -- breaks the tie. Their damage, terrain, resistances and HP are unchanged.
+      for _i, defender in ipairs{full, wounded} do
+        for _j, weapon in ipairs(defender.attacks) do
+          if weapon.range == "ranged" then weapon.min_range = 1; weapon.max_range = 1 end
+        end
+      end
+      best = ca.best_attack(2, {})
+      check("real ranged selection prefers the wounded equivalent target", best and best.target == wounded.id,
+        best and best.target or "no worthwhile attack")
+
+      -- A concealed occupant of the preferred firing hex must not redirect
+      -- planning. The native movement order, rather than hidden map lookup,
+      -- remains responsible for any subsequent ambush.
+      swt.clear()
+      swt.place("sw_unit_nr_militia", 1, 10, 8, "t_hidden_target")
+      shooter = swt.place("sw_unit_im_stormtrooper", 2, 15, 8, "t_hidden_shooter")
+      best = assert(ca.best_attack(2, {}), "hidden-occupant fixture needs a reachable shot")
+      local hidden = swt.place("sw_unit_nr_militia", 1, best.x, best.y, "t_hidden_occupant")
+      hidden:add_modification("object", { id = "sw_test_tactics_hidden",
+        T.effect{ apply_to = "new_ability", T.abilities{ T.hides{ id = "sw_test_tactics_hidden", affect_self = true } } } })
+      hidden:clone():to_map(hidden.x, hidden.y)
+      hidden = swt.u("t_hidden_occupant")
+      check("native firing-hex occupant is actually hidden",
+        not hidden:matches{ T.filter_vision{ side = 2, visible = true } })
+      local after = ca.best_attack(2, {})
+      check("hidden firing-hex occupant does not change target, hex or rating", after
+        and after.target == best.target and after.x == best.x and after.y == best.y and after.rating == best.rating)
+    end
+
+    function S.ai_withdraw_rules()
+      swt.clear()
+      local ca = wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      local target = swt.place("sw_unit_nr_militia", 1, 10, 8, "t_retreat_threat")
+      local soldier = swt.place("sw_unit_im_stormtrooper", 2, 12, 8, "t_retreat_unit")
+      soldier.hitpoints = math.floor(soldier.max_hitpoints * 0.4)
+      local function choice(avoid, tried) return ca.best_withdrawal(2, tried or {}, avoid or {}) end
+      local best = choice()
+      check("wounded exposed soldier finds a withdrawal", best and best.unit == soldier.id)
+      assert(best, "withdrawal fixture requires a safe reachable hex")
+      local reachable = false
+      local reach = wesnoth.paths.find_reach(soldier, { viewing_side = 2 })
+      for _i, loc in ipairs(reach) do
+        if (loc[1] or loc.x) == best.x and (loc[2] or loc.y) == best.y then reachable = true end
+      end
+      check("withdrawal destination uses native movement reach", reachable)
+      check("withdrawal gains two hexes and leaves the visible pistol's reach",
+        wesnoth.map.distance_between(best.x, best.y, target.x, target.y)
+          >= wesnoth.map.distance_between(soldier.x, soldier.y, target.x, target.y) + 2)
+      local again = choice()
+      check("withdrawal selection is deterministic", again and again.x == best.x and again.y == best.y)
+      check("native AI avoid locations can rule out every withdrawal", choice(reach) == nil)
+      check("a tried unit cannot repeat a failed withdrawal", choice({}, {[soldier.id] = true}) == nil)
+      soldier.hitpoints = soldier.max_hitpoints
+      check("healthy units do not withdraw", choice() == nil)
+      soldier.hitpoints = math.floor(soldier.max_hitpoints * 0.4)
+      soldier.canrecruit = true
+      check("leaders do not withdraw through the new action", choice() == nil)
+      soldier.canrecruit = false
+      soldier.variables.sw_alert_state = "unaware"
+      check("unaware guards keep their posts", choice() == nil)
+      soldier.variables.sw_alert_state = nil
+      soldier.status.petrified = true
+      check("petrified troops cannot withdraw", choice() == nil)
+      soldier.status.petrified = false
+      soldier.moves = 0
+      check("troops without movement cannot withdraw", choice() == nil)
+      soldier.moves = soldier.max_moves
+      soldier.attacks_left = 0
+      check("a spent sensor or attack action still permits ordinary withdrawal", choice() ~= nil)
+      target:erase()
+      check("withdrawal does not search for hidden or absent threats", choice() == nil)
+      local stand_down = wesnoth.custom_synced_commands.sw_ai_withdraw_stand_down
+      check("withdrawal's replay command is registered without an AI evaluation", type(stand_down) == "function")
+      local own = swt.place("sw_unit_nr_sergeant", wesnoth.current.side, 10, 8, "t_stand_down")
+      local cmd = {unit = own.id, side = own.side, x = own.x, y = own.y, turn = wesnoth.current.turn}
+      own.moves, own.attacks_left = own.max_moves, own.max_attacks
+      local function unspent() return own.moves == own.max_moves and own.attacks_left == own.max_attacks end
+      cmd.turn = cmd.turn - 1; stand_down(cmd)
+      check("stale withdrawal commands preserve a unit's actions", unspent())
+      cmd.turn = wesnoth.current.turn; cmd.x = own.x + 1; stand_down(cmd)
+      check("withdrawal commands cannot spend actions at a different hex", unspent())
+      cmd.x = own.x; cmd.side = soldier.side; stand_down(cmd)
+      check("withdrawal commands cannot spend another side's actions", unspent())
+      cmd.side = own.side
+      wesnoth.sync.invoke_command("sw_ai_withdraw_stand_down", cmd)
+      check("the native synced withdrawal command spends movement and attacks", own.moves == 0 and own.attacks_left == 0)
+    end
+
+    function S.ai_withdraw()
+      swt.clear()
+      local ca = wesnoth.dofile("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ai_ranged.lua")
+      local target = swt.place("sw_unit_nr_militia", 1, 10, 8, "t_real_retreat_threat")
+      local soldier = swt.place("sw_unit_im_stormtrooper", 2, 12, 8, "t_real_retreat")
+      soldier.hitpoints = math.floor(soldier.max_hitpoints * 0.4)
+      swt.mem.retreat_origin = {x = soldier.x, y = soldier.y, hp = soldier.hitpoints, target_hp = target.hitpoints}
+      swt.mem.retreat_logs = 0
+      swt.mem.retreat_log = core.log
+      core.log = function(channel, message)
+        if channel == "ai" and message:find("t_real_retreat withdraws", 1, true) then
+          swt.mem.retreat_logs = swt.mem.retreat_logs + 1
+        end
+        return swt.mem.retreat_log(channel, message)
+      end
+      check("real AI withdrawal setup has a safe destination", ca.best_withdrawal(2, {}, {}) ~= nil)
+      wesnoth.sides[2].controller = "ai"
+    end
+
+    function S.check_ai_withdraw()
+      core.log = swt.mem.retreat_log
+      wesnoth.sides[2].controller = "human"
+      local soldier, target = u("t_real_retreat"), u("t_real_retreat_threat")
+      local origin = swt.mem.retreat_origin
+      check("the real AI turn executes the new withdrawal once", swt.mem.retreat_logs == 1, swt.mem.retreat_logs)
+      check("the wounded AI soldier moved farther from the visible threat", soldier and target
+        and wesnoth.map.distance_between(soldier.x, soldier.y, target.x, target.y)
+          >= wesnoth.map.distance_between(origin.x, origin.y, target.x, target.y) + 2)
+      check("withdrawal spends remaining movement and attacks", soldier and soldier.moves == 0 and soldier.attacks_left == 0)
+      check("withdrawal grants no free healing or follow-up attack", soldier and target
+        and soldier.hitpoints == origin.hp and target.hitpoints == origin.target_hp)
+      if soldier then swt.mem.retreat_saved = soldier.__cfg end
+    end
+
     -- Guard alertness and stealth (lua/sw_alert.lua).
     function S.alert_rules()
       swt.clear()
@@ -1138,6 +1292,12 @@ local function plugin(events, context, info)
 
     function S.prepare_save()
       swt.clear()
+      if swt.mem.retreat_saved then
+        local soldier = wesnoth.units.create(swt.mem.retreat_saved)
+        soldier:to_map()
+        wml.variables.swt_retreat_expected = { x = soldier.x, y = soldier.y, hp = soldier.hitpoints,
+          moves = soldier.moves, attacks = soldier.attacks_left }
+      end
       local obs = swt.place("sw_unit_nr_commando", 1, 4, 4, "t_obs")
       for _i = 1, 2 do swt.level_up("t_obs") end
       air.grant(1, "strafe", 2, "sw_unit_nr_xwing")
@@ -1148,6 +1308,11 @@ local function plugin(events, context, info)
     end
 
     function S.load()
+      local soldier, saved = u("t_real_retreat"), wml.variables.swt_retreat_expected
+      check("real reload registers the withdrawal replay command", type(wesnoth.custom_synced_commands.sw_ai_withdraw_stand_down) == "function")
+      check("real reload retains withdrawn troop position, health and spent actions", soldier and saved
+        and soldier.x == saved.x and soldier.y == saved.y and soldier.hitpoints == saved.hp
+        and soldier.moves == saved.moves and soldier.attacks_left == saved.attacks)
       check("save/load: state identical after reload", wml.variables.swt_digest == sw_systems.digest())
       check("save/load: sorties kept", air.charges(1, "strafe") == 2 and air.charges(1, "bombing") == 0)
       check("save/load: inbound bombing kept", #wml.array_access.get("sw_air_inbound") == 1)

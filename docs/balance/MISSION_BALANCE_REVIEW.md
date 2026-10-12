@@ -1,4 +1,4 @@
-# Mission balance review — 2026-10-04
+# Mission balance review â€” 2026-10-04
 
 Owner goal: missions should be **tough**, with fun coming from **several
 approaches to each mission**, but never **feel impossible**.
@@ -65,7 +65,7 @@ heroes, marches into invulnerable bosses, and cannot sneak or carry
 objectives. Its defeats are therefore not a difficulty measure in
 themselves. The signal used is **how and when** it loses:
 
-- a named hero dead on turn 1–3, every run, means the first engagement is too
+- a named hero dead on turn 1â€“3, every run, means the first engagement is too
   harsh;
 - unspent gold means the player cannot act at all.
 
@@ -73,7 +73,7 @@ themselves. The signal used is **how and when** it loses:
 
 ### 3.1 Systemic: losing any one hero lost the mission
 
-**Cause.** Most missions listed 2–5 named heroes whose death meant defeat
+**Cause.** Most missions listed 2â€“5 named heroes whose death meant defeat
 (The Gates of Tantiss listed five). Heroes are also the army's strongest
 fighters, so they end up in combat, and the enemy AI focuses them.
 
@@ -82,8 +82,8 @@ hero's death in a single enemy turn:
 
 - Mara on turn 1 in The Throne Room;
 - Leia on turn 2 in every run of The Noghri Prisoner;
-- Lando on turns 1–2 in The Cloning Vats;
-- Luke's X-wing on turns 2–3 in every fleet battle.
+- Lando on turns 1â€“2 in The Cloning Vats;
+- Luke's X-wing on turns 2â€“3 in every fleet battle.
 
 This is the cascading, one-bad-turn failure that the guidance warns against.
 
@@ -129,18 +129,18 @@ Other details:
 | Landfall on Wayland, The Natives of Wayland, The Throne Room | Luke | Mara |
 | The Gates of Tantiss | Han | Leia, Lando, Chewbacca, Khabarakh |
 | The Cloning Vats | Han | Lando, Chewbacca |
-| The Mad Jedi | Luke, Mara | — (Mara flies the escape ship) |
-| Single-hero missions | the hero | — |
+| The Mad Jedi | Luke, Mara | â€” (Mara flies the escape ship) |
+| Single-hero missions | the hero | â€” |
 
 **Impact.** Fleet battles now run to the turn limit or end in victory, where
-before they were lost on turns 2–3:
+before they were lost on turns 2â€“3:
 
-- Bilbringi: 0 → 2 wins in 3.
-- Battle for the Fleet: lasts to turn 8–17.
-- Sluis Van: 1 → 3 wins in 3.
+- Bilbringi: 0 â†’ 2 wins in 3.
+- Battle for the Fleet: lasts to turn 8â€“17.
+- Sluis Van: 1 â†’ 3 wins in 3.
 
-Ground missions also last much longer: The Gates of Tantiss from turns 2–3 to
-turns 5–16, and Peregrine's Nest from turns 3–4 to turns 9–12. Losing a hero
+Ground missions also last much longer: The Gates of Tantiss from turns 2â€“3 to
+turns 5â€“16, and Peregrine's Nest from turns 3â€“4 to turns 9â€“12. Losing a hero
 still costs the player real strength, so the missions stay tough.
 
 ### 3.2 Systemic: Jedi could not answer rifle fire
@@ -156,19 +156,19 @@ of Wayland and Aboard the Katana. In the lore, a Jedi turns bolts back at
 whoever fired them.
 
 **Update.** Deflection reaches 2 hexes (`gen_hte_units.py` `WEAPON_RANGES`). It
-still only returns fire, never starts it, and takes the usual −10% at 2 hexes.
+still only returns fire, never starts it, and takes the usual âˆ’10% at 2 hexes.
 
 **Impact.** Luke now trades fire with riflemen at range:
 
 | Mission | Luke's losses before | After |
 |---|---|---|
-| Landfall on Wayland | turns 3–4 | turns 5–7 |
-| The Natives of Wayland | turns 2–3 | turns 4–9 |
-| Aboard the Katana | turns 2–3 | turns 4–12 |
+| Landfall on Wayland | turns 3â€“4 | turns 5â€“7 |
+| The Natives of Wayland | turns 2â€“3 | turns 4â€“9 |
+| Aboard the Katana | turns 2â€“3 | turns 4â€“12 |
 
 ### 3.3 Bug: two maps had no keep
 
-**Cause.** Shadows of Kashyyyk and The Noghri Prisoner give Leia 100–110 gold
+**Cause.** Shadows of Kashyyyk and The Noghri Prisoner give Leia 100â€“110 gold
 and a Wookiee recruit list, but she never recruited: the gold stayed unspent
 all mission. Their map generators drew walkway paths outward from the keep
 hex after placing the keep, which painted over it. Both missions were played
@@ -183,8 +183,8 @@ by two heroes against waves of Noghri.
 
 **Impact.**
 
-- Shadows of Kashyyyk: 0 → 2 wins in 3.
-- The Noghri Prisoner: 0 → 2 wins in 3 (all 3 previously lost on turn 2).
+- Shadows of Kashyyyk: 0 â†’ 2 wins in 3.
+- The Noghri Prisoner: 0 â†’ 2 wins in 3 (all 3 previously lost on turn 2).
 
 ### 3.4 Mission-specific updates
 
@@ -228,7 +228,7 @@ invulnerable C'baoth, which a person would not do.
   Force, or duel him in the open.
 - Hard: the original all-out attack.
 
-*Impact:* defeats moved from turns 1–2 to turns 4–5.
+*Impact:* defeats moved from turns 1â€“2 to turns 4â€“5.
 
 **The Noghri Prisoner**
 
@@ -250,18 +250,18 @@ at the earliest.
 - The Empire's rifles reach 2 hexes and the AT-ST 3, with 200 gold plus 9
   income from a keep 11 hexes away.
 - The garrison was shot apart without reply: every player unit died by turns
-  3–6.
+  3â€“6.
 
 *Update:*
 - An E-Web crew joins the recruit list: a black-market heavy repeater
   reaching 3 hexes.
-- Imperial gold and income: Normal 200/9 → 170/7, Easy 150/6 → 130/5. Hard
+- Imperial gold and income: Normal 200/9 â†’ 170/7, Easy 150/6 â†’ 130/5. Hard
   unchanged.
 - Approaches: hold to the last turn, or defeat Colonel Mardek.
 
 *Impact:*
-- Force ratio on Normal: 1.05 → 0.92.
-- Defeats on turns 4–8. It stays one of the hardest missions for the AI
+- Force ratio on Normal: 1.05 â†’ 0.92.
+- Defeats on turns 4â€“8. It stays one of the hardest missions for the AI
   player, which does not use the fortress walls.
 
 **The Natives of Wayland**
@@ -269,15 +269,15 @@ at the earliest.
 *Cause:*
 - Luke and Mara alone faced the garrison and its recruits for three turns
   before the native allies arrived on turn 4.
-- They were lost on turns 2–3.
+- They were lost on turns 2â€“3.
 
 *Update:*
 - The natives arrive on turn 2 (Hard: turn 4).
-- Imperial gold and income: Normal 110/5 → 90/4, Easy 80/3 → 70/3.
+- Imperial gold and income: Normal 110/5 â†’ 90/4, Easy 80/3 â†’ 70/3.
 
 *Impact:*
-- Force ratio on Normal: 1.25 → 1.09.
-- Defeats moved from turns 2–3 to turns 4–9.
+- Force ratio on Normal: 1.25 â†’ 1.09.
+- Defeats moved from turns 2â€“3 to turns 4â€“9.
 
 ### 3.5 Reviewed and left as is
 
@@ -288,22 +288,22 @@ player cannot judge them.
 |---|---|---|
 | Ysalamiri Harvest | Harvest order and routes; escort vs speed | AI player cannot carry the frames; ratio 0.23 |
 | Ambush at Bpfassh | Cross the city by streets or parks; air support | Runs to the turn limit; withdrawal covers Han and Chewbacca |
-| Adrift | Survive to the turn limit, or destroy the whole patrol | 1–2 wins in 3 across rounds; a survival duel by design |
+| Adrift | Survive to the turn limit, or destroy the whole patrol | 1â€“2 wins in 3 across rounds; a survival duel by design |
 | Prisoner of Myrkr | Stealth, takedowns, cover, patrol timing (reworked in #337) | AI player cannot sneak; survives to the turn limit |
 | Nomad City | Defeat Harbid, or hold to the last turn | 3 of 3 wins after withdrawal |
-| Thrawn's Gambit | Destroy the Judicator, cripple the Chimaera, or hold | Lasts to turns 6–13 |
+| Thrawn's Gambit | Destroy the Judicator, cripple the Chimaera, or hold | Lasts to turns 6â€“13 |
 | Jomark | Defeat Tannick, guard the villages | 2 wins in 3 |
 | The Senators' Men | Reach the Falcon; air support | Runs to the turn limit |
-| Peregrine's Nest | Hold the generator, or defeat Tierce | Lasts to turns 9–12 |
-| The Dark Force | Race to board Dreadnaughts; pick which ones | Lasts to turns 8–17 |
+| Peregrine's Nest | Hold the generator, or defeat Tierce | Lasts to turns 9â€“12 |
+| The Dark Force | Race to board Dreadnaughts; pick which ones | Lasts to turns 8â€“17 |
 | Honoghr | Reach Nystao by several routes | 2 wins in 3 in the last round; slow droids can be outrun |
-| Honoghr's Choice | Hold, or defeat Sorrell | Lasts to turns 4–7 |
+| Honoghr's Choice | Hold, or defeat Sorrell | Lasts to turns 4â€“7 |
 | The Siege of Coruscant | Hunt the minelayers through cloaked asteroids | 3 of 3 wins |
 | The Palace Infiltrators | Find the infiltrators; sensors, Noghri allies | 3 of 3 wins |
-| The Gates of Tantiss | Destroy the generator; air support; varied recruits | Lasts to turns 5–16 |
+| The Gates of Tantiss | Destroy the generator; air support; varied recruits | Lasts to turns 5â€“16 |
 | The Cloning Vats | Destroy the cylinders in any order | 2 wins in 3 |
 | Bilbringi | Destroy any 3 of 4 platforms | 2 wins in 3 |
-| The Last Command | Hold to turn 10, or destroy both escorts | Lasts to turns 5–6; finale (see below) |
+| The Last Command | Hold to turn 10, or destroy both escorts | Lasts to turns 5â€“6; finale (see below) |
 
 ### 3.6 Open items for human playtesting
 
@@ -315,7 +315,7 @@ player cannot judge them.
   ysalamiri to strip the clone's powers), The Last Command lost Wedge to TIEs
   on turns 5-6 (the AI player flies its leader into the fighting). Left
   unchanged pending a human playtest.
-- **Raid on Karrde's Base** sometimes lost Han, the leader, on turn 2–3 to the
+- **Raid on Karrde's Base** sometimes lost Han, the leader, on turn 2â€“3 to the
   starting AT-ST when he was pushed forward. Addressed in 3.12 (the walker
   starts further back on Easy and Normal); a person should confirm it.
 - **Hard** keeps the original pressure on the missions listed above. On Hard,
@@ -441,7 +441,7 @@ pressure event and a relief event (Easy/Normal/Hard counts):
 | The Gates of Mount Tantiss | First attacker within 6 hexes of the generator: the gate opens and 2/3/4 troops (a Royal Guard from Normal) sortie | Turn 5: a Wayland war party, 3/3/2 Myneyrshi and Psadan |
 | The Bilbringi Shipyards | Turn 6: 1/2/3 new cloaked asteroids behind the screen, in the approach lanes | A destroyed platform's reactor blasts every adjacent ship for 10 (never lethal), Imperial guards included |
 
-Jomark and The Smugglers' Council follow in §3.16.
+Jomark and The Smugglers' Council follow in Â§3.16.
 ### 3.16 The traitor and the second boat (2026-10-11)
 
 The last two missions without mid-mission events:
@@ -497,7 +497,7 @@ turn limit.
 | Shadows of Kashyyyk | D5 D3 D4 | V12 V15 D6 |
 | Prisoner of Myrkr | D15 D15 D15 | D15 D15 D15 |
 | Raid on Karrde's Base | D3 D6 D4 | D16 D3 D2 |
-| The Forest Crossing | D5 D6 D8 | D6 D6 D6 (Mara withdrew on turns 4–5; the AI's Luke then fought alone) |
+| The Forest Crossing | D5 D6 D8 | D6 D6 D6 (Mara withdrew on turns 4â€“5; the AI's Luke then fought alone) |
 | Nomad City | D10 D5 V15 | V15 V15 V15 |
 | Sluis Van Shipyards | D4 D3 V8 | V8 V8 V9 |
 | Thrawn's Gambit | D3 D2 D4 | D6 D7 D7 |
@@ -708,3 +708,82 @@ starting forces and balance settings are unchanged.
 | sw_tlc_08_the_throne_room | Defeat | 5 |
 | sw_tlc_09_bilbringi | Defeat | 17 |
 | sw_tlc_10_the_last_command | Defeat | 5 |
+
+## 8. Wounded-unit withdrawal and target selection
+
+Ordinary AI troops at 40% maximum HP or less now look for a safe withdrawal before stand-off combat when a genuinely visible armed threat is within its current weapon range plus one hex. A destination must be reachable this turn through native terrain and zone-of-control rules, respect the AI's avoid locations, increase distance to the nearest visible armed enemy by at least two hexes, and lie beyond every visible enemy's current weapon reach. Distance preference caps at six hexes; cover, nearby armed allies and ordinary healing terrain improve the rating, with a small travel-distance penalty. Leaders and unaware or petrified troops are excluded. The installed core healing-retreat candidate action remains available and keeps its higher priority where applicable.
+
+A completed or interrupted withdrawal that actually changes the troop's hex spends its remaining movement and attacks, preventing default combat from sending it straight back. A failed attempt is tried only once per unit per turn. No extra movement, healing, damage or accuracy is granted. Players can block escape routes with zones of control, cover their pursuit and exploit the withdrawn troop's spent attack. A unit that has already used its attack, including a sensor action, can still withdraw using its remaining movement.
+
+Worthwhile legal stand-off attacks retain their existing expected-damage, kill and return-fire ratings, then gain at most four preference points for damage already suffered by a visible target and at most four for lacking nearby armed support. One armed ally within two hexes halves the isolation preference; two remove it. These terms only rank attacks that already meet the four-point baseline. Known occupied firing hexes and native visible flanking units are used; hidden occupants, hidden supporters and hidden enemies do not influence planning. Native movement and post-movement legality checks still resolve actual ambushes and changing combatants.
+
+The Field Manual explains formation, withdrawal costs and pursuit counters. Mission events, starting forces, recruitment, difficulty values and Claude's mission polish are unchanged.
+
+Validation against the candidate on Wesnoth 1.19.27:
+
+| Existing gate | Actual result |
+| --- | --- |
+| Unit generator and inventory | Passed; 56 generated unit types |
+| Systems, all suites | 601 passed; 0 failed; 0 blocking engine errors |
+| Three campaign sequences | All passed: 30 scenario transitions and 30 saved-WML validations |
+| Declared gameplay contracts | 104 passed; changed ranged-AI path already covered |
+| Careful-player AI soak, all 30 missions | 30 technical passes; 9 victories and 21 defeats |
+
+Systems tests exercise bounded wounded/isolation preferences, the worthwhile-shot
+minimum, native hidden-occupant visibility, withdrawal eligibility and AI avoid
+locations, a real AI-turn withdrawal, ordinary movement/attack costs, and actual
+reload of the withdrawn troop position, health and spent actions. Both existing
+replay tests reproduce their state digests; these digests include unit positions
+and health rather than every action-budget field.
+The harness retained 14 known unsynced-controller warnings; no blocking
+engine error remained. The initial equal-rifle fixture failure and one bounded
+native diagnosis are retained. That fixture was repaired: preserve the
+below-baseline duel as a negative, then establish a worthwhile positive case
+by restricting both fixture defenders to one-hex retaliation. The repaired
+air portion of the full systems run passed 259 checks; its cause and prevention are
+recorded in the worktree lessons. The full run also caught an AI-only action
+budget change that was absent from replay. Withdrawal now records its
+stand-down through a native synced command registered on every load/replay,
+committed by a native fire_event so empty-action cleanup cannot discard it,
+so air support and overwatch see the same spent actions. Both original
+failed runs and their actual repaired checks are retained. Registration lives
+in the dynamic systems loader so existing campaign saves retain the command;
+a real load of a retained save with the older macro expansion passed.
+
+Campaign sequence victories are scripted route checks with saved-WML parsing;
+they do not demonstrate native reloads or human difficulty balance. The soak
+outcomes below are ordinary AI outcomes, including every loss. Mission events,
+starting forces, recruitment and difficulty settings are unchanged.
+
+| Mission | AI outcome | Final turn |
+| --- | --- | --- |
+| sw_hte_01_ysalamiri_harvest | Defeat | 17 |
+| sw_hte_02_ambush_at_bpfassh | Defeat | 15 |
+| sw_hte_03_adrift | Defeat | 8 |
+| sw_hte_04_shadows_of_kashyyyk | Defeat | 10 |
+| sw_hte_05_prisoner_of_myrkr | Defeat | 15 |
+| sw_hte_06_raid_on_karrdes_base | Defeat | 4 |
+| sw_hte_07_the_forest_crossing | Defeat | 8 |
+| sw_hte_08_nomad_city | Victory | 15 |
+| sw_hte_09_sluis_van_shipyards | Victory | 8 |
+| sw_hte_10_thrawns_gambit | Defeat | 7 |
+| sw_dfr_01_the_noghri_prisoner | Victory | 4 |
+| sw_dfr_02_honoghr | Defeat | 4 |
+| sw_dfr_03_jomark | Defeat | 4 |
+| sw_dfr_04_the_senators_men | Defeat | 15 |
+| sw_dfr_05_peregrines_nest | Defeat | 6 |
+| sw_dfr_06_the_mad_jedi | Defeat | 6 |
+| sw_dfr_07_the_dark_force | Defeat | 17 |
+| sw_dfr_08_aboard_the_katana | Defeat | 3 |
+| sw_dfr_09_battle_for_the_fleet | Defeat | 17 |
+| sw_dfr_10_honoghrs_choice | Victory | 3 |
+| sw_tlc_01_the_siege_of_coruscant | Victory | 8 |
+| sw_tlc_02_the_smugglers_council | Defeat | 5 |
+| sw_tlc_03_the_palace_infiltrators | Victory | 8 |
+| sw_tlc_04_landfall_on_wayland | Defeat | 4 |
+| sw_tlc_05_the_natives_of_wayland | Victory | 7 |
+| sw_tlc_06_the_gates_of_tantiss | Defeat | 17 |
+| sw_tlc_07_the_cloning_vats | Victory | 12 |
+| sw_tlc_08_the_throne_room | Defeat | 6 |
+| sw_tlc_09_bilbringi | Victory | 13 |
+| sw_tlc_10_the_last_command | Defeat | 6 |

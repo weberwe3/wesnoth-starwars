@@ -1346,3 +1346,44 @@ The repaired check passes in the existing installed-engine intelligence suite.
 **Prevention:** Check native state after applying an incapacitating status before
 asserting action preservation; do not alter gameplay to satisfy a fixture's
 incorrect assumption about available attacks.
+
+## 2026-10-11: Tactical target-preference fixtures need worthwhile attacks
+
+- Symptom: the enemy-tactics air fixture found no selected wounded target in an
+  equal-rifle duel; the complete initial air gate failed while native withdrawal,
+  spent-action and reload checks passed.
+- Confirmed cause: both native targets had 40% defense, 36/25 HP and two-hex
+  retaliation. The existing damage-minus-return-fire model produced no candidate
+  above its four-point minimum. A bounded native diagnosis changed only the
+  fixture defenders' retaliation reach to one hex; selection then chose the
+  wounded target at rating 12.6722.
+- Resolution: retain the original duel as a negative check that preferences
+  cannot authorize a below-baseline attack, then test wounded preference with
+  both fixture defenders limited to one-hex retaliation. Gameplay ratings,
+  thresholds, weapon stats and difficulty are unchanged. The complete corrected
+  air gate passed with native withdrawal and actual reload checks.
+- Prevention: establish a worthwhile native baseline before comparing tactical
+  preferences; account for range, terrain, resistance and return fire. Preserve
+  the no-worthwhile-attack case instead of loosening gameplay to satisfy a fixture.
+
+## 2026-10-11: AI withdrawal costs must survive replay and undo cleanup
+
+- Symptom: the tactics gameplay candidate passed ordinary AI withdrawal and real
+  reload checks, but the engine replay called an extra air strike or overwatch
+  volley and then failed while expecting a recorded random seed.
+- Confirmed cause: native AI `stopunit_all` removes actions without a replay
+  command. A turn-boundary trace showed a withdrawn observer with zero attacks
+  during play but one during replay. A first custom-command repair still failed
+  because direct unit proxy assignments left an empty undo action; engine
+  `undo_list::cleanup_action` removed that command from the recording.
+- Resolution: register the guarded stand-down command on new games, loads and
+  replay playback. Apply its costs through a registered event invoked by native
+  `fire_event`, which commits the enclosing command. Preserve unit identity,
+  actual destination, current side and turn checks after movement.
+- Validation: both existing engine replay battles passed all four original/replay
+  checkpoints with no errors. Their retained recordings contain eight and five
+  custom commands respectively. The initial full failure, first repair failure
+  and read-only native state trace remain available in ignored runtime evidence.
+- Prevention: when AI-only changes feed synced end-turn systems, verify the
+  command is retained in an actual replay and compare the affected action
+  budgets. A focused AI-turn pass or a digest omitting those budgets is insufficient.
