@@ -288,6 +288,17 @@ def m08() -> HexMap:
     m.rect(17, 16, 26, 16, "Xos")
     for g in ((16, 7), (16, 12), (21, 3), (21, 16)):
         m.set(*g, "Isr")
+    # Mining bays divide the platform without sealing the gate landings.
+    # Four doors and the central dispatch aisle leave several intercept routes.
+    for bay in ((21, 5, 21, 7), (21, 11, 21, 14),
+                (17, 8, 19, 8), (17, 11, 19, 11)):
+        m.rect(*bay, "Xos")
+    for door in ((21, 6), (21, 13), (18, 8), (18, 11)):
+        m.set(*door, "Isr")
+    for crate in ((17, 6), (19, 6), (23, 6), (26, 6),
+                  (17, 13), (19, 13), (23, 13), (26, 13),
+                  (20, 8), (20, 11), (24, 7), (26, 9)):
+        m.set(*crate, "Isr^Qcr")
     castle_ring(m, (23, 9), "Kh", "Ch", 5)
     # Mole miner sheds at the city's edge (villages).
     sheds = dict(shed_1=(18, 5), shed_2=(18, 14), shed_3=(20, 9), shed_4=(25, 5), shed_5=(25, 14))

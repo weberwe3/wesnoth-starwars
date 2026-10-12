@@ -1284,3 +1284,71 @@ difficulty has improved. Players now choose between faster open routes,
 slower fighter cover and dock approaches with less fighter defense. The
 existing cloaked hazards, platform blast events, turn6 seeds, enemy forces,
 gold, turn limits, bonus objective and three-platform victory rule remain.
+
+
+## Nomad City mining bays and intercept routes (2026-10-12)
+
+Nomad City's formerly open platform now has internal bay walls, four service
+doors, an open central aisle and 12 crate cover cells. Players can hold the
+five miner sheds from bay positions, keep reserves centrally or intercept
+stolen miners near the gates. All original gates and their interior landing
+cells, recruitment terrain, shed terrain and exterior heat/shade tiles remain.
+The entire scenario CFG and all other mission maps/CFGs remain unchanged,
+including Claude's objectives, balance, events, air support and rewards.
+
+The 28x18 playable map changes 21 interior cells: nine new wall hexes and 12
+crate cover hexes. The city now has 37 walls, compared with 28 before. Four bay
+doors and the open central aisle retain access to all four original gates;
+their interior landing cells remain open. All 467 infantry/miner-passable and
+450 scout-passable hexes connect (previously 476 and 459). All five healing
+miner sheds and eleven recruiting hexes retain their exact terrain. All 268
+exposed desert/dune heat hexes, all exterior shade, starts and extraction
+terrain remain byte-identical. No healing, village or recruiting terrain is
+added by the crates.
+
+Installed Wesnoth 1.19.27 confirms Han, Lando and ordinary New Republic
+infantry have 40% defense on the deck and 60% behind crates, with one MP paid
+for either terrain. Imperial scouts and mole miners have 40% on both; cover
+does not benefit every unit equally. City walls block all five tested types.
+Scouts cannot cross the original mountains; the mole miner uses its existing
+starfighter movetype and pays two MP there. Native unopposed route checks
+reach all sheds, gates, gate landings, bay doors and the western exit.
+Actual-type isolated miner probes reached extraction from each of the five
+sheds for 18,18,20,24,24 MP respectively. These are access checks rather than
+claims that a route is safe through hostile units or heat.
+
+Han made an ordinary native move from (22,10) through (21,10) and(20,10) to
+crate cover at (20,11), spending three of his normal six MP around a bay wall.
+The fixture's initial two-MP estimate was corrected to the measured native
+route. A real save/reload retained his destination and spent movement,
+original Lando/Harbid/scouts, all five sheds, twelve covers and 37 walls.
+Temporary test miners/trooper existed only in the isolated fixture;
+production forces and recruitment remain unchanged.
+
+Fresh-mission and actual reload phases passed 153 and 146 native checks, without engine errors or warnings.
+
+Inventory, unit and all map-generator checks, scope/whitespace, 107 declared
+contracts, 682 systems checks and all 30 campaign sequence stages passed.
+All 30 sequence saves were parsed as readable matching saved WML. Systems
+logs retain 14 warnings from existing synthetic-controller fixtures,
+with no engine errors. Sequence probes use scripted objectives and parsed
+saves, not human playtests or actual reloads of every sequence save. Other 29
+maps and all 30 scenario CFGs remain byte-identical to the base.
+
+Six careful-player AI soaks passed the existing technical gate:
+
+| Layout | Run | Recorded AI outcome | Turns played |
+| --- | --- | --- | --- |
+| Previous open platform | 1 | result VICTORY turn 15 | 15 |
+| Previous open platform | 2 | result VICTORY turn 14 | 14 |
+| Previous open platform | 3 | result VICTORY turn 13 | 13 |
+| Mining bays and cover | 1 | result VICTORY turn 12 | 12 |
+| Mining bays and cover | 2 | result VICTORY turn 14 | 14 |
+| Mining bays and cover | 3 | result VICTORY turn 15 | 15 |
+
+These are independent random runs, not paired seeds or a human win-rate
+estimate. All wins and losses are reported; no claim is made that human
+difficulty has improved. Bay defense, central reserves and gate interception
+now provide distinct choices. Original heat damage, miner theft thresholds,
+enemy forces/AI, air support, turns/gold, victory/loss rules, bonus objectives,
+achievements, mission tips and rewards remain unchanged.
