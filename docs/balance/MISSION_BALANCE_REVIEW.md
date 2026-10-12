@@ -483,6 +483,77 @@ Four achievements reward the hard way through the new mission events
 | Bounty Paid | The Smugglers' Council | bring down the traitor |
 | Breaking the Line | The Last Command | win by destroying both escort Star Destroyers |
 
+### 3.19 Rank abilities (2026-10-12)
+
+Owner direction: a rank-up must bring a passive or active ability specific to
+the unit's class and rank, not only a stat increase, so that keeping units
+alive is rewarded. Reaching rank I, II or III now also grants that class's
+ability for the rank (`production/tools/rank_abilities.py`, generated into
+`lua/sw_rank_abilities.lua`, granted by `lua/sw_rank.lua` as a permanent
+object), on top of the advancement's own choice (+3 HP or a drill). Each
+unit's description lists its three, so players see what a veteran is working
+towards.
+
+Second owner rule: do not pile on attack types. No rank adds an attack. Each
+ability is either a native ability (steadfast, skirmisher, hiding in forest or
+settlements, regeneration, heals +8, adjacent auras of +10% to hit, -10% to hit
+for adjacent enemies, or +10% resistance) or a special on a weapon the unit
+already carries (first strike, marksman, slows, backstab, drains, guard, or
+extra damage against a target class); a weapon's aimed shot gets the same
+special. The generator refuses a special a weapon already has.
+
+| Unit | Rank I | Rank II | Rank III |
+| --- | --- | --- | --- |
+| `sw_unit_nr_sergeant` | Fire discipline | Hold the line | Covering fire (blaster rifle) |
+| `sw_unit_im_stormtrooper_sergeant` | Fire discipline | Hold the line | Covering fire (blaster rifle) |
+| `sw_unit_nr_commando` | Jungle fighter | Knife work (vibroknife) | Saboteur (blaster carbine) |
+| `sw_unit_bi_commando` | Disciplined | Marksman training (blaster rifle) | Corellian tactics |
+| `sw_unit_nr_eweb_team` | Dug in | Suppressing fire (eweb repeater) | Armour-piercing (eweb repeater) |
+| `sw_unit_nr_field_medic` | Field surgery | Field dressings | Rapid evacuation |
+| `sw_unit_wk_warrior` | Battle roar | Thick hide | Wookiee fury (ryyk blade) |
+| `sw_unit_wk_lookout` | Sniper's perch (bowcaster) | Forest ghost | Pinning shot (bowcaster) |
+| `sw_unit_nr_xwing` | Wingman | Tuned deflectors | Ace (laser cannons) |
+| `sw_unit_nr_awing` | Afterburners | Dogfighter (laser cannons) | Ace (laser cannons) |
+| `sw_unit_nr_ywing` | Ion lock (ion cannon) | Armoured hull | Ship-killer (proton torpedoes) |
+| `sw_unit_im_tie_fighter` | Wingman | Dogfighter (laser cannons) | Ace (laser cannons) |
+| `sw_unit_im_tie_interceptor` | Afterburners | Dogfighter (laser cannons) | Ace (laser cannons) |
+| `sw_unit_im_tie_bomber` | Bombardier (concussion bombs) | Armoured hull | Ship-killer (concussion bombs) |
+| `sw_unit_im_scout_trooper` | Speeder jockey | Strafing run (bike blaster) | Ramming speed (ram) |
+| `sw_unit_im_officer` | Fire discipline | Hold the line | Expert marksman (blaster pistol) |
+| `sw_unit_im_at_st` | Armoured hull | Suppressing fire (twin blaster cannon) | Elevated targeting (concussion grenade) |
+| `sw_unit_im_noghri` | Stun mastery (stun blaster) | Ghost | Death from the shadows (noghri knives) |
+| `sw_unit_im_royal_guard` | Imperial Guard | Bodyguard | Riposte (force pike) |
+| `sw_unit_im_infiltrator` | Ghost | Stun setting (blaster pistol) | Silent kill (vibroknife) |
+| `sw_unit_im_decon_droid` | Reinforced plating | Self-repair | Caustic spray (sprayer) |
+| `sw_unit_sm_veteran` | Quick draw (blaster pistol) | Dirty fighting (vibroknife) | Old hand |
+| `sw_unit_sm_slicer` | Slip away | Overload shot (blaster pistol) | Street camouflage |
+| `sw_unit_wy_myneyrshi` | Bow mastery (bow) | Steady | War cry |
+| `sw_unit_wy_psadan` | Stone hide | Crushing blow (war club) | Recuperation |
+| `sw_hero_luke` | Jedi reflexes | Lightsaber form (lightsaber) | Jedi serenity |
+| `sw_hero_xwing_luke` | Wingman | Tuned deflectors | Ace (laser cannons) |
+| `sw_hero_leia` | Rally | Hold the line | Force intuition |
+| `sw_hero_han` | Trick shot (heavy blaster pistol) | Smuggler's nerve | Fearless |
+| `sw_hero_chewbacca` | Battle roar | Thick hide | Wookiee recovery |
+| `sw_hero_lando` | Gambler's nerve | Fire discipline | Expert marksman (blaster pistol) |
+| `sw_hero_mara` | Emperor's Hand (vibroblade) | Hardened | Assassin (vibroblade) |
+| `sw_hero_karrde` | Old fox | Fire discipline | Contingency plan |
+| `sw_hero_wedge` | Wingman | Tuned deflectors | Ace (laser cannons) |
+| `sw_hero_khabarakh` | Stun mastery (stun blaster) | Silent kill (noghri knives) | Clan honour (noghri knives) |
+| `sw_hero_bel_iblis` | Veteran commander | Fire discipline | Corellian tactics |
+
+Units that only promote (troopers, militia, stormtroopers, clone troopers,
+smugglers) earn their ranks once promoted; sergeants and smuggler veterans
+start at rank I and receive its ability with the promotion. Vehicles,
+shuttles, capital ships, installations, creatures and the enemy's named
+commanders have none. Hero rank abilities never repeat a hero's own
+specialization choices (Mara's and Khabarakh's infiltration, the field
+coordination of Leia, Lando and Karrde). Existing veterans in saved
+campaigns receive the abilities for their rank at the next mission start.
+
+The AI uses all of these natively. Balance needs a human playtest: veterans on
+both sides are stronger than before, most noticeably Imperial sergeants with
+fire discipline and enemy TIE aces.
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

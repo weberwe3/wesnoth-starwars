@@ -9,7 +9,7 @@ local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"
 local PHASE = "main"
 
 local STEPS = {
-  "rank_promotion", "rank_amla", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
+  "rank_promotion", "rank_amla", "rank_abilities", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
@@ -207,6 +207,91 @@ local function plugin(events, context, info)
       local vhp = v.max_hitpoints
       v = swt.level_up("t_vor")
       check("creatures gain the AMLA but wear no insignia", v.max_hitpoints == vhp + 3 and not tostring(v.image_mods):find("sw%-rank"))
+    end
+
+    -- Rank abilities (lua/sw_rank_abilities.lua, production/tools/rank_abilities.py).
+    function S.rank_abilities()
+      swt.clear()
+      local function idx(u, name)
+        for i, a in ipairs(u.attacks) do if a.name == name then return i end end
+      end
+      local function has_special(u, weapon, id)
+        local a = u.attacks[idx(u, weapon)]
+        for _i, sp in ipairs(a and a.specials or {}) do
+          if sp[2] and sp[2].id == id then return true end
+        end
+        return false
+      end
+      local function cth(att, name, def)
+        local _a, _d, aw = wesnoth.simulate_combat(att, idx(att, name), def)
+        return aw.chance_to_hit
+      end
+      -- Promotion: a sergeant earns its rank I ability with the stripes.
+      swt.place("sw_unit_nr_trooper", 1, 3, 3, "t_ra_tr")
+      local sgt = swt.level_up("t_ra_tr")
+      check("promoted sergeant earns fire discipline (rank I)", sgt:matches{ ability = "sw_rank_hit_aura" }
+        and tonumber(sgt.variables.sw_rank_ability) == 1, sgt.variables.sw_rank_ability)
+      -- Fire discipline: adjacent allies +10% to hit with ranged attacks, not melee.
+      local tr = swt.place("sw_unit_nr_trooper", 1, 5, 8, "t_ra_ally")
+      local st = swt.place("sw_unit_im_stormtrooper", 2, 6, 8, "t_ra_enemy")
+      local ranged0, melee0 = cth(tr, "blaster_rifle", st), cth(tr, "rifle_butt", st)
+      sgt:to_map(4, 8)
+      check("fire discipline: adjacent ally +10% ranged", cth(tr, "blaster_rifle", st) == ranged0 + 10,
+        ranged0 .. " -> " .. cth(tr, "blaster_rifle", st))
+      check("fire discipline does not touch melee", cth(tr, "rifle_butt", st) == melee0)
+      -- AMLA ranks: commando I ambush, II backstab on its knife, III saboteur on its carbine.
+      local c = swt.place("sw_unit_nr_commando", 1, 3, 12, "t_ra_cmd")
+      local attacks0 = #c.attacks
+      c = swt.level_up("t_ra_cmd")
+      check("commando rank I: jungle fighter (hides in forest)", c:matches{ ability = "sw_rank_hides" })
+      c = swt.level_up("t_ra_cmd")
+      check("commando rank II: knife work on the vibroknife", has_special(c, "vibroknife", "sw_rank_backstab"))
+      c = swt.level_up("t_ra_cmd")
+      check("commando rank III: saboteur on the carbine and its aimed shot",
+        has_special(c, "blaster_carbine", "sw_rank_bane") and
+        (idx(c, "blaster_carbine_aimed") == nil or has_special(c, "blaster_carbine_aimed", "sw_rank_bane")))
+      check("rank abilities add no attacks", #c.attacks == attacks0, attacks0 .. " -> " .. #c.attacks)
+      -- Knife work doubles knife damage with an ally behind the target.
+      local tx, ty = 15, 12
+      local above = wesnoth.map.get_direction({ tx, ty }, "n")
+      local behind = wesnoth.map.get_direction({ tx, ty }, "s")
+      local ax, ay = above.x or above[1], above.y or above[2]
+      local bx, by = behind.x or behind[1], behind.y or behind[2]
+      local victim = swt.place("sw_unit_im_stormtrooper", 2, tx, ty, "t_ra_victim")
+      c:to_map(ax, ay)
+      c.facing = "s"
+      local _a1, _d1, solo = wesnoth.simulate_combat(c, idx(c, "vibroknife"), victim)
+      swt.place("sw_unit_nr_trooper", 1, bx, by, "t_ra_flank")
+      local _a2, _d2, flanked = wesnoth.simulate_combat(c, idx(c, "vibroknife"), victim)
+      check("knife work: double damage with an ally behind the target", flanked.damage >= 2 * solo.damage - 1,
+        solo.damage .. " -> " .. flanked.damage)
+      c = swt.level_up("t_ra_cmd")
+      sw_systems.rank.update(c)
+      check("each rank ability is granted once (no duplicates past rank III or on update)",
+        swt.objects(c, "sw_rank_ability_1") == 1 and swt.objects(c, "sw_rank_ability_3") == 1)
+      -- Field surgery replaces heals +4 with heals +8.
+      swt.place("sw_unit_nr_field_medic", 1, 9, 12, "t_ra_med")
+      local med = swt.level_up("t_ra_med")
+      local heals = {}
+      for _i, h in ipairs(wml.child_array(wml.get_child(med.__cfg, "abilities") or {}, "heals")) do
+        table.insert(heals, h.value)
+      end
+      check("medic rank I: one heals ability, now +8", #heals == 1 and tonumber(heals[1]) == 8, table.concat(heals, ","))
+      -- Battle roar: adjacent enemies -10% to hit.
+      local w = swt.place("sw_unit_wk_warrior", 1, 11, 8, "t_ra_wk")
+      local foe = swt.place("sw_unit_im_stormtrooper", 2, 12, 8, "t_ra_foe")
+      local mark = swt.place("sw_unit_nr_trooper", 1, 13, 8, "t_ra_mark")
+      local foe0 = cth(foe, "blaster_rifle", mark)
+      w = swt.level_up("t_ra_wk")
+      check("Wookiee warrior rank I: battle roar, adjacent enemies -10%", cth(foe, "blaster_rifle", mark) == foe0 - 10,
+        foe0 .. " -> " .. cth(foe, "blaster_rifle", mark))
+      -- Every assigned weapon special exists on that unit type (generator asserts; spot-check the data).
+      local ok = true
+      for ty, ranks in pairs(sw_systems.rank.ABILITIES) do
+        if not wesnoth.unit_types[ty] then ok = false end
+        for r = 1, 3 do if not (ranks[r] and ranks[r].effects and #ranks[r].effects > 0) then ok = false end end
+      end
+      check("every listed type has abilities for ranks I-III", ok)
     end
 
     function S.air_basics()

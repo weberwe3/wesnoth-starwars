@@ -17,6 +17,15 @@
 -- Each new rank adds one object (id sw_rank_insignia) whose plate covers the
 -- previous one exactly; objects are only ever added, so no unit is rebuilt
 -- mid-turn. State: unit variable sw_rank_shown.
+--
+-- Rank abilities (generated lua/sw_rank_abilities.lua, designed in
+-- production/tools/rank_abilities.py): reaching a rank also grants that
+-- class's ability for the rank -- a native ability or a special on a weapon
+-- the unit already carries, never a new attack -- as a permanent object
+-- (id sw_rank_ability_<n>), so it survives saves, carryover and rank designs.
+-- Units placed already at a rank (promoted sergeants) get theirs at once;
+-- older saves catch up at the next prestart. State: unit variable
+-- sw_rank_ability (the highest rank whose ability was granted).
 
 local T = wml.tag
 local core = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_core.lua")
@@ -25,6 +34,7 @@ local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 local rank = {}
 
 rank.DATA = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_data.lua")
+rank.ABILITIES = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_rank_abilities.lua")
 rank.MAX = 3
 rank.X, rank.Y = 37, 61     -- plate position in the 72x72 sprite (bottom, right of centre)
 rank.NAMES = { _ "Veteran", _ "Seasoned veteran", _ "Elite" }
@@ -87,10 +97,37 @@ end
 -- Make the insignia and design match the unit's rank. Returns true if the
 -- insignia changed, and the unit to use from now on (a design change
 -- replaces it).
+-- The ability a unit type earns at rank n, or nil.
+function rank.ability(type_id, n)
+	local entry = rank.ABILITIES[type_id]
+	return entry and entry[n]
+end
+
+-- Grant every rank ability up to the unit's rank not granted yet. Returns the
+-- names granted now (for the rank-up announcement).
+function rank.grant_abilities(u)
+	local n = rank.of(u)
+	local granted = core.number(u.variables.sw_rank_ability, 0)
+	local names = {}
+	for r = granted + 1, n do
+		local ab = rank.ability(u.type, r)
+		if ab then
+			local object = { id = "sw_rank_ability_" .. r }
+			for _i, effect in ipairs(ab.effects) do table.insert(object, effect) end
+			u:add_modification("object", object)
+			table.insert(names, ab.name)
+			core.log("rank", u.id .. " earns " .. ab.key .. " at rank " .. r)
+		end
+	end
+	if n > granted then u.variables.sw_rank_ability = n end
+	return names
+end
+
 function rank.update(u)
 	local style = rank.style(u)
 	if not style then return false, u end
 	u = rank.apply_design(u)
+	rank.granted_now = rank.grant_abilities(u)
 	local n = rank.of(u)
 	local shown = core.number(u.variables.sw_rank_shown, 0)
 	if n <= shown then return false, u end
@@ -118,7 +155,9 @@ function rank.on_post_advance()
 		local viewer = core.viewing_side()
 		if viewer == nil or viewer < 1 then viewer = u.side end
 		if u:matches{ T.filter_vision{ side = viewer, visible = true } } then
-			core.float(u.x, u.y, tostring(rank.NAMES[rank.of(u)]), "#ffd75a")
+			local text = tostring(rank.NAMES[rank.of(u)])
+			for _i, name in ipairs(rank.granted_now or {}) do text = text .. " — " .. tostring(name) end
+			core.float(u.x, u.y, text, "#ffd75a")
 		end
 	end
 end
