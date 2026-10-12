@@ -1352,3 +1352,80 @@ difficulty has improved. Bay defense, central reserves and gate interception
 now provide distinct choices. Original heat damage, miner theft thresholds,
 enemy forces/AI, air support, turns/gold, victory/loss rules, bonus objectives,
 achievements, mission tips and rewards remain unchanged.
+
+
+## Peregrine's Nest canyon and layered base defense (2026-10-12)
+
+The scattered hills now form a central canyon, with longer northern and southern
+trails approaching the original side gates. Hewn base rooms and a durasteel
+generator deck create fallback positions; 12 cargo cells provide unit-dependent
+cover. The original six healing depots, 12 castle/keep cells and all scripted
+unit tiles retain their exact terrain tokens. All scenario CFGs and other maps
+remain byte-identical, including Claude's mission events and balance.
+
+All 504 infantry-passable cells connect. All 454 scout/walker-passable cells
+also connect without crossing an ordinary mountain. The layout replaces eight
+metal wall cells with 13 hewn wall cells and adds 43 sheer mountain cells.
+Its 12 crate cells provide cover without healing or recruitment. All six
+original healing depots and twelve keep/castle tiles retain their exact
+terrain tokens, as do all nine scripted unit locations. All three original
+gates, their inner and outer landings, the two room doors, the hill depot
+access and both outer trails remain passable. The southwest outer landing
+(17,13) remains its original dry hills, with the native unit-specific cost.
+
+Installed Wesnoth 1.19.27 confirms hewn floors, durasteel, roads and crate
+cells cost one MP for Han, Lando, Bel Iblis, commandos, clone troopers, the
+original AT-ST and an isolated actual-type scout. Hewn walls and the installed
+Mm^Xm sheer mountain terrain cost at least 99 MP for all seven types.
+All seven native types reach every depot, gate, adjacent landing, room door,
+outer trail waypoint, keep and generator on unopposed path checks. These
+paths establish access rather than safety through enemy zones of control.
+
+Actual native defense is unit-dependent:
+
+| Unit type | Hewn floor | Crate cover | Durasteel |
+| --- | --- | --- | --- |
+| sw_hero_han | 40% | 60% | 40% |
+| sw_hero_lando | 40% | 60% | 40% |
+| sw_hero_bel_iblis | 40% | 60% | 40% |
+| sw_unit_bi_commando | 40% | 60% | 40% |
+| sw_unit_im_clone_trooper | 40% | 60% | 40% |
+| sw_unit_im_at_st | 30% | 40% | 30% |
+| sw_unit_im_scout_trooper | 40% | 40% | 40% |
+
+A normal native Bel Iblis move from (24,10) to crate cover at (24,13) spent
+three MP of his normal five. An actual save/reload retained the destination
+and remaining two MP, all original heroes, both commandos, Tierce, the
+AT-ST and clone, all six depots, 43 sheer cliffs, 13 hewn walls and 12 crates.
+The scout probe existed only in isolated test userdata; the production
+scenario's original forces and recruitment remain unchanged.
+
+Fresh mission and actual reload phases passed 236 and 234 native checks, with no engine errors or warnings.
+
+Inventory, unit and all map-generator checks, scope/whitespace, 107 declared
+contracts, 682 systems checks and all 30 campaign sequence stages passed.
+All 30 sequence saves were parsed as readable matching saved WML. Systems
+logs retain 15 existing synthetic-controller warnings, with no engine
+errors; existing replay tests passed. Sequence probes use scripted objectives
+and parsed saves, rather than human playtests or actual reloads of every
+sequence save. Only generator m05 changed; the other 29 maps and all 30
+scenario CFGs remain byte-identical to the base.
+
+Six careful-player AI soaks passed the existing technical gate:
+
+| Layout | Run | Recorded AI outcome | Turns played |
+| --- | --- | --- | --- |
+| Scattered hills and open base | 1 | result VICTORY turn 12 | 12 |
+| Scattered hills and open base | 2 | result DEFEAT turn 13 | 13 |
+| Scattered hills and open base | 3 | result VICTORY turn 11 | 11 |
+| Canyon and layered base | 1 | result DEFEAT turn 11 | 11 |
+| Canyon and layered base | 2 | result VICTORY turn 15 | 15 |
+| Canyon and layered base | 3 | result DEFEAT turn 7 | 7 |
+
+These are independent random runs, not paired seeds or a human win-rate
+estimate. All recorded wins and losses are reported, with no claim about
+human difficulty. Players now choose between holding the central canyon,
+covering two flanks and keeping reserves near the generator. Han's critical
+death, Lando/Bel Iblis withdrawal, Imperial generator-entry defeat, Tierce
+alternative victory, survival turns, gold, income, air support and optional
+objective remain exactly as Claude authored them.
