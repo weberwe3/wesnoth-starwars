@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "contracts": [
+    {
+      "id": "sw-air-target-centered-jamming",
+      "kind": "source-text",
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_air.lua",
+      "contains": "local center = hexes.target or hexes[1]"
+    }
+  ]
+}

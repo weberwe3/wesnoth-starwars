@@ -1642,3 +1642,57 @@ All 30 careful-player AI soaks passed the existing technical gate. Every raw log
 These independent random runs recorded 8 victories and 22 defeats. They are not paired with earlier runs and do not establish a human win rate or better difficulty. The defeat count remains a playability concern for human mission playtests; this unpaired sample cannot attribute it to the repair. Raw controller-change and fake air-route warnings are preserved. The current source repair eliminates the confirmed null-object knife evaluation, while base unit numbers and all mission WML remain byte-identical. Older cached units can retain the old serialized special until rebuilt; no save migration is claimed.
 
 The first unchanged static gate failed because the shared-specials CFG lacked a declaration. One declaration for its existing flanking identity, within the original immutable ticketâ€™s generated contract-shard scope, restores coverage while preserving all prior declarations. This source-coverage check is not native behavior proof; the actual combat, six-direction cases and AI logs provide that evidence.
+
+
+## Target-centered bombing jamming (2026-10-12)
+
+Bombing preview, AI selection and delayed resolution now measure ECM from the selected strike hex. The seven-cell footprint keeps its deterministic order, while anti-air still protects any struck cell. Strafing uses its selected first hex as before. Damage, strikes, charge counts, warning delay, jamming/ECCM multipliers, anti-air caps and all mission/unit/rank settings are unchanged.
+
+The current-main native baseline on Wesnoth 1.19.27 measured zero jamming from a target-only jammer and 20 from a jammer covering only sorted edge(7,8), with the strafe control 20. The repair carries transient target metadata and rebuilds it from existing saved strike.x/y, without adding serialized state. New native cases cover target versus edge, odd/even coordinates, order permutations, ECM range and ECCM, area-wide anti-air, ordinary AI selection and an actual queued-strike reload. Measured gates and all AI outcomes follow; no human balance claim is made.
+
+
+The first full systems run preserved one false fixture precondition (plus its aggregate main-phase FAIL): native flat defense40 gave expected damage9.0/12.6, not the assumed below8/above8. The actual AI target choice and spent-budget checks passed. The corrected fixture uses equal forest cover, directly checks native defense50 and restores both original terrains, preserving the existing AI threshold and every shipped statistic.
+
+Measured validation on installed Wesnoth 1.19.27:
+
+- Existing generators, unit-art uniqueness, inventory, scope and whitespace checks passed. Claude409 art and unit definitions are retained. The full systems suite passed 1057 assertions, with no failures or engine errors and 17 retained synthetic-controller warnings; both replay comparisons passed.
+- New air cases verify four odd/even target positions, area reordering, target-only and edge-only ECM, range boundaries, friendly jamming, ECCM and blast-edge AA. An ordinary native AI turn chooses the exposed target and spends its sortie and observer attack. The existing native air save/reload retains the pending target, then lands the strike on ordinary caller turns with independently calculated jamming and hit chance.
+- A separate unmodified-old-code native save creates an actual queued strike; the candidate reloads those exact bytes. All 10 reload checks passed without diagnostics, preserving selected x/y, spent actions, HP and turn, and resolving at target-centered ECM on the next ordinary caller turn. No saved schema migration, manually inserted queue or preset landing turn is used.
+- The three scripted campaign sequences passed 30 stages and 30 parsed matching WML saves. Those sequence checks do not reload each save or represent human playtests.
+
+All 30 careful-player AI soaks passed the existing technical gate. Every raw log was also scanned without changing its matcher, exemption, timeout or verdict:
+
+| Mission | Recorded AI outcome | Turns | Formula diagnostic lines | Other raw diagnostic lines |
+| --- | --- | --- | --- | --- |
+| sw_hte_01_ysalamiri_harvest | result DEFEAT turn 17 | 17 | 0 | 1 |
+| sw_hte_02_ambush_at_bpfassh | result DEFEAT turn 15 | 15 | 0 | 3 |
+| sw_hte_03_adrift | result DEFEAT turn 8 | 8 | 0 | 1 |
+| sw_hte_04_shadows_of_kashyyyk | result VICTORY turn 11 | 11 | 0 | 2 |
+| sw_hte_05_prisoner_of_myrkr | result DEFEAT turn 15 | 15 | 0 | 1 |
+| sw_hte_06_raid_on_karrdes_base | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_hte_07_the_forest_crossing | result DEFEAT turn 5 | 5 | 0 | 1 |
+| sw_hte_08_nomad_city | result VICTORY turn 13 | 13 | 0 | 7 |
+| sw_hte_09_sluis_van_shipyards | result VICTORY turn 7 | 7 | 0 | 1 |
+| sw_hte_10_thrawns_gambit | result DEFEAT turn 11 | 11 | 0 | 1 |
+| sw_dfr_01_the_noghri_prisoner | result VICTORY turn 4 | 4 | 0 | 2 |
+| sw_dfr_02_honoghr | result VICTORY turn 5 | 5 | 0 | 1 |
+| sw_dfr_03_jomark | result DEFEAT turn 5 | 5 | 0 | 1 |
+| sw_dfr_04_the_senators_men | result DEFEAT turn 15 | 15 | 0 | 5 |
+| sw_dfr_05_peregrines_nest | result DEFEAT turn 12 | 12 | 0 | 7 |
+| sw_dfr_06_the_mad_jedi | result DEFEAT turn 5 | 5 | 0 | 1 |
+| sw_dfr_07_the_dark_force | result DEFEAT turn 5 | 5 | 0 | 13 |
+| sw_dfr_08_aboard_the_katana | result DEFEAT turn 2 | 2 | 0 | 1 |
+| sw_dfr_09_battle_for_the_fleet | result DEFEAT turn 17 | 17 | 0 | 1 |
+| sw_dfr_10_honoghrs_choice | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_tlc_01_the_siege_of_coruscant | result VICTORY turn 9 | 9 | 0 | 1 |
+| sw_tlc_02_the_smugglers_council | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_tlc_03_the_palace_infiltrators | result VICTORY turn 8 | 8 | 0 | 1 |
+| sw_tlc_04_landfall_on_wayland | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_tlc_05_the_natives_of_wayland | result VICTORY turn 7 | 7 | 0 | 1 |
+| sw_tlc_06_the_gates_of_tantiss | result DEFEAT turn 7 | 7 | 0 | 1 |
+| sw_tlc_07_the_cloning_vats | result DEFEAT turn 10 | 10 | 0 | 1 |
+| sw_tlc_08_the_throne_room | result DEFEAT turn 4 | 4 | 0 | 1 |
+| sw_tlc_09_bilbringi | result VICTORY turn 11 | 11 | 0 | 1 |
+| sw_tlc_10_the_last_command | result DEFEAT turn 4 | 4 | 0 | 1 |
+
+These independent random runs recorded 9 victories and 21 defeats. They are unpaired and do not establish a human win rate or a change in difficulty. Defeats and all raw warnings remain recorded; mission difficulty still warrants human playtests. All 30 scenario CFGs/maps and unit/rank data retain their base bytes. The fixture changes only test setup, and ECM/ECCM and other numeric rules remain unchanged.

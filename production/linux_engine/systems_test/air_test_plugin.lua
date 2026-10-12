@@ -9,7 +9,7 @@ local CAMPAIGN = "Star_Wars_Thrawn_Trilogy"
 local PHASE = "main"
 
 local STEPS = {
-  "rank_promotion", "rank_amla", "rank_abilities", "safe_backstab", "air_basics", "air_accuracy", "air_strafe", "check_strafe",
+  "rank_promotion", "rank_amla", "rank_abilities", "safe_backstab", "air_basics", "air_accuracy", "air_ecm_origin", "air_ecm_ai", "check_air_ecm_ai", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
@@ -20,7 +20,7 @@ local STEPS = {
   "wookiee_aimed", "wookiee_check_hit", "wookiee_target_turn", "wookiee_check_return", "wookiee_expiry",
   "wookiee_miss", "wookiee_check_miss", "muzzle_flashes", "attack_range", "prepare_save",
 }
-local END_TURN_AFTER = { ai_avoid = true, ai_air = true, ai_ranged = true, ai_withdraw = true, alert_ai = true }
+local END_TURN_AFTER = { air_ecm_ai = true, ai_avoid = true, ai_air = true, ai_ranged = true, ai_withdraw = true, alert_ai = true }
 
 local function plugin(events, context, info)
   local function pump()
@@ -412,6 +412,95 @@ local function plugin(events, context, info)
       check("enemy jamming over the target: -10 per point", air.accuracy(1, "strafe", obs, hexes).jamming == 20)
       ew.set_profile(u("t_obs"), { eccm = 1 })
       check("observer ECCM offsets jamming", air.accuracy(1, "strafe", u("t_obs"), hexes).jamming == 10)
+    end
+
+
+    -- The radius array is sorted for deterministic effects. Its first cell
+    -- must never stand in for the selected bombing target.
+    function S.air_ecm_origin()
+      for _, loc in ipairs{ {8,8}, {9,8}, {8,9}, {9,9} } do
+        swt.clear()
+        local x,y = loc[1],loc[2]
+        local label = "bombing ECM " .. x .. "," .. y
+        local obs = swt.place("sw_unit_nr_sergeant",1,x-4,y,"sw_test_ecm_obs")
+        local jammer = swt.place("sw_unit_im_stormtrooper",2,x,y,"sw_test_ecm_jam")
+        ew.set_profile(obs,{eccm=0})
+        ew.set_profile(jammer,{ecm=2,ecm_range=0})
+        local area = air.area("bombing",obs,x,y)
+        check(label .. ": footprint remains seven sorted cells", #area==7 and area[1].x==x-1)
+        check(label .. ": selected target carries separate metadata", area.target and area.target.x==x and area.target.y==y)
+        local terms = air.preview(1,"bombing",obs,x,y).terms
+        check(label .. ": target-only jammer applies 20", terms.jamming==20 and terms.total==-10,terms.jamming)
+        check(label .. ": strafing retains target ECM", air.preview(1,"strafe",obs,x,y).terms.jamming==20)
+        local reversed = {target={x=x,y=y}}
+        for i=#area,1,-1 do reversed[#reversed+1]=area[i] end
+        check(label .. ": array order cannot change ECM", air.accuracy(1,"bombing",obs,reversed).jamming==20)
+        ew.set_profile(obs,{eccm=1})
+        check(label .. ": observer ECCM offsets one point", air.preview(1,"bombing",obs,x,y).terms.jamming==10)
+        ew.set_profile(obs,{eccm=3})
+        check(label .. ": stronger ECCM cannot add accuracy", air.preview(1,"bombing",obs,x,y).terms.jamming==0)
+        ew.set_profile(obs,{eccm=0})
+        jammer.loc={area[1].x,area[1].y}
+        check(label .. ": sorted-edge-only jammer is irrelevant", air.preview(1,"bombing",obs,x,y).terms.jamming==0)
+        local legacy = {}
+        for _,h in ipairs(area) do legacy[#legacy+1]=h end
+        check(label .. ": legacy caller retains first-cell fallback", air.accuracy(1,"bombing",obs,legacy).jamming==20)
+        jammer.loc={x-2,y}
+        ew.set_profile(jammer,{ecm=2,ecm_range=1})
+        check(label .. ": radius1 reaching only edge is irrelevant", air.preview(1,"bombing",obs,x,y).terms.jamming==0)
+        ew.set_profile(jammer,{ecm=2,ecm_range=2})
+        check(label .. ": range boundary at target still applies", air.preview(1,"bombing",obs,x,y).terms.jamming==20)
+        jammer.side=1
+        check(label .. ": friendly jamming never penalizes", air.preview(1,"bombing",obs,x,y).terms.jamming==0)
+        local aa=swt.place("sw_unit_im_at_st",2,x+3,y,"sw_test_ecm_aa")
+        local t=air.preview(1,"bombing",obs,x,y).terms
+        check(label .. ": AA reaches blast edge beyond target radius", wesnoth.map.distance_between(x,y,aa.x,aa.y)>2
+          and t.anti_air==20 and t.jamming==0 and t.total==-10,t.anti_air)
+        check(label .. ": scripted no-observer accuracy has no ECM", air.accuracy(1,"bombing",nil,area).jamming==0)
+      end
+    end
+
+    function S.air_ecm_ai()
+      swt.clear()
+      swt.mem.strikes={}
+      -- Native defense_on is avoidance, the complement of CFG hit chance.
+      -- Equal forest cover keeps only ECM across the unchanged AI threshold.
+      swt.mem.ecm_ai_terrain={wesnoth.current.map[{8,8}],wesnoth.current.map[{8,10}]}
+      wesnoth.wml_actions.terrain{x=8,y=8,terrain="Gg^Fmf"}
+      wesnoth.wml_actions.terrain{x=8,y=10,terrain="Gg^Fmf"}
+      wesnoth.sides[2].controller="ai"
+      local obs=swt.place("sw_unit_im_stormtrooper_sergeant",2,4,8,"sw_test_ecm_ai_obs")
+      local defended=swt.place("sw_unit_nr_trooper",1,8,8,"sw_test_ecm_ai_defended")
+      local exposed=swt.place("sw_unit_nr_trooper",1,8,10,"sw_test_ecm_ai_exposed")
+      obs.moves=0;defended.attacks_left=0;exposed.attacks_left=0
+      ew.set_profile(obs,{eccm=0})
+      ew.set_profile(defended,{ecm=2,ecm_range=0})
+      ew.set_profile(exposed,{ecm=0})
+      air.grant(2,"bombing",1,"sw_unit_im_tie_bomber")
+      check("AI bomb fixture: both targets have native forest defense50",
+        defended:defense_on(wesnoth.current.map[{8,8}])==50
+        and exposed:defense_on(wesnoth.current.map[{8,10}])==50)
+      local a=air.preview(2,"bombing",obs,8,8)
+      local b=air.preview(2,"bombing",obs,8,10)
+      check("AI bomb fixture: equal cover, defended target below sortie threshold", a.terms.jamming==20 and b.terms.jamming==0
+        and a.enemy_damage<8 and b.enemy_damage>=8,a.enemy_damage .. "/" .. b.enemy_damage)
+    end
+    function S.check_air_ecm_ai()
+      local queued=wml.array_access.get("sw_air_inbound")
+      check("ordinary AI turn bombs exposed target instead of jammed target", #queued==1 and tonumber(queued[1].side)==2
+        and tonumber(queued[1].x)==8 and tonumber(queued[1].y)==10)
+      check("ordinary AI air decision spends one sortie and observer attack", air.charges(2,"bombing")==0
+        and u("sw_test_ecm_ai_obs").attacks_left==0)
+      wesnoth.wml_actions.terrain{x=8,y=8,terrain=swt.mem.ecm_ai_terrain[1]}
+      wesnoth.wml_actions.terrain{x=8,y=10,terrain=swt.mem.ecm_ai_terrain[2]}
+      swt.mem.ecm_ai_terrain=nil
+      -- Clear only this test's public markers before the next isolated case.
+      for _,strike in ipairs(queued) do
+        local xs,ys=core.split(strike.xs),core.split(strike.ys)
+        for i=1,#xs do wesnoth.interface.remove_item(tonumber(xs[i]),tonumber(ys[i]),"sw_air_inbound|" .. strike.id) end
+      end
+      wml.array_access.set("sw_air_inbound",{})
+      wesnoth.sides[2].controller="human"
     end
 
     function S.air_strafe()
@@ -1799,6 +1888,12 @@ local function plugin(events, context, info)
       for _i = 1, 2 do swt.level_up("t_obs") end
       air.grant(1, "strafe", 2, "sw_unit_nr_xwing")
       air.grant(1, "bombing", 1, "sw_unit_nr_ywing")
+      local jammer=swt.place("sw_unit_im_stormtrooper",2,8,4,"sw_test_ecm_saved_jammer")
+      ew.set_profile(jammer,{ecm=2,ecm_range=0})
+      ew.set_profile(u("t_obs"),{eccm=1})
+      local chance=math.max(air.MIN_CHANCE,math.min(air.MAX_CHANCE,100-jammer:defense_on({x=8,y=4})))
+      wml.variables.sw_test_ecm_saved={x=8,y=4,jamming=10,chance=chance,hp=jammer.hitpoints}
+      check("save fixture bombing preview uses selected-target ECM", air.preview(1,"bombing",u("t_obs"),8,4).terms.jamming==10)
       air.call(1, "bombing", u("t_obs"), 8, 4)
       wml.variables.swt_digest = sw_systems.digest()
       std_print("SW_TEST: state prepared for save")
@@ -1856,6 +1951,23 @@ local function plugin(events, context, info)
       check("save/load: inbound marker kept", marked == 1)
       local c = u("t_obs")
       check("save/load: rank insignia kept", c and tostring(c.image_mods):find("sw%-rank%-republic%-2") ~= nil and rank.of(c) == 2)
+
+      local queued=wml.array_access.get("sw_air_inbound")
+      local e=wml.variables.sw_test_ecm_saved
+      check("actual reload retains previously serialized strike target", #queued==1 and e and tonumber(queued[1].x)==e.x
+        and tonumber(queued[1].y)==e.y and queued[1].target==nil)
+      check("actual reload bombing preview measures ECM at saved target", e and air.preview(1,"bombing",c,e.x,e.y).terms.jamming==e.jamming)
+    end
+    function S.air_ecm_reload_check()
+      local e=wml.variables.sw_test_ecm_saved
+      local strike=swt.mem.strikes and swt.mem.strikes[1]
+      local hit
+      for _,r in ipairs(strike and strike.results or {}) do if r.id=="sw_test_ecm_saved_jammer" then hit=r end end
+      check("actual reloaded bomb lands on ordinary next side turn", wesnoth.current.side==1 and strike
+        and tonumber(strike.strike.x)==e.x and tonumber(strike.strike.y)==e.y
+        and #wml.array_access.get("sw_air_inbound")==0)
+      check("actual reloaded bomb rolls target-centered ECM chance", hit and hit.chance==e.chance,hit and hit.chance)
+      check("actual reloaded bomb damage matches native hit rolls", hit and swt.damage_ok(hit.id,e.hp,9,hit.hits,"fire"))
     end
 
     function swt.step(name)
@@ -1865,7 +1977,7 @@ local function plugin(events, context, info)
   end)
   settle()
 
-  local steps = PHASE == "main" and STEPS or { "load", "myneyrshi_medic_reload_setup", "myneyrshi_medic_reload_enemy_turn", "myneyrshi_medic_reload_check" }
+  local steps = PHASE == "main" and STEPS or { "load", "myneyrshi_medic_reload_setup", "myneyrshi_medic_reload_enemy_turn", "myneyrshi_medic_reload_check", "air_ecm_reload_check" }
   for _, name in ipairs(steps) do
     local step = name
     wesnoth.plugin.execute(context, function() swt.step(step) end)
