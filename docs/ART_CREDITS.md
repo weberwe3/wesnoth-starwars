@@ -417,6 +417,12 @@ starship bulkhead) and the bunker parapet:
   material (steel ribs, block courses, rough stone, planks), lit from above,
   with a lip in the top's colour and a near-black line at its foot.
 - **Far edges**: a slightly brighter coping, outlined in near-black.
+- **Clean corners** (owner follow-up, same day): each front face is the hex
+  edge raised straight up by the same height, so the top lines of
+  neighbouring faces join into one line wherever walls meet; each face
+  direction is shaded a little differently so corners read as creases. A
+  slanted face that turns an inside corner reaches into the neighbouring wall
+  hex; its `-ext` image is placed only there (utils/hte_terrain.cfg).
 - **Shadows** on the floor below a wall are longer and darker.
 
 The Codex tile-variety jobs for wall tops and the old coded bulkhead were
