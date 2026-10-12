@@ -827,7 +827,13 @@ Validation against the candidate on Wesnoth 1.19.27:
 | Three campaign sequences | All passed: 30 scenario transitions and 30 saved-WML checks |
 | Declared gameplay contracts | 105 passed, including the generated Lua registry row |
 | Existing art/wiring validation | All 14 sprite frames and the portrait passed |
+| Existing CI art self-test | 17 passed after adding the Slicer art-direction entry |
 | Careful-player AI soak, all ten TLC missions | 10 technical passes; 3 victories and 7 defeats |
+
+The first PR 396 CI run identified a missing art-direction registry entry for
+the new type. One description now matches the reused art; all other entries,
+art assets, gameplay and engine-fixture bytes remain unchanged. The complete
+17-test art self-test passes after the repair, with the failed run retained.
 
 The native paid recruit command charges 18 gold and creates the Slicer with
 spent movement and attack, preventing an immediate sweep or decoy. The existing

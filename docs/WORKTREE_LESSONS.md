@@ -1417,3 +1417,16 @@ incorrect assumption about available attacks.
   checks remain the behavior gate; the text declaration is not behavioral proof.
 - Prevention: enumerate generated output paths and check their declared coverage
   when assigning a new roster unit. Do not relax changed-path validation.
+
+## 2026-10-12: Register art direction for reused roster art
+
+- Symptom: PR 396 passed runtime asset wiring but failed the existing CI art
+  self-test because sw_unit_sm_slicer had no art-direction entry.
+- Confirmed cause: the new generated unit, rank row and complete reused art
+  did not automatically register its description in production/assets/art_direction.json.
+- Resolution: add one matching original description to that existing registry;
+  preserve every other entry and asset. The full codex_art_selftest passes all
+  17 tests with actual exit 0; no validator or test expectation was changed.
+- Prevention: include the art-direction registry when enumerating a new roster
+  unit's generator and asset dependencies, even when all artwork is reused.
+  Run the existing roster-art self-test before publication.
