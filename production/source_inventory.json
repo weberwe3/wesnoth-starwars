@@ -10668,6 +10668,10 @@
       "sha256": "cb25ea23ff0fe9ec83f813eaae8a733f839176ef87d8825b966b69ca4df462b3"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_move_sound.lua",
+      "sha256": "2b3677dad591a86ff377e5e26021c9690fb5eeebb8a5f3b554b02a65646ad117"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_overwatch.lua",
       "sha256": "df6e95a180c77457c2bff88e23b34755cdd082e9327acb320e5fec4e3a39fdaf"
     },
@@ -10689,7 +10693,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "bf59cc2535389a2eb61d5a354c2103bb993fa2557a3894cebeaf7ab0e2991f76"
+      "sha256": "f9c3829ab8068800876bc528f0daf53cb15e3eef8c879cffd9a294f2885299e2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua",
