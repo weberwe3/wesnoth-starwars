@@ -1494,3 +1494,33 @@ incorrect assumption about available attacks.
   overlays, then validate native movement for each faction. A rendered village
   and a passable objective route do not prove its compartment is accessible.
   Keep AI defeats visible and separate route availability from balance claims.
+
+
+## 2026-10-12: Select the affected scenario for map-only delivery checks
+
+- Symptom: a successful post-publication gate for the Katana map launched only
+  the default opening mission; it did not exercise the changed map.
+- Confirmed cause: runtime selection uses affected scenario CFG paths. A map
+  and Field Manual change alone did not select the Katana scenario.
+- Resolution: explicitly select the affected scenario with the existing runtime
+  probe, after verifying the installed add-on matches merged source. The actual
+  installed Katana launch passed and recorded its scenario marker.
+- Prevention: include the unchanged scenario CFG in runtime selection for map
+  changes, or perform an explicit affected-scenario probe. Report the actual
+  mission count and retain its marker; never infer a 30-mission launch from a
+  successful default one-mission gate.
+
+
+## 2026-10-12: Verify actual moves after a native route pauses
+
+- Symptom: the cloning-vat movement fixture first expected four MP for a
+  five-MP route, then checked its destination after a single move command even
+  though the engine had stopped at an intermediate hex.
+- Confirmed cause: the fixture assumed a route cost and immediate completion
+  instead of using the installed engine's measured route and current position.
+- Resolution: use the measured five-MP cost and resume ordinary native move
+  commands against the remaining budget. The actual move and save/reload passed
+  without teleports, movement refills or a gameplay-map change.
+- Prevention: measure routes with the actual movetype and hex parity; inspect
+  the resulting position and action budget before asserting completion. Verify
+  both again after a real reload, and preserve failed fixture attempts.

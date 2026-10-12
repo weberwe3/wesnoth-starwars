@@ -154,18 +154,35 @@ def m06() -> HexMap:
 # 7. The Cloning Vats -- interior, 26x18 ---------------------------------------
 def m07() -> HexMap:
     m = HexMap(26, 18, "Xos", seed=3707)
-    m.interior = "rock"  # location interior (hte_mapkit.INTERIORS)
+    m.interior = "rock"  # hewn service passages outside the durasteel lab
     m.path([(2, 9), (25, 9)], "Isr", width=1)
-    m.rect(8, 2, 23, 16, "Isr")
+    m.rect(8, 2, 23, 16, "Qid")
+    # Production bays flank the original three-hex-wide dispatch aisle.
+    # Staggered doors provide lateral routes without a straight firing lane.
     for x in (11, 15, 19):
-        m.rect(x, 4, x, 7, "Xos")
-        m.rect(x, 11, x, 14, "Xos")
+        m.rect(x, 2, x, 7, "Qib")
+        m.rect(x, 11, x, 16, "Qib")
+    for y in (7, 11):
+        m.rect(8, y, 23, y, "Qib")
+        for x in (9, 13, 17, 22):
+            m.set(x, y, "Qid")
+    for door in ((11, 5), (15, 3), (19, 6), (11, 13), (15, 15), (19, 12)):
+        m.set(*door, "Qid")
+    # Both factions can contest these passages, including the eastern clone
+    # reinforcements; neither side receives a sealed safe route.
+    for x in (7, 24):
+        m.rect(x, 3, x, 15, "Isr")
+    for cover in ((6, 8), (6, 10)):
+        m.set(*cover, "Isr^Qcr")
+    for cover in ((9, 9), (14, 8), (18, 10), (22, 8),
+                  (9, 5), (14, 4), (16, 6), (22, 4),
+                  (9, 13), (14, 14), (16, 12), (22, 14)):
+        m.set(*cover, "Qid^Qcr")
     ring(m, (3, 9), "Kh", "Ch", 3)
     cylinders = ((10, 3), (13, 5), (17, 4), (21, 6), (10, 15), (13, 13), (17, 14), (21, 12))
     m.start(1, 3, 9)
     keys("tlc_07_the_cloning_vats", entry=(3, 9), cylinders=cylinders, garrison=(23, 9))
     return m
-
 
 # 8. The Throne Room -- 20x16 --------------------------------------------------
 def m08() -> HexMap:
