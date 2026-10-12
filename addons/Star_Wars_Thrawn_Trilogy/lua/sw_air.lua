@@ -187,6 +187,8 @@ function air.area(sortie_id, observer, x, y)
 		table.sort(out, function(a, b) if a.x ~= b.x then return a.x < b.x end return a.y < b.y end)
 		out.dir = wesnoth.map.get_relative_dir({ observer.x, observer.y }, { x, y })
 	end
+	-- Array order describes the blast/flyover, not the selected target.
+	out.target = { x = x, y = y }
 	return out
 end
 
@@ -208,7 +210,9 @@ function air.accuracy(side, sortie_id, observer, hexes)
 		end
 	end
 	terms.anti_air = math.min(air.AA_MAX, terms.anti_air)
-	local center = hexes[1]
+	-- ECM protects the selected strike hex; AA still covers every struck cell.
+	-- Preserve first-cell semantics for legacy manually assembled areas.
+	local center = hexes.target or hexes[1]
 	if center and observer then
 		local ecm = 0
 		for _i, j in ipairs(wesnoth.units.find_on_map{}) do
@@ -383,6 +387,11 @@ function air.resolve(strike)
 	local hexes = {}
 	local xs, ys = core.split(strike.xs), core.split(strike.ys)
 	for i = 1, #xs do table.insert(hexes, { x = tonumber(xs[i]), y = tonumber(ys[i]) }) end
+	-- Pending strikes already serialize x/y, including saves made before this
+	-- repair. Rebuild only transient area metadata; no saved schema changes.
+	if tonumber(strike.x) and tonumber(strike.y) then
+		hexes.target = { x = tonumber(strike.x), y = tonumber(strike.y) }
+	end
 	local observer = wesnoth.units.get(strike.observer)
 	local terms = air.accuracy(strike.side, strike.sortie, observer, hexes)
 	-- Flyover and blasts are display only; sw_air_effects=no turns them off

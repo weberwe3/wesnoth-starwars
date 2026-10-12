@@ -1558,3 +1558,13 @@ the resulting files before tests and publication.
 - Fixture symptom and cause: the first full systems run stopped on an invalid modifiable property of unit: attacks error because the unarmed fixture assigned the read-only attack list.
 - Fixture resolution: remove attacks with the native object remove_attacks effect and assert the resulting list is empty. The repaired isolated fixture passed all 280 cases; the completed full suite, actual attacks/reload and all-30-mission raw logs are recorded in the same gameplay balance entry.
 - Prevention: use lazy if for nullable WFL unit operands; use native modification effects for read-only unit properties. Verify empty, hostile, allied, petrified, unarmed, off-axis and defensive cases across six directions with the shipped specials, and retain initial failures alongside repaired evidence.
+
+
+## 2026-10-12: Selected strike targets are independent of sorted footprints
+
+- Symptom: native bombing preview ignored target-only ECM and counted an edge-only jammer. The current-main baseline measured 0 and 20 respectively; the strafe control remained 20.
+- Confirmed cause: the deterministic seven-cell footprint sorts an edge first, while accuracy treated its first cell as the selected target.
+- Resolution: carry target metadata outside the numeric footprint, use it for ECM, and rebuild it from already saved strike.x/y when delayed bombing lands. Preserve the first-cell fallback for older manually assembled caller areas. Native corner cases, ordinary AI selection, current-code reload and a real old-code queued-strike reload pass; AA remains area-wide.
+- Integration cause: the first inventory regeneration rejected a new coverage shard absent from the index. Add its basename to the existing index and retain every previous shard; coverage is separate from native behavior proof.
+- Fixture cause and resolution: native defense_on returns actual avoidance, the complement of CFG hit chance. The first flat-terrain fixture measured9.0/12.6 instead of the intended AI threshold boundary. Equal forest cover, direct native defense50 checks and restoration preserve that boundary and pass the native rerun. The original failure and aggregate phase verdict are retained.
+- Prevention: preserve intent separately from sorted traversal order, reuse existing persistent coordinates, check old-save behavior through a real native load, and finish shard/index updates before inventory generation. Keep failed attempts and their actual outcomes.

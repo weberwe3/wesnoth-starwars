@@ -1,6 +1,7 @@
 {
   "schema_version": 2,
   "files": [
+    "air-support.json",
     "campaign.json",
     "dark-force-rising.json",
     "heir-to-the-empire.json",
