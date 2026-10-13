@@ -961,12 +961,16 @@ def animations(u: dict) -> str:
                     f"    y=0~-{amp}:{half},-{amp}~0:{period - half}\n[/frame]")
     else:
         standing = frame(f"{base}/standing.png", 1000)
+    # Creature calls on the idle pose (formerly added by the private audio overlay).
+    call = IDLE_CALLS.get(u["id"], IDLE_CALLS.get(u["mt"]))
     walk = ["move-1", "move-2", "move-3", "move-4"] if (ART_UNITS / s / "move-3.png").exists() else ["move-1", "move-2"]
     step = 100 if len(walk) == 4 else 150
     blocks = [
         "[standing_anim]\n" + indent(standing, 4) + "\n[/standing_anim]",
-        "[idle_anim]\n" + "\n".join(indent(frame(f"{base}/{n}.png", d), 4) for n, d in
-                                      (("idle-1", 200), ("idle-2", 400), ("idle-1", 200), ("standing", 150)))
+        "[idle_anim]\n" + "\n".join(indent(with_sound(frame(f"{base}/{n}.png", d), call if n == "idle-2" and i == 1
+                                                        else None), 4)
+                                      for i, (n, d) in enumerate((("idle-1", 200), ("idle-2", 400), ("idle-1", 200),
+                                                                  ("standing", 150))))
         + "\n[/idle_anim]",
         "[movement_anim]\n" + "\n".join(indent(frame(f"{base}/{n}.png", step), 4) for n in walk)
         + "\n[/movement_anim]",
@@ -1176,6 +1180,8 @@ DEATH_OVERRIDES = {
     "sw_unit_ob_cloaked_asteroid": "sw-death-rock.wav", "sw_unit_ob_shield_generator": "sw-death-vehicle.wav",
     "sw_unit_ob_shipyard_platform": "sw-death-capital.wav",
 }
+# A creature's call at the height of its idle animation, by movement type or id.
+IDLE_CALLS = {"sw_wookiee": "sw-wookiee-roar.wav", "sw_unit_wl_vornskr": "sw-vornskr-snarl.wav"}
 MOVE_SOUNDS = {"sw_starfighter": "sw-move-fighter.wav", "sw_capital": "sw-move-capital.wav",
                "sw_repulsor": "sw-move-speeder.wav", "sw_walker": "sw-move-walker.wav"}
 # Hover drift while standing: (pixels, period ms) per movement type. Big
