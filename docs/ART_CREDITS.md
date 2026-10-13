@@ -339,10 +339,11 @@ before installing; off-model redraws were rejected and redone.
   markings. 21 units have a rank II design and 20 a rank III design; where a
   tier could not be drawn on-model the unit keeps its previous tier's look
   (E-Web rank II: base look; Luke, Y-wing rank III: rank II look).
-- **Wall relief.** Interior walls and bunker aprons were flat. Edge pieces
-  drawn from each wall's own texture give walls a vertical face, a lit rim and
-  a cast shadow, and bunker aprons a low parapet (`gen_wall_relief.py`;
-  `images/terrain/sw/wall-relief-*.png`, `wall-shadow-*.png`).
+- **Wall relief.** Interior walls and bunker aprons were flat. Walls are now
+  drawn as raised blocks with a cast shadow, and bunker aprons get a low
+  parapet (`gen_wall_relief.py`; `images/terrain/sw/wall-*.png`,
+  `wall-relief-bunker-*.png`, `wall-shadow-*.png`; see "Walls redrawn as
+  walls" below).
   `render_map_preview.py` draws them with the game's neighbour rules.
 
 ## Wookiee fur colours (2026-10-12)
@@ -413,16 +414,21 @@ starship bulkhead) and the bunker parapet:
   wall: steel plates with seams and rivets, duracrete blocks in a running
   bond, sandstone slabs with gold inlay, rough stone with cracks, log planks
   with staggered joints. Nothing is centred on a hex.
-- **Front faces**: a taller (22 px), darker vertical face in each family's
-  material (steel ribs, block courses, rough stone, planks), lit from above,
-  with a lip in the top's colour and a near-black line at its foot.
-- **Far edges**: a slightly brighter coping, outlined in near-black.
-- **Clean corners** (owner follow-up, same day): each front face is the hex
-  edge raised straight up by the same height, so the top lines of
-  neighbouring faces join into one line wherever walls meet; each face
-  direction is shaded a little differently so corners read as creases. A
-  slanted face that turns an inside corner reaches into the neighbouring wall
-  hex; its `-ext` image is placed only there (utils/hte_terrain.cfg).
+- **Walls as solid blocks** (owner follow-up, same day: corners still did
+  not meet cleanly). The engine cuts every terrain image to its own hex, so
+  the earlier corner pieces that reached into a neighbouring hex were
+  clipped away in the game, and faces ended in wedges at hex corners. Each
+  wall hex is now drawn as a block 20 px high: its top is the hex lifted up
+  the screen, and its front faces (steel ribs, block courses, rough stone,
+  planks, lit from above, a bright lip above and a near-black foot) stand on
+  every south edge that looks onto floor. The picture is cut along the hex
+  grid, so each hex shows exactly its share; what a hex shows depends only
+  on it and its three southern neighbours, giving 32 pieces per wall family
+  (`images/terrain/sw/wall-<family>-<owner>-<case>.png`) placed by the
+  generated rules in `utils/sw_wall_relief.cfg`. Faces end in vertical
+  edges, inside corners meet in one crease, and the silhouette outline is
+  one unbroken line. The top of a wall overlaps the bottom of the floor hex
+  behind it, as walls and castles do in the base game.
 - **Shadows** on the floor below a wall are longer and darker.
 
 The Codex tile-variety jobs for wall tops and the old coded bulkhead were
