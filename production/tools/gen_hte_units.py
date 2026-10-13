@@ -372,37 +372,73 @@ EW_PROFILES = {
     "sw_unit_ob_cloning_cylinder": dict(sensor=0, sensor_range=0, signature=4, **{"class": "object"}),
     "sw_unit_ob_shipyard_platform": dict(sensor=4, sensor_range=5, signature=8, **{"class": "object"}),
 }
-EW_CLASS_NAMES = {"object": "object", "capital": "capital ship"}
+EW_CLASS_NAMES = {"object": "object", "capital": "capital ship", "starfighter": "starfighter",
+                  "vehicle": "vehicle", "infantry": "infantry", "creature": "creature"}
+# Mirrors lua/sw_ew.lua (CLASS_BY_MOVETYPE, CLASS_DEFAULTS, DEFAULT_SETTINGS)
+# so each unit's description can compare its ratings with an ordinary unit
+# of its class.
+EW_CLASS_BY_MOVETYPE = {"sw_capital": "capital", "sw_starfighter": "starfighter", "fly": "starfighter",
+                        "sw_walker": "vehicle", "sw_repulsor": "vehicle", "mounted": "vehicle",
+                        "sw_beast": "creature"}
+EW_CLASS_DEFAULTS = {"capital": (5, 7, 8), "starfighter": (3, 5, 3), "vehicle": (3, 4, 4),
+                     "infantry": (2, 3, 2), "creature": (3, 3, 2), "object": (0, 0, 4)}
+EW_FALLOFF, EW_SWEEP_RANGE, EW_SWEEP_SIGNATURE, EW_ECM_SIGNATURE = 2, 2, 3, 2
+EW_DECOY_RANGE, EW_DECOY_TURNS = 2, 2
 
 
 def ew_ability(unit_id: str) -> str | None:
     profile = EW_PROFILES.get(unit_id)
     if not profile:
         return None
+    unit = next(u for u in ROSTER if u["id"] == unit_id)
+    cls = profile.get("class") or EW_CLASS_BY_MOVETYPE.get(unit["mt"], "infantry")
+    d_sensor, d_range, d_sig = EW_CLASS_DEFAULTS[cls]
+    sensor, rng = profile.get("sensor", d_sensor), profile.get("sensor_range", d_range)
+    sig = profile.get("signature", d_sig)
+    kind = EW_CLASS_NAMES[cls]
     attrs = "".join(f"    {k}={v}\n" for k, v in profile.items())
     parts = []
+    if cls == "object":
+        # Set pieces: no class to compare with.
+        parts.append(f"Signature {sig}: the higher it is, the further away enemy sensors pick it up (a soldier "
+                     "is 2, a starfighter 3, a capital ship 8)" if sig > 1 else f"Signature {sig}: almost invisible to sensors")
+        parts.append(f"Sensors {sensor} out to {rng} hexes" if rng > 0 else "No sensors of its own")
+    elif sig < d_sig:
+        parts.append(f"Runs silent: signature {sig} (ordinary {kind} {d_sig}), so enemy sensors must come about "
+                     f"{EW_FALLOFF * (d_sig - sig)} hexes closer to pick it up")
+    elif sig > d_sig:
+        parts.append(f"Large sensor target: signature {sig} (ordinary {kind} {d_sig}), so enemy sensors pick it up "
+                     f"about {EW_FALLOFF * (sig - d_sig)} hexes further away")
     if profile.get("cloak"):
-        parts.append(f"cloak {profile['cloak']} (drops after firing)")
-    if profile.get("ecm"):
-        parts.append(f"jammer {profile['ecm']} over {profile.get('ecm_range', 2)} hexes (it is loud: +2 signature)")
-    if profile.get("eccm"):
-        parts.append(f"counter-jamming {profile['eccm']}")
-    if profile.get("scan"):
-        parts.append(f"active sweep +{profile['scan']} (right-click menu)")
-    if profile.get("decoys"):
-        parts.append(f"{profile['decoys']} sensor decoy(s)")
+        parts.append(f"Cloak {profile['cloak']}: hidden from the enemy until their sensors identify it or a unit "
+                     "comes next to it. Fighting drops the cloak until its next turn")
     if profile.get("disguise_class"):
-        parts.append(f"reads as {EW_CLASS_NAMES.get(profile['disguise_class'], profile['disguise_class'])} until identified")
-    if "sensor" in profile and profile.get("sensor_range", 1) > 0:
-        parts.append(f"sensors {profile['sensor']} out to {profile.get('sensor_range', '?')} hexes")
-    if "signature" in profile:
-        parts.append(f"signature {profile['signature']}")
+        parts.append(f"Reads as {EW_CLASS_NAMES.get(profile['disguise_class'], profile['disguise_class'])} on "
+                     "enemy sensors until it is identified")
+    if cls != "object" and rng > 0 and (sensor, rng) != (d_sensor, d_range):
+        parts.append(f"Sensors {sensor} out to {rng} hexes (ordinary {kind} {d_sensor} out to {d_range})")
+    if profile.get("scan"):
+        parts.append(f"Active sensor sweep (right-click; uses its attack): until its next turn, sensors +{profile['scan']} "
+                     f"and {EW_SWEEP_RANGE} hexes more reach, but signature +{EW_SWEEP_SIGNATURE}")
+    if profile.get("ecm"):
+        parts.append(f"Jammer {profile['ecm']}: enemy sensors read {profile['ecm']} weaker when they look from, or at, "
+                     f"any hex within {profile.get('ecm_range', 2)} of this unit. Jamming is loud: its own signature "
+                     f"+{EW_ECM_SIGNATURE}")
+    if profile.get("eccm"):
+        parts.append(f"Counter-jamming {profile['eccm']}: cancels {profile['eccm']} "
+                     f"{'point' if profile['eccm'] == 1 else 'points'} of enemy jamming on its own sensors")
+    if profile.get("decoys"):
+        parts.append(f"{profile['decoys']} sensor {'decoy' if profile['decoys'] == 1 else 'decoys'} (right-click; uses its attack): a false contact up to "
+                     f"{EW_DECOY_RANGE} hexes away for {EW_DECOY_TURNS} turns, until enemy sensors see through it")
+    if not parts:
+        parts.append(f"Sensors {sensor} out to {rng} hexes, signature {sig}")
     return (
         "[dummy]\n"
         "    id=sw_ability_ew\n"
         f"{attrs}"
         "    name= _ \"sensors and EW\"\n"
-        f"    description= _ \"Sensors and electronic warfare: {'; '.join(parts)}. See the Field Manual: Sensors and cloaking.\"\n"
+        f"    description= _ \"Sensors and electronic warfare. {'. '.join(parts)}. "
+        "Field Manual: Electronic warfare explains each rating.\"\n"
         "[/dummy]"
     )
 
@@ -596,6 +632,81 @@ SPECIALS = {
         "    [/filter_self]\n"
         "[/damage]"
     ),
+    # Signature traits (owner request 2026-10-13: weapons specific to the
+    # unit's role, not a generic punch and shot). One per unit at its base
+    # level, distinct from its rank abilities (rank_abilities.py).
+    # E-Web: braced on its tripod. The engine builds the combat stats before
+    # it spends the attacker's movement (actions/attack.cpp), so moves still
+    # equal max_moves for a crew that has not moved this turn.
+    "set_up": (
+        "[damage]\n"
+        "    id=sw_special_set_up\n"
+        "    name= _ \"set up\"\n"
+        "    description= _ \"A crew that stays put has the tripod braced and the power pack feeding: when attacking without having moved this turn, this weapon deals +50% damage.\"\n"
+        "    multiply=1.5\n"
+        "    active_on=offense\n"
+        "    [filter_self]\n"
+        "        formula=\"moves >= max_moves\"\n"
+        "    [/filter_self]\n"
+        "[/damage]"
+    ),
+    # Stormtroopers fight as drilled squads.
+    "formation_fire": (
+        "[chance_to_hit]\n"
+        "    id=sw_special_formation_fire\n"
+        "    name= _ \"formation fire\"\n"
+        "    description= _ \"Drilled to fire as a squad: +10% chance to hit while another stormtrooper (trooper, sergeant or clone) stands next to this unit.\"\n"
+        "    add=10\n"
+        "    [filter_self]\n"
+        "        [filter_adjacent]\n"
+        f"            type={','.join(('sw_unit_im_stormtrooper', 'sw_unit_im_stormtrooper_sergeant', 'sw_unit_im_clone_trooper'))}\n"
+        "            is_enemy=no\n"
+        "        [/filter_adjacent]\n"
+        "    [/filter_self]\n"
+        "[/chance_to_hit]"
+    ),
+    # TIE pilots fly in packs.
+    "tie_pack": (
+        "[chance_to_hit]\n"
+        "    id=sw_special_tie_pack\n"
+        "    name= _ \"pack tactics\"\n"
+        "    description= _ \"TIE pilots are trained to fly and fight in packs: +10% chance to hit while another TIE (fighter, interceptor or bomber) flies next to this one.\"\n"
+        "    add=10\n"
+        "    [filter_self]\n"
+        "        [filter_adjacent]\n"
+        "            type=sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber\n"
+        "            is_enemy=no\n"
+        "        [/filter_adjacent]\n"
+        "    [/filter_self]\n"
+        "[/chance_to_hit]"
+    ),
+    # Planetary militia defend their own homes.
+    "home_ground": (
+        "[damage]\n"
+        "    id=sw_special_home_ground\n"
+        "    name= _ \"home ground\"\n"
+        "    description= _ \"Fighting for their own homes: +25% damage while this unit stands in a village or settlement.\"\n"
+        "    multiply=1.25\n"
+        "    [filter_self]\n"
+        "        [filter_location]\n"
+        "            terrain=*^V*\n"
+        "        [/filter_location]\n"
+        "    [/filter_self]\n"
+        "[/damage]"
+    ),
+    # Lando Calrissian, gambler. defense_on is the target's defence (%) on
+    # its own hex (formula/function_gamestate.cpp).
+    "long_odds": (
+        "[damage]\n"
+        "    id=sw_special_long_odds\n"
+        "    name= _ \"long odds\"\n"
+        "    description= _ \"Lando never could resist a long shot: +50% damage against a target on terrain that gives it 60% defence or more.\"\n"
+        "    multiply=1.5\n"
+        "    [filter_opponent]\n"
+        "        formula=\"defense_on(self, loc) >= 60\"\n"
+        "    [/filter_opponent]\n"
+        "[/damage]"
+    ),
 }
 
 
@@ -614,7 +725,7 @@ def U(uid, name, desc, *, file, level, hp, mp, xp, cost, mt, attacks, alignment=
                 advances=advances, gender=gender, resist=resist or {}, hero=hero, zoc=zoc, hide_help=hide_help)
 
 
-RIFLE = lambda d, n: attack("blaster_rifle", "blaster rifle", "fire", "ranged", d, n)
+RIFLE = lambda d, n, sp=(): attack("blaster_rifle", "blaster rifle", "fire", "ranged", d, n, specials=sp)
 PISTOL = lambda d, n, sp=(): attack("blaster_pistol", "blaster pistol", "fire", "ranged", d, n, specials=sp)
 BUTT = lambda d, n: attack("rifle_butt", "rifle butt", "impact", "melee", d, n)
 FISTS = lambda d, n: attack("fists", "fists", "impact", "melee", d, n)
@@ -640,7 +751,8 @@ ROSTER = [
       "A two-person crew with a tripod-mounted heavy repeating blaster. Slow to redeploy, but its fire reaches two hexes and shreds anything caught in the open.",
       file="hte_new_republic", level=1, hp=36, mp=4, xp=44, cost=19, mt="sw_infantry", usage="archer",
       attacks=[FISTS(4, 2),
-               attack("eweb_repeater", "E-Web repeating blaster", "fire", "ranged", 10, 3, max_range=2)]),
+               attack("eweb_repeater", "E-Web repeating blaster", "fire", "ranged", 10, 3, max_range=2,
+                      specials=["set_up"])]),
     U("sw_unit_nr_field_medic", "Field Medic",
       "New Republic medics carry bacta patches and stim kits into the thick of the fighting to keep soldiers on their feet.",
       file="hte_new_republic", level=1, hp=30, mp=5, xp=40, cost=16, mt="sw_infantry", usage="healer",
@@ -648,7 +760,8 @@ ROSTER = [
     U("sw_unit_nr_militia", "Planetary Militia",
       "Local defense volunteers with little training and older weapons, fighting for their own homes.",
       file="hte_new_republic", level=0, hp=26, mp=5, xp=20, cost=8, mt="sw_infantry",
-      attacks=[FISTS(4, 2), PISTOL(5, 2)], advances="sw_unit_nr_trooper"),
+      attacks=[attack("fists", "fists", "impact", "melee", 4, 2, specials=["home_ground"]),
+               PISTOL(5, 2, sp=["home_ground"])], advances="sw_unit_nr_trooper"),
     U("sw_unit_wk_warrior", "Wookiee Warrior",
       "Wookiee warriors defend Kashyyyk's great wroshyr trees with ryyk blades and powerful bowcasters.",
       file="hte_new_republic", level=1, hp=48, mp=5, xp=44, cost=18, mt="sw_wookiee", race="sw_wookiee",
@@ -723,7 +836,7 @@ ROSTER = [
     U("sw_hero_lando", "Baron Administrator",
       "Lando Calrissian, gambler, general, and businessman, runs the mobile mining city on Nkllon and still enjoys long odds.",
       file="hte_heroes", level=2, hp=42, mp=6, xp=100, cost=40, mt="sw_infantry", hero=True, gender="male",
-      attacks=[FISTS(5, 2), PISTOL(7, 3)], abilities=["leadership"]),
+      attacks=[FISTS(5, 2), PISTOL(7, 3, sp=["long_odds"])], abilities=["leadership"]),
     U("sw_hero_mara", "Karrde's Second",
       "Mara Jade, Talon Karrde's second-in-command, is a superb pilot and fighter. She has unexplained reasons to want Luke Skywalker dead.",
       file="hte_heroes", level=2, hp=42, mp=6, xp=100, cost=40, mt="sw_jedi", hero=True, gender="female",
@@ -754,11 +867,11 @@ ROSTER = [
     U("sw_unit_im_stormtrooper", "Stormtrooper",
       "The Empire's armored infantry. Their plastoid armor turns blades and glancing bolts, and their discipline has survived the Emperor's death.",
       file="hte_imperial", level=1, hp=36, mp=5, xp=40, cost=14, mt="sw_armored_trooper",
-      attacks=[BUTT(5, 2), RIFLE(7, 3)], advances="sw_unit_im_stormtrooper_sergeant"),
+      attacks=[BUTT(5, 2), RIFLE(7, 3, sp=["formation_fire"])], advances="sw_unit_im_stormtrooper_sergeant"),
     U("sw_unit_im_stormtrooper_sergeant", "Stormtrooper Sergeant",
       "Squad leaders marked by their pauldrons, who drive their troopers forward with harsh efficiency.",
       file="hte_imperial", level=2, hp=48, mp=5, xp=90, cost=27, mt="sw_armored_trooper",
-      attacks=[BUTT(7, 2), RIFLE(9, 3)], abilities=["leadership"]),
+      attacks=[BUTT(7, 2), RIFLE(9, 3, sp=["formation_fire"])], abilities=["leadership"]),
     U("sw_unit_im_scout_trooper", "Scout Trooper",
       "Lightly armored scouts on speeder bikes: very fast in the open, dangerous among trees.",
       file="hte_imperial", level=1, hp=32, mp=8, xp=40, cost=17, mt="sw_repulsor", usage="scout",
@@ -785,16 +898,16 @@ ROSTER = [
     U("sw_unit_im_tie_fighter", "TIE Fighter",
       "Mass-produced, unshielded short-range fighters. They are fast and numerous and do not last long once hit.",
       file="hte_space", level=1, hp=24, mp=9, xp=36, cost=12, mt="sw_starfighter", race="mechanical",
-      usage="scout", attacks=[LASERS(7, 3)]),
+      usage="scout", attacks=[LASERS(7, 3, sp=["tie_pack"])]),
     U("sw_unit_im_tie_interceptor", "TIE Interceptor",
       "A faster, more heavily armed TIE design flown by the Remnant's best pilots.",
       file="hte_space", level=2, hp=30, mp=10, xp=80, cost=24, mt="sw_starfighter", race="mechanical",
-      attacks=[LASERS(9, 4, sp=["firststrike"])]),
+      attacks=[LASERS(9, 4, sp=["firststrike", "tie_pack"])]),
     U("sw_unit_im_tie_bomber", "TIE Bomber",
       "Double-hulled TIE bombers carry concussion bombs for stations and capital ships.",
       file="hte_space", level=1, hp=34, mp=7, xp=40, cost=18, mt="sw_starfighter", race="mechanical",
       usage="mixed fighter",
-      attacks=[LASERS(5, 2), attack("concussion_bombs", "concussion bombs", "impact", "ranged", 16, 2)]),
+      attacks=[LASERS(5, 2, sp=["tie_pack"]), attack("concussion_bombs", "concussion bombs", "impact", "ranged", 16, 2)]),
     U("sw_unit_im_mole_miner", "Hijacked Mole Miner",
       "A stolen asteroid-mining craft with plasma jets that can cut through hull plating. Imperial crews use them to board ships.",
       file="hte_space", level=1, hp=44, mp=4, xp=40, cost=20, mt="sw_starfighter", race="mechanical",
@@ -830,7 +943,7 @@ ROSTER = [
     U("sw_unit_im_clone_trooper", "Clone Stormtrooper",
       "Soldiers grown in the Grand Admiral's new cloning cylinders and sealed inside stormtrooper armor. They fight without hesitation.",
       file="dfr_units", level=1, hp=40, mp=5, xp=40, cost=16, mt="sw_armored_trooper",
-      attacks=[BUTT(6, 2), RIFLE(8, 3)], advances="sw_unit_im_stormtrooper_sergeant"),
+      attacks=[BUTT(6, 2), RIFLE(8, 3, sp=["formation_fire"])], advances="sw_unit_im_stormtrooper_sergeant"),
     U("sw_unit_im_decon_droid", "Decontamination Droid",
       "Slow, heavily built droids that have worked Honoghr's poisoned soil for a generation.",
       file="dfr_units", level=1, hp=50, mp=3, xp=40, cost=15, mt="sw_walker", race="mechanical",
