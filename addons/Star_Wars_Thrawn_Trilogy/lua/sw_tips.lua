@@ -81,7 +81,7 @@ tips.LIST = {
 		return type(cfg) == "table" and tonumber(cfg.intruder_side) == tips.PLAYER_SIDE and cfg.scenario == wesnoth.scenario.id
 	  end,
 	  caption = _ "Getting in unseen",
-	  text = _ "The guards here are unaware. Their sight is shown around them; a guard that spots you shouts and alerts every guard near it. Move through shadow and cover, and right-click a unit next to an unaware guard for a <b>Silent takedown</b>. Fighting openly is possible, but the whole garrison will come." },
+	  text = _ "The guards here are unaware. Their sight is shown around them; a guard that spots you shouts and alerts every guard near it. A guard sees only the way it faces. Sneak up from behind, out of its sight, and right-click your unit next to it for a <b>Silent takedown</b> in the same turn: guards look around at the start of their turn and notice anyone beside them. Fighting openly is possible, but the whole garrison will come." },
 	{ id = "ysalamiri",
 	  when = function()
 		return #wml.array_access.get("sw_ysalamiri_zone") > 0 and #player_units{ ability = "sw_ability_force" } > 0

@@ -3,15 +3,28 @@
 -- A scenario enables it with [sw_alert] action=enable guard_side= intruder_side=
 -- (see wesnoth.wml_actions.sw_alert in lua/sw_systems.lua). Guards of the
 -- guard side start UNAWARE: they hold their posts or walk a short patrol and
--- neither attack nor chase. A guard SPOTS an intruder unit that is in its
--- line of sight within its sight radius:
+-- neither attack nor chase. A guard SPOTS an intruder unit that is in front
+-- of it, in its line of sight, within its sight radius:
 --
 --   sight 3 (guard variable sw_alert_sight overrides; vornskrs 4)
 --   -1 when the intruder stands in cover (forest, crates, settlements,
 --      castles -- any hex giving at least 50% defence)
 --   -1 at night (time of day with a negative lawful bonus)
 --   +1 when the intruder fought this turn (noise)
---   adjacency always spots; walls block line of sight
+--   walls block line of sight
+--
+-- FACING (owner report 2026-10-13: adjacency always spotted, so no guard
+-- could ever be taken down). A guard sees only the half of the map it faces,
+-- the way its sprite looks: facing east (n, ne, se, s) it sees hexes in its
+-- own column and to the east; facing west (nw, sw), its column and the west.
+-- Creatures (vornskrs) sense all round. An intruder that steps next to an
+-- unaware guard from behind is not seen and can take it down that turn.
+-- At the start of the guard side's turn, guards on post turn about (they
+-- look around; patrols face the way they walk), and every guard notices an
+-- intruder standing next to it, whichever way it faces: the approach and the
+-- takedown must come in the same turn. Facing is set here, never left to the
+-- engine's unsynced random facing: at enable a guard faces the nearest
+-- intruder ([sw_alert] action=guard facing= overrides).
 --
 -- A guard that spots an intruder becomes ALERT and shouts: every guard
 -- within 4 hexes becomes alert too. Alert guards fight normally (their
@@ -70,6 +83,7 @@ function alert.enable(guard_side, intruder_side, show_sight)
 		show_sight = show_sight ~= false, alarm = false }
 	for _i, g in ipairs(alert.guards()) do
 		if g.variables.sw_alert_state == nil then g.variables.sw_alert_state = "unaware" end
+		alert.face_nearest_intruder(g)
 	end
 	alert.refresh()
 end
@@ -142,6 +156,43 @@ function alert.open_sight(g)
 	return math.max(1, r)
 end
 
+-- Facing (see the header). The engine draws nw and sw mirrored (facing
+-- west) and every other direction facing east.
+local WEST = { nw = true, sw = true }
+local ABOUT = { n = "sw", ne = "nw", se = "sw", s = "sw", nw = "ne", sw = "se" }
+
+function alert.faces_west(g) return WEST[g.facing] == true end
+
+-- Is hex x, y in the half the guard faces (creatures: everywhere)?
+function alert.in_front(g, x, y)
+	if alert.is_creature(g) then return true end
+	if alert.faces_west(g) then return x <= g.x end
+	return x >= g.x
+end
+
+function alert.turn_about(g) g.facing = ABOUT[g.facing] or "se" end
+
+-- Face toward column x (east when level).
+function alert.face_toward(g, x)
+	g.facing = (x < g.x) and "sw" or "se"
+end
+
+-- Face the nearest intruder (deterministic: distance, then id order).
+function alert.face_nearest_intruder(g)
+	local best, bd = nil, nil
+	for _i, it in ipairs(alert.intruders()) do
+		local d = wesnoth.map.distance_between(g.x, g.y, it.x, it.y)
+		if bd == nil or d < bd then best, bd = it, d end
+	end
+	if best then alert.face_toward(g, best.x) else g.facing = "se" end
+end
+
+-- Can the guard see hex x, y within radius r?
+function alert.sees_hex(g, x, y, r)
+	return wesnoth.map.distance_between(g.x, g.y, x, y) <= r and alert.in_front(g, x, y)
+		and alert.line_of_sight(g, x, y)
+end
+
 function alert.spot_radius(g, intruder)
 	local r = sight_of(g)
 	if dark_at(intruder.x, intruder.y) then r = r - 1 end
@@ -150,9 +201,13 @@ function alert.spot_radius(g, intruder)
 	return math.max(1, r)
 end
 
-function alert.spots(g, intruder)
+-- notice: the start of the guard side's turn, when a guard notices an
+-- intruder next to it whichever way it faces.
+function alert.spots(g, intruder, notice)
 	if g.hitpoints <= 0 or intruder.hitpoints <= 0 then return false end
 	local d = wesnoth.map.distance_between(g.x, g.y, intruder.x, intruder.y)
+	if d <= 1 and notice then return true end
+	if not alert.in_front(g, intruder.x, intruder.y) then return false end
 	if d <= 1 then return true end
 	if d > alert.spot_radius(g, intruder) then return false end
 	if not intruder:matches{ T.filter_vision{ side = g.side, visible = true } } then return false end
@@ -200,13 +255,14 @@ function alert.alarm()
 end
 
 -- Check every unaware guard against every intruder; update indicators.
-function alert.check()
+-- notice: see alert.spots.
+function alert.check(notice)
 	if not alert.enabled() then return end
 	local intruders = alert.intruders()
 	for _i, g in ipairs(alert.guards()) do
 		if alert.is_unaware(g) then
 			for _j, it in ipairs(intruders) do
-				if alert.is_unaware(g) and alert.spots(g, it) then alert.raise(g, it) end
+				if alert.is_unaware(g) and alert.spots(g, it, notice) then alert.raise(g, it) end
 			end
 		end
 	end
@@ -231,14 +287,14 @@ function alert.refresh()
 		else
 			for _j, it in ipairs(intruders) do
 				local d = wesnoth.map.distance_between(g.x, g.y, it.x, it.y)
-				if d == alert.spot_radius(g, it) + 1 and alert.line_of_sight(g, it.x, it.y) then
+				if d == alert.spot_radius(g, it) + 1 and alert.in_front(g, it.x, it.y) and alert.line_of_sight(g, it.x, it.y) then
 					mark = "misc/sw-alert-suspicious.png"
 				end
 			end
 			if cfg.show_sight then
 				for _j, loc in ipairs(wesnoth.map.find{ x = g.x, y = g.y, radius = alert.open_sight(g) }) do
 					local x, y = loc[1] or loc.x, loc[2] or loc.y
-					if (x ~= g.x or y ~= g.y) and alert.line_of_sight(g, x, y) then sight[core.key(x, y)] = { x = x, y = y } end
+					if (x ~= g.x or y ~= g.y) and alert.in_front(g, x, y) and alert.line_of_sight(g, x, y) then sight[core.key(x, y)] = { x = x, y = y } end
 				end
 			end
 		end
@@ -265,8 +321,9 @@ end
 
 -- ---------------------------------------------------------------- turn cycle
 
--- Start of the guard side's turn: patrols take a step; unaware guards
--- neither move further nor attack this turn.
+-- Start of the guard side's turn: patrols take a step, guards on post turn
+-- about, every guard notices intruders next to it; unaware guards neither
+-- move further nor attack this turn.
 function alert.on_side_turn(side)
 	local cfg = alert.config()
 	if not cfg or side ~= cfg.guard_side then
@@ -276,6 +333,7 @@ function alert.on_side_turn(side)
 	for _i, g in ipairs(alert.guards()) do
 		if alert.is_unaware(g) then
 			local route = core.split(g.variables.sw_alert_patrol or "")
+			local x0, y0 = g.x, g.y
 			if #route > 0 then
 				local i = (tonumber(g.variables.sw_alert_patrol_i) or 0) % #route + 1
 				local x, y = route[i]:match("(%d+)%.(%d+)")
@@ -286,13 +344,16 @@ function alert.on_side_turn(side)
 				g = wesnoth.units.get(g.id)
 				if g then g.variables.sw_alert_patrol_i = i end
 			end
+			-- A guard that did not walk looks around (a walking one faces the
+			-- way it went).
+			if g and g.x == x0 and g.y == y0 and not alert.is_creature(g) then alert.turn_about(g) end
 			if g and alert.is_unaware(g) then
 				g.moves = 0
 				g.attacks_left = 0
 			end
 		end
 	end
-	alert.check()
+	alert.check(true)
 end
 
 -- attack event: both sides of a fight make noise this turn.
@@ -331,8 +392,7 @@ function alert.takedown(u, g)
 	wesnoth.wml_actions.kill{ id = g.id, animate = true, fire_event = true }
 	-- Witnesses: any other unaware guard who can see the spot.
 	for _i, other in ipairs(alert.guards()) do
-		if alert.is_unaware(other) and wesnoth.map.distance_between(other.x, other.y, x, y) <= alert.open_sight(other)
-			and alert.line_of_sight(other, x, y) then
+		if alert.is_unaware(other) and alert.sees_hex(other, x, y, alert.open_sight(other)) then
 			alert.raise(other, u)
 		end
 	end
