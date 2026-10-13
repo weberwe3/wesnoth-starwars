@@ -441,3 +441,17 @@ sprite faces right and the engine mirrors it for westward moves, but the
 X-wing set (all three ranks) was drawn nose-left, so it flew and fired
 backwards in every direction. Its frames are mirrored, and its muzzle-flash
 point re-measured onto the wing cannons (`production/tools/muzzle_flashes.json`).
+
+## Every unit faces the way it moves (2026-10-13)
+
+Owner request: units must face the way they are moving. The engine mirrors a
+sprite for westward moves and assumes every frame faces right. An audit of
+every frame of every unit (each compared with its standing sprite and the
+mirror of it, then checked by eye) found two sets that broke the rule:
+
+- **Grand Admiral Thrawn**: standing, idle, walk, firing and death frames
+  faced left while his melee and defend frames faced right, so he walked
+  backwards and turned round mid-attack. The left-facing frames are mirrored;
+  his flash point moves to his extended hand.
+- **X-wing**: `idle-2` already faced right and was turned the wrong way when
+  the rest of the set was mirrored (above); it is turned back.

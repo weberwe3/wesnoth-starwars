@@ -10573,7 +10573,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "4de261d5e0b924015a9271f9759a37b75abe3c37294725bbfacb38ddcd98d1b7"
+      "sha256": "abed63ab3c45ac1af3624896cb418079b998d70f99f052d058366b961b8872a0"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
@@ -12693,11 +12693,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/death-1.png",
-      "sha256": "0ac5cc3eea7cbbbf7a7f9b52971097271510f4d5bcc84158c8e96a89ad825453"
+      "sha256": "33c8a4af18d3680a692a49afc9a91c825d3454349055c51525e0e151bc059ab0"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/death-2.png",
-      "sha256": "14ad020670f8b46f0dedafb702ca8ffb476284cc293e73bfc9b94173e8601b45"
+      "sha256": "e31a6faf88ba3b56f7143dd432ee1b91e5e47b56e0b1266e7c1d68728213b209"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/defend.png",
@@ -12705,11 +12705,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/idle-1.png",
-      "sha256": "041f533e072253859fda5a3b935f7749aeb9fd434d2487a1dead1ad4275053c1"
+      "sha256": "6da94ebc26fb5714359b249b3d190e7a4d2c3ca55baf2f97bdf2006bccafd613"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/idle-2.png",
-      "sha256": "4198a6ba9c4aa8c41f736ad984bf9932947a0dfa76ec3007efba86e4e135af76"
+      "sha256": "59dd2c1c7901603521e836651485f5b3e8d6bda3909bdc9bfeac20efb282616f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/melee-1.png",
@@ -12721,31 +12721,31 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/move-1.png",
-      "sha256": "c642db7202d307ad07534d6cc2cf3632296f3778a9b5fe504dfa79b27a3aac93"
+      "sha256": "c9a70981d6dd5b88e0725542338507c7e462a5340102cef6ce2050c6b2f0b3b6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/move-2.png",
-      "sha256": "642de88eaa4f98e9a6192bf5a316edbbd6bf1f8f51937ddc90be51885c8ea5af"
+      "sha256": "c928daa4289da3397f285c204879a913fb269a5475bcd2b32f75facc7e50325c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/move-3.png",
-      "sha256": "b1d3860ae1f7415abfe00413e6ab790f686ca49d759a9771321b232c73c79f86"
+      "sha256": "ace9df0e931e0c40ec567ac91831b80814b7e58851cc0eea5bb62c86c72f1fb8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/move-4.png",
-      "sha256": "3331934448493fa2ba160a30684048a166b9790d5e5af249f2f2ad7bb10d4566"
+      "sha256": "dbf6eb6adca5eaad822f6fd1557865b1c057a871c8fbfd47d59b33aca1d54f0c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/ranged-1.png",
-      "sha256": "6131be37d260a386135565c871104e8dd53781a8ffa166632004aa5adbee59bb"
+      "sha256": "02dbd878f792baba39c4994aa63863a3960b75ada6cc561ec6e32400c1d57a9d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/ranged-2.png",
-      "sha256": "f0c96d2d33a76c74c24296092ac4b2c6f963d23706a9a14ed30b6850aa9c174d"
+      "sha256": "9e6f07c44347409d27243dbd2dcef35c35f666a38191a627f8b04e9fefed546a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-thrawn/standing.png",
-      "sha256": "28142de54191178950c3306b150735fd7a9ba2c795acc54d570043ced807551a"
+      "sha256": "a7a625e99b870824d83e3ed21890fac1ebbf48afbbb931a78f13465982ada3c2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-wedge-rank2/death-1.png",
@@ -15449,7 +15449,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-xwing/idle-2.png",
-      "sha256": "a6f65a3de801c898a0bdb82d7c74efc6cab61796e69b90dd1d3cbfbb9f1592d8"
+      "sha256": "7543093419e39cfa4e4b96b53358c929c2e0615fa9bcd5bad3ff77379a54be2c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-unit-nr-xwing/melee-1.png",
