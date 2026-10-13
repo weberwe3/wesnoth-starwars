@@ -469,3 +469,20 @@ to the original-content rule, recorded in `AGENTS.md`,
 `docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md` (with their DOCX counterparts
 and `docs/REFERENCE_MANIFEST.json`). Natural attacks (fists, clubs, spears,
 bows, bites) keep the mainline Wesnoth sounds.
+
+## Leia and the Wookiee Lookout face the way they move (2026-10-13)
+
+Owner report: Leia still walked backwards after the audit above. That audit
+compared each frame with the unit's standing sprite, so a set whose standing,
+idle and walk frames all faced left passed, because they agreed with each other. The
+re-audit compares the walk frames with the attack frames instead (a weapon
+pointed at the target always faces right). Two units failed:
+
+- **Leia** (all three ranks): standing, idle, walk and defend frames were drawn
+  in three-quarter view turned left, while her attacks face right. Those
+  frames are mirrored, and so are rank 1's kneeling and fallen death frames.
+- **Wookiee Lookout** (all three ranks): standing, idle, walk, defend and death
+  frames faced left while the crossbow and melee frames face right. They are
+  mirrored.
+
+Attack frames and muzzle-flash points are unchanged.
