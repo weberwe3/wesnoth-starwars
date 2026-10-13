@@ -24,7 +24,7 @@ The development system follows these principles:
 7. **Every substantive change is traceable.** Tickets, logs, Git branches, commits, pull requests, and CI results form an audit chain.
 8. **Engine-backed checks outrank model confidence.** A model saying WML is valid is not sufficient when Wesnoth can test the relevant behavior.
 9. **Project references are mandatory context.** All agents must operate from the same feature/scope and architecture references.
-10. **Lore fidelity and original expression coexist.** Player-facing content uses authentic post-Return of the Jedi Expanded Universe (Legends) terminology, while dialogue, code, art, audio, and other expressive implementation remain original.
+10. **Lore fidelity and original expression coexist.** Player-facing content uses authentic post-Return of the Jedi Expanded Universe (Legends) terminology, while dialogue, code, art, audio, and other expressive implementation remain original. (Exception: the owner-supplied sound-effect clips in `addons/Star_Wars_Thrawn_Trilogy/sounds/sw-*.wav`, included at the owner's direction on 2026-10-13.)
 11. **Project identifiers are namespaced.** New project-owned WML/Lua identifiers use the `sw_` prefix while localized player-facing fields use full lore names.
 12. **Distribution is free and non-commercial.** Architecture and dependencies must remain suitable for official Battle for Wesnoth add-on-server distribution without proprietary Star Wars game binaries or assets.
 
@@ -921,7 +921,7 @@ All development LLMs must follow these rules:
 - do not modify protected architecture/security/reference files unless explicitly authorized;
 - do not commit, merge, push, or alter GitHub protections unless the role/ticket explicitly allows it;
 - do not request or expose secrets;
-- do not copy copyrighted Star Wars prose, dialogue, art, audio, or proprietary assets;
+- do not copy copyrighted Star Wars prose, dialogue, art, audio, or proprietary assets (the owner-supplied sound-effect clips in `addons/Star_Wars_Thrawn_Trilogy/sounds/sw-*.wav` are the one exception);
 - use authentic post-Return of the Jedi Expanded Universe (Legends) terminology
   in player-facing unit, faction, ability, objective, story, and newly written
   dialogue content when relevant to the ticket;

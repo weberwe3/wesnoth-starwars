@@ -9,7 +9,7 @@
 
 This project is an original, non-commercial fan total conversion for Battle for Wesnoth set in the post-Return of the Jedi Star Wars Expanded Universe (Legends), with particular inspiration from the Thrawn trilogy and X-Wing series era. It is intended to deliver a complete, serious-toned tactical campaign experience while remaining an original implementation distributed free of charge through the official Battle for Wesnoth add-on server.
 
-The project must not copy copyrighted prose, dialogue, art, music, audio, proprietary game assets, or other expressive content from Star Wars books, films, television, games, or licensed products. Story adaptation is limited to broad characters, settings, relationships, and plot concepts as directed by the project owner; all implementation, dialogue, mission scripting, art direction, UI treatment, rules, and supporting material must be original.
+The project must not copy copyrighted prose, dialogue, art, music, audio, proprietary game assets, or other expressive content from Star Wars books, films, television, games, or licensed products. Story adaptation is limited to broad characters, settings, relationships, and plot concepts as directed by the project owner; all implementation, dialogue, mission scripting, art direction, UI treatment, rules, and supporting material must be original. Exception (owner direction, 2026-10-13): the sound-effect clips supplied by the project owner (`addons/Star_Wars_Thrawn_Trilogy/sounds/sw-*.wav`) are included at the owner's direction; no other recorded or copied audio may be added.
 
 ## 2. Product Vision
 
@@ -261,7 +261,7 @@ Visual direction:
 - original assets only;
 - no extraction or reuse of copyrighted franchise art or game assets.
 
-Audio direction follows the same original-content rule. No copyrighted score, dialogue, effects, or proprietary audio assets may be copied into the project.
+Audio direction follows the same original-content rule. No copyrighted score, dialogue, effects, or proprietary audio assets may be copied into the project. The one exception is the owner-supplied sound-effect clips (`addons/Star_Wars_Thrawn_Trilogy/sounds/sw-*.wav`), included at the owner's direction on 2026-10-13.
 
 ## 10. Technical Target
 

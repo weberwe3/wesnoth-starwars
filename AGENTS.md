@@ -129,7 +129,7 @@ For tickets that create or modify campaign/scenario WML, apply these rules unles
 
 This is a fan total-conversion project.
 
-- Do not copy copyrighted novel prose, movie dialogue, scripts, game assets, music, sound effects, or proprietary source code.
+- Do not copy copyrighted novel prose, movie dialogue, scripts, game assets, music, sound effects, or proprietary source code. Exception (owner direction, 2026-10-13): the owner-supplied sound-effect clips (`addons/Star_Wars_Thrawn_Trilogy/sounds/sw-*.wav`) are part of the add-on; add no other recorded or copied audio.
 - Use original dialogue, descriptions, artwork, audio, and implementation.
 - Broad characters, settings, plot structure, and gameplay concepts may be represented as directed by the project owner, but implementation content should be original.
 - Authentic names and Legends-era terminology are permitted and expected; they

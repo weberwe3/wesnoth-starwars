@@ -455,3 +455,17 @@ mirror of it, then checked by eye) found two sets that broke the rule:
   his flash point moves to his extended hand.
 - **X-wing**: `idle-2` already faced right and was turned the wrong way when
   the rest of the set was mirrored (above); it is turned back.
+
+## Sound effects supplied by the project owner (2026-10-13)
+
+Owner direction: the 52 sound-effect clips kept until now in the owner's
+private audio repository ship in the add-on (`sounds/sw-*.wav`: weapons,
+impacts and misses, deaths, engines, creature calls, objective and pickup
+cues). They replace the code-synthesized stand-ins of the same names, so
+every existing cue plays the owner's clip; `production/tools/gen_sound_effects.py`
+now writes stand-ins only to a separate directory. This is the one exception
+to the original-content rule, recorded in `AGENTS.md`,
+`docs/PROJECT_SCOPE_AND_FEATURE_SET.md` and
+`docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md` (with their DOCX counterparts
+and `docs/REFERENCE_MANIFEST.json`). Natural attacks (fists, clubs, spears,
+bows, bites) keep the mainline Wesnoth sounds.

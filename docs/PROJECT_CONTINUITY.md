@@ -233,6 +233,11 @@ Do not copy:
 
 All project dialogue, descriptive writing, implementation, art, audio, UI treatment, and mission scripting should be original.
 
+Exception (owner direction, 2026-10-13): the sound-effect clips supplied by the project owner
+(`addons/Star_Wars_Thrawn_Trilogy/sounds/sw-*.wav`) ship in the add-on. They replaced the
+code-synthesized stand-ins of the same names (`production/tools/gen_sound_effects.py`, which
+now writes only to `--out DIR`). No other recorded or copied audio may be added.
+
 ### 3.4 Unit scale
 
 Current representational decisions:

@@ -8,13 +8,13 @@
       "id": "project_scope_and_feature_set",
       "canonical_markdown": {
         "path": "docs/PROJECT_SCOPE_AND_FEATURE_SET.md",
-        "sha256": "b07e34ca0ad501bd4ab8b480c194c8f9932ba4dd62ef989b369092976470cfb4",
-        "bytes": 17157
+        "sha256": "9d270b80262a74245b8f42b14884e421be6cc588fd35b4be7df0c02095cdb059",
+        "bytes": 17551
       },
       "human_archive": {
         "path": "docs/reference-source/Wesnoth_Project_Scope_and_Feature_Set.docx",
-        "sha256": "683be0e23e0f0dac60748b0d2230c96644b9bc067b2b50a365ec28fbc8165e26",
-        "bytes": 45560
+        "sha256": "137e9c313c1eb4fa0af6563b70bb5ad22c71cf3574461cbc3d27b7a14c0f9e5c",
+        "bytes": 45678
       },
       "required_for_all_agents": true
     },
@@ -22,13 +22,13 @@
       "id": "agent_orchestration_functional_spec",
       "canonical_markdown": {
         "path": "docs/AGENT_ORCHESTRATION_FUNCTIONAL_SPEC.md",
-        "sha256": "435800fb3449aa19a6747ca4961832d1ad0f36fb84e129e180c6b07dfc0b06e0",
-        "bytes": 62451
+        "sha256": "2bf34e7a2766be2d11a5518e78d2457ac45bb863a224c9ccf7a09e929c6ab2e9",
+        "bytes": 62720
       },
       "human_archive": {
         "path": "docs/reference-source/Wesnoth_Agent_Development_Functional_Specification.docx",
-        "sha256": "775ab03df17d5e713d150dd8375e5af5eda7c43570b83bc2d1d666d54ce9e6a2",
-        "bytes": 62753
+        "sha256": "93b06a236d7caeeb0469ebc28b31a4e1ce75d4186201ae0bf57956082653f9b1",
+        "bytes": 62915
       },
       "required_for_all_agents": true
     }

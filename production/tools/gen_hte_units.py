@@ -1119,9 +1119,9 @@ def projectile(unit_id: str, attack_name: str) -> tuple[str, str | None] | None:
 
 
 # --- sounds ------------------------------------------------------------------
-# Original synthesized effects (production/tools/gen_sound_effects.py) for
-# Star Wars weapons; mainline sounds only for natural attacks (fists, bites,
-# clubs, the Wayland natives' spears and bows).
+# The owner-supplied clips in sounds/sw-*.wav (owner direction 2026-10-13)
+# for Star Wars weapons; mainline sounds only for natural attacks (fists,
+# bites, clubs, the Wayland natives' spears and bows).
 MELEE_SOUNDS = {
     "lightsaber": "sw-lightsaber.wav", "vibroblade": "sw-vibroblade.wav", "vibroknife": "sw-vibroblade.wav",
     "force_pike": "sw-vibroblade.wav", "ryyk_blade": "sword-1.ogg", "noghri_knives": "dagger-swish.wav",
