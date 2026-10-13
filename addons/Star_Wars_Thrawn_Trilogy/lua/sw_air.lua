@@ -32,6 +32,7 @@
 local T = wml.tag
 local core = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_core.lua")
 local ew = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_ew.lua")
+local move_sound = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_move_sound.lua")
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
 local air = {}
@@ -57,12 +58,12 @@ end
 
 air.register_sortie("strafe", {
 	name = _ "Strafing run", length = 4, strikes = 3, damage = 6, damage_type = "fire", accuracy = 0, delay = 0,
-	sound = "sw-laser-cannon.wav", impact = "sw-laser-hit.wav",
+	sound = "sw-laser-cannon.wav", impact = "sw-laser-hit.wav", impact_every = 2,
 	description = _ "Starfighters rake a line of four hexes running away from the observer: three shots at every unit there, friend or foe. Strikes at once.",
 })
 air.register_sortie("bombing", {
 	name = _ "Bombing run", radius = 1, strikes = 2, damage = 9, damage_type = "fire", accuracy = 10, delay = 1,
-	sound = "sw-torpedo.wav", impact = "sw-explosion.wav",
+	impact = "sw-explosion.wav,sw-torpedo-hit.wav,sw-death-vehicle.wav", impact_every = 3,
 	description = _ "Bombers saturate the target hex and the six around it: two bombs at every unit there, friend or foe. The area is marked for everyone and hit at the start of your next turn.",
 })
 
@@ -349,8 +350,20 @@ air.CRAFT_BURST = {
 	sw_unit_im_tie_bomber = "misc/sw-energy-bomb-[1~4].png:70,misc/sw-energy-bomb-[5~10].png:90,misc/sw-energy-bomb-[11~16].png:130",
 }
 
+-- The craft's own engine sound (its take-off animation's, e.g.
+-- sw-move-fighter.wav), played once as it starts the pass. The flyover
+-- variation's take-off animation is silent (gen_hte_units.py
+-- flyover_variation): the engine plays animation sounds only for units the
+-- viewer can see, and the pass often starts in fog.
+function air.play(sound) wesnoth.audio.play(sound) end   -- tests record sounds here
+
+local function flyby_sound(craft)
+	air.play(move_sound.sound_of(craft) or "sw-move-fighter.wav")
+end
+
 local function flyover(strike, hexes)
 	if strike.craft == "" or not wesnoth.unit_types[strike.craft] or #hexes == 0 then return end
+	flyby_sound(strike.craft)
 	if strike.path == "hexes" then
 		-- Scripted strikes fly along their own hexes, in the given order.
 		wesnoth.wml_actions.move_unit_fake{ type = strike.craft, side = strike.side, variation = flyover_variation(strike.craft), x = strike.xs, y = strike.ys }
@@ -398,17 +411,23 @@ function air.resolve(strike)
 	-- (the engine's -u test mode has no textures for halos).
 	local effects = wml.variables.sw_air_effects ~= "no" and wml.variables.sw_air_effects ~= false
 	if effects then
-		-- Engines first, then the low pass, then the bombs or bolts walk
-		-- along the line one hex at a time behind the craft.
-		if def.sound then wesnoth.audio.play(def.sound) end
+		-- The guns open up (strafing), the craft makes its low pass with its
+		-- engine sound, then the bombs or bolts walk along the line one hex
+		-- at a time behind it.
+		if def.sound then air.play(def.sound) end
 		wesnoth.interface.delay(air.PACING.lead_ms)
 		flyover(strike, hexes)
 		local burst = (air.CRAFT_BURST[strike.craft] or "halo/flame-burst-[1~8].png:" .. air.PACING.burst_frame_ms)
 			.. ",misc/blank-hex.png:1"
-		for _i, h in ipairs(hexes) do
+		for i, h in ipairs(hexes) do
 			wesnoth.wml_actions.item{ x = h.x, y = h.y, halo = burst, name = "sw_air_blast", redraw = false }
 			wesnoth.wml_actions.redraw{}
-			if def.impact then wesnoth.audio.play(def.impact) end
+			-- One impact sound every impact_every hexes, so the detonations
+			-- ripple instead of piling up into noise; a list plays one of its
+			-- sounds at random.
+			if def.impact and (i - 1) % (def.impact_every or 1) == 0 then
+				air.play(def.impact)
+			end
 			wesnoth.interface.delay(air.PACING.step_ms)
 		end
 		wesnoth.interface.delay(air.PACING.settle_ms)

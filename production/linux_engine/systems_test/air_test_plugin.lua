@@ -53,6 +53,15 @@ local function plugin(events, context, info)
         ((not cond and detail ~= nil) and (" -- " .. tostring(detail)) or ""))
     end
     function swt.u(id) return wesnoth.units.get(id) end
+    -- Record the sounds an air strike plays (sw_air.lua air.play).
+    function swt.record_air_sounds()
+      swt.mem.air_sounds, swt.mem.real_air_play = {}, swt.mem.real_air_play or air.play
+      air.play = function(sound) table.insert(swt.mem.air_sounds, sound) end
+    end
+    function swt.stop_air_sounds()
+      air.play = swt.mem.real_air_play or air.play
+      return swt.mem.air_sounds or {}
+    end
     -- Menus are probed the way the engine evaluates [show_if]: outside any
     -- event, with the hex in the WML variables x1, y1.
     function swt.probe_at(x, y)
@@ -166,6 +175,19 @@ local function plugin(events, context, info)
       swt.move_to("t_ms_own", 5, 7)
       check("a real move of a visible speeder adds no second sound", #played == 1, #played)
       ms.play = real_play
+      -- Air sorties fly the craft's hidden flyover variation; its take-off is
+      -- silent because sw_air.lua plays the engine sound itself.
+      local function takeoff_sound(cfg)
+        local anim = wml.get_child(cfg, "pre_movement_anim")
+        local f = anim and wml.get_child(anim, "frame")
+        return f and f.sound
+      end
+      local xw = wesnoth.unit_types.sw_unit_nr_xwing
+      check("an X-wing's own take-off keeps its engine sound", takeoff_sound(xw.__cfg) == "sw-move-fighter.wav",
+        tostring(takeoff_sound(xw.__cfg)))
+      local fly = xw.variations and xw.variations.sw_flyover
+      local quiet = fly and takeoff_sound(fly.__cfg)
+      check("the flyover variation takes off silently", fly ~= nil and (quiet == nil or quiet == ""), tostring(quiet))
       swt.clear()
     end
 
@@ -544,9 +566,14 @@ local function plugin(events, context, info)
       swt.mem.hp = { t_e1 = u("t_e1").hitpoints, t_friend = u("t_friend").hitpoints, t_weak = 2 }
       doctrine.enable(2)
       swt.mem.strikes = {}
+      swt.record_air_sounds()
       swt.mem.call = air.call(1, "strafe", obs, 8, 8)
     end
     function S.check_strafe()
+      local heard = swt.stop_air_sounds()
+      check("strafing run: guns, then one engine pass, then a bolt impact every other hex",
+        table.concat(heard, ",") == "sw-laser-cannon.wav,sw-move-fighter.wav,sw-laser-hit.wav,sw-laser-hit.wav",
+        table.concat(heard, ","))
       check("strafing run called", swt.mem.call ~= nil)
       local s = swt.mem.strikes and swt.mem.strikes[1]
       check("strafing run resolved at once", s ~= nil and #s.results == 3, s and #s.results)
@@ -599,9 +626,16 @@ local function plugin(events, context, info)
       local inbound = wml.array_access.get("sw_air_inbound")
       inbound[1].due_turn = wesnoth.current.turn
       wml.array_access.set("sw_air_inbound", inbound)
+      swt.record_air_sounds()
       air.on_side_turn(1)
     end
     function S.check_bombing()
+      local heard = swt.stop_air_sounds()
+      local booms = "sw-explosion.wav,sw-torpedo-hit.wav,sw-death-vehicle.wav"
+      check("bombing run: one starfighter pass, no torpedo launch",
+        heard[1] == "sw-move-fighter.wav" and not table.concat(heard, ","):find("sw%-torpedo%.wav"), table.concat(heard, ","))
+      check("bombs: three staggered explosions over seven hexes, not seven at once",
+        #heard == 4 and heard[2] == booms and heard[3] == booms and heard[4] == booms, table.concat(heard, " | "))
       local s = swt.mem.strikes[1]
       check("bombing run landed on the units in the area", s ~= nil and #s.results == 2, s and #s.results)
       local exact, detail = true, {}
