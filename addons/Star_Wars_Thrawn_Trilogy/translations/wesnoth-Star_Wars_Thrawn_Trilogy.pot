@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-13 23:04 UTC\n"
+"POT-Creation-Date: 2026-10-13 23:32 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -608,8 +608,8 @@ msgstr ""
 #. [dummy]: id=sw_ability_anti_air
 #: lua/sw_air.lua:573
 #: units/hte_imperial.cfg:957
-#: units/hte_new_republic.cfg:1799
-#: units/hte_new_republic.cfg:1997
+#: units/hte_new_republic.cfg:1871
+#: units/hte_new_republic.cfg:2069
 msgid "anti-air"
 msgstr ""
 
@@ -1729,28 +1729,28 @@ msgstr ""
 #: units/hte_heroes.cfg:1106
 #: units/hte_heroes.cfg:1363
 #: units/hte_heroes.cfg:1632
-#: units/hte_heroes.cfg:1871
-#: units/hte_heroes.cfg:2111
-#: units/hte_heroes.cfg:2311
-#: units/hte_heroes.cfg:2567
-#: units/hte_heroes.cfg:2824
-#: units/hte_heroes.cfg:3079
-#: units/hte_heroes.cfg:3336
-#: units/hte_heroes.cfg:3594
-#: units/hte_heroes.cfg:3864
-#: units/hte_heroes.cfg:4085
-#: units/hte_heroes.cfg:4307
-#: units/hte_heroes.cfg:4544
-#: units/hte_heroes.cfg:4767
-#: units/hte_heroes.cfg:4991
-#: units/hte_heroes.cfg:5198
-#: units/hte_heroes.cfg:5414
-#: units/hte_heroes.cfg:5631
-#: units/hte_heroes.cfg:5835
-#: units/hte_heroes.cfg:6065
-#: units/hte_heroes.cfg:6296
-#: units/hte_heroes.cfg:6536
-#: units/hte_heroes.cfg:6750
+#: units/hte_heroes.cfg:1877
+#: units/hte_heroes.cfg:2123
+#: units/hte_heroes.cfg:2329
+#: units/hte_heroes.cfg:2585
+#: units/hte_heroes.cfg:2842
+#: units/hte_heroes.cfg:3097
+#: units/hte_heroes.cfg:3354
+#: units/hte_heroes.cfg:3612
+#: units/hte_heroes.cfg:3882
+#: units/hte_heroes.cfg:4103
+#: units/hte_heroes.cfg:4325
+#: units/hte_heroes.cfg:4562
+#: units/hte_heroes.cfg:4785
+#: units/hte_heroes.cfg:5009
+#: units/hte_heroes.cfg:5216
+#: units/hte_heroes.cfg:5432
+#: units/hte_heroes.cfg:5649
+#: units/hte_heroes.cfg:5853
+#: units/hte_heroes.cfg:6083
+#: units/hte_heroes.cfg:6314
+#: units/hte_heroes.cfg:6554
+#: units/hte_heroes.cfg:6768
 #: units/hte_imperial.cfg:30
 #: units/hte_imperial.cfg:289
 #: units/hte_imperial.cfg:553
@@ -1758,25 +1758,25 @@ msgstr ""
 #: units/hte_imperial.cfg:950
 #: units/hte_imperial.cfg:1219
 #: units/hte_new_republic.cfg:30
-#: units/hte_new_republic.cfg:273
-#: units/hte_new_republic.cfg:523
-#: units/hte_new_republic.cfg:774
-#: units/hte_new_republic.cfg:1024
-#: units/hte_new_republic.cfg:1280
-#: units/hte_new_republic.cfg:1537
-#: units/hte_new_republic.cfg:1792
-#: units/hte_new_republic.cfg:1990
-#: units/hte_new_republic.cfg:2189
-#: units/hte_new_republic.cfg:2366
-#: units/hte_new_republic.cfg:2544
-#: units/hte_new_republic.cfg:2691
-#: units/hte_new_republic.cfg:2901
-#: units/hte_new_republic.cfg:3154
-#: units/hte_new_republic.cfg:3408
-#: units/hte_new_republic.cfg:3666
-#: units/hte_new_republic.cfg:3923
-#: units/hte_new_republic.cfg:4181
-#: units/hte_new_republic.cfg:4433
+#: units/hte_new_republic.cfg:291
+#: units/hte_new_republic.cfg:559
+#: units/hte_new_republic.cfg:828
+#: units/hte_new_republic.cfg:1096
+#: units/hte_new_republic.cfg:1352
+#: units/hte_new_republic.cfg:1609
+#: units/hte_new_republic.cfg:1864
+#: units/hte_new_republic.cfg:2062
+#: units/hte_new_republic.cfg:2261
+#: units/hte_new_republic.cfg:2438
+#: units/hte_new_republic.cfg:2616
+#: units/hte_new_republic.cfg:2763
+#: units/hte_new_republic.cfg:2973
+#: units/hte_new_republic.cfg:3226
+#: units/hte_new_republic.cfg:3480
+#: units/hte_new_republic.cfg:3738
+#: units/hte_new_republic.cfg:3995
+#: units/hte_new_republic.cfg:4253
+#: units/hte_new_republic.cfg:4505
 #: units/hte_smugglers.cfg:30
 #: units/hte_smugglers.cfg:218
 #: units/hte_smugglers.cfg:408
@@ -1824,18 +1824,18 @@ msgstr ""
 #: units/dfr_units.cfg:1808
 #: units/hte_heroes.cfg:517
 #: units/hte_heroes.cfg:1021
-#: units/hte_heroes.cfg:1773
-#: units/hte_heroes.cfg:2508
-#: units/hte_heroes.cfg:3278
-#: units/hte_heroes.cfg:4014
-#: units/hte_heroes.cfg:4680
-#: units/hte_heroes.cfg:5343
-#: units/hte_heroes.cfg:6006
-#: units/hte_new_republic.cfg:468
-#: units/hte_new_republic.cfg:1225
-#: units/hte_new_republic.cfg:2311
-#: units/hte_new_republic.cfg:3100
-#: units/hte_new_republic.cfg:3864
+#: units/hte_heroes.cfg:1779
+#: units/hte_heroes.cfg:2526
+#: units/hte_heroes.cfg:3296
+#: units/hte_heroes.cfg:4032
+#: units/hte_heroes.cfg:4698
+#: units/hte_heroes.cfg:5361
+#: units/hte_heroes.cfg:6024
+#: units/hte_new_republic.cfg:504
+#: units/hte_new_republic.cfg:1297
+#: units/hte_new_republic.cfg:2383
+#: units/hte_new_republic.cfg:3172
+#: units/hte_new_republic.cfg:3936
 #: units/hte_smugglers.cfg:354
 #: units/hte_space.cfg:242
 #: units/hte_space.cfg:889
@@ -1856,19 +1856,19 @@ msgstr ""
 #: units/dfr_units.cfg:1340
 #: units/dfr_units.cfg:2064
 #: units/hte_heroes.cfg:1278
-#: units/hte_heroes.cfg:2013
-#: units/hte_heroes.cfg:2765
-#: units/hte_heroes.cfg:3536
-#: units/hte_heroes.cfg:4236
-#: units/hte_heroes.cfg:4904
-#: units/hte_heroes.cfg:5560
-#: units/hte_heroes.cfg:6237
-#: units/hte_new_republic.cfg:719
-#: units/hte_new_republic.cfg:1482
-#: units/hte_new_republic.cfg:1936
-#: units/hte_new_republic.cfg:2489
-#: units/hte_new_republic.cfg:3354
-#: units/hte_new_republic.cfg:4122
+#: units/hte_heroes.cfg:2025
+#: units/hte_heroes.cfg:2783
+#: units/hte_heroes.cfg:3554
+#: units/hte_heroes.cfg:4254
+#: units/hte_heroes.cfg:4922
+#: units/hte_heroes.cfg:5578
+#: units/hte_heroes.cfg:6255
+#: units/hte_new_republic.cfg:773
+#: units/hte_new_republic.cfg:1554
+#: units/hte_new_republic.cfg:2008
+#: units/hte_new_republic.cfg:2561
+#: units/hte_new_republic.cfg:3426
+#: units/hte_new_republic.cfg:4194
 #: units/hte_smugglers.cfg:545
 #: units/hte_space.cfg:468
 #: units/hte_space.cfg:1074
@@ -1994,7 +1994,16 @@ msgstr ""
 msgid "Sustained fire that pins the target down. A hit slows the target until it ends a turn: it deals half damage and moves at half speed."
 msgstr ""
 
+#. [damage]: id=sw_special_a280_piercing
 #: lua/sw_rank_abilities.lua:275
+#: units/hte_new_republic.cfg:59
+#: units/hte_new_republic.cfg:89
+#: units/hte_new_republic.cfg:326
+#: units/hte_new_republic.cfg:356
+#: units/hte_new_republic.cfg:594
+#: units/hte_new_republic.cfg:624
+#: units/hte_new_republic.cfg:863
+#: units/hte_new_republic.cfg:893
 msgid "armour-piercing"
 msgstr ""
 
@@ -4284,23 +4293,23 @@ msgstr ""
 #: units/dfr_units.cfg:1209
 #: units/dfr_units.cfg:1423
 #: units/hte_heroes.cfg:1644
-#: units/hte_heroes.cfg:1883
-#: units/hte_heroes.cfg:2123
-#: units/hte_heroes.cfg:2323
-#: units/hte_heroes.cfg:2579
-#: units/hte_heroes.cfg:2836
-#: units/hte_heroes.cfg:3876
-#: units/hte_heroes.cfg:4097
-#: units/hte_heroes.cfg:4319
-#: units/hte_heroes.cfg:5213
-#: units/hte_heroes.cfg:5429
-#: units/hte_heroes.cfg:5646
-#: units/hte_heroes.cfg:6548
-#: units/hte_heroes.cfg:6756
+#: units/hte_heroes.cfg:1889
+#: units/hte_heroes.cfg:2135
+#: units/hte_heroes.cfg:2341
+#: units/hte_heroes.cfg:2597
+#: units/hte_heroes.cfg:2854
+#: units/hte_heroes.cfg:3894
+#: units/hte_heroes.cfg:4115
+#: units/hte_heroes.cfg:4337
+#: units/hte_heroes.cfg:5231
+#: units/hte_heroes.cfg:5447
+#: units/hte_heroes.cfg:5664
+#: units/hte_heroes.cfg:6566
+#: units/hte_heroes.cfg:6774
 #: units/hte_imperial.cfg:768
-#: units/hte_new_republic.cfg:1805
-#: units/hte_new_republic.cfg:2003
-#: units/hte_new_republic.cfg:2697
+#: units/hte_new_republic.cfg:1877
+#: units/hte_new_republic.cfg:2075
+#: units/hte_new_republic.cfg:2769
 msgid "fists"
 msgstr ""
 
@@ -4357,9 +4366,11 @@ msgstr ""
 #. [effect]: type=fire
 #. [attack]: type=fire
 #: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:258
-#: units/hte_heroes.cfg:4562
-#: units/hte_heroes.cfg:4785
-#: units/hte_heroes.cfg:5009
+#: units/hte_heroes.cfg:4580
+#: units/hte_heroes.cfg:4803
+#: units/hte_heroes.cfg:5027
+#: units/hte_smugglers.cfg:817
+#: units/tlc_units.cfg:1094
 msgid "hold-out blaster"
 msgstr ""
 
@@ -5699,9 +5710,9 @@ msgstr ""
 #: units/dfr_units.cfg:43
 #: units/dfr_units.cfg:268
 #: units/dfr_units.cfg:494
-#: units/hte_heroes.cfg:4495
-#: units/hte_heroes.cfg:4718
-#: units/hte_heroes.cfg:4942
+#: units/hte_heroes.cfg:4513
+#: units/hte_heroes.cfg:4736
+#: units/hte_heroes.cfg:4960
 msgid "Infiltration: ignores enemy zones of control; full heal and cure, Max XP +20% (once)"
 msgstr ""
 
@@ -5729,28 +5740,28 @@ msgstr ""
 #: units/dfr_units.cfg:1198
 #: units/dfr_units.cfg:1412
 #: units/hte_heroes.cfg:1633
-#: units/hte_heroes.cfg:1872
-#: units/hte_heroes.cfg:2112
-#: units/hte_heroes.cfg:2312
-#: units/hte_heroes.cfg:2568
-#: units/hte_heroes.cfg:2825
-#: units/hte_heroes.cfg:3865
-#: units/hte_heroes.cfg:4086
-#: units/hte_heroes.cfg:4308
-#: units/hte_heroes.cfg:4545
-#: units/hte_heroes.cfg:4768
-#: units/hte_heroes.cfg:4992
-#: units/hte_heroes.cfg:5199
-#: units/hte_heroes.cfg:5415
-#: units/hte_heroes.cfg:5632
-#: units/hte_heroes.cfg:6537
-#: units/hte_heroes.cfg:6751
+#: units/hte_heroes.cfg:1878
+#: units/hte_heroes.cfg:2124
+#: units/hte_heroes.cfg:2330
+#: units/hte_heroes.cfg:2586
+#: units/hte_heroes.cfg:2843
+#: units/hte_heroes.cfg:3883
+#: units/hte_heroes.cfg:4104
+#: units/hte_heroes.cfg:4326
+#: units/hte_heroes.cfg:4563
+#: units/hte_heroes.cfg:4786
+#: units/hte_heroes.cfg:5010
+#: units/hte_heroes.cfg:5217
+#: units/hte_heroes.cfg:5433
+#: units/hte_heroes.cfg:5650
+#: units/hte_heroes.cfg:6555
+#: units/hte_heroes.cfg:6769
 #: units/hte_imperial.cfg:757
 #: units/hte_imperial.cfg:1220
-#: units/hte_new_republic.cfg:2190
-#: units/hte_new_republic.cfg:2367
-#: units/hte_new_republic.cfg:2545
-#: units/hte_new_republic.cfg:2692
+#: units/hte_new_republic.cfg:2262
+#: units/hte_new_republic.cfg:2439
+#: units/hte_new_republic.cfg:2617
+#: units/hte_new_republic.cfg:2764
 #: units/hte_smugglers.cfg:31
 #: units/hte_smugglers.cfg:219
 #: units/hte_smugglers.cfg:409
@@ -5772,20 +5783,20 @@ msgstr ""
 #: units/hte_heroes.cfg:856
 #: units/hte_heroes.cfg:1112
 #: units/hte_heroes.cfg:1369
-#: units/hte_heroes.cfg:5207
-#: units/hte_heroes.cfg:5423
-#: units/hte_heroes.cfg:5640
-#: units/hte_heroes.cfg:5841
-#: units/hte_heroes.cfg:6071
-#: units/hte_heroes.cfg:6302
+#: units/hte_heroes.cfg:5225
+#: units/hte_heroes.cfg:5441
+#: units/hte_heroes.cfg:5658
+#: units/hte_heroes.cfg:5859
+#: units/hte_heroes.cfg:6089
+#: units/hte_heroes.cfg:6320
 #: units/hte_imperial.cfg:561
 #: units/hte_imperial.cfg:1225
-#: units/hte_new_republic.cfg:1030
-#: units/hte_new_republic.cfg:1286
-#: units/hte_new_republic.cfg:1543
-#: units/hte_new_republic.cfg:3674
-#: units/hte_new_republic.cfg:3931
-#: units/hte_new_republic.cfg:4189
+#: units/hte_new_republic.cfg:1102
+#: units/hte_new_republic.cfg:1358
+#: units/hte_new_republic.cfg:1615
+#: units/hte_new_republic.cfg:3746
+#: units/hte_new_republic.cfg:4003
+#: units/hte_new_republic.cfg:4261
 #: units/hte_smugglers.cfg:799
 #: units/hte_space.cfg:65
 #: units/hte_space.cfg:302
@@ -5816,9 +5827,9 @@ msgstr ""
 #: units/dfr_units.cfg:1869
 #: units/dfr_units.cfg:2125
 #: units/hte_imperial.cfg:1226
-#: units/hte_new_republic.cfg:1031
-#: units/hte_new_republic.cfg:1287
-#: units/hte_new_republic.cfg:1544
+#: units/hte_new_republic.cfg:1103
+#: units/hte_new_republic.cfg:1359
+#: units/hte_new_republic.cfg:1616
 #: units/tlc_units.cfg:1076
 msgid "Sensors and electronic warfare. Runs silent: signature 1 (ordinary infantry 2), so enemy sensors must come about 2 hexes closer to pick it up. Field Manual: Electronic warfare explains each rating."
 msgstr ""
@@ -5847,26 +5858,26 @@ msgstr ""
 #: units/dfr_units.cfg:1233
 #: units/dfr_units.cfg:1447
 #: units/dfr_units.cfg:2616
-#: units/hte_heroes.cfg:1667
-#: units/hte_heroes.cfg:1906
-#: units/hte_heroes.cfg:2146
-#: units/hte_heroes.cfg:3908
-#: units/hte_heroes.cfg:4129
-#: units/hte_heroes.cfg:4351
-#: units/hte_heroes.cfg:4574
-#: units/hte_heroes.cfg:4797
-#: units/hte_heroes.cfg:5021
-#: units/hte_heroes.cfg:5237
-#: units/hte_heroes.cfg:5453
-#: units/hte_heroes.cfg:5670
-#: units/hte_heroes.cfg:6571
-#: units/hte_heroes.cfg:6779
+#: units/hte_heroes.cfg:1673
+#: units/hte_heroes.cfg:1918
+#: units/hte_heroes.cfg:2164
+#: units/hte_heroes.cfg:3926
+#: units/hte_heroes.cfg:4147
+#: units/hte_heroes.cfg:4369
+#: units/hte_heroes.cfg:4592
+#: units/hte_heroes.cfg:4815
+#: units/hte_heroes.cfg:5039
+#: units/hte_heroes.cfg:5255
+#: units/hte_heroes.cfg:5471
+#: units/hte_heroes.cfg:5688
+#: units/hte_heroes.cfg:6589
+#: units/hte_heroes.cfg:6797
 #: units/hte_imperial.cfg:791
 #: units/hte_imperial.cfg:1255
-#: units/hte_new_republic.cfg:2206
-#: units/hte_new_republic.cfg:2383
-#: units/hte_new_republic.cfg:2561
-#: units/hte_new_republic.cfg:2742
+#: units/hte_new_republic.cfg:2278
+#: units/hte_new_republic.cfg:2455
+#: units/hte_new_republic.cfg:2633
+#: units/hte_new_republic.cfg:2814
 #: units/hte_smugglers.cfg:59
 #: units/hte_smugglers.cfg:248
 #: units/hte_smugglers.cfg:438
@@ -5886,26 +5897,26 @@ msgstr ""
 #: units/dfr_units.cfg:1234
 #: units/dfr_units.cfg:1448
 #: units/dfr_units.cfg:2617
-#: units/hte_heroes.cfg:1668
-#: units/hte_heroes.cfg:1907
-#: units/hte_heroes.cfg:2147
-#: units/hte_heroes.cfg:3909
-#: units/hte_heroes.cfg:4130
-#: units/hte_heroes.cfg:4352
-#: units/hte_heroes.cfg:4575
-#: units/hte_heroes.cfg:4798
-#: units/hte_heroes.cfg:5022
-#: units/hte_heroes.cfg:5238
-#: units/hte_heroes.cfg:5454
-#: units/hte_heroes.cfg:5671
-#: units/hte_heroes.cfg:6572
-#: units/hte_heroes.cfg:6780
+#: units/hte_heroes.cfg:1674
+#: units/hte_heroes.cfg:1919
+#: units/hte_heroes.cfg:2165
+#: units/hte_heroes.cfg:3927
+#: units/hte_heroes.cfg:4148
+#: units/hte_heroes.cfg:4370
+#: units/hte_heroes.cfg:4593
+#: units/hte_heroes.cfg:4816
+#: units/hte_heroes.cfg:5040
+#: units/hte_heroes.cfg:5256
+#: units/hte_heroes.cfg:5472
+#: units/hte_heroes.cfg:5689
+#: units/hte_heroes.cfg:6590
+#: units/hte_heroes.cfg:6798
 #: units/hte_imperial.cfg:792
 #: units/hte_imperial.cfg:1256
-#: units/hte_new_republic.cfg:2207
-#: units/hte_new_republic.cfg:2384
-#: units/hte_new_republic.cfg:2562
-#: units/hte_new_republic.cfg:2743
+#: units/hte_new_republic.cfg:2279
+#: units/hte_new_republic.cfg:2456
+#: units/hte_new_republic.cfg:2634
+#: units/hte_new_republic.cfg:2815
 #: units/hte_smugglers.cfg:60
 #: units/hte_smugglers.cfg:249
 #: units/hte_smugglers.cfg:439
@@ -5954,11 +5965,11 @@ msgstr ""
 #: units/hte_heroes.cfg:1072
 #: units/hte_heroes.cfg:1329
 #: units/hte_heroes.cfg:1597
-#: units/hte_heroes.cfg:1836
-#: units/hte_heroes.cfg:2076
-#: units/hte_heroes.cfg:4509
-#: units/hte_heroes.cfg:4732
-#: units/hte_heroes.cfg:4956
+#: units/hte_heroes.cfg:1842
+#: units/hte_heroes.cfg:2088
+#: units/hte_heroes.cfg:4527
+#: units/hte_heroes.cfg:4750
+#: units/hte_heroes.cfg:4974
 #: units/tlc_units.cfg:41
 msgid "Force discipline: +2 maximum Force Points, regeneration unchanged; full heal and cure, Max XP +20% (once)"
 msgstr ""
@@ -5972,11 +5983,11 @@ msgstr ""
 #: units/hte_heroes.cfg:1080
 #: units/hte_heroes.cfg:1337
 #: units/hte_heroes.cfg:1605
-#: units/hte_heroes.cfg:1844
-#: units/hte_heroes.cfg:2084
-#: units/hte_heroes.cfg:4517
-#: units/hte_heroes.cfg:4740
-#: units/hte_heroes.cfg:4964
+#: units/hte_heroes.cfg:1850
+#: units/hte_heroes.cfg:2096
+#: units/hte_heroes.cfg:4535
+#: units/hte_heroes.cfg:4758
+#: units/hte_heroes.cfg:4982
 #: units/tlc_units.cfg:49
 msgid "Force discipline"
 msgstr ""
@@ -5990,11 +6001,11 @@ msgstr ""
 #: units/hte_heroes.cfg:1081
 #: units/hte_heroes.cfg:1338
 #: units/hte_heroes.cfg:1606
-#: units/hte_heroes.cfg:1845
-#: units/hte_heroes.cfg:2085
-#: units/hte_heroes.cfg:4518
-#: units/hte_heroes.cfg:4741
-#: units/hte_heroes.cfg:4965
+#: units/hte_heroes.cfg:1851
+#: units/hte_heroes.cfg:2097
+#: units/hte_heroes.cfg:4536
+#: units/hte_heroes.cfg:4759
+#: units/hte_heroes.cfg:4983
 #: units/tlc_units.cfg:50
 msgid "Adds 2 to maximum Force Points. Regeneration, power costs and cooldowns are unchanged. Ysalamiri still block all Force use and regeneration."
 msgstr ""
@@ -6051,11 +6062,11 @@ msgstr ""
 #: units/hte_heroes.cfg:1096
 #: units/hte_heroes.cfg:1353
 #: units/hte_heroes.cfg:1622
-#: units/hte_heroes.cfg:1861
-#: units/hte_heroes.cfg:2101
-#: units/hte_heroes.cfg:4534
-#: units/hte_heroes.cfg:4757
-#: units/hte_heroes.cfg:4981
+#: units/hte_heroes.cfg:1867
+#: units/hte_heroes.cfg:2113
+#: units/hte_heroes.cfg:4552
+#: units/hte_heroes.cfg:4775
+#: units/hte_heroes.cfg:4999
 #: units/tlc_units.cfg:81
 msgid "the Force"
 msgstr ""
@@ -6098,55 +6109,55 @@ msgstr ""
 #: units/hte_heroes.cfg:873
 #: units/hte_heroes.cfg:1129
 #: units/hte_heroes.cfg:1386
-#: units/hte_heroes.cfg:2347
-#: units/hte_heroes.cfg:2369
-#: units/hte_heroes.cfg:2603
-#: units/hte_heroes.cfg:2625
-#: units/hte_heroes.cfg:2860
-#: units/hte_heroes.cfg:2882
-#: units/hte_heroes.cfg:3117
-#: units/hte_heroes.cfg:3138
-#: units/hte_heroes.cfg:3374
-#: units/hte_heroes.cfg:3395
-#: units/hte_heroes.cfg:3632
-#: units/hte_heroes.cfg:3653
-#: units/hte_heroes.cfg:5858
-#: units/hte_heroes.cfg:6088
-#: units/hte_heroes.cfg:6319
+#: units/hte_heroes.cfg:2365
+#: units/hte_heroes.cfg:2387
+#: units/hte_heroes.cfg:2621
+#: units/hte_heroes.cfg:2643
+#: units/hte_heroes.cfg:2878
+#: units/hte_heroes.cfg:2900
+#: units/hte_heroes.cfg:3135
+#: units/hte_heroes.cfg:3156
+#: units/hte_heroes.cfg:3392
+#: units/hte_heroes.cfg:3413
+#: units/hte_heroes.cfg:3650
+#: units/hte_heroes.cfg:3671
+#: units/hte_heroes.cfg:5876
+#: units/hte_heroes.cfg:6106
+#: units/hte_heroes.cfg:6337
 #: units/hte_imperial.cfg:71
 #: units/hte_imperial.cfg:104
 #: units/hte_imperial.cfg:336
 #: units/hte_imperial.cfg:369
 #: units/hte_imperial.cfg:596
 #: units/hte_imperial.cfg:1007
-#: units/hte_new_republic.cfg:59
-#: units/hte_new_republic.cfg:80
-#: units/hte_new_republic.cfg:308
-#: units/hte_new_republic.cfg:329
-#: units/hte_new_republic.cfg:558
-#: units/hte_new_republic.cfg:579
-#: units/hte_new_republic.cfg:809
-#: units/hte_new_republic.cfg:830
-#: units/hte_new_republic.cfg:1065
-#: units/hte_new_republic.cfg:1086
-#: units/hte_new_republic.cfg:1321
-#: units/hte_new_republic.cfg:1342
-#: units/hte_new_republic.cfg:1578
-#: units/hte_new_republic.cfg:1599
-#: units/hte_new_republic.cfg:2939
-#: units/hte_new_republic.cfg:2960
-#: units/hte_new_republic.cfg:3192
-#: units/hte_new_republic.cfg:3213
-#: units/hte_new_republic.cfg:3446
-#: units/hte_new_republic.cfg:3467
-#: units/hte_new_republic.cfg:3703
-#: units/hte_new_republic.cfg:3724
-#: units/hte_new_republic.cfg:3960
-#: units/hte_new_republic.cfg:3981
-#: units/hte_new_republic.cfg:4218
-#: units/hte_new_republic.cfg:4239
-#: units/hte_new_republic.cfg:4463
-#: units/hte_new_republic.cfg:4485
+#: units/hte_new_republic.cfg:68
+#: units/hte_new_republic.cfg:98
+#: units/hte_new_republic.cfg:335
+#: units/hte_new_republic.cfg:365
+#: units/hte_new_republic.cfg:603
+#: units/hte_new_republic.cfg:633
+#: units/hte_new_republic.cfg:872
+#: units/hte_new_republic.cfg:902
+#: units/hte_new_republic.cfg:1137
+#: units/hte_new_republic.cfg:1158
+#: units/hte_new_republic.cfg:1393
+#: units/hte_new_republic.cfg:1414
+#: units/hte_new_republic.cfg:1650
+#: units/hte_new_republic.cfg:1671
+#: units/hte_new_republic.cfg:3011
+#: units/hte_new_republic.cfg:3032
+#: units/hte_new_republic.cfg:3264
+#: units/hte_new_republic.cfg:3285
+#: units/hte_new_republic.cfg:3518
+#: units/hte_new_republic.cfg:3539
+#: units/hte_new_republic.cfg:3775
+#: units/hte_new_republic.cfg:3796
+#: units/hte_new_republic.cfg:4032
+#: units/hte_new_republic.cfg:4053
+#: units/hte_new_republic.cfg:4290
+#: units/hte_new_republic.cfg:4311
+#: units/hte_new_republic.cfg:4535
+#: units/hte_new_republic.cfg:4557
 #: units/hte_space.cfg:82
 #: units/hte_space.cfg:319
 #: units/hte_space.cfg:545
@@ -6187,55 +6198,55 @@ msgstr ""
 #: units/hte_heroes.cfg:874
 #: units/hte_heroes.cfg:1130
 #: units/hte_heroes.cfg:1387
-#: units/hte_heroes.cfg:2348
-#: units/hte_heroes.cfg:2370
-#: units/hte_heroes.cfg:2604
-#: units/hte_heroes.cfg:2626
-#: units/hte_heroes.cfg:2861
-#: units/hte_heroes.cfg:2883
-#: units/hte_heroes.cfg:3118
-#: units/hte_heroes.cfg:3139
-#: units/hte_heroes.cfg:3375
-#: units/hte_heroes.cfg:3396
-#: units/hte_heroes.cfg:3633
-#: units/hte_heroes.cfg:3654
-#: units/hte_heroes.cfg:5859
-#: units/hte_heroes.cfg:6089
-#: units/hte_heroes.cfg:6320
+#: units/hte_heroes.cfg:2366
+#: units/hte_heroes.cfg:2388
+#: units/hte_heroes.cfg:2622
+#: units/hte_heroes.cfg:2644
+#: units/hte_heroes.cfg:2879
+#: units/hte_heroes.cfg:2901
+#: units/hte_heroes.cfg:3136
+#: units/hte_heroes.cfg:3157
+#: units/hte_heroes.cfg:3393
+#: units/hte_heroes.cfg:3414
+#: units/hte_heroes.cfg:3651
+#: units/hte_heroes.cfg:3672
+#: units/hte_heroes.cfg:5877
+#: units/hte_heroes.cfg:6107
+#: units/hte_heroes.cfg:6338
 #: units/hte_imperial.cfg:72
 #: units/hte_imperial.cfg:105
 #: units/hte_imperial.cfg:337
 #: units/hte_imperial.cfg:370
 #: units/hte_imperial.cfg:597
 #: units/hte_imperial.cfg:1008
-#: units/hte_new_republic.cfg:60
-#: units/hte_new_republic.cfg:81
-#: units/hte_new_republic.cfg:309
-#: units/hte_new_republic.cfg:330
-#: units/hte_new_republic.cfg:559
-#: units/hte_new_republic.cfg:580
-#: units/hte_new_republic.cfg:810
-#: units/hte_new_republic.cfg:831
-#: units/hte_new_republic.cfg:1066
-#: units/hte_new_republic.cfg:1087
-#: units/hte_new_republic.cfg:1322
-#: units/hte_new_republic.cfg:1343
-#: units/hte_new_republic.cfg:1579
-#: units/hte_new_republic.cfg:1600
-#: units/hte_new_republic.cfg:2940
-#: units/hte_new_republic.cfg:2961
-#: units/hte_new_republic.cfg:3193
-#: units/hte_new_republic.cfg:3214
-#: units/hte_new_republic.cfg:3447
-#: units/hte_new_republic.cfg:3468
-#: units/hte_new_republic.cfg:3704
-#: units/hte_new_republic.cfg:3725
-#: units/hte_new_republic.cfg:3961
-#: units/hte_new_republic.cfg:3982
-#: units/hte_new_republic.cfg:4219
-#: units/hte_new_republic.cfg:4240
-#: units/hte_new_republic.cfg:4464
-#: units/hte_new_republic.cfg:4486
+#: units/hte_new_republic.cfg:69
+#: units/hte_new_republic.cfg:99
+#: units/hte_new_republic.cfg:336
+#: units/hte_new_republic.cfg:366
+#: units/hte_new_republic.cfg:604
+#: units/hte_new_republic.cfg:634
+#: units/hte_new_republic.cfg:873
+#: units/hte_new_republic.cfg:903
+#: units/hte_new_republic.cfg:1138
+#: units/hte_new_republic.cfg:1159
+#: units/hte_new_republic.cfg:1394
+#: units/hte_new_republic.cfg:1415
+#: units/hte_new_republic.cfg:1651
+#: units/hte_new_republic.cfg:1672
+#: units/hte_new_republic.cfg:3012
+#: units/hte_new_republic.cfg:3033
+#: units/hte_new_republic.cfg:3265
+#: units/hte_new_republic.cfg:3286
+#: units/hte_new_republic.cfg:3519
+#: units/hte_new_republic.cfg:3540
+#: units/hte_new_republic.cfg:3776
+#: units/hte_new_republic.cfg:3797
+#: units/hte_new_republic.cfg:4033
+#: units/hte_new_republic.cfg:4054
+#: units/hte_new_republic.cfg:4291
+#: units/hte_new_republic.cfg:4312
+#: units/hte_new_republic.cfg:4536
+#: units/hte_new_republic.cfg:4558
 #: units/hte_space.cfg:83
 #: units/hte_space.cfg:320
 #: units/hte_space.cfg:546
@@ -6279,16 +6290,16 @@ msgstr ""
 #: units/dfr_units.cfg:1151
 #: units/dfr_units.cfg:1365
 #: units/hte_heroes.cfg:1559
-#: units/hte_heroes.cfg:1798
-#: units/hte_heroes.cfg:2038
-#: units/hte_heroes.cfg:3831
-#: units/hte_heroes.cfg:4052
-#: units/hte_heroes.cfg:4274
-#: units/hte_heroes.cfg:5165
-#: units/hte_heroes.cfg:5381
-#: units/hte_heroes.cfg:5598
-#: units/hte_heroes.cfg:6490
-#: units/hte_heroes.cfg:6699
+#: units/hte_heroes.cfg:1804
+#: units/hte_heroes.cfg:2050
+#: units/hte_heroes.cfg:3849
+#: units/hte_heroes.cfg:4070
+#: units/hte_heroes.cfg:4292
+#: units/hte_heroes.cfg:5183
+#: units/hte_heroes.cfg:5399
+#: units/hte_heroes.cfg:5616
+#: units/hte_heroes.cfg:6508
+#: units/hte_heroes.cfg:6717
 msgid "Field coordination: adjacent allies recover 4 HP/turn, slows poison (no stacking); full heal and cure, Max XP +20% (once)"
 msgstr ""
 
@@ -6297,16 +6308,16 @@ msgstr ""
 #: units/dfr_units.cfg:1163
 #: units/dfr_units.cfg:1377
 #: units/hte_heroes.cfg:1571
-#: units/hte_heroes.cfg:1810
-#: units/hte_heroes.cfg:2050
-#: units/hte_heroes.cfg:3843
-#: units/hte_heroes.cfg:4064
-#: units/hte_heroes.cfg:4286
-#: units/hte_heroes.cfg:5177
-#: units/hte_heroes.cfg:5393
-#: units/hte_heroes.cfg:5610
-#: units/hte_heroes.cfg:6502
-#: units/hte_heroes.cfg:6711
+#: units/hte_heroes.cfg:1816
+#: units/hte_heroes.cfg:2062
+#: units/hte_heroes.cfg:3861
+#: units/hte_heroes.cfg:4082
+#: units/hte_heroes.cfg:4304
+#: units/hte_heroes.cfg:5195
+#: units/hte_heroes.cfg:5411
+#: units/hte_heroes.cfg:5628
+#: units/hte_heroes.cfg:6520
+#: units/hte_heroes.cfg:6729
 msgid "field coordination"
 msgstr ""
 
@@ -6315,16 +6326,16 @@ msgstr ""
 #: units/dfr_units.cfg:1164
 #: units/dfr_units.cfg:1378
 #: units/hte_heroes.cfg:1572
-#: units/hte_heroes.cfg:1811
-#: units/hte_heroes.cfg:2051
-#: units/hte_heroes.cfg:3844
-#: units/hte_heroes.cfg:4065
-#: units/hte_heroes.cfg:4287
-#: units/hte_heroes.cfg:5178
-#: units/hte_heroes.cfg:5394
-#: units/hte_heroes.cfg:5611
-#: units/hte_heroes.cfg:6503
-#: units/hte_heroes.cfg:6712
+#: units/hte_heroes.cfg:1817
+#: units/hte_heroes.cfg:2063
+#: units/hte_heroes.cfg:3862
+#: units/hte_heroes.cfg:4083
+#: units/hte_heroes.cfg:4305
+#: units/hte_heroes.cfg:5196
+#: units/hte_heroes.cfg:5412
+#: units/hte_heroes.cfg:5629
+#: units/hte_heroes.cfg:6521
+#: units/hte_heroes.cfg:6730
 msgid "Coordinates battlefield recovery: adjacent allies recover up to 4 HP at the start of this unit's turn. Slows poison; does not heal the commander or stack with other healers."
 msgstr ""
 
@@ -6333,10 +6344,10 @@ msgstr ""
 #: units/dfr_units.cfg:1176
 #: units/dfr_units.cfg:1390
 #: units/hte_heroes.cfg:1584
-#: units/hte_heroes.cfg:1823
-#: units/hte_heroes.cfg:2063
-#: units/hte_heroes.cfg:6515
-#: units/hte_heroes.cfg:6724
+#: units/hte_heroes.cfg:1829
+#: units/hte_heroes.cfg:2075
+#: units/hte_heroes.cfg:6533
+#: units/hte_heroes.cfg:6742
 msgid "Command repositioning: +1 movement, vision unchanged; full heal and cure, Max XP +20% (once)"
 msgstr ""
 
@@ -6348,24 +6359,24 @@ msgstr ""
 #: units/dfr_units.cfg:1874
 #: units/dfr_units.cfg:2130
 #: units/hte_heroes.cfg:1638
-#: units/hte_heroes.cfg:1877
-#: units/hte_heroes.cfg:2117
-#: units/hte_heroes.cfg:2317
-#: units/hte_heroes.cfg:2573
-#: units/hte_heroes.cfg:2830
-#: units/hte_heroes.cfg:3870
-#: units/hte_heroes.cfg:4091
-#: units/hte_heroes.cfg:4313
-#: units/hte_heroes.cfg:6542
+#: units/hte_heroes.cfg:1883
+#: units/hte_heroes.cfg:2129
+#: units/hte_heroes.cfg:2335
+#: units/hte_heroes.cfg:2591
+#: units/hte_heroes.cfg:2848
+#: units/hte_heroes.cfg:3888
+#: units/hte_heroes.cfg:4109
+#: units/hte_heroes.cfg:4331
+#: units/hte_heroes.cfg:6560
 #: units/hte_imperial.cfg:295
 #: units/hte_imperial.cfg:567
 #: units/hte_imperial.cfg:762
-#: units/hte_new_republic.cfg:279
-#: units/hte_new_republic.cfg:529
-#: units/hte_new_republic.cfg:780
-#: units/hte_new_republic.cfg:1036
-#: units/hte_new_republic.cfg:1292
-#: units/hte_new_republic.cfg:1549
+#: units/hte_new_republic.cfg:297
+#: units/hte_new_republic.cfg:565
+#: units/hte_new_republic.cfg:834
+#: units/hte_new_republic.cfg:1108
+#: units/hte_new_republic.cfg:1364
+#: units/hte_new_republic.cfg:1621
 msgid "forward observer"
 msgstr ""
 
@@ -6377,9 +6388,9 @@ msgstr ""
 #: units/dfr_units.cfg:1875
 #: units/dfr_units.cfg:2131
 #: units/hte_imperial.cfg:568
-#: units/hte_new_republic.cfg:1037
-#: units/hte_new_republic.cfg:1293
-#: units/hte_new_republic.cfg:1550
+#: units/hte_new_republic.cfg:1109
+#: units/hte_new_republic.cfg:1365
+#: units/hte_new_republic.cfg:1622
 msgid "Can call the side's air sorties (right-click a hex within 7 hexes that your side can see or track on sensors, then Call air support). Calling uses this unit's attack. Strafing runs hit a line of hexes at once; bombing runs hit an area at the start of your next turn. Sorties never finish off a unit."
 msgstr ""
 
@@ -6389,32 +6400,16 @@ msgstr ""
 #: units/dfr_units.cfg:1221
 #: units/dfr_units.cfg:1435
 #: units/heroes.cfg:104
-#: units/hte_heroes.cfg:1656
-#: units/hte_heroes.cfg:1895
-#: units/hte_heroes.cfg:2135
-#: units/hte_heroes.cfg:3888
-#: units/hte_heroes.cfg:4109
-#: units/hte_heroes.cfg:4331
-#: units/hte_heroes.cfg:5225
-#: units/hte_heroes.cfg:5441
-#: units/hte_heroes.cfg:5658
-#: units/hte_heroes.cfg:6560
-#: units/hte_heroes.cfg:6768
-#: units/hte_imperial.cfg:780
-#: units/hte_new_republic.cfg:2195
-#: units/hte_new_republic.cfg:2372
-#: units/hte_new_republic.cfg:2550
-#: units/hte_new_republic.cfg:2720
-#: units/hte_smugglers.cfg:48
-#: units/hte_smugglers.cfg:236
-#: units/hte_smugglers.cfg:426
-#: units/hte_smugglers.cfg:617
-#: units/hte_smugglers.cfg:817
+#: units/hte_heroes.cfg:3906
+#: units/hte_heroes.cfg:4127
+#: units/hte_heroes.cfg:4349
+#: units/hte_heroes.cfg:5243
+#: units/hte_heroes.cfg:5459
+#: units/hte_heroes.cfg:5676
 #: units/infantry.cfg:296
 #: units/infantry.cfg:910
 #: units/infantry.cfg:1074
 #: units/tlc_units.cfg:898
-#: units/tlc_units.cfg:1094
 msgid "blaster pistol"
 msgstr ""
 
@@ -6455,24 +6450,24 @@ msgstr ""
 #: units/hte_imperial.cfg:725
 #: units/hte_imperial.cfg:920
 #: units/hte_imperial.cfg:1165
-#: units/hte_new_republic.cfg:242
-#: units/hte_new_republic.cfg:492
-#: units/hte_new_republic.cfg:743
-#: units/hte_new_republic.cfg:993
-#: units/hte_new_republic.cfg:1249
-#: units/hte_new_republic.cfg:1506
-#: units/hte_new_republic.cfg:1762
-#: units/hte_new_republic.cfg:1960
-#: units/hte_new_republic.cfg:2158
-#: units/hte_new_republic.cfg:2335
-#: units/hte_new_republic.cfg:2513
-#: units/hte_new_republic.cfg:2871
-#: units/hte_new_republic.cfg:3124
-#: units/hte_new_republic.cfg:3378
-#: units/hte_new_republic.cfg:3631
-#: units/hte_new_republic.cfg:3888
-#: units/hte_new_republic.cfg:4146
-#: units/hte_new_republic.cfg:4403
+#: units/hte_new_republic.cfg:260
+#: units/hte_new_republic.cfg:528
+#: units/hte_new_republic.cfg:797
+#: units/hte_new_republic.cfg:1065
+#: units/hte_new_republic.cfg:1321
+#: units/hte_new_republic.cfg:1578
+#: units/hte_new_republic.cfg:1834
+#: units/hte_new_republic.cfg:2032
+#: units/hte_new_republic.cfg:2230
+#: units/hte_new_republic.cfg:2407
+#: units/hte_new_republic.cfg:2585
+#: units/hte_new_republic.cfg:2943
+#: units/hte_new_republic.cfg:3196
+#: units/hte_new_republic.cfg:3450
+#: units/hte_new_republic.cfg:3703
+#: units/hte_new_republic.cfg:3960
+#: units/hte_new_republic.cfg:4218
+#: units/hte_new_republic.cfg:4475
 #: units/hte_smugglers.cfg:188
 #: units/hte_smugglers.cfg:378
 #: units/hte_smugglers.cfg:569
@@ -6511,24 +6506,24 @@ msgstr ""
 #: units/hte_imperial.cfg:738
 #: units/hte_imperial.cfg:933
 #: units/hte_imperial.cfg:1178
-#: units/hte_new_republic.cfg:255
-#: units/hte_new_republic.cfg:505
-#: units/hte_new_republic.cfg:756
-#: units/hte_new_republic.cfg:1006
-#: units/hte_new_republic.cfg:1262
-#: units/hte_new_republic.cfg:1519
-#: units/hte_new_republic.cfg:1775
-#: units/hte_new_republic.cfg:1973
-#: units/hte_new_republic.cfg:2171
-#: units/hte_new_republic.cfg:2348
-#: units/hte_new_republic.cfg:2526
-#: units/hte_new_republic.cfg:2884
-#: units/hte_new_republic.cfg:3137
-#: units/hte_new_republic.cfg:3391
-#: units/hte_new_republic.cfg:3644
-#: units/hte_new_republic.cfg:3901
-#: units/hte_new_republic.cfg:4159
-#: units/hte_new_republic.cfg:4416
+#: units/hte_new_republic.cfg:273
+#: units/hte_new_republic.cfg:541
+#: units/hte_new_republic.cfg:810
+#: units/hte_new_republic.cfg:1078
+#: units/hte_new_republic.cfg:1334
+#: units/hte_new_republic.cfg:1591
+#: units/hte_new_republic.cfg:1847
+#: units/hte_new_republic.cfg:2045
+#: units/hte_new_republic.cfg:2243
+#: units/hte_new_republic.cfg:2420
+#: units/hte_new_republic.cfg:2598
+#: units/hte_new_republic.cfg:2956
+#: units/hte_new_republic.cfg:3209
+#: units/hte_new_republic.cfg:3463
+#: units/hte_new_republic.cfg:3716
+#: units/hte_new_republic.cfg:3973
+#: units/hte_new_republic.cfg:4231
+#: units/hte_new_republic.cfg:4488
 #: units/hte_smugglers.cfg:201
 #: units/hte_smugglers.cfg:391
 #: units/hte_smugglers.cfg:582
@@ -6565,29 +6560,29 @@ msgstr ""
 #: units/hte_heroes.cfg:851
 #: units/hte_heroes.cfg:1107
 #: units/hte_heroes.cfg:1364
-#: units/hte_heroes.cfg:3080
-#: units/hte_heroes.cfg:3337
-#: units/hte_heroes.cfg:3595
-#: units/hte_heroes.cfg:5836
-#: units/hte_heroes.cfg:6066
-#: units/hte_heroes.cfg:6297
+#: units/hte_heroes.cfg:3098
+#: units/hte_heroes.cfg:3355
+#: units/hte_heroes.cfg:3613
+#: units/hte_heroes.cfg:5854
+#: units/hte_heroes.cfg:6084
+#: units/hte_heroes.cfg:6315
 #: units/hte_imperial.cfg:31
 #: units/hte_imperial.cfg:290
 #: units/hte_imperial.cfg:554
 #: units/hte_new_republic.cfg:31
-#: units/hte_new_republic.cfg:274
-#: units/hte_new_republic.cfg:524
-#: units/hte_new_republic.cfg:775
-#: units/hte_new_republic.cfg:1025
-#: units/hte_new_republic.cfg:1281
-#: units/hte_new_republic.cfg:1538
-#: units/hte_new_republic.cfg:2902
-#: units/hte_new_republic.cfg:3155
-#: units/hte_new_republic.cfg:3409
-#: units/hte_new_republic.cfg:3667
-#: units/hte_new_republic.cfg:3924
-#: units/hte_new_republic.cfg:4182
-#: units/hte_new_republic.cfg:4434
+#: units/hte_new_republic.cfg:292
+#: units/hte_new_republic.cfg:560
+#: units/hte_new_republic.cfg:829
+#: units/hte_new_republic.cfg:1097
+#: units/hte_new_republic.cfg:1353
+#: units/hte_new_republic.cfg:1610
+#: units/hte_new_republic.cfg:2974
+#: units/hte_new_republic.cfg:3227
+#: units/hte_new_republic.cfg:3481
+#: units/hte_new_republic.cfg:3739
+#: units/hte_new_republic.cfg:3996
+#: units/hte_new_republic.cfg:4254
+#: units/hte_new_republic.cfg:4506
 #: units/hte_space.cfg:60
 #: units/hte_space.cfg:297
 #: units/hte_space.cfg:523
@@ -6611,9 +6606,9 @@ msgstr ""
 #: units/hte_imperial.cfg:36
 #: units/hte_imperial.cfg:301
 #: units/hte_new_republic.cfg:36
-#: units/hte_new_republic.cfg:285
-#: units/hte_new_republic.cfg:535
-#: units/hte_new_republic.cfg:786
+#: units/hte_new_republic.cfg:303
+#: units/hte_new_republic.cfg:571
+#: units/hte_new_republic.cfg:840
 #: units/infantry.cfg:169
 msgid "rifle butt"
 msgstr ""
@@ -6624,14 +6619,7 @@ msgstr ""
 #: units/dfr_units.cfg:1637
 #: units/dfr_units.cfg:1892
 #: units/dfr_units.cfg:2148
-#: units/dfr_units.cfg:2362
 #: units/heroes.cfg:115
-#: units/hte_imperial.cfg:48
-#: units/hte_imperial.cfg:313
-#: units/hte_new_republic.cfg:48
-#: units/hte_new_republic.cfg:297
-#: units/hte_new_republic.cfg:547
-#: units/hte_new_republic.cfg:798
 #: units/infantry.cfg:180
 #: units/infantry.cfg:224
 #: units/infantry.cfg:1151
@@ -6643,13 +6631,6 @@ msgstr ""
 #: units/dfr_units.cfg:1658
 #: units/dfr_units.cfg:1913
 #: units/dfr_units.cfg:2169
-#: units/dfr_units.cfg:2395
-#: units/hte_imperial.cfg:81
-#: units/hte_imperial.cfg:346
-#: units/hte_new_republic.cfg:69
-#: units/hte_new_republic.cfg:318
-#: units/hte_new_republic.cfg:568
-#: units/hte_new_republic.cfg:819
 msgid "blaster rifle (aimed)"
 msgstr ""
 
@@ -6658,28 +6639,28 @@ msgstr ""
 #: units/dfr_units.cfg:1931
 #: units/dfr_units.cfg:2187
 #: units/dfr_units.cfg:2425
-#: units/hte_heroes.cfg:2376
-#: units/hte_heroes.cfg:2632
-#: units/hte_heroes.cfg:2889
-#: units/hte_heroes.cfg:3145
-#: units/hte_heroes.cfg:3402
-#: units/hte_heroes.cfg:3660
+#: units/hte_heroes.cfg:2394
+#: units/hte_heroes.cfg:2650
+#: units/hte_heroes.cfg:2907
+#: units/hte_heroes.cfg:3163
+#: units/hte_heroes.cfg:3420
+#: units/hte_heroes.cfg:3678
 #: units/hte_imperial.cfg:111
 #: units/hte_imperial.cfg:376
-#: units/hte_new_republic.cfg:87
-#: units/hte_new_republic.cfg:336
-#: units/hte_new_republic.cfg:586
-#: units/hte_new_republic.cfg:837
-#: units/hte_new_republic.cfg:1093
-#: units/hte_new_republic.cfg:1349
-#: units/hte_new_republic.cfg:1606
-#: units/hte_new_republic.cfg:2967
-#: units/hte_new_republic.cfg:3220
-#: units/hte_new_republic.cfg:3474
-#: units/hte_new_republic.cfg:3731
-#: units/hte_new_republic.cfg:3988
-#: units/hte_new_republic.cfg:4246
-#: units/hte_new_republic.cfg:4492
+#: units/hte_new_republic.cfg:105
+#: units/hte_new_republic.cfg:372
+#: units/hte_new_republic.cfg:640
+#: units/hte_new_republic.cfg:909
+#: units/hte_new_republic.cfg:1165
+#: units/hte_new_republic.cfg:1421
+#: units/hte_new_republic.cfg:1678
+#: units/hte_new_republic.cfg:3039
+#: units/hte_new_republic.cfg:3292
+#: units/hte_new_republic.cfg:3546
+#: units/hte_new_republic.cfg:3803
+#: units/hte_new_republic.cfg:4060
+#: units/hte_new_republic.cfg:4318
+#: units/hte_new_republic.cfg:4564
 #: units/tlc_units.cfg:316
 #: units/tlc_units.cfg:548
 msgid "aimed shot"
@@ -6690,28 +6671,28 @@ msgstr ""
 #: units/dfr_units.cfg:1932
 #: units/dfr_units.cfg:2188
 #: units/dfr_units.cfg:2426
-#: units/hte_heroes.cfg:2377
-#: units/hte_heroes.cfg:2633
-#: units/hte_heroes.cfg:2890
-#: units/hte_heroes.cfg:3146
-#: units/hte_heroes.cfg:3403
-#: units/hte_heroes.cfg:3661
+#: units/hte_heroes.cfg:2395
+#: units/hte_heroes.cfg:2651
+#: units/hte_heroes.cfg:2908
+#: units/hte_heroes.cfg:3164
+#: units/hte_heroes.cfg:3421
+#: units/hte_heroes.cfg:3679
 #: units/hte_imperial.cfg:112
 #: units/hte_imperial.cfg:377
-#: units/hte_new_republic.cfg:88
-#: units/hte_new_republic.cfg:337
-#: units/hte_new_republic.cfg:587
-#: units/hte_new_republic.cfg:838
-#: units/hte_new_republic.cfg:1094
-#: units/hte_new_republic.cfg:1350
-#: units/hte_new_republic.cfg:1607
-#: units/hte_new_republic.cfg:2968
-#: units/hte_new_republic.cfg:3221
-#: units/hte_new_republic.cfg:3475
-#: units/hte_new_republic.cfg:3732
-#: units/hte_new_republic.cfg:3989
-#: units/hte_new_republic.cfg:4247
-#: units/hte_new_republic.cfg:4493
+#: units/hte_new_republic.cfg:106
+#: units/hte_new_republic.cfg:373
+#: units/hte_new_republic.cfg:641
+#: units/hte_new_republic.cfg:910
+#: units/hte_new_republic.cfg:1166
+#: units/hte_new_republic.cfg:1422
+#: units/hte_new_republic.cfg:1679
+#: units/hte_new_republic.cfg:3040
+#: units/hte_new_republic.cfg:3293
+#: units/hte_new_republic.cfg:3547
+#: units/hte_new_republic.cfg:3804
+#: units/hte_new_republic.cfg:4061
+#: units/hte_new_republic.cfg:4319
+#: units/hte_new_republic.cfg:4565
 #: units/tlc_units.cfg:317
 #: units/tlc_units.cfg:549
 msgid "Taking a moment to aim: one shot fewer, +20% chance to hit. Needs at least two hexes of distance (no time to aim at point-blank range) and can only be used when attacking."
@@ -6736,6 +6717,13 @@ msgstr ""
 msgid "Soldiers grown in the Grand Admiral's new cloning cylinders and sealed inside stormtrooper armor. They fight without hesitation."
 msgstr ""
 
+#. [attack]: type=fire
+#: units/dfr_units.cfg:2362
+#: units/hte_imperial.cfg:48
+#: units/hte_imperial.cfg:313
+msgid "E-11 blaster rifle"
+msgstr ""
+
 #. [chance_to_hit]: id=sw_special_formation_fire
 #: units/dfr_units.cfg:2373
 #: units/dfr_units.cfg:2406
@@ -6743,7 +6731,7 @@ msgstr ""
 #: units/hte_imperial.cfg:92
 #: units/hte_imperial.cfg:324
 #: units/hte_imperial.cfg:357
-msgid "formation fire"
+msgid "attack formation"
 msgstr ""
 
 #. [chance_to_hit]: id=sw_special_formation_fire
@@ -6754,6 +6742,13 @@ msgstr ""
 #: units/hte_imperial.cfg:325
 #: units/hte_imperial.cfg:358
 msgid "Drilled to fire as a squad: +10% chance to hit while another stormtrooper (trooper, sergeant or clone) stands next to this unit."
+msgstr ""
+
+#. [attack]: type=fire
+#: units/dfr_units.cfg:2395
+#: units/hte_imperial.cfg:81
+#: units/hte_imperial.cfg:346
+msgid "E-11 blaster rifle (aimed)"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_im_decon_droid, race=mechanical
@@ -6791,8 +6786,8 @@ msgstr ""
 
 #. [dummy]: id=sw_ability_overwatch
 #: units/dfr_units.cfg:2762
-#: units/hte_new_republic.cfg:1793
-#: units/hte_new_republic.cfg:1991
+#: units/hte_new_republic.cfg:1865
+#: units/hte_new_republic.cfg:2063
 #: units/hte_space.cfg:2726
 msgid "Goes on overwatch automatically when it could still attack but ends its turn without attacking (or earlier from the right-click menu, committing this turn's attack). Until its next turn, it fires 2 reaction volley(s) at enemies that move within 3 hex(es) in sight. Hidden units cannot be targeted; a moving unit that is fired on stops but keeps its remaining moves."
 msgstr ""
@@ -6811,8 +6806,8 @@ msgstr ""
 #. [chance_to_hit]: id=sw_special_range
 #: units/dfr_units.cfg:2786
 #: units/hte_imperial.cfg:986
-#: units/hte_new_republic.cfg:1838
-#: units/hte_new_republic.cfg:2036
+#: units/hte_new_republic.cfg:1910
+#: units/hte_new_republic.cfg:2108
 #: units/hte_space.cfg:2753
 #: units/hte_space.cfg:2775
 msgid "range 3"
@@ -6821,8 +6816,8 @@ msgstr ""
 #. [chance_to_hit]: id=sw_special_range
 #: units/dfr_units.cfg:2787
 #: units/hte_imperial.cfg:987
-#: units/hte_new_republic.cfg:1839
-#: units/hte_new_republic.cfg:2037
+#: units/hte_new_republic.cfg:1911
+#: units/hte_new_republic.cfg:2109
 #: units/hte_space.cfg:2754
 #: units/hte_space.cfg:2776
 msgid "Reaches targets up to 3 hexes away. Each hex beyond the first lowers the chance to hit by 10%."
@@ -6844,9 +6839,9 @@ msgstr ""
 #: units/hte_heroes.cfg:862
 #: units/hte_heroes.cfg:1118
 #: units/hte_heroes.cfg:1375
-#: units/hte_heroes.cfg:5847
-#: units/hte_heroes.cfg:6077
-#: units/hte_heroes.cfg:6308
+#: units/hte_heroes.cfg:5865
+#: units/hte_heroes.cfg:6095
+#: units/hte_heroes.cfg:6326
 #: units/hte_space.cfg:71
 #: units/hte_space.cfg:308
 #: units/hte_space.cfg:534
@@ -7047,9 +7042,9 @@ msgstr ""
 #: units/hte_heroes.cfg:790
 #: units/hte_heroes.cfg:1046
 #: units/hte_heroes.cfg:1303
-#: units/hte_heroes.cfg:5801
-#: units/hte_heroes.cfg:6031
-#: units/hte_heroes.cfg:6262
+#: units/hte_heroes.cfg:5819
+#: units/hte_heroes.cfg:6049
+#: units/hte_heroes.cfg:6280
 msgid "Laser calibration: +1 damage; full heal and cure, Max XP +20% (up to 2 times)"
 msgstr ""
 
@@ -7057,9 +7052,9 @@ msgstr ""
 #: units/hte_heroes.cfg:803
 #: units/hte_heroes.cfg:1059
 #: units/hte_heroes.cfg:1316
-#: units/hte_heroes.cfg:5814
-#: units/hte_heroes.cfg:6044
-#: units/hte_heroes.cfg:6275
+#: units/hte_heroes.cfg:5832
+#: units/hte_heroes.cfg:6062
+#: units/hte_heroes.cfg:6293
 msgid "Combat maneuvering: +1 movement, vision unchanged; full heal and cure, Max XP +20% (once)"
 msgstr ""
 
@@ -7074,9 +7069,9 @@ msgstr ""
 #: units/hte_heroes.cfg:857
 #: units/hte_heroes.cfg:1113
 #: units/hte_heroes.cfg:1370
-#: units/hte_heroes.cfg:5842
-#: units/hte_heroes.cfg:6072
-#: units/hte_heroes.cfg:6303
+#: units/hte_heroes.cfg:5860
+#: units/hte_heroes.cfg:6090
+#: units/hte_heroes.cfg:6321
 #: units/hte_space.cfg:66
 #: units/hte_space.cfg:303
 #: units/hte_space.cfg:529
@@ -7088,9 +7083,9 @@ msgstr ""
 #: units/hte_heroes.cfg:883
 #: units/hte_heroes.cfg:1139
 #: units/hte_heroes.cfg:1396
-#: units/hte_heroes.cfg:5868
-#: units/hte_heroes.cfg:6098
-#: units/hte_heroes.cfg:6329
+#: units/hte_heroes.cfg:5886
+#: units/hte_heroes.cfg:6116
+#: units/hte_heroes.cfg:6347
 #: units/hte_space.cfg:92
 #: units/hte_space.cfg:329
 #: units/hte_space.cfg:555
@@ -7104,9 +7099,9 @@ msgstr ""
 #: units/hte_heroes.cfg:895
 #: units/hte_heroes.cfg:1151
 #: units/hte_heroes.cfg:1408
-#: units/hte_heroes.cfg:5880
-#: units/hte_heroes.cfg:6110
-#: units/hte_heroes.cfg:6341
+#: units/hte_heroes.cfg:5898
+#: units/hte_heroes.cfg:6128
+#: units/hte_heroes.cfg:6359
 #: units/hte_space.cfg:104
 #: units/hte_space.cfg:341
 #: units/hte_space.cfg:567
@@ -7119,9 +7114,9 @@ msgstr ""
 #: units/hte_heroes.cfg:896
 #: units/hte_heroes.cfg:1152
 #: units/hte_heroes.cfg:1409
-#: units/hte_heroes.cfg:5881
-#: units/hte_heroes.cfg:6111
-#: units/hte_heroes.cfg:6342
+#: units/hte_heroes.cfg:5899
+#: units/hte_heroes.cfg:6129
+#: units/hte_heroes.cfg:6360
 #: units/hte_space.cfg:105
 #: units/hte_space.cfg:342
 #: units/hte_space.cfg:568
@@ -7141,8 +7136,8 @@ msgstr ""
 
 #. [variation]: race=human, gender=female
 #. [unit_type]: id=sw_hero_leia, race=human, gender=female
-#: units/hte_heroes.cfg:1776
-#: units/hte_heroes.cfg:2016
+#: units/hte_heroes.cfg:1782
+#: units/hte_heroes.cfg:2028
 #: units/hte_heroes.cfg:1537
 msgid "Chief of State"
 msgstr ""
@@ -7157,32 +7152,53 @@ msgstr ""
 
 #. [dummy]: id=sw_ability_force
 #: units/hte_heroes.cfg:1623
-#: units/hte_heroes.cfg:1862
-#: units/hte_heroes.cfg:2102
+#: units/hte_heroes.cfg:1868
+#: units/hte_heroes.cfg:2114
 msgid "Force Points: 4, regaining 1 each turn. Powers: Force Sense, Force Push. Use them from the right-click menu (The Force…). Inside a ysalamiri field the Force is blocked: no powers, no deflection, no regeneration."
 msgstr ""
 
 #. [dummy]: id=sw_ability_forward_observer
 #: units/hte_heroes.cfg:1639
-#: units/hte_heroes.cfg:1878
-#: units/hte_heroes.cfg:2118
-#: units/hte_heroes.cfg:2318
-#: units/hte_heroes.cfg:2574
-#: units/hte_heroes.cfg:2831
-#: units/hte_heroes.cfg:3871
-#: units/hte_heroes.cfg:4092
-#: units/hte_heroes.cfg:4314
-#: units/hte_heroes.cfg:6543
+#: units/hte_heroes.cfg:1884
+#: units/hte_heroes.cfg:2130
+#: units/hte_heroes.cfg:2336
+#: units/hte_heroes.cfg:2592
+#: units/hte_heroes.cfg:2849
+#: units/hte_heroes.cfg:3889
+#: units/hte_heroes.cfg:4110
+#: units/hte_heroes.cfg:4332
+#: units/hte_heroes.cfg:6561
 #: units/hte_imperial.cfg:763
-#: units/hte_new_republic.cfg:280
-#: units/hte_new_republic.cfg:530
-#: units/hte_new_republic.cfg:781
+#: units/hte_new_republic.cfg:298
+#: units/hte_new_republic.cfg:566
+#: units/hte_new_republic.cfg:835
 msgid "Can call the side's air sorties (right-click a hex within 6 hexes that your side can see or track on sensors, then Call air support). Calling uses this unit's attack. Strafing runs hit a line of hexes at once; bombing runs hit an area at the start of your next turn. Sorties never finish off a unit."
 msgstr ""
 
+#. [attack]: type=fire
+#: units/hte_heroes.cfg:1656
+#: units/hte_heroes.cfg:1901
+#: units/hte_heroes.cfg:2147
+msgid "Defender sporting blaster"
+msgstr ""
+
+#. [chance_to_hit]: id=sw_special_precise
+#: units/hte_heroes.cfg:1667
+#: units/hte_heroes.cfg:1912
+#: units/hte_heroes.cfg:2158
+msgid "precise"
+msgstr ""
+
+#. [chance_to_hit]: id=sw_special_precise
+#: units/hte_heroes.cfg:1668
+#: units/hte_heroes.cfg:1913
+#: units/hte_heroes.cfg:2159
+msgid "A light sporting weapon with fine sights: +10% chance to hit."
+msgstr ""
+
 #. [variation]: race=human, gender=female
-#: units/hte_heroes.cfg:1790
-#: units/hte_heroes.cfg:2030
+#: units/hte_heroes.cfg:1796
+#: units/hte_heroes.cfg:2042
 msgid ""
 "Leia Organa Solo, a leader of the New Republic, a veteran of the Rebellion, and Force-sensitive herself. The Noghri want her alive.\n"
 "\n"
@@ -7191,14 +7207,14 @@ msgstr ""
 
 #. [variation]: race=human, gender=male
 #. [unit_type]: id=sw_hero_han, race=human, gender=male
-#: units/hte_heroes.cfg:2511
-#: units/hte_heroes.cfg:2768
-#: units/hte_heroes.cfg:2255
+#: units/hte_heroes.cfg:2529
+#: units/hte_heroes.cfg:2786
+#: units/hte_heroes.cfg:2273
 msgid "Smuggler General"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_han, race=human, gender=male
-#: units/hte_heroes.cfg:2269
+#: units/hte_heroes.cfg:2287
 msgid ""
 "Han Solo, captain of the Millennium Falcon and a general of the New Republic, is quicker on the draw than anyone he has met.\n"
 "\n"
@@ -7206,36 +7222,36 @@ msgid ""
 msgstr ""
 
 #. [advancement]: id=sw_amla_hero_blaster
-#: units/hte_heroes.cfg:2277
-#: units/hte_heroes.cfg:2533
-#: units/hte_heroes.cfg:2790
+#: units/hte_heroes.cfg:2295
+#: units/hte_heroes.cfg:2551
+#: units/hte_heroes.cfg:2808
 msgid "DL-44 calibration (normal and aimed): +1 damage; full heal and cure, Max XP +20% (up to 2 times)"
 msgstr ""
 
 #. [advancement]: id=sw_amla_hero_mobility
-#: units/hte_heroes.cfg:2290
-#: units/hte_heroes.cfg:2546
-#: units/hte_heroes.cfg:2803
+#: units/hte_heroes.cfg:2308
+#: units/hte_heroes.cfg:2564
+#: units/hte_heroes.cfg:2821
 msgid "Blockade running: +1 movement, vision unchanged; full heal and cure, Max XP +20% (once)"
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_heroes.cfg:2335
-#: units/hte_heroes.cfg:2591
-#: units/hte_heroes.cfg:2848
-msgid "heavy blaster pistol"
+#: units/hte_heroes.cfg:2353
+#: units/hte_heroes.cfg:2609
+#: units/hte_heroes.cfg:2866
+msgid "DL-44 heavy blaster pistol"
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_heroes.cfg:2357
-#: units/hte_heroes.cfg:2613
-#: units/hte_heroes.cfg:2870
-msgid "heavy blaster pistol (aimed)"
+#: units/hte_heroes.cfg:2375
+#: units/hte_heroes.cfg:2631
+#: units/hte_heroes.cfg:2888
+msgid "DL-44 heavy blaster pistol (aimed)"
 msgstr ""
 
 #. [variation]: race=human, gender=male
-#: units/hte_heroes.cfg:2525
-#: units/hte_heroes.cfg:2782
+#: units/hte_heroes.cfg:2543
+#: units/hte_heroes.cfg:2800
 msgid ""
 "Han Solo, captain of the Millennium Falcon and a general of the New Republic, is quicker on the draw than anyone he has met.\n"
 "\n"
@@ -7244,14 +7260,14 @@ msgstr ""
 
 #. [variation]: race=sw_wookiee, gender=male
 #. [unit_type]: id=sw_hero_chewbacca, race=sw_wookiee, gender=male
-#: units/hte_heroes.cfg:3281
-#: units/hte_heroes.cfg:3539
-#: units/hte_heroes.cfg:3024
+#: units/hte_heroes.cfg:3299
+#: units/hte_heroes.cfg:3557
+#: units/hte_heroes.cfg:3042
 msgid "Wookiee Copilot"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_chewbacca, race=sw_wookiee, gender=male
-#: units/hte_heroes.cfg:3038
+#: units/hte_heroes.cfg:3056
 msgid ""
 "Chewbacca, Han Solo's Wookiee partner and copilot, has sworn a life debt and defends his friends with ferocious strength.\n"
 "\n"
@@ -7259,75 +7275,75 @@ msgid ""
 msgstr ""
 
 #. [advancement]: id=sw_amla_hero_strength
-#: units/hte_heroes.cfg:3046
-#: units/hte_heroes.cfg:3303
-#: units/hte_heroes.cfg:3561
+#: units/hte_heroes.cfg:3064
+#: units/hte_heroes.cfg:3321
+#: units/hte_heroes.cfg:3579
 msgid "Close combat training: +1 damage; full heal and cure, Max XP +20% (up to 2 times)"
 msgstr ""
 
 #. [advancement]: id=sw_amla_hero_bowcaster
-#: units/hte_heroes.cfg:3059
-#: units/hte_heroes.cfg:3316
-#: units/hte_heroes.cfg:3574
+#: units/hte_heroes.cfg:3077
+#: units/hte_heroes.cfg:3334
+#: units/hte_heroes.cfg:3592
 msgid "Bowcaster calibration (normal and aimed): +1 damage; full heal and cure, Max XP +20% (up to 2 times)"
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_heroes.cfg:3085
-#: units/hte_heroes.cfg:3342
-#: units/hte_heroes.cfg:3600
+#: units/hte_heroes.cfg:3103
+#: units/hte_heroes.cfg:3360
+#: units/hte_heroes.cfg:3618
 msgid "Wookiee strength"
 msgstr ""
 
 #. [damage]: id=sw_special_wookiee_rage
-#: units/hte_heroes.cfg:3094
-#: units/hte_heroes.cfg:3351
-#: units/hte_heroes.cfg:3609
-#: units/hte_new_republic.cfg:2916
-#: units/hte_new_republic.cfg:3169
-#: units/hte_new_republic.cfg:3423
+#: units/hte_heroes.cfg:3112
+#: units/hte_heroes.cfg:3369
+#: units/hte_heroes.cfg:3627
+#: units/hte_new_republic.cfg:2988
+#: units/hte_new_republic.cfg:3241
+#: units/hte_new_republic.cfg:3495
 msgid "Wookiee rage"
 msgstr ""
 
 #. [damage]: id=sw_special_wookiee_rage
-#: units/hte_heroes.cfg:3095
-#: units/hte_heroes.cfg:3352
-#: units/hte_heroes.cfg:3610
-#: units/hte_new_republic.cfg:2917
-#: units/hte_new_republic.cfg:3170
-#: units/hte_new_republic.cfg:3424
+#: units/hte_heroes.cfg:3113
+#: units/hte_heroes.cfg:3370
+#: units/hte_heroes.cfg:3628
+#: units/hte_new_republic.cfg:2989
+#: units/hte_new_republic.cfg:3242
+#: units/hte_new_republic.cfg:3496
 msgid "A wounded Wookiee's temper is legendary: +25% damage while this unit has less than half of its hit points."
 msgstr ""
 
 #. [attack]: type=pierce
-#: units/hte_heroes.cfg:3106
-#: units/hte_heroes.cfg:3363
-#: units/hte_heroes.cfg:3621
-#: units/hte_new_republic.cfg:2928
-#: units/hte_new_republic.cfg:3181
-#: units/hte_new_republic.cfg:3435
-#: units/hte_new_republic.cfg:3692
-#: units/hte_new_republic.cfg:3949
-#: units/hte_new_republic.cfg:4207
+#: units/hte_heroes.cfg:3124
+#: units/hte_heroes.cfg:3381
+#: units/hte_heroes.cfg:3639
+#: units/hte_new_republic.cfg:3000
+#: units/hte_new_republic.cfg:3253
+#: units/hte_new_republic.cfg:3507
+#: units/hte_new_republic.cfg:3764
+#: units/hte_new_republic.cfg:4021
+#: units/hte_new_republic.cfg:4279
 msgid "bowcaster"
 msgstr ""
 
 #. [attack]: type=pierce
-#: units/hte_heroes.cfg:3127
-#: units/hte_heroes.cfg:3384
-#: units/hte_heroes.cfg:3642
-#: units/hte_new_republic.cfg:2949
-#: units/hte_new_republic.cfg:3202
-#: units/hte_new_republic.cfg:3456
-#: units/hte_new_republic.cfg:3713
-#: units/hte_new_republic.cfg:3970
-#: units/hte_new_republic.cfg:4228
+#: units/hte_heroes.cfg:3145
+#: units/hte_heroes.cfg:3402
+#: units/hte_heroes.cfg:3660
+#: units/hte_new_republic.cfg:3021
+#: units/hte_new_republic.cfg:3274
+#: units/hte_new_republic.cfg:3528
+#: units/hte_new_republic.cfg:3785
+#: units/hte_new_republic.cfg:4042
+#: units/hte_new_republic.cfg:4300
 msgid "bowcaster (aimed)"
 msgstr ""
 
 #. [variation]: race=sw_wookiee, gender=male
-#: units/hte_heroes.cfg:3295
-#: units/hte_heroes.cfg:3553
+#: units/hte_heroes.cfg:3313
+#: units/hte_heroes.cfg:3571
 msgid ""
 "Chewbacca, Han Solo's Wookiee partner and copilot, has sworn a life debt and defends his friends with ferocious strength.\n"
 "\n"
@@ -7336,14 +7352,14 @@ msgstr ""
 
 #. [variation]: race=human, gender=male
 #. [unit_type]: id=sw_hero_lando, race=human, gender=male
-#: units/hte_heroes.cfg:4017
-#: units/hte_heroes.cfg:4239
-#: units/hte_heroes.cfg:3796
+#: units/hte_heroes.cfg:4035
+#: units/hte_heroes.cfg:4257
+#: units/hte_heroes.cfg:3814
 msgid "Baron Administrator"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_lando, race=human, gender=male
-#: units/hte_heroes.cfg:3810
+#: units/hte_heroes.cfg:3828
 msgid ""
 "Lando Calrissian, gambler, general, and businessman, runs the mobile mining city on Nkllon and still enjoys long odds.\n"
 "\n"
@@ -7351,32 +7367,32 @@ msgid ""
 msgstr ""
 
 #. [advancement]: id=sw_amla_hero_sidearm
-#: units/hte_heroes.cfg:3818
-#: units/hte_heroes.cfg:4039
-#: units/hte_heroes.cfg:4261
-#: units/hte_heroes.cfg:5152
-#: units/hte_heroes.cfg:5368
-#: units/hte_heroes.cfg:5585
+#: units/hte_heroes.cfg:3836
+#: units/hte_heroes.cfg:4057
+#: units/hte_heroes.cfg:4279
+#: units/hte_heroes.cfg:5170
+#: units/hte_heroes.cfg:5386
+#: units/hte_heroes.cfg:5603
 msgid "Sidearm discipline: +1 damage; full heal and cure, Max XP +20% (up to 2 times)"
 msgstr ""
 
 #. [damage]: id=sw_special_long_odds
-#: units/hte_heroes.cfg:3899
-#: units/hte_heroes.cfg:4120
-#: units/hte_heroes.cfg:4342
+#: units/hte_heroes.cfg:3917
+#: units/hte_heroes.cfg:4138
+#: units/hte_heroes.cfg:4360
 msgid "long odds"
 msgstr ""
 
 #. [damage]: id=sw_special_long_odds
-#: units/hte_heroes.cfg:3900
-#: units/hte_heroes.cfg:4121
-#: units/hte_heroes.cfg:4343
+#: units/hte_heroes.cfg:3918
+#: units/hte_heroes.cfg:4139
+#: units/hte_heroes.cfg:4361
 msgid "Lando never could resist a long shot: +50% damage against a target on terrain that gives it 60% defence or more."
 msgstr ""
 
 #. [variation]: race=human, gender=male
-#: units/hte_heroes.cfg:4031
-#: units/hte_heroes.cfg:4253
+#: units/hte_heroes.cfg:4049
+#: units/hte_heroes.cfg:4271
 msgid ""
 "Lando Calrissian, gambler, general, and businessman, runs the mobile mining city on Nkllon and still enjoys long odds.\n"
 "\n"
@@ -7385,14 +7401,14 @@ msgstr ""
 
 #. [variation]: race=human, gender=female
 #. [unit_type]: id=sw_hero_mara, race=human, gender=female
-#: units/hte_heroes.cfg:4683
-#: units/hte_heroes.cfg:4907
-#: units/hte_heroes.cfg:4460
+#: units/hte_heroes.cfg:4701
+#: units/hte_heroes.cfg:4925
+#: units/hte_heroes.cfg:4478
 msgid "Karrde's Second"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_mara, race=human, gender=female
-#: units/hte_heroes.cfg:4474
+#: units/hte_heroes.cfg:4492
 msgid ""
 "Mara Jade, Talon Karrde's second-in-command, is a superb pilot and fighter. She has unexplained reasons to want Luke Skywalker dead.\n"
 "\n"
@@ -7400,29 +7416,29 @@ msgid ""
 msgstr ""
 
 #. [advancement]: id=sw_amla_hero_blade
-#: units/hte_heroes.cfg:4482
-#: units/hte_heroes.cfg:4705
-#: units/hte_heroes.cfg:4929
+#: units/hte_heroes.cfg:4500
+#: units/hte_heroes.cfg:4723
+#: units/hte_heroes.cfg:4947
 msgid "Vibroblade discipline: +1 damage; full heal and cure, Max XP +20% (up to 2 times)"
 msgstr ""
 
 #. [dummy]: id=sw_ability_force
-#: units/hte_heroes.cfg:4535
-#: units/hte_heroes.cfg:4758
-#: units/hte_heroes.cfg:4982
+#: units/hte_heroes.cfg:4553
+#: units/hte_heroes.cfg:4776
+#: units/hte_heroes.cfg:5000
 msgid "Force Points: 5, regaining 1 each turn. Powers: Force Speed, Force Sense, Force Push. Use them from the right-click menu (The Force…). Inside a ysalamiri field the Force is blocked: no powers, no deflection, no regeneration."
 msgstr ""
 
 #. [attack]: type=blade
-#: units/hte_heroes.cfg:4550
-#: units/hte_heroes.cfg:4773
-#: units/hte_heroes.cfg:4997
+#: units/hte_heroes.cfg:4568
+#: units/hte_heroes.cfg:4791
+#: units/hte_heroes.cfg:5015
 msgid "vibroblade"
 msgstr ""
 
 #. [variation]: race=human, gender=female
-#: units/hte_heroes.cfg:4697
-#: units/hte_heroes.cfg:4921
+#: units/hte_heroes.cfg:4715
+#: units/hte_heroes.cfg:4939
 msgid ""
 "Mara Jade, Talon Karrde's second-in-command, is a superb pilot and fighter. She has unexplained reasons to want Luke Skywalker dead.\n"
 "\n"
@@ -7431,14 +7447,14 @@ msgstr ""
 
 #. [variation]: race=human, gender=male
 #. [unit_type]: id=sw_hero_karrde, race=human, gender=male
-#: units/hte_heroes.cfg:5346
-#: units/hte_heroes.cfg:5563
-#: units/hte_heroes.cfg:5130
+#: units/hte_heroes.cfg:5364
+#: units/hte_heroes.cfg:5581
+#: units/hte_heroes.cfg:5148
 msgid "Smuggler Chief"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_karrde, race=human, gender=male
-#: units/hte_heroes.cfg:5144
+#: units/hte_heroes.cfg:5162
 msgid ""
 "Talon Karrde leads the galaxy's most capable smuggling organization and values information and neutrality above everything else.\n"
 "\n"
@@ -7446,15 +7462,15 @@ msgid ""
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_heroes.cfg:5208
-#: units/hte_heroes.cfg:5424
-#: units/hte_heroes.cfg:5641
+#: units/hte_heroes.cfg:5226
+#: units/hte_heroes.cfg:5442
+#: units/hte_heroes.cfg:5659
 msgid "Sensors and electronic warfare. Active sensor sweep (right-click; uses its attack): until its next turn, sensors +2 and 2 hexes more reach, but signature +3. Jammer 1: enemy sensors read 1 weaker when they look from, or at, any hex within 2 of this unit. Jamming is loud: its own signature +2. 2 sensor decoys (right-click; uses its attack): a false contact up to 2 hexes away for 2 turns, until enemy sensors see through it. Field Manual: Electronic warfare explains each rating."
 msgstr ""
 
 #. [variation]: race=human, gender=male
-#: units/hte_heroes.cfg:5360
-#: units/hte_heroes.cfg:5577
+#: units/hte_heroes.cfg:5378
+#: units/hte_heroes.cfg:5595
 msgid ""
 "Talon Karrde leads the galaxy's most capable smuggling organization and values information and neutrality above everything else.\n"
 "\n"
@@ -7463,14 +7479,14 @@ msgstr ""
 
 #. [variation]: race=mechanical, gender=male
 #. [unit_type]: id=sw_hero_wedge, race=mechanical, gender=male
-#: units/hte_heroes.cfg:6009
-#: units/hte_heroes.cfg:6240
-#: units/hte_heroes.cfg:5779
+#: units/hte_heroes.cfg:6027
+#: units/hte_heroes.cfg:6258
+#: units/hte_heroes.cfg:5797
 msgid "Rogue Leader"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_wedge, race=mechanical, gender=male
-#: units/hte_heroes.cfg:5793
+#: units/hte_heroes.cfg:5811
 msgid ""
 "Wedge Antilles, commander of Rogue Squadron, is one of the finest starfighter pilots in the New Republic.\n"
 "\n"
@@ -7478,8 +7494,8 @@ msgid ""
 msgstr ""
 
 #. [variation]: race=mechanical, gender=male
-#: units/hte_heroes.cfg:6023
-#: units/hte_heroes.cfg:6254
+#: units/hte_heroes.cfg:6041
+#: units/hte_heroes.cfg:6272
 msgid ""
 "Wedge Antilles, commander of Rogue Squadron, is one of the finest starfighter pilots in the New Republic.\n"
 "\n"
@@ -7487,32 +7503,39 @@ msgid ""
 msgstr ""
 
 #. [unit_type]: id=sw_hero_pellaeon, race=human, gender=male
-#: units/hte_heroes.cfg:6470
+#: units/hte_heroes.cfg:6488
 msgid "Imperial Captain"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_pellaeon, race=human, gender=male
-#: units/hte_heroes.cfg:6484
+#: units/hte_heroes.cfg:6502
 msgid "Captain Gilad Pellaeon commands the Star Destroyer Chimaera. A career officer, he has come to trust the Grand Admiral completely."
 msgstr ""
 
+#. [attack]: type=fire
+#: units/hte_heroes.cfg:6578
+#: units/hte_heroes.cfg:6786
+#: units/hte_imperial.cfg:780
+msgid "SE-14 blaster pistol"
+msgstr ""
+
 #. [unit_type]: id=sw_hero_thrawn, race=human, gender=male
-#: units/hte_heroes.cfg:6679
+#: units/hte_heroes.cfg:6697
 msgid "Grand Admiral"
 msgstr ""
 
 #. [unit_type]: id=sw_hero_thrawn, race=human, gender=male
-#: units/hte_heroes.cfg:6693
+#: units/hte_heroes.cfg:6711
 msgid "Grand Admiral Thrawn, the only alien to reach the Empire's highest rank, has returned from the Unknown Regions to lead the Imperial Remnant."
 msgstr ""
 
 #. [dummy]: id=sw_ability_tactical_genius
-#: units/hte_heroes.cfg:6740
+#: units/hte_heroes.cfg:6758
 msgid "tactical genius"
 msgstr ""
 
 #. [dummy]: id=sw_ability_tactical_genius
-#: units/hte_heroes.cfg:6741
+#: units/hte_heroes.cfg:6759
 msgid "The Grand Admiral studies his opponents' art and culture to anticipate their tactics. Scenario events may grant his forces foreknowledge."
 msgstr ""
 
@@ -7605,8 +7628,8 @@ msgstr ""
 
 #. [dummy]: id=sw_ability_anti_air
 #: units/hte_imperial.cfg:958
-#: units/hte_new_republic.cfg:1800
-#: units/hte_new_republic.cfg:1998
+#: units/hte_new_republic.cfg:1872
+#: units/hte_new_republic.cfg:2070
 msgid "Fires on enemy air sorties striking within 2 hexes: each such unit lowers the sortie's accuracy by 20% (up to 40% in all)."
 msgstr ""
 
@@ -7643,16 +7666,44 @@ msgstr ""
 msgid "The backbone of the New Republic Army: volunteers from a hundred worlds, many of them veterans of the Rebellion, armed with reliable blaster rifles."
 msgstr ""
 
+#. [attack]: type=fire
+#: units/hte_new_republic.cfg:48
+#: units/hte_new_republic.cfg:315
+#: units/hte_new_republic.cfg:583
+#: units/hte_new_republic.cfg:852
+msgid "A280 blaster rifle"
+msgstr ""
+
+#. [damage]: id=sw_special_a280_piercing
+#: units/hte_new_republic.cfg:60
+#: units/hte_new_republic.cfg:90
+#: units/hte_new_republic.cfg:327
+#: units/hte_new_republic.cfg:357
+#: units/hte_new_republic.cfg:595
+#: units/hte_new_republic.cfg:625
+#: units/hte_new_republic.cfg:864
+#: units/hte_new_republic.cfg:894
+msgid "The A280's bolts punch through most personal armour: +25% damage against armoured troopers such as stormtroopers."
+msgstr ""
+
+#. [attack]: type=fire
+#: units/hte_new_republic.cfg:78
+#: units/hte_new_republic.cfg:345
+#: units/hte_new_republic.cfg:613
+#: units/hte_new_republic.cfg:882
+msgid "A280 blaster rifle (aimed)"
+msgstr ""
+
 #. [variation]: race=human
 #. [unit_type]: id=sw_unit_nr_sergeant, race=human
-#: units/hte_new_republic.cfg:471
-#: units/hte_new_republic.cfg:722
-#: units/hte_new_republic.cfg:221
+#: units/hte_new_republic.cfg:507
+#: units/hte_new_republic.cfg:776
+#: units/hte_new_republic.cfg:239
 msgid "New Republic Sergeant"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_sergeant, race=human
-#: units/hte_new_republic.cfg:234
+#: units/hte_new_republic.cfg:252
 msgid ""
 "Sergeants hold New Republic squads together under fire. Their calm example steadies nearby troopers.\n"
 "\n"
@@ -7660,8 +7711,8 @@ msgid ""
 msgstr ""
 
 #. [variation]: race=human
-#: units/hte_new_republic.cfg:484
-#: units/hte_new_republic.cfg:735
+#: units/hte_new_republic.cfg:520
+#: units/hte_new_republic.cfg:789
 msgid ""
 "Sergeants hold New Republic squads together under fire. Their calm example steadies nearby troopers.\n"
 "\n"
@@ -7670,14 +7721,14 @@ msgstr ""
 
 #. [variation]: race=human
 #. [unit_type]: id=sw_unit_nr_commando, race=human
-#: units/hte_new_republic.cfg:1228
-#: units/hte_new_republic.cfg:1485
-#: units/hte_new_republic.cfg:972
+#: units/hte_new_republic.cfg:1300
+#: units/hte_new_republic.cfg:1557
+#: units/hte_new_republic.cfg:1044
 msgid "New Republic Commando"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_commando, race=human
-#: units/hte_new_republic.cfg:985
+#: units/hte_new_republic.cfg:1057
 msgid ""
 "Lightly equipped specialists trained to slip between enemy positions, strike, and vanish before a response can form.\n"
 "\n"
@@ -7685,9 +7736,9 @@ msgid ""
 msgstr ""
 
 #. [attack]: type=blade
-#: units/hte_new_republic.cfg:1042
-#: units/hte_new_republic.cfg:1298
-#: units/hte_new_republic.cfg:1555
+#: units/hte_new_republic.cfg:1114
+#: units/hte_new_republic.cfg:1370
+#: units/hte_new_republic.cfg:1627
 #: units/hte_smugglers.cfg:36
 #: units/hte_smugglers.cfg:224
 #: units/hte_smugglers.cfg:414
@@ -7699,23 +7750,23 @@ msgstr ""
 
 #. [attack]: type=fire
 #. [attack]: type=impact
-#: units/hte_new_republic.cfg:1054
-#: units/hte_new_republic.cfg:1310
-#: units/hte_new_republic.cfg:1567
+#: units/hte_new_republic.cfg:1126
+#: units/hte_new_republic.cfg:1382
+#: units/hte_new_republic.cfg:1639
 #: units/infantry.cfg:237
 msgid "blaster carbine"
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_new_republic.cfg:1075
-#: units/hte_new_republic.cfg:1331
-#: units/hte_new_republic.cfg:1588
+#: units/hte_new_republic.cfg:1147
+#: units/hte_new_republic.cfg:1403
+#: units/hte_new_republic.cfg:1660
 msgid "blaster carbine (aimed)"
 msgstr ""
 
 #. [variation]: race=human
-#: units/hte_new_republic.cfg:1241
-#: units/hte_new_republic.cfg:1498
+#: units/hte_new_republic.cfg:1313
+#: units/hte_new_republic.cfg:1570
 msgid ""
 "Lightly equipped specialists trained to slip between enemy positions, strike, and vanish before a response can form.\n"
 "\n"
@@ -7724,13 +7775,13 @@ msgstr ""
 
 #. [variation]: race=human
 #. [unit_type]: id=sw_unit_nr_eweb_team, race=human
-#: units/hte_new_republic.cfg:1939
-#: units/hte_new_republic.cfg:1741
+#: units/hte_new_republic.cfg:2011
+#: units/hte_new_republic.cfg:1813
 msgid "E-Web Heavy Weapons Team"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_eweb_team, race=human
-#: units/hte_new_republic.cfg:1754
+#: units/hte_new_republic.cfg:1826
 msgid ""
 "A two-person crew with a tripod-mounted heavy repeating blaster. Slow to redeploy, but its fire reaches two hexes and shreds anything caught in the open.\n"
 "\n"
@@ -7738,25 +7789,25 @@ msgid ""
 msgstr ""
 
 #. [attack]: type=fire
-#: units/hte_new_republic.cfg:1817
-#: units/hte_new_republic.cfg:2015
+#: units/hte_new_republic.cfg:1889
+#: units/hte_new_republic.cfg:2087
 msgid "E-Web repeating blaster"
 msgstr ""
 
 #. [damage]: id=sw_special_set_up
-#: units/hte_new_republic.cfg:1828
-#: units/hte_new_republic.cfg:2026
+#: units/hte_new_republic.cfg:1900
+#: units/hte_new_republic.cfg:2098
 msgid "set up"
 msgstr ""
 
 #. [damage]: id=sw_special_set_up
-#: units/hte_new_republic.cfg:1829
-#: units/hte_new_republic.cfg:2027
+#: units/hte_new_republic.cfg:1901
+#: units/hte_new_republic.cfg:2099
 msgid "A crew that stays put has the tripod braced and the power pack feeding: when attacking without having moved this turn, this weapon deals +50% damage."
 msgstr ""
 
 #. [variation]: race=human
-#: units/hte_new_republic.cfg:1952
+#: units/hte_new_republic.cfg:2024
 msgid ""
 "A two-person crew with a tripod-mounted heavy repeating blaster. Slow to redeploy, but its fire reaches two hexes and shreds anything caught in the open.\n"
 "\n"
@@ -7765,23 +7816,30 @@ msgstr ""
 
 #. [variation]: race=human
 #. [unit_type]: id=sw_unit_nr_field_medic, race=human
-#: units/hte_new_republic.cfg:2314
-#: units/hte_new_republic.cfg:2492
-#: units/hte_new_republic.cfg:2137
+#: units/hte_new_republic.cfg:2386
+#: units/hte_new_republic.cfg:2564
+#: units/hte_new_republic.cfg:2209
 msgid "Field Medic"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_field_medic, race=human
-#: units/hte_new_republic.cfg:2150
+#: units/hte_new_republic.cfg:2222
 msgid ""
 "New Republic medics carry bacta patches and stim kits into the thick of the fighting to keep soldiers on their feet.\n"
 "\n"
 "Rank abilities — Veteran: field surgery; Seasoned veteran: field dressings; Elite: rapid evacuation."
 msgstr ""
 
+#. [attack]: type=fire
+#: units/hte_new_republic.cfg:2267
+#: units/hte_new_republic.cfg:2444
+#: units/hte_new_republic.cfg:2622
+msgid "DH-17 blaster pistol"
+msgstr ""
+
 #. [variation]: race=human
-#: units/hte_new_republic.cfg:2327
-#: units/hte_new_republic.cfg:2505
+#: units/hte_new_republic.cfg:2399
+#: units/hte_new_republic.cfg:2577
 msgid ""
 "New Republic medics carry bacta patches and stim kits into the thick of the fighting to keep soldiers on their feet.\n"
 "\n"
@@ -7789,37 +7847,42 @@ msgid ""
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_militia, race=human
-#: units/hte_new_republic.cfg:2669
+#: units/hte_new_republic.cfg:2741
 msgid "Planetary Militia"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_nr_militia, race=human
-#: units/hte_new_republic.cfg:2682
+#: units/hte_new_republic.cfg:2754
 msgid "Local defense volunteers with little training and older weapons, fighting for their own homes."
 msgstr ""
 
 #. [damage]: id=sw_special_home_ground
-#: units/hte_new_republic.cfg:2706
-#: units/hte_new_republic.cfg:2731
+#: units/hte_new_republic.cfg:2778
+#: units/hte_new_republic.cfg:2803
 msgid "home ground"
 msgstr ""
 
 #. [damage]: id=sw_special_home_ground
-#: units/hte_new_republic.cfg:2707
-#: units/hte_new_republic.cfg:2732
+#: units/hte_new_republic.cfg:2779
+#: units/hte_new_republic.cfg:2804
 msgid "Fighting for their own homes: +25% damage while this unit stands in a village or settlement."
+msgstr ""
+
+#. [attack]: type=fire
+#: units/hte_new_republic.cfg:2792
+msgid "sporting blaster"
 msgstr ""
 
 #. [variation]: race=sw_wookiee
 #. [unit_type]: id=sw_unit_wk_warrior, race=sw_wookiee
-#: units/hte_new_republic.cfg:3103
-#: units/hte_new_republic.cfg:3357
-#: units/hte_new_republic.cfg:2850
+#: units/hte_new_republic.cfg:3175
+#: units/hte_new_republic.cfg:3429
+#: units/hte_new_republic.cfg:2922
 msgid "Wookiee Warrior"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wk_warrior, race=sw_wookiee
-#: units/hte_new_republic.cfg:2863
+#: units/hte_new_republic.cfg:2935
 msgid ""
 "Wookiee warriors defend Kashyyyk's great wroshyr trees with ryyk blades and powerful bowcasters.\n"
 "\n"
@@ -7827,19 +7890,19 @@ msgid ""
 msgstr ""
 
 #. [attack]: type=blade
-#: units/hte_new_republic.cfg:2907
-#: units/hte_new_republic.cfg:3160
-#: units/hte_new_republic.cfg:3414
-#: units/hte_new_republic.cfg:3680
-#: units/hte_new_republic.cfg:3937
-#: units/hte_new_republic.cfg:4195
-#: units/hte_new_republic.cfg:4439
+#: units/hte_new_republic.cfg:2979
+#: units/hte_new_republic.cfg:3232
+#: units/hte_new_republic.cfg:3486
+#: units/hte_new_republic.cfg:3752
+#: units/hte_new_republic.cfg:4009
+#: units/hte_new_republic.cfg:4267
+#: units/hte_new_republic.cfg:4511
 msgid "ryyk blade"
 msgstr ""
 
 #. [variation]: race=sw_wookiee
-#: units/hte_new_republic.cfg:3116
-#: units/hte_new_republic.cfg:3370
+#: units/hte_new_republic.cfg:3188
+#: units/hte_new_republic.cfg:3442
 msgid ""
 "Wookiee warriors defend Kashyyyk's great wroshyr trees with ryyk blades and powerful bowcasters.\n"
 "\n"
@@ -7848,14 +7911,14 @@ msgstr ""
 
 #. [variation]: race=sw_wookiee
 #. [unit_type]: id=sw_unit_wk_lookout, race=sw_wookiee
-#: units/hte_new_republic.cfg:3867
-#: units/hte_new_republic.cfg:4125
-#: units/hte_new_republic.cfg:3610
+#: units/hte_new_republic.cfg:3939
+#: units/hte_new_republic.cfg:4197
+#: units/hte_new_republic.cfg:3682
 msgid "Wookiee Lookout"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wk_lookout, race=sw_wookiee
-#: units/hte_new_republic.cfg:3623
+#: units/hte_new_republic.cfg:3695
 msgid ""
 "Lookouts keep watch from the high branches. Few intruders escape their senses, even Noghri.\n"
 "\n"
@@ -7863,29 +7926,29 @@ msgid ""
 msgstr ""
 
 #. [dummy]: id=sw_ability_keen_senses
-#: units/hte_new_republic.cfg:3656
-#: units/hte_new_republic.cfg:3913
-#: units/hte_new_republic.cfg:4171
+#: units/hte_new_republic.cfg:3728
+#: units/hte_new_republic.cfg:3985
+#: units/hte_new_republic.cfg:4243
 msgid "keen senses"
 msgstr ""
 
 #. [dummy]: id=sw_ability_keen_senses
-#: units/hte_new_republic.cfg:3657
-#: units/hte_new_republic.cfg:3914
-#: units/hte_new_republic.cfg:4172
+#: units/hte_new_republic.cfg:3729
+#: units/hte_new_republic.cfg:3986
+#: units/hte_new_republic.cfg:4244
 msgid "Enemy Noghri within two hexes of this unit cannot hide."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ew
-#: units/hte_new_republic.cfg:3675
-#: units/hte_new_republic.cfg:3932
-#: units/hte_new_republic.cfg:4190
+#: units/hte_new_republic.cfg:3747
+#: units/hte_new_republic.cfg:4004
+#: units/hte_new_republic.cfg:4262
 msgid "Sensors and electronic warfare. Sensors 4 out to 5 hexes (ordinary infantry 2 out to 3). Active sensor sweep (right-click; uses its attack): until its next turn, sensors +2 and 2 hexes more reach, but signature +3. Field Manual: Electronic warfare explains each rating."
 msgstr ""
 
 #. [variation]: race=sw_wookiee
-#: units/hte_new_republic.cfg:3880
-#: units/hte_new_republic.cfg:4138
+#: units/hte_new_republic.cfg:3952
+#: units/hte_new_republic.cfg:4210
 msgid ""
 "Lookouts keep watch from the high branches. Few intruders escape their senses, even Noghri.\n"
 "\n"
@@ -7893,12 +7956,12 @@ msgid ""
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wk_suppressor, race=sw_wookiee
-#: units/hte_new_republic.cfg:4382
+#: units/hte_new_republic.cfg:4454
 msgid "Wookiee Suppressor"
 msgstr ""
 
 #. [unit_type]: id=sw_unit_wk_suppressor, race=sw_wookiee
-#: units/hte_new_republic.cfg:4395
+#: units/hte_new_republic.cfg:4467
 msgid ""
 "Kashyyyk's defenders use concussive bowcaster loads to break an enemy's advance. A hit in ordinary combat slows the target until it ends a turn: its attack damage is halved and its movement costs are doubled. Low damage and lighter protection make suppressors support troops, not replacements for warriors. Pair them with lookouts to expose hidden Noghri, and keep a warrior between them and an assault.\n"
 "\n"
@@ -7906,12 +7969,12 @@ msgid ""
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_new_republic.cfg:4451
+#: units/hte_new_republic.cfg:4523
 msgid "concussive bowcaster"
 msgstr ""
 
 #. [attack]: type=impact
-#: units/hte_new_republic.cfg:4473
+#: units/hte_new_republic.cfg:4545
 msgid "concussive bowcaster (aimed)"
 msgstr ""
 
@@ -7923,6 +7986,14 @@ msgstr ""
 #. [unit_type]: id=sw_unit_sm_smuggler, race=human
 #: units/hte_smugglers.cfg:21
 msgid "Members of Talon Karrde's organization: pilots, slicers, and gunhands, loyal to Karrde before any government."
+msgstr ""
+
+#. [attack]: type=fire
+#: units/hte_smugglers.cfg:48
+#: units/hte_smugglers.cfg:236
+#: units/hte_smugglers.cfg:426
+#: units/hte_smugglers.cfg:617
+msgid "DL-18 blaster pistol"
 msgstr ""
 
 #. [variation]: race=human

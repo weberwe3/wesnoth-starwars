@@ -10561,7 +10561,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "sha256": "c211d0e76020f3183acc522fa3610c70a1a29a655ca67050f49957a16d74fb5c"
+      "sha256": "3f5aa9cee340bbfa578116036adfa4d3e154884559a515900acd2532f28ad713"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
@@ -10573,19 +10573,19 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "c3fc187baa3f6ea3af1a8617e10324a93d7a46517df6550e4cd15a2861be5492"
+      "sha256": "1e7cae1010d894a989dc7287c375e716fdc7b8d9c090855441f12b3f5ab1925e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "sha256": "495e9b139eea922a2377d7eb23650040cb066b7540c8667ae56c8fe8aeca158d"
+      "sha256": "8c1517fb1df46e20a8a54fdd1c2bb5b192d46a3e69a760c21d8c2c67fc02ab7c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "sha256": "5f782237cb0a1a62158f32c889b5d87ef36e19f82609750fbde5f340e9df5943"
+      "sha256": "61c4b2daf09879857b6e9769b8bcb4b839420d19b1b5c47d4a6ae56b3b51224d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
-      "sha256": "75e2b831baf9df36d489ae61c837c1237b970306aa4776b64bc21fc6353bd26a"
+      "sha256": "4cbc490a15f6bde4dff3d97b1a730c42e6e6642a8e3915dab604fe705cfe56f9"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
@@ -10601,7 +10601,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "f1ff8d4b0bd1dfb73ec11ef42d8e8673d00436bcc732f6c26611b9135a9bd703"
+      "sha256": "df2f2eaaac97574f1ec9d987a06d1c1e8a87cb80a5bd7329d53f3a43e70c5d80"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",

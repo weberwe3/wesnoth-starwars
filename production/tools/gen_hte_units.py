@@ -638,6 +638,29 @@ SPECIALS = {
     # E-Web: braced on its tripod. The engine builds the combat stats before
     # it spends the attacker's movement (actions/attack.cpp), so moves still
     # equal max_moves for a crew that has not moved this turn.
+    # Lore weapons (owner request 2026-10-13): Legends models where the lore
+    # names one, each with a profile that changes how the unit plays.
+    # A280: the Rebellion's rifle, known for bolts that punch through armour.
+    "a280_piercing": (
+        "[damage]\n"
+        "    id=sw_special_a280_piercing\n"
+        "    name= _ \"armour-piercing\"\n"
+        "    description= _ \"The A280's bolts punch through most personal armour: +25% damage against armoured troopers such as stormtroopers.\"\n"
+        "    multiply=1.25\n"
+        "    [filter_opponent]\n"
+        "        movement_type=sw_armored_trooper\n"
+        "    [/filter_opponent]\n"
+        "[/damage]"
+    ),
+    # Leia's Defender: a light, accurate sporting blaster.
+    "precise": (
+        "[chance_to_hit]\n"
+        "    id=sw_special_precise\n"
+        "    name= _ \"precise\"\n"
+        "    description= _ \"A light sporting weapon with fine sights: +10% chance to hit.\"\n"
+        "    add=10\n"
+        "[/chance_to_hit]"
+    ),
     "set_up": (
         "[damage]\n"
         "    id=sw_special_set_up\n"
@@ -650,11 +673,12 @@ SPECIALS = {
         "    [/filter_self]\n"
         "[/damage]"
     ),
-    # Stormtroopers fight as drilled squads.
-    "formation_fire": (
+    # Stormtroopers fight as drilled squads. Shown as "attack formation"; the
+    # id keeps its published name (historical retention check).
+    "attack_formation": (
         "[chance_to_hit]\n"
         "    id=sw_special_formation_fire\n"
-        "    name= _ \"formation fire\"\n"
+        "    name= _ \"attack formation\"\n"
         "    description= _ \"Drilled to fire as a squad: +10% chance to hit while another stormtrooper (trooper, sergeant or clone) stands next to this unit.\"\n"
         "    add=10\n"
         "    [filter_self]\n"
@@ -729,6 +753,16 @@ RIFLE = lambda d, n, sp=(): attack("blaster_rifle", "blaster rifle", "fire", "ra
 PISTOL = lambda d, n, sp=(): attack("blaster_pistol", "blaster pistol", "fire", "ranged", d, n, specials=sp)
 BUTT = lambda d, n: attack("rifle_butt", "rifle butt", "impact", "melee", d, n)
 FISTS = lambda d, n: attack("fists", "fists", "impact", "melee", d, n)
+# Lore weapons. The attack id stays the generic one (sounds, icons, ranges,
+# overwatch and rank abilities key on it); the name the player sees is the
+# Legends model.
+E11 = lambda d, n: attack("blaster_rifle", "E-11 blaster rifle", "fire", "ranged", d, n,
+                          specials=["attack_formation"])
+A280 = lambda d, n: attack("blaster_rifle", "A280 blaster rifle", "fire", "ranged", d, n,
+                           specials=["a280_piercing"])
+SE14 = lambda d, n: attack("blaster_pistol", "SE-14 blaster pistol", "fire", "ranged", d, n)
+DL18 = lambda d, n, sp=(): attack("blaster_pistol", "DL-18 blaster pistol", "fire", "ranged", d, n, specials=sp)
+HOLDOUT = lambda d, n: attack("blaster_pistol", "hold-out blaster", "fire", "ranged", d, n)
 LASERS = lambda d, n, sp=(): attack("laser_cannons", "laser cannons", "fire", "ranged", d, n, specials=sp)
 
 ROSTER = [
@@ -736,11 +770,11 @@ ROSTER = [
     U("sw_unit_nr_trooper", "New Republic Trooper",
       "The backbone of the New Republic Army: volunteers from a hundred worlds, many of them veterans of the Rebellion, armed with reliable blaster rifles.",
       file="hte_new_republic", level=1, hp=38, mp=5, xp=40, cost=14, mt="sw_infantry",
-      attacks=[BUTT(5, 2), RIFLE(7, 3)], advances="sw_unit_nr_sergeant"),
+      attacks=[BUTT(5, 2), A280(7, 3)], advances="sw_unit_nr_sergeant"),
     U("sw_unit_nr_sergeant", "New Republic Sergeant",
       "Sergeants hold New Republic squads together under fire. Their calm example steadies nearby troopers.",
       file="hte_new_republic", level=2, hp=50, mp=5, xp=90, cost=26, mt="sw_infantry",
-      attacks=[BUTT(7, 2), RIFLE(9, 3)], abilities=["leadership"]),
+      attacks=[BUTT(7, 2), A280(9, 3)], abilities=["leadership"]),
     U("sw_unit_nr_commando", "New Republic Commando",
       "Lightly equipped specialists trained to slip between enemy positions, strike, and vanish before a response can form.",
       file="hte_new_republic", level=1, hp=34, mp=6, xp=42, cost=17, mt="sw_infantry", usage="scout",
@@ -756,12 +790,13 @@ ROSTER = [
     U("sw_unit_nr_field_medic", "Field Medic",
       "New Republic medics carry bacta patches and stim kits into the thick of the fighting to keep soldiers on their feet.",
       file="hte_new_republic", level=1, hp=30, mp=5, xp=40, cost=16, mt="sw_infantry", usage="healer",
-      attacks=[PISTOL(5, 2)], abilities=["heals4"]),
+      attacks=[attack("blaster_pistol", "DH-17 blaster pistol", "fire", "ranged", 4, 3)], abilities=["heals4"]),
     U("sw_unit_nr_militia", "Planetary Militia",
       "Local defense volunteers with little training and older weapons, fighting for their own homes.",
       file="hte_new_republic", level=0, hp=26, mp=5, xp=20, cost=8, mt="sw_infantry",
       attacks=[attack("fists", "fists", "impact", "melee", 4, 2, specials=["home_ground"]),
-               PISTOL(5, 2, sp=["home_ground"])], advances="sw_unit_nr_trooper"),
+               attack("blaster_pistol", "sporting blaster", "fire", "ranged", 5, 2, specials=["home_ground"])],
+      advances="sw_unit_nr_trooper"),
     U("sw_unit_wk_warrior", "Wookiee Warrior",
       "Wookiee warriors defend Kashyyyk's great wroshyr trees with ryyk blades and powerful bowcasters.",
       file="hte_new_republic", level=1, hp=48, mp=5, xp=44, cost=18, mt="sw_wookiee", race="sw_wookiee",
@@ -818,14 +853,15 @@ ROSTER = [
     U("sw_hero_leia", "Chief of State",
       "Leia Organa Solo, a leader of the New Republic, a veteran of the Rebellion, and Force-sensitive herself. The Noghri want her alive.",
       file="hte_heroes", level=2, hp=40, mp=5, xp=100, cost=40, mt="sw_jedi", hero=True, gender="female",
-      attacks=[FISTS(5, 2), PISTOL(7, 3)], abilities=["leadership"]),
+      attacks=[FISTS(5, 2), attack("blaster_pistol", "Defender sporting blaster", "fire", "ranged", 6, 3,
+                                   specials=["precise"])], abilities=["leadership"]),
     U("sw_hero_han", "Smuggler General",
       "Han Solo, captain of the Millennium Falcon and a general of the New Republic, is quicker on the draw than anyone he has met.",
       file="hte_heroes", level=2, hp=46, mp=6, xp=100, cost=40, mt="sw_infantry", hero=True, gender="male",
       # Skirmisher (ability review 2026-10-10): a smuggler who slips past
       # blockades -- Han flanks and breaks contact where others are pinned.
       abilities=["skirmisher"],
-      attacks=[FISTS(6, 2), attack("heavy_blaster_pistol", "heavy blaster pistol", "fire", "ranged", 9, 3,
+      attacks=[FISTS(6, 2), attack("heavy_blaster_pistol", "DL-44 heavy blaster pistol", "fire", "ranged", 9, 3,
                                    specials=["firststrike"])]),
     U("sw_hero_chewbacca", "Wookiee Copilot",
       "Chewbacca, Han Solo's Wookiee partner and copilot, has sworn a life debt and defends his friends with ferocious strength.",
@@ -857,21 +893,21 @@ ROSTER = [
     U("sw_hero_pellaeon", "Imperial Captain",
       "Captain Gilad Pellaeon commands the Star Destroyer Chimaera. A career officer, he has come to trust the Grand Admiral completely.",
       file="hte_heroes", level=3, hp=50, mp=5, xp=150, cost=50, mt="sw_infantry", hero=True, gender="male",
-      attacks=[FISTS(6, 2), PISTOL(8, 3)], abilities=["leadership"]),
+      attacks=[FISTS(6, 2), SE14(8, 3)], abilities=["leadership"]),
     U("sw_hero_thrawn", "Grand Admiral",
       "Grand Admiral Thrawn, the only alien to reach the Empire's highest rank, has returned from the Unknown Regions to lead the Imperial Remnant.",
       file="hte_heroes", level=4, hp=60, mp=5, xp=200, cost=80, mt="sw_infantry", hero=True, gender="male",
-      attacks=[FISTS(7, 2), PISTOL(10, 3)], abilities=["leadership", "tactical_genius"]),
+      attacks=[FISTS(7, 2), SE14(10, 3)], abilities=["leadership", "tactical_genius"]),
 
     # Imperial Remnant -----------------------------------------------------
     U("sw_unit_im_stormtrooper", "Stormtrooper",
       "The Empire's armored infantry. Their plastoid armor turns blades and glancing bolts, and their discipline has survived the Emperor's death.",
       file="hte_imperial", level=1, hp=36, mp=5, xp=40, cost=14, mt="sw_armored_trooper",
-      attacks=[BUTT(5, 2), RIFLE(7, 3, sp=["formation_fire"])], advances="sw_unit_im_stormtrooper_sergeant"),
+      attacks=[BUTT(5, 2), E11(5, 4)], advances="sw_unit_im_stormtrooper_sergeant"),
     U("sw_unit_im_stormtrooper_sergeant", "Stormtrooper Sergeant",
       "Squad leaders marked by their pauldrons, who drive their troopers forward with harsh efficiency.",
       file="hte_imperial", level=2, hp=48, mp=5, xp=90, cost=27, mt="sw_armored_trooper",
-      attacks=[BUTT(7, 2), RIFLE(9, 3, sp=["formation_fire"])], abilities=["leadership"]),
+      attacks=[BUTT(7, 2), E11(7, 4)], abilities=["leadership"]),
     U("sw_unit_im_scout_trooper", "Scout Trooper",
       "Lightly armored scouts on speeder bikes: very fast in the open, dangerous among trees.",
       file="hte_imperial", level=1, hp=32, mp=8, xp=40, cost=17, mt="sw_repulsor", usage="scout",
@@ -880,7 +916,7 @@ ROSTER = [
     U("sw_unit_im_officer", "Imperial Officer",
       "Field officers of the Imperial Remnant, trained to coordinate infantry, walkers, and air support.",
       file="hte_imperial", level=2, hp=40, mp=5, xp=90, cost=30, mt="sw_infantry",
-      attacks=[FISTS(5, 2), PISTOL(7, 2)], abilities=["leadership"]),
+      attacks=[FISTS(5, 2), SE14(7, 2)], abilities=["leadership"]),
     U("sw_unit_im_at_st", "AT-ST Walker",
       "All Terrain Scout Transports: two-legged walkers with chin-mounted blaster cannons and a grenade launcher. Weak to ion fire and lightsabers.",
       file="hte_imperial", level=2, hp=64, mp=4, xp=90, cost=34, mt="sw_walker", race="mechanical",
@@ -943,7 +979,7 @@ ROSTER = [
     U("sw_unit_im_clone_trooper", "Clone Stormtrooper",
       "Soldiers grown in the Grand Admiral's new cloning cylinders and sealed inside stormtrooper armor. They fight without hesitation.",
       file="dfr_units", level=1, hp=40, mp=5, xp=40, cost=16, mt="sw_armored_trooper",
-      attacks=[BUTT(6, 2), RIFLE(8, 3, sp=["formation_fire"])], advances="sw_unit_im_stormtrooper_sergeant"),
+      attacks=[BUTT(6, 2), E11(6, 4)], advances="sw_unit_im_stormtrooper_sergeant"),
     U("sw_unit_im_decon_droid", "Decontamination Droid",
       "Slow, heavily built droids that have worked Honoghr's poisoned soil for a generation.",
       file="dfr_units", level=1, hp=50, mp=3, xp=40, cost=15, mt="sw_walker", race="mechanical",
@@ -992,7 +1028,7 @@ ROSTER = [
     U("sw_unit_im_infiltrator", "Imperial Infiltrator",
       "Commandos trained to move unseen through cities and palaces.",
       file="tlc_units", level=1, hp=32, mp=6, xp=40, cost=18, mt="sw_noghri",
-      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 7, 3, specials=["backstab"]), PISTOL(6, 2)],
+      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 7, 3, specials=["backstab"]), HOLDOUT(6, 2)],
       abilities=["ambush"]),
     U("sw_unit_im_minelayer", "Imperial Minelayer",
       "A converted bulk freighter that releases cloaked asteroids into planetary orbit.",
@@ -1019,16 +1055,16 @@ ROSTER = [
     U("sw_unit_sm_smuggler", "Smuggler",
       "Members of Talon Karrde's organization: pilots, slicers, and gunhands, loyal to Karrde before any government.",
       file="hte_smugglers", level=1, hp=34, mp=6, xp=40, cost=13, mt="sw_infantry",
-      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 5, 3), PISTOL(7, 2)],
+      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 5, 3), DL18(7, 2)],
       advances="sw_unit_sm_veteran"),
     U("sw_unit_sm_veteran", "Smuggler Veteran",
       "Hardened fringe fighters who make every shot count.",
       file="hte_smugglers", level=2, hp=44, mp=6, xp=90, cost=26, mt="sw_infantry",
-      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 7, 3), PISTOL(9, 3, sp=["marksman"])]),
+      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 7, 3), DL18(9, 3, sp=["marksman"])]),
     U("sw_unit_sm_slicer", "Smuggler Slicer",
       "An electronic-warfare specialist in Talon Karrde's organization. Better sensors and counter-jamming help the team read contacts through interference. An active sweep spends the unit's attack; each sensor decoy spends an attack and one of two finite charges. Lightly armed and vulnerable to rifle fire, the slicer works behind a screen of gunhands.",
       file="hte_smugglers", level=1, hp=28, mp=6, xp=60, cost=18, mt="sw_infantry", usage="scout",
-      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 4, 2), PISTOL(5, 2)]),
+      attacks=[attack("vibroknife", "vibroknife", "blade", "melee", 4, 2), HOLDOUT(5, 2)]),
     U("sw_unit_wl_vornskr", "Vornskr",
       "Whip-tailed Myrkr predators that hunt by sensing the Force and attack Force-sensitives on sight.",
       file="hte_smugglers", level=1, hp=30, mp=7, xp=40, cost=12, mt="sw_beast", race="sw_vornskr",
