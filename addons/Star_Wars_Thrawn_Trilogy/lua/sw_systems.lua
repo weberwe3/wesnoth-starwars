@@ -233,6 +233,14 @@ on("attack end", "sw_sys_attack_end", function()
 	alert.refresh()
 end)
 
+-- Interface cue: the objectives change mid-mission ([show_objectives], e.g.
+-- the lightsaber recovered on Myrkr). Display only.
+local core_show_objectives = wesnoth.wml_actions.show_objectives
+function wesnoth.wml_actions.show_objectives(cfg)
+	core_show_objectives(cfg)
+	wesnoth.audio.play("sw-objective.wav")
+end
+
 -- Right-click menu items (contextual: shown only where they apply, so normal
 -- play stays uncluttered).
 wesnoth.interface.set_menu_item("sw_force_menu", {
