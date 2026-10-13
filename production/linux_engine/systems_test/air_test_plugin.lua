@@ -13,7 +13,7 @@ local STEPS = {
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
   "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_ow_path_rules", "ai_ow_path", "check_ai_ow_path", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
-  "alert_rules", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw",
+  "alert_rules", "alert_sneak", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw",
   "myneyrshi_medic_ranks", "myneyrshi_medic_recruit_setup", "myneyrshi_medic_recruit_check",
   "myneyrshi_medic_move_setup", "myneyrshi_medic_move_check", "myneyrshi_medic_heal_setup", "myneyrshi_medic_enemy_turn", "myneyrshi_medic_heal_check",
   "myneyrshi_medic_upgrade_setup", "myneyrshi_medic_upgrade_enemy_turn", "myneyrshi_medic_upgrade_check", "wookiee_ranks", "wookiee_recruit_setup", "wookiee_recruit_check", "wookiee_normal", "wookiee_check_normal",
@@ -1606,6 +1606,58 @@ local function plugin(events, context, info)
       check("the alarm alerts every guard", not alert.is_unaware(u("t_patrol")))
       swt.place("sw_unit_sm_smuggler", 2, 20, 3, "t_late")
       check("reinforcements after the alarm arrive alert", not alert.is_unaware(u("t_late")))
+    end
+
+    -- Facing: a guard sees the way it faces, so an intruder can step next to
+    -- it from behind with a real move and take it down that turn; at the
+    -- start of the guards' turn they look around and notice anyone beside them.
+    function S.alert_sneak()
+      swt.clear()
+      local alert = sw_systems.alert
+      swt.place("sw_unit_sm_smuggler", 2, 10, 8, "t_back")
+      swt.place("sw_unit_sm_smuggler", 2, 16, 3, "t_front")
+      swt.place("sw_unit_nr_commando", 1, 6, 8, "t_spy")
+      swt.place("sw_unit_nr_commando", 1, 21, 3, "t_spy2")
+      wesnoth.wml_actions.sw_alert{ action = "enable", guard_side = 2, intruder_side = 1 }
+      check("guards start facing the nearest intruder", u("t_back").facing == "sw" and u("t_front").facing == "se",
+        u("t_back").facing .. " " .. u("t_front").facing)
+      wesnoth.wml_actions.sw_alert{ action = "guard", T.filter{ id = "t_back" }, facing = "se" }
+      check("a scenario can set a guard's facing", u("t_back").facing == "se")
+      local behind, ahead = 0, 0
+      for _i, loc in ipairs(wml.array_access.get("sw_alert_drawn")) do
+        if wesnoth.map.distance_between(loc.x, loc.y, 10, 8) <= 3 then
+          if loc.x < 10 then behind = behind + 1 else ahead = ahead + 1 end
+        end
+      end
+      check("sight hexes cover only the half the guard faces", behind == 0 and ahead > 0, behind .. " behind, " .. ahead .. " ahead")
+      -- Real move order up behind the guard.
+      u("t_spy").moves = 8
+      swt.move_to("t_spy", 9, 8)
+      check("stepping next to a guard from behind: not spotted", u("t_spy").x == 9 and alert.is_unaware(u("t_back")),
+        u("t_spy").x .. "," .. u("t_spy").y)
+      wml.variables.x1, wml.variables.y1 = 9, 8
+      local ok, vis = pcall(alert.takedown_menu_visible)
+      wml.variables.x1, wml.variables.y1 = nil, nil
+      check("so Silent takedown is offered after a real approach", ok and vis == true, tostring(vis))
+      alert.takedown(u("t_spy"), u("t_back"))
+      check("and the guard is knocked out", u("t_back") == nil)
+      -- From the front: spotted.
+      u("t_spy2").moves = 8
+      swt.move_to("t_spy2", 17, 3)
+      check("stepping next to a guard from the front: spotted", not alert.is_unaware(u("t_front")))
+      -- The guards' turn: a guard on post turns about and notices an
+      -- intruder beside it.
+      swt.clear()
+      swt.place("sw_unit_sm_smuggler", 2, 10, 8, "t_post")
+      swt.place("sw_unit_nr_commando", 1, 16, 8, "t_far")
+      wesnoth.wml_actions.sw_alert{ action = "enable", guard_side = 2, intruder_side = 1 }
+      check("(the post faces east, toward the far intruder)", u("t_post").facing == "se")
+      swt.place("sw_unit_nr_commando", 1, 9, 8, "t_lurk")
+      alert.check()
+      check("an intruder behind the guard is unseen during its own turn", alert.is_unaware(u("t_post")))
+      alert.on_side_turn(2)
+      check("guards on post look around at the start of their turn", u("t_post").facing == "sw", u("t_post").facing)
+      check("and notice an intruder still beside them", not alert.is_unaware(u("t_post")))
     end
 
     function S.alert_takedown()

@@ -10493,7 +10493,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg",
-      "sha256": "1de62d68a379e74bd8a1ae8e2cc997af624d90645bcdd933d72809fd6b11f434"
+      "sha256": "118216119f706fa5639eb37f70494b8b367d30c1ef00a3f387f58a813c746711"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg",
@@ -10609,7 +10609,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "d577134053f7c521875498ed2c8793d75cc4410837968629e65fee3cfb875654"
+      "sha256": "2e1af3ea1ee3e0158c553f1f07005858cc8085e6aad2d8f26d48c34e4a019a85"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10641,7 +10641,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua",
-      "sha256": "8cfc5cf228a3d5d6c0669cb00c299dc21c1b04b4985f703fcc688e433a5b7fbe"
+      "sha256": "5b8f98ef8f5dc86e59f32dd5492187697931e9e656c64bb7347b0ecee5239a85"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_bonus.lua",
@@ -10697,11 +10697,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "f9c3829ab8068800876bc528f0daf53cb15e3eef8c879cffd9a294f2885299e2"
+      "sha256": "0f8260b5bd1e4b83e10f5405459e055590e3c7bad290e36449db02cf993f505e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua",
-      "sha256": "cbada97630bec050a58f5c1730a79f2c421a7f2f06391f8823368e286fdbe28c"
+      "sha256": "d4aad4eb5c8b44b0747513892e88472eec3c4a5d922f11b31c8d47235cbaa68f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",

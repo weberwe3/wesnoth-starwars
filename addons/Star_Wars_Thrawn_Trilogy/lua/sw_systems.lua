@@ -210,6 +210,8 @@ on("unit placed", "sw_sys_unit_placed", function()
 	if acfg and u.side == acfg.guard_side and u.variables.sw_alert_state == nil then
 		-- Reinforcements arriving after the alarm come in alert.
 		u.variables.sw_alert_state = acfg.alarm and "alert" or "unaware"
+		-- A set facing, not the engine's unsynced random one (sw_alert.lua).
+		alert.face_nearest_intruder(u)
 	end
 	doctrine.on_unit_placed(u)
 	if mover_matters(u) then force.refresh_fields() end
@@ -435,7 +437,7 @@ end
 
 -- [sw_alert] action=enable guard_side= intruder_side= show_sight=yes|no
 -- [sw_alert] action=alarm                         every guard becomes alert
--- [sw_alert] action=guard [filter]...[/filter] sight=3 patrol=x.y,x.y,...
+-- [sw_alert] action=guard [filter]...[/filter] sight=3 patrol=x.y,x.y,... facing=se
 function wesnoth.wml_actions.sw_alert(cfg)
 	cfg = wml.parsed(cfg)
 	local action = cfg.action or "enable"
@@ -450,6 +452,7 @@ function wesnoth.wml_actions.sw_alert(cfg)
 		for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map(filter))) do
 			if cfg.sight then u.variables.sw_alert_sight = tonumber(cfg.sight) end
 			if cfg.patrol then u.variables.sw_alert_patrol = cfg.patrol end
+			if cfg.facing then u.facing = cfg.facing end
 		end
 		alert.refresh()
 	else
