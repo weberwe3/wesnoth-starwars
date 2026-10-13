@@ -1266,6 +1266,10 @@ def ranged_anim(base: str, unit_id: str, attack: dict | None) -> str:
         lines.append("    {SOUND:HIT_AND_MISS sw-explosion.wav sw-bomb-miss.wav -10}")
     elif attack and key == "deflection":
         lines.append("    {SOUND:HIT_AND_MISS sw-deflect.wav sw-blaster-miss.wav -10}")
+    elif attack and key == "sprayer":
+        # A chemical spray, no bolt: the hiss of the jet and of it landing.
+        sound = "hiss.wav"
+        lines.append("    {SOUND:HIT_AND_MISS hiss-hit.wav miss-1.ogg -10}")
     elif sound in RANGED_IMPACTS:
         hit, miss = RANGED_IMPACTS[sound]
         lines.append(f"    {{SOUND:HIT_AND_MISS {hit} {miss} -10}}")

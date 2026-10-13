@@ -96,6 +96,9 @@ jobs:
       - name: Check every playable unit has its own art
         run: python3 production/tools/check_unique_unit_art.py
 
+      - name: Check every unit attack and death has a sound
+        run: python3 production/tools/check_unit_sounds.py
+
       - name: Test unattended charter admission
         run: |
           python3 production/charter_selftest.py
