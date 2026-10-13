@@ -433,3 +433,11 @@ starship bulkhead) and the bunker parapet:
 
 The Codex tile-variety jobs for wall tops and the old coded bulkhead were
 retired so they cannot overwrite this art.
+
+## X-wing turned to face right (2026-10-13)
+
+Owner report: during an airstrike the X-wing flew backwards. Every unit
+sprite faces right and the engine mirrors it for westward moves, but the
+X-wing set (all three ranks) was drawn nose-left, so it flew and fired
+backwards in every direction. Its frames are mirrored, and its muzzle-flash
+point re-measured onto the wing cannons (`production/tools/muzzle_flashes.json`).

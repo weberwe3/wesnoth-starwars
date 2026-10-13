@@ -503,6 +503,15 @@ def flyover_variation() -> str:
         "    hide_help=yes\n"
         "    inherit=yes\n"
         "    movement_type=fly\n"
+        # Silent take-off: sw_air.lua plays the craft's engine sound itself,
+        # because the engine plays animation sounds only for units the viewer
+        # can see, and a pass often starts in fog. Inheriting merges this
+        # [frame] into the type's only take-off frame, blanking its sound.
+        "    [pre_movement_anim]\n"
+        "        [frame]\n"
+        "            sound=\"\"\n"
+        "        [/frame]\n"
+        "    [/pre_movement_anim]\n"
         "[/variation]"
     )
 
