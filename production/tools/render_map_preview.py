@@ -6,8 +6,8 @@ add-on's and the installed engine's terrain definitions: base terrain first,
 then the overlay (forest, village, ...). Transitions between terrains, which
 the engine blends at run time, are not drawn, so the preview is blockier than
 the game; it is meant for judging layout, variety and readability. The wall
-relief (utils/hte_terrain.cfg SW_WALL_RELIEF, gen_wall_relief.py) is drawn with
-the same neighbour rules as the game.
+blocks (gen_wall_relief.py, utils/sw_wall_relief.cfg) are drawn with the same
+neighbour rules as the game.
 
 Usage (art Python): render_map_preview.py MAP.map [MAP ...] --out DIR [--scale 0.5]
 """
@@ -63,36 +63,42 @@ def neighbours(x: int, y: int) -> dict[str, tuple[int, int]]:
 
 
 def draw_relief(img: Image.Image, grid: list[list[str]]) -> None:
+    """Wall blocks, bunker parapets and wall shadows, placed by the same
+    neighbour rules as the game (utils/sw_wall_relief.cfg, hte_terrain.cfg).
+    Every image stays inside its own hex, as the engine cuts it."""
     def base(x, y):
         if 0 <= y < len(grid) and 0 <= x < len(grid[y]):
             return grid[y][x].partition("^")[0]
         return None
-    # The game draws all shadows (layer -450), then all faces (-400), then the
-    # inside-corner face extensions (-399), each layer top to bottom.
+
+    def solid(code):      # walls, impassable terrain and the map border
+        return code is None or code in WALLS or code.startswith("X")
+
     draws = []
     for y, row in enumerate(grid):
         for x in range(len(row)):
             here = base(x, y)
+            # The engine draws a row's even columns, then its odd ones (they
+            # sit half a hex lower), and each hex's images by layer.
+            key = (y, x % 2, x)
             pos = (54 * x, 72 * y + (36 if x % 2 else 0))
             nb = neighbours(x, y)
+            if here in WALLS or not solid(here):
+                cells = {"c": here, "s": base(*nb["s"]), "se": base(*nb["se"]), "sw": base(*nb["sw"])}
+                bits = "".join("1" if (here in WALLS if o == "c" else solid(cells[o])) else "0"
+                               for o in ("c", "s", "se", "sw"))
+                for o, code in cells.items():
+                    if code in WALLS:
+                        draws.append((key, -400, pos, f"wall-{WALLS[code]}-{o}-{bits}"))
             for d, (nx, ny) in nb.items():
                 there = base(nx, ny)
                 if there is None:
                     continue
-                name, layer = None, 0
-                if here in WALLS and there not in WALLS and not there.startswith("X"):
-                    name, layer = f"wall-relief-{WALLS[here]}-{d}", -400
-                    if d in ("se", "sw"):
-                        corner = base(*nb["ne" if d == "se" else "nw"])
-                        if corner in WALLS:
-                            draws.append((-399, pos[1], pos[0], f"wall-relief-{WALLS[here]}-{d}-ext"))
-                elif here == "Qcb" and there not in ("Qcb", "Qkb"):
-                    name, layer = f"wall-relief-bunker-{d}", -400
-                elif here not in WALLS and not here.startswith("X") and there in WALLS:
-                    name, layer = f"wall-shadow-{d}", -450
-                if name:
-                    draws.append((layer, pos[1], pos[0], name))
-    for _layer, py, px, name in sorted(draws):
+                if here == "Qcb" and there not in ("Qcb", "Qkb"):
+                    draws.append((key, -400, pos, f"wall-relief-bunker-{d}"))
+                elif not solid(here) and there in WALLS:
+                    draws.append((key, -450, pos, f"wall-shadow-{d}"))
+    for _key, _layer, (px, py), name in sorted(draws):
         t = tile(f"sw/{name}")
         if t is not None:
             img.alpha_composite(t, (px, py))

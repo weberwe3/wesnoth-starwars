@@ -10613,11 +10613,15 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
-      "sha256": "5762ee4e568931a4f83abbb2abe5dcac0e94ce7b5f436c7302ad36c47673a028"
+      "sha256": "9261b3354dfcac78a17db93840b43642e21a7051b99f370610b7b64fc51b070d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/mission_events.cfg",
       "sha256": "79805fd529c7a43c22ef4869a24bf42824d691ec97484aa25b3d39f6ed00928e"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/utils/sw_wall_relief.cfg",
+      "sha256": "595161c2339c01c49c6876998b1d2e826e7ca0cdb71aedec34f68fa6544eb021"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/tlc_macros.cfg",
