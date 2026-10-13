@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Synthesize the add-on's original sound effects from scratch.
+"""Synthesize stand-in sound effects from scratch (retired for the add-on).
+
+Owner direction (2026-10-13): the add-on ships the owner-supplied clips under
+the same names (addons/.../sounds/sw-*.wav), so this no longer writes into the
+add-on; it writes stand-ins to --out DIR only, for comparison or as a
+fallback. The notes below describe the stand-ins.
 
 Every sound is generated mathematically (oscillators, noise and envelopes)
 with fixed seeds, so the output is reproducible and contains no recorded or
@@ -19,7 +24,7 @@ Output: 22,050 Hz mono 16-bit WAV under addons/.../sounds/.
   sw-force-lightning.wav   Force lightning: dense electric crackling
   sw-vibroblade.wav        vibroblade: high whine swish
 
-Usage: python3 production/tools/gen_sound_effects.py
+Usage: python3 production/tools/gen_sound_effects.py --out DIR
 Standard library only.
 """
 from __future__ import annotations
@@ -611,6 +616,14 @@ QUIET = {"sw-move-fighter.wav": 0.3, "sw-move-capital.wav": 0.35, "sw-move-speed
 
 
 def main() -> int:
+    import argparse
+    global OUT
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, required=True, help="directory for the stand-ins (never the add-on)")
+    args = parser.parse_args()
+    if args.out.resolve() == OUT.resolve():
+        raise SystemExit("refusing to overwrite the owner-supplied clips in the add-on's sounds/")
+    OUT = args.out
     OUT.mkdir(parents=True, exist_ok=True)
     for name, make in SOUNDS.items():
         write(name, make(), QUIET.get(name, 0.85))
