@@ -637,7 +637,10 @@ SPECIALS = {
     # level, distinct from its rank abilities (rank_abilities.py).
     # E-Web: braced on its tripod. The engine builds the combat stats before
     # it spends the attacker's movement (actions/attack.cpp), so moves still
-    # equal max_moves for a crew that has not moved this turn.
+    # equal max_moves for a crew that has not moved this turn. The attack
+    # animation is chosen after movement is spent, so lua/sw_systems.lua marks
+    # such an attacker sw_braced in the attack event (before movement is spent)
+    # until the attack ends; the set-up animation then still matches.
     # Lore weapons (owner request 2026-10-13): Legends models where the lore
     # names one, each with a profile that changes how the unit plays.
     # A280: the Rebellion's rifle, known for bolts that punch through armour.
@@ -670,6 +673,9 @@ SPECIALS = {
         "    active_on=offense\n"
         "    [filter_self]\n"
         "        formula=\"moves >= max_moves\"\n"
+        "        [or]\n"
+        "            status=sw_braced\n"
+        "        [/or]\n"
         "    [/filter_self]\n"
         "[/damage]"
     ),
@@ -1145,13 +1151,13 @@ def animations(u: dict) -> str:
     # complete; the range filter keeps an absent attack range from using them.
     melee = [a for a in expanded_attacks(u) if a["range"] == "melee"]
     for a in melee or [None]:
-        blocks.append(melee_anim(base, u["id"], a))
+        blocks += with_trait_callout(melee_anim(base, u["id"], a), a, base, u["id"])
     ranged = [a for a in expanded_attacks(u) if a["range"] == "ranged"]
     # One animation per ranged attack, each firing its own projectile. A unit
     # without a ranged attack keeps one plain ranged block so its art set is
     # still fully referenced.
     for a in ranged or [None]:
-        blocks.append(ranged_anim(base, u["id"], a))
+        blocks += with_trait_callout(ranged_anim(base, u["id"], a), a, base, u["id"])
     del has_melee, has_ranged
     blocks.append("[defend]\n" + indent(frame(f"{base}/defend.png", 250), 4) + "\n[/defend]")
     blocks.append(
@@ -1382,6 +1388,54 @@ def ranged_sound(attack_name: str) -> str | None:
     if attack_name in HEAVY_WEAPONS:
         return "sw-blaster-heavy.wav"
     return "sw-blaster.wav"
+
+
+# Signature traits that only apply in some situations get an attack animation
+# of their own, chosen by the engine when the special is active
+# ([filter_attack] special_id_active, units/attack_type.cpp): a callout over
+# the unit shows the bonus being used. The plain animation excludes the
+# special, so exactly one of the two matches. Always-on profiles (E-11 rapid
+# fire, Leia's precise Defender) have no callout.
+TRAIT_CALLOUTS = {
+    "set_up": ("set up", "255,192,74"),
+    "attack_formation": ("attack formation", "255,120,110"),
+    "tie_pack": ("pack tactics", "255,120,110"),
+    "home_ground": ("home ground", "140,220,140"),
+    "long_odds": ("long odds", "255,215,90"),
+    "a280_piercing": ("armour-piercing", "150,200,255"),
+}
+
+
+def special_id(key: str) -> str:
+    return re.search(r"id=(\S+)", SPECIALS[key]).group(1)
+
+
+def with_trait_callout(anim: str, attack: dict | None, base: str, unit_id: str) -> list[str]:
+    keys = [k for k in (attack or {}).get("specials", []) if k in TRAIT_CALLOUTS]
+    if not keys:
+        return [anim]
+    key = keys[0]
+    sid = special_id(key)
+    text, color = TRAIT_CALLOUTS[key]
+    plain = anim.replace("    [/filter_attack]",
+                         f"        [not]\n            special_id_active={sid}\n        [/not]\n    [/filter_attack]", 1)
+    trait = anim.replace("    [/filter_attack]", f"        special_id_active={sid}\n    [/filter_attack]", 1)
+    start = re.search(r"start_time=(-?\d+)", anim).group(1)
+    extra = ""
+    if key == "set_up":
+        # Braced on the tripod: the repeater keeps firing after the first
+        # bolt lands, a held burst instead of a single shot.
+        fire = re.findall(r"image=(\S*ranged-2\S*)", anim)
+        shot = re.search(r"ranged-2\S*\n\s*duration=\d+\n\s*sound=(\S+)", anim)
+        if fire:
+            burst = with_sound(frame(fire[-1], 120), shot.group(1) if shot else None)
+            extra = "\n" + indent(burst, 4) + "\n" + indent(frame(f"{base}/ranged-1.png", 60), 4) \
+                    + "\n" + indent(burst, 4)
+    callout = (f"    callout_start_time={start}\n    [callout_frame]\n        duration=700\n"
+               f"        text= _ \"{text}\"\n        text_color={color}\n    [/callout_frame]")
+    trait = trait.replace("\n[/attack_anim]", extra + "\n" + callout + "\n[/attack_anim]", 1)
+    del unit_id
+    return [plain, trait]
 
 
 def melee_anim(base: str, unit_id: str, attack: dict | None) -> str:

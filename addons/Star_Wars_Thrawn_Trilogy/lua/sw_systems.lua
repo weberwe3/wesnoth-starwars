@@ -156,6 +156,16 @@ on("moveto", "sw_sys_moveto", function()
 	range.on_moveto()
 end)
 
+-- "set up" (E-Web): the engine spends the attacker's movement after the pre
+-- attack event (actions/attack.cpp) but chooses the attack animation later
+-- still. Mark an attacker that has not moved, so the set-up animation matches;
+-- the mark is cleared at attack end.
+on("pre attack", "sw_sys_pre_attack", function()
+	local ctx = wesnoth.current.event_context
+	local attacker = wesnoth.units.get(ctx.x1, ctx.y1)
+	if attacker and attacker.moves >= attacker.max_moves then attacker.status.sw_braced = true end
+end)
+
 on("attack", "sw_sys_attack", function()
 	doctrine.on_attack()
 	ew.on_attack()
@@ -227,6 +237,9 @@ on("recruit", "sw_sys_recruit", function()
 end)
 
 on("attack end", "sw_sys_attack_end", function()
+	local ctx = wesnoth.current.event_context
+	local attacker = wesnoth.units.get(ctx.x1, ctx.y1)
+	if attacker then attacker.status.sw_braced = nil end
 	force.refresh_fields()
 	ew.refresh()
 	-- A guard alerted by being attacked stops showing its sight hexes now.
