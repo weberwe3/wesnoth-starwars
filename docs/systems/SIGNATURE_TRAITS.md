@@ -61,3 +61,32 @@ The A280 and E-11 set up a matchup: New Republic rifles hit stormtroopers
 harder, while stormtroopers put out more, lighter shots and gain accuracy in
 formation. `hero_threat_report.py --fail-on-flag` still flags no hero start
 (68 checked).
+
+## Trait animations (2026-10-13)
+
+Owner request: animations should support the new abilities where warranted.
+Situational traits get an attack animation of their own, chosen by the
+engine when the special is active (`[filter_attack] special_id_active`); the
+plain animation excludes it with `[not]`, so exactly one matches. A text
+callout over the unit (a `[callout_frame]` track) shows the bonus being used:
+
+| Trait | Animation |
+| --- | --- |
+| set up (E-Web) | braced burst: the repeater keeps firing after the first bolt lands (two extra shots with sound), plus the callout |
+| attack formation, pack tactics, home ground, long odds, A280 armour-piercing | callout only, colour-coded |
+
+Always-on profiles (E-11 rapid fire, Leia's precise Defender) get no callout;
+the E-11's extra strike already shows as an extra firing cycle.
+
+Engine timing (1.19.27, `actions/attack.cpp`): the engine builds combat stats,
+fires `pre attack`, then spends the attacker's movement, fires `attack`, and
+only then plays the strike animations. "set up" therefore also accepts the
+`sw_braced` status, which `lua/sw_systems.lua` sets in `pre attack` for an
+attacker that has not moved and clears at `attack end`.
+
+Verified with a throwaway engine probe that tags each animation with a
+missing marker image and performs real attacks (the engine logs which marker
+it tried to draw): a set-up E-Web played the set-up animation, an E-Web that
+had moved played the plain one, the braced status was cleared afterwards, and
+a stormtrooper showed the attack-formation animation only with a squadmate
+beside it. The callout text itself was not checked on screen.
