@@ -1576,3 +1576,12 @@ the resulting files before tests and publication.
 - Confirmed cause: the E-Web's native ability arms two reactions, while the fixture hardcoded one; native combat spends remaining movement before the attack event.
 - Resolution: snapshot the native armed reaction count, assert planning and approach preserve it, and record moveto arrival separately from the actual attack. The unchanged full native suite and real reload pass without modifying combat, movement, watcher rules or the planner.
 - Prevention: compare against the shipped ability and measure action budgets at the relevant native event. Keep path tracing, pre-attack HP, watcher state and actual attack checks; preserve the failed run and aggregate verdict.
+
+
+## 2026-10-14: Prisoner of Myrkr could not be won after the lightsaber pickup
+
+- Symptom (owner report): near the end of the mission, when Mara Jade and her smuggler appear, Luke cannot escape to the vehicle shed.
+- Confirmed cause (engine probe): Karrde's office (6,5) is a village hex (`Qft^Vsp`). Capturing a village zeroes the mover's movement (`actions/move.cpp`), so Luke stood in the office with 0 of 6 moves while the alarm spawned Mara at the north gate (12,3) and a smuggler at (13,4), beside the only corridor out. On the first enemy turn Luke fell from 52 to 4 HP and died.
+- Resolution: record Luke's movement in an `enter hex` event (it fires before the capture) and restore it after the pickup; Mara and her smuggler now arrive from the forest north-west of the compound (6,1 and 7,1), about two turns from the gate.
+- Evidence: with the fix Luke leaves the office with 5 moves; in throwaway engine runs (real side-2 AI, a greedy runner that cuts through blockers) he survived the first enemy turn at 38-44 HP, and in one run stood next to the shed with 38 HP on turn 3. The runs did not complete the mission end to end, and a human playthrough has not been done.
+- Prevention: objective hexes that a hero must step on and then leave should not be villages, or must restore movement; check remaining MP at the objective in an engine probe, not only route reachability (the sequence probe's route check ignores enemies).

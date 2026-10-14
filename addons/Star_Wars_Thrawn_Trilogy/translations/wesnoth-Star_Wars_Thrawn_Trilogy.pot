@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-13 23:50 UTC\n"
+"POT-Creation-Date: 2026-10-14 02:54 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3388,8 +3388,8 @@ msgstr ""
 #. [unit]: id=sw_hte05_mara, type=sw_hero_mara
 #. [message]: speaker=narrator
 #: scenarios/dark_force_rising/06_the_mad_jedi.cfg:176
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:321
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:362
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:345
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:386
 #: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:157
 #: scenarios/the_last_command/02_the_smugglers_council.cfg:123
 #: scenarios/the_last_command/04_landfall_on_wayland.cfg:108
@@ -4389,32 +4389,32 @@ msgid "Somebody's spare hold-out blaster. Careless of them."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:301
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:316
 msgid "There you are."
 msgstr ""
 
 #. [message]: speaker=sw_hte05_mara
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:332
-msgid "Skywalker's loose! He's in the main house. Nobody shoots him except me."
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:356
+msgid "Skywalker's loose! He's in the main house. I'm coming in from the trees. Nobody shoots him except me."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:336
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:360
 msgid "She means that. Time to find a vehicle."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:357
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:381
 msgid "A skiff. Fueled, too. Let's see how far it gets me."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:363
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:387
 msgid "Not far, Skywalker. I'm right behind you."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:374
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:398
 msgid "Not without my lightsaber."
 msgstr ""
 
