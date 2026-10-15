@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-15 01:23 UTC\n"
+"POT-Creation-Date: 2026-10-15 01:44 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3049,7 +3049,7 @@ msgstr ""
 #. [objective]: condition=lose
 #: scenarios/dark_force_rising/03_jomark.cfg:139
 #: scenarios/heir_to_the_empire/03_adrift.cfg:161
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:206
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:212
 msgid "Death of Luke Skywalker"
 msgstr ""
 
@@ -3398,8 +3398,8 @@ msgstr ""
 #. [unit]: id=sw_hte05_mara, type=sw_hero_mara
 #. [message]: speaker=narrator
 #: scenarios/dark_force_rising/06_the_mad_jedi.cfg:176
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:345
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:386
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:351
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:396
 #: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:157
 #: scenarios/the_last_command/02_the_smugglers_council.cfg:123
 #: scenarios/the_last_command/04_landfall_on_wayland.cfg:108
@@ -3600,7 +3600,7 @@ msgstr ""
 
 #. [objective]: condition=lose
 #: scenarios/dark_force_rising/08_aboard_the_katana.cfg:125
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:174
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:178
 #: scenarios/the_last_command/04_landfall_on_wayland.cfg:120
 #: scenarios/the_last_command/05_the_natives_of_wayland.cfg:109
 #: scenarios/the_last_command/08_the_throne_room.cfg:132
@@ -4343,48 +4343,48 @@ msgid "Vehicle Shed"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:190
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:196
 msgid "Recover your lightsaber from Karrde's office"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:202
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:208
 msgid "Reach the vehicle shed with your lightsaber"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:211
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:217
 msgid "The whole compound is inside a ysalamiri bubble: Luke's Force abilities and deflection do not work."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:214
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:220
 msgid "Karrde's guards have not noticed you yet. They see only the way they face, 3 hexes, one less at night and one less again when you are in cover (forest, crates, buildings); walls block their view. Amber hexes show where they can see. If one spots you, it shouts and every guard nearby joins the hunt."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:217
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:223
 msgid "Sneak up behind an unaware guard and right-click Luke for a <b>Silent takedown</b> (uses your attack), in the same turn: at the start of their turn guards on post turn about and notice anyone beside them. Any other guard who can see that spot will raise the alarm. Drang the vornskr senses all round and cannot be surprised."
 msgstr ""
 
 #. [objectives]
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:219
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:225
 msgid "Never raise the alarm"
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:227
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:233
 msgid "Nothing. It's like going deaf. Karrde's lizards are everywhere in this place."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:231
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:237
 msgid "All right. One guard at the door. My lightsaber will be in Karrde's office. I'm not leaving without it."
 msgstr ""
 
 #. [effect]: type=fire
 #. [attack]: type=fire
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:258
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:264
 #: units/hte_heroes.cfg:4736
 #: units/hte_heroes.cfg:4959
 #: units/hte_heroes.cfg:5183
@@ -4394,37 +4394,37 @@ msgid "hold-out blaster"
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:268
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:274
 msgid "Somebody's spare hold-out blaster. Careless of them."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:316
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:322
 msgid "There you are."
 msgstr ""
 
 #. [message]: speaker=sw_hte05_mara
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:356
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:362
 msgid "Skywalker's loose! He's in the main house. I'm coming in from the trees. Nobody shoots him except me."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:360
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:366
 msgid "She means that. Time to find a vehicle."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:381
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:387
 msgid "A skiff. Fueled, too. Let's see how far it gets me."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:387
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:397
 msgid "Not far, Skywalker. I'm right behind you."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:398
+#: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:408
 msgid "Not without my lightsaber."
 msgstr ""
 
@@ -4596,31 +4596,36 @@ msgstr ""
 
 #. [label]
 #: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:165
+msgid "City Gate"
+msgstr ""
+
+#. [label]
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:169
 msgid "Hunter's Cabin"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:170
-msgid "Luke reaches Hyllyard City, the eastern edge (with Mara, if she is still in the fight)"
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:174
+msgid "Luke reaches Hyllyard City through its west gate (with Mara, if she is still in the fight)"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:178
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:182
 msgid "If Mara falls, she withdraws from the fight badly wounded and slips away into the forest."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:183
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:187
 msgid "Violet hexes are ysalamiri bubbles: Luke's Force abilities and deflection fail inside them. Vornskrs hunt Force-sensitives and hit Luke harder."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:186
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:190
 msgid "Speeder bikes are fast in clearings and slow among the trees."
 msgstr ""
 
 #. [objectives]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:188
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:192
 #: scenarios/the_last_command/02_the_smugglers_council.cfg:150
 #: scenarios/the_last_command/04_landfall_on_wayland.cfg:131
 #: scenarios/the_last_command/08_the_throne_room.cfg:142
@@ -4628,42 +4633,42 @@ msgid "Keep Mara Jade in the fight to the end"
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:196
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:200
 msgid "Don't get comfortable, Skywalker. The moment we're out of this forest, we settle things."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:200
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:204
 msgid "You keep saying that. You still haven't said why."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:204
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:208
 msgid "I have my reasons. Right now, I have Imperial scouts on bikes and a forest full of vornskrs. Walk."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:217
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:221
 msgid "Karrde keeps a comm relay here. I can call two of our people who are still in the forest. They'll help us. Not you. Us."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:258
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:262
 msgid "More bikes, coming in from the north."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:291
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:295
 msgid "They go for you because they can feel the Force in you. Karrde's tame ones do the same thing. Keep moving."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:330
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:334
 msgid "Hyllyard City. We made it. So, do we settle things now?"
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:334
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:338
 msgid "Not today. Karrde will want to hear about this first. Next time, Skywalker."
 msgstr ""
 

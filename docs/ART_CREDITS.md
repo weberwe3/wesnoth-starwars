@@ -486,3 +486,24 @@ pointed at the target always faces right). Two units failed:
   mirrored.
 
 Attack frames and muzzle-flash points are unchanged.
+
+## Wedge's X-wing, the Myrkr skiff and Hyllyard City (2026-10-14)
+
+Owner requests:
+
+- **Wedge Antilles's X-wing** now uses Luke's X-wing design. Every frame of
+  each rank is derived from the matching `sw-hero-xwing-luke` set by
+  `production/tools/derive_wedge_xwing.py`, with the red squadron markings
+  recoloured orange-gold (value and saturation kept) so the two heroes read
+  apart, the approach `recolor_unit_fur.py` takes for the Wookiees. His
+  muzzle-flash point is Luke's.
+- **The skiff in Karrde's vehicle shed** (Prisoner of Myrkr, 17,9) is interim
+  code-drawn art, `images/misc/sw-prop-skiff.png`
+  (`production/tools/gen_prop_speeder.py`). Codex could not run at the time
+  (the WSL-to-Windows link was down); `gen_codex_interior_art.py --kind
+  prop-speeder` holds the prompt to replace it.
+- **Hyllyard City** (The Forest Crossing) is a walled town built from the
+  add-on's existing terrain: duracrete walls, a west gate between two bunker
+  gatehouses, a dirt track to the gate, streets, a plaza, settlement buildings
+  and cargo crates (`gen_hte_maps.py` m07). `gen_codex_interior_art.py --kind
+  gate-city` holds a prompt for a dedicated gate archway, not yet generated.
