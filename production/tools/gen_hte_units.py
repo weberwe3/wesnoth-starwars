@@ -1598,8 +1598,13 @@ FLANKERS_WFL = (
     "distance_between(sw_l, sw_from) > sw_dist), 'sw_l', unit_at(sw_l)), "
     "'sw_u', sw_u != null()), 'sw_u', enemy_of(sw_target, sw_u) and not sw_u.petrified and size(sw_u.attacks) > 0))"
 )
-FLANKERS_WHERE = ("where sw_target = self, sw_here = loc, sw_from = other.loc, "
-                  "sw_dist = distance_between(loc, other.loc)")
+# The engine also evaluates the special with no opponent (AI planning and
+# listings), where other is null and other.loc raised "expected object but
+# found null" in the log (seen 2026-10-14): such checks are simply not flanked.
+# The AI's hypothetical attacks can also leave a hex unset, so both hexes
+# are checked before use.
+FLANKERS_WHERE = ("where sw_target = self, sw_here = loc, sw_from = if(other = null(), null(), other.loc), "
+                  "sw_dist = if(sw_from = null() or sw_here = null(), 0, distance_between(sw_here, sw_from))")
 
 
 def flanking_specials_wml() -> str:
@@ -1622,7 +1627,7 @@ def flanking_specials_wml() -> str:
             "        cumulative=yes\n"
             "        active_on=offense\n"
             "        [filter_opponent]\n"
-            f"            formula=\"({FLANKERS_WFL} {test}) {FLANKERS_WHERE}\"\n"
+            f"            formula=\"if(sw_from = null() or sw_here = null(), false, {FLANKERS_WFL} {test}) {FLANKERS_WHERE}\"\n"
             "        [/filter_opponent]\n"
             "    [/chance_to_hit]\n"
         )

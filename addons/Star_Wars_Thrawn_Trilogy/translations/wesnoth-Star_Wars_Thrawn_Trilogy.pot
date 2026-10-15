@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-14 02:54 UTC\n"
+"POT-Creation-Date: 2026-10-15 00:50 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -273,7 +273,7 @@ msgstr ""
 #. [achievement]: id=sw_swift, description={SW_SWIFT_RULE}
 #. [scenario]: id=sw_hte_06_raid_on_karrdes_base
 #: achievements.cfg:67
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:20
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:29
 msgid "Raid on Karrde's Base"
 msgstr ""
 
@@ -3124,7 +3124,7 @@ msgstr ""
 #: scenarios/dark_force_rising/05_peregrines_nest.cfg:42
 #: scenarios/dark_force_rising/08_aboard_the_katana.cfg:111
 #: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:149
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:59
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:68
 #: scenarios/heir_to_the_empire/08_nomad_city.cfg:114
 #: scenarios/the_last_command/06_the_gates_of_tantiss.cfg:44
 #: scenarios/the_last_command/07_the_cloning_vats.cfg:39
@@ -3151,7 +3151,7 @@ msgstr ""
 #: scenarios/dark_force_rising/04_the_senators_men.cfg:109
 #: scenarios/dark_force_rising/05_peregrines_nest.cfg:95
 #: scenarios/dark_force_rising/08_aboard_the_katana.cfg:112
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:125
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:134
 #: scenarios/heir_to_the_empire/08_nomad_city.cfg:58
 #: scenarios/the_last_command/06_the_gates_of_tantiss.cfg:105
 #: scenarios/the_last_command/07_the_cloning_vats.cfg:106
@@ -3172,7 +3172,7 @@ msgstr ""
 #. [objective]: condition=lose
 #: scenarios/dark_force_rising/04_the_senators_men.cfg:125
 #: scenarios/dark_force_rising/05_peregrines_nest.cfg:136
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:180
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:193
 #: scenarios/the_last_command/06_the_gates_of_tantiss.cfg:115
 #: scenarios/the_last_command/07_the_cloning_vats.cfg:115
 msgid "Death of Han"
@@ -3193,7 +3193,7 @@ msgstr ""
 #: scenarios/dark_force_rising/06_the_mad_jedi.cfg:158
 #: scenarios/dark_force_rising/07_the_dark_force.cfg:174
 #: scenarios/dark_force_rising/09_battle_for_the_fleet.cfg:175
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:192
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:208
 #: scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg:157
 #: scenarios/the_last_command/01_the_siege_of_coruscant.cfg:158
 #: scenarios/the_last_command/03_the_palace_infiltrators.cfg:127
@@ -4419,100 +4419,130 @@ msgid "Not without my lightsaber."
 msgstr ""
 
 #. [part]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:35
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:44
 msgid "Han Solo and Lando Calrissian came to Myrkr following a rumor: Talon Karrde knew where Luke Skywalker was."
 msgstr ""
 
 #. [part]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:39
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:48
 msgid "Karrde received them warmly and told them nothing. That night Luke escaped, and by morning an Imperial assault force was landing outside the walls, looking for him."
 msgstr ""
 
 #. [side]: id=sw_hero_han, type=sw_hero_han
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:56
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:65
 msgid "New Republic and Karrde's People"
 msgstr ""
 
 #. [side]: id=sw_hte06_vosk, type=sw_unit_im_officer
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:71
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:80
 msgid "Imperial Assault Force"
 msgstr ""
 
 #. [side]: id=sw_hte06_vosk, type=sw_unit_im_officer
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:74
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:83
 msgid "Captain Vosk"
 msgstr ""
 
 #. [event]
 #. [side]: id=sw_hero_karrde, type=sw_hero_karrde
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:126
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:135
 #: scenarios/the_last_command/02_the_smugglers_council.cfg:45
 #: scenarios/the_last_command/10_the_last_command.cfg:275
 msgid "Talon Karrde"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:164
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:177
 msgid "Transport"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:172
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:185
 msgid "Get Karrde's people to the transports on the landing field"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:176
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:189
 msgid "Then bring Han to the transports (with Lando, if he is still in the fight)"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:184
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:197
 msgid "If Karrde falls, he withdraws from the fight badly wounded. If Lando falls, he withdraws too and returns for the next mission."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:190
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:203
 msgid "Karrde and his smugglers leave the battle when they reach a transport. Karrde counts as an evacuee."
 msgstr ""
 
+#. [note]
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:206
+msgid "The transports' engines are cold: they cannot launch before turn"
+msgstr ""
+
+#. [note]
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:206
+msgid "Anyone already aboard leaves as soon as they are ready."
+msgstr ""
+
 #. [message]: speaker=sw_hero_karrde
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:203
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:219
 msgid "An Imperial assault force, at my front gate. Someone has been very indiscreet about my guest."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:207
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:223
 msgid "Guest? You had Luke here?"
 msgstr ""
 
 #. [message]: speaker=sw_hero_karrde
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:211
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:227
 msgid "Had, Captain Solo. He left last night, with my second-in-command close behind him. We can argue about it later. My people need to reach the transports."
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:215
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:231
 msgid "Then let's give them a reason to keep their heads down. Han, you take the house; I'll take the yard."
 msgstr ""
 
 #. [floating_text]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:236
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:263
+msgid "Engines warming up"
+msgstr ""
+
+#. [floating_text]
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:278
 msgid "Evacuated"
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:251
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:293
 msgid "That's enough of them aboard. Lando, time to go!"
 msgstr ""
 
+#. [message]: speaker=sw_hero_karrde
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:324
+msgid "The transports' engines are hot. Everyone at the landing field, get aboard!"
+msgstr ""
+
+#. [message]: speaker=sw_hero_karrde
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:379
+msgid "Movement in the trees east of the landing field. They've circled round to cut us off from the transports."
+msgstr ""
+
 #. [message]: speaker=sw_hero_lando
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:307
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:383
+msgid "Then we hold that field until the engines are warm. Nobody boards a ship that can't fly."
+msgstr ""
+
+#. [message]: speaker=sw_hero_lando
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:447
 msgid "Karrde says the Imperials have speeder bikes out in the forest. They're still hunting Luke."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:311
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:451
 msgid "Then Luke's alive and they haven't caught him. That's the best news I've had all week. Punch it."
 msgstr ""
 
