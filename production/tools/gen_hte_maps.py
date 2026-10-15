@@ -278,11 +278,37 @@ def m07() -> HexMap:
     m.set(12, 11, "Gll^Vl")
     m.set(24, 16, "Gll^Vl")
     m.set(8, 17, "Gll^Vl")
-    # Hyllyard City on the eastern edge.
-    m.rect(28, 6, 30, 15, "Rr")
-    for v in ((28, 7), (29, 9), (28, 11), (29, 13), (30, 10)):
-        m.set(*v, "Rr^Vhc")
-    keys("hte_07_the_forest_crossing", crash=(3, 12), cabin=(12, 11), city_w=(28, 10),
+    # Hyllyard City on the eastern edge (owner request 2026-10-14: it read as
+    # one patch of pavement). A walled frontier town: duracrete walls, one
+    # gate in the west wall with bunker gatehouses, a road out to the forest,
+    # streets, a central plaza, buildings (settlements and solid blocks) and
+    # cargo crates. The mission's goal area (x=28-30, y=6-15) is inside.
+    m.rect(26, 6, 30, 15, "Qrd")                       # streets
+    for y in range(5, 17):
+        m.set(25, y, "Qwc")                            # west wall
+    for x in range(25, 31):
+        m.set(x, 5, "Qwc")                             # north wall
+        m.set(x, 16, "Qwc")                            # south wall
+    m.path([(19, 10), (24, 10)], "Re")                 # dirt track to the gate
+    m.set(25, 10, "Qrd")                               # the gate
+    m.set(25, 9, "Qcb")                                # gatehouses
+    m.set(25, 11, "Qcb")
+    # City blocks, x=26-30 by y=6-15: S street, P plaza, C cargo crates and
+    # buildings (all settlements on a duracrete floor): H prefab domes,
+    # D supply depot, O outpost lodge. Solid duracrete blocks read as more
+    # wall, so every building is a settlement; they are all at the mission's
+    # goal, so the extra villages barely matter.
+    # The main street runs from the gate (25,10) to the plaza; a second
+    # street runs north-south along x=28.
+    blocks = {
+        6: "SOSDH", 7: "HDSSO", 8: "SCSSH", 9: "OSPPS", 10: "SSPPS",
+        11: "CSPPS", 12: "DSSOH", 13: "SHSSD", 14: "OSSDS", 15: "SSHSO",
+    }
+    codes = {"S": "Qrd", "P": "Qrp", "H": "Qfc^Vsd", "D": "Qfc^Vsp", "O": "Qfc^Vso", "C": "Qrd^Qcr"}
+    for y, row in blocks.items():
+        for i, c in enumerate(row):
+            m.set(26 + i, y, codes[c])
+    keys("hte_07_the_forest_crossing", crash=(3, 12), cabin=(12, 11), city_w=(28, 10), city_gate=(25, 10),
          ysal_west=(9, 13), ysal_mid=(16, 5), ysal_east=(23, 12))
     return m
 

@@ -51,7 +51,7 @@
  "sw-unit-im-tie-interceptor": ["w", 56, "TIE interceptor, 9.6 m"],
  "sw-unit-nr-awing": ["max", 56, "A-wing, 9.6 m"],
  "sw-unit-nr-xwing": ["w", 62, "X-wing, 12.5 m"],
- "sw-hero-wedge": ["max", 62, "X-wing, 12.5 m"],
+ "sw-hero-wedge": ["w", 62, "X-wing, 12.5 m"],
  "sw-hero-xwing-luke": ["w", 62, "X-wing, 12.5 m"],
  "sw-unit-nr-ywing": ["w", 66, "Y-wing, 16 m"],
  "sw-unit-im-mole-miner": ["w", 58, "mole miner, ~15 m"],

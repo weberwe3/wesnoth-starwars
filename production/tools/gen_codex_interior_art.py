@@ -65,6 +65,15 @@ DECALS = {
 OBJECTS = {
     "cover-crates": "a waist-high stack of four or five battered cargo crates of mixed sizes, some metal, some "
                     "wooden, the kind of cover a soldier crouches behind",
+    # Owner requests 2026-10-14: the vehicle shed in Prisoner of Myrkr shows
+    # the craft Luke escapes in (a skiff in Karrde's compound), and Hyllyard
+    # City has a real entrance gate.
+    "prop-speeder": "a small open-topped civilian repulsorlift skiff parked and hovering just above the ground: a "
+                    "flat battered metal hull in faded tan and gray, two seats and a short windscreen, a stubby "
+                    "engine pod at the back, no rider, facing right",
+    "gate-city": "the open main gate of a frontier trading town on a forest world: two squat gray duracrete gate "
+                 "towers with small lit windows joined by a heavy lintel overhead, the wide passage between them "
+                 "open and empty",
 }
 
 TEXTURE_PROMPT = """Use your image generation tool to create exactly ONE original image: a seamless square texture of {subject}. The texture must fill the entire square edge to edge, with flat even lighting, no perspective and no vignette. Save it as tile.png in the current working directory. Do not create any other files.
