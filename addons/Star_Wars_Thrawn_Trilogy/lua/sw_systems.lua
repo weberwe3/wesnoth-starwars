@@ -11,7 +11,8 @@
 -- and just-in-time tips (sw_tips).
 --
 -- Event precedence (all handlers are registered here, nowhere else):
---   prestart    1. carried-over state reset (overwatch, Force, EW, doctrine)
+--   prestart    1. carried-over state reset (torpedo magazines, overwatch,
+--                  Force, EW, doctrine)
 --               2. sensor pictures and concealment computed
 --   enter_hex   1. overwatch reaction check for the moving unit
 --               2. null-field refresh if the mover is a ysalamiri carrier or
@@ -20,7 +21,10 @@
 --               2. null-field refresh  3. sensor pictures
 --               4. doctrine observes the move (from the refreshed picture)
 --   attack      doctrine observes weapon and target; both units emit
---   attack end  null-field refresh, sensor pictures
+--   start       starships / ground units not suited to this battle leave the
+--               recall list until victory (sw_logistics)
+--   attack end  torpedo volleys counted (sw_logistics), null-field refresh,
+--               sensor pictures
 --   turn refresh (start of a side's turn, after the engine resets moves):
 --               1. overwatch expires for that side  2. null-field refresh
 --               3. Force regeneration, cooldowns, Mind Trick, Sense expiry
@@ -52,6 +56,7 @@ local bonus = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_bonus.lu
 local debrief = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_debrief.lua")
 local command = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_command.lua")
 local move_sound = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_move_sound.lua")
+local logistics = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_logistics.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
@@ -116,6 +121,8 @@ local function mover_matters(u)
 end
 
 on("prestart", "sw_sys_prestart", function()
+	-- Torpedo magazines are refilled for every mission (lua/sw_logistics.lua).
+	logistics.on_prestart()
 	-- Carried-over units start a mission rested and off overwatch.
 	for _i, u in ipairs(core.sorted_by_id(wesnoth.units.find_on_map{})) do
 		overwatch.clear(u)
@@ -236,7 +243,14 @@ on("recruit", "sw_sys_recruit", function()
 	doctrine.on_recruit()
 end)
 
+-- Starships stay out of ground battles and ground units out of space battles
+-- (lua/sw_logistics.lua); after the scenario's own prestart has placed heroes.
+on("start", "sw_sys_start_recall", function()
+	logistics.sort_recall_list()
+end)
+
 on("attack end", "sw_sys_attack_end", function()
+	logistics.on_attack_end()
 	local ctx = wesnoth.current.event_context
 	local attacker = wesnoth.units.get(ctx.x1, ctx.y1)
 	if attacker then attacker.status.sw_braced = nil end

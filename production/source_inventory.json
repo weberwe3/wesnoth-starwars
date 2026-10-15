@@ -10573,7 +10573,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "76e2b7a66004d4ed012c20dce536ef20b509cb0b2c6fe14ef931bb6ca82ddaae"
+      "sha256": "1f7afeb68c22acf4a932706176fac37ee45e1549134cbb416604645ca29633da"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
@@ -10589,7 +10589,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "sha256": "e2eaf963a12cc630663626def26ead929112acf53ea5fe9df82f4148c18b0137"
+      "sha256": "8edd8ac34836d2b15e8df26c54a6b64727d912b21913fb0785d513bb53d12cc6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
@@ -10609,7 +10609,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "485f7b71ee3c624279e5b7ad5afa7ffdfb1baab0370bdca14bf988be069d22f3"
+      "sha256": "db6b6844173eb3e4cfd6a4ed76ecc0b70aa28892513dde507bb8613167200226"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10672,6 +10672,10 @@
       "sha256": "cb25ea23ff0fe9ec83f813eaae8a733f839176ef87d8825b966b69ca4df462b3"
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_logistics.lua",
+      "sha256": "564e961362b5dfc45eb95472c32db16c5f8a0af77ace4d3a31ce3cd4f14c0f6a"
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_move_sound.lua",
       "sha256": "2b3677dad591a86ff377e5e26021c9690fb5eeebb8a5f3b554b02a65646ad117"
     },
@@ -10697,7 +10701,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "e90dd94c8c476d6e41069360948ba69ef303b747d7863dcfddc5c64122290b0e"
+      "sha256": "271b9a9d269a7288ebc6620bf3f7a0ec259638d552e1faab335c77ae07ffc217"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua",
