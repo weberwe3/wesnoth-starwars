@@ -664,6 +664,14 @@ SPECIALS = {
         "    add=10\n"
         "[/chance_to_hit]"
     ),
+    # Proton torpedoes are limited (owner request 2026-10-14: too strong with
+    # unlimited use). Each fight a unit uses them in -- attacking or firing
+    # back -- spends one volley; lua/sw_systems.lua counts them at attack end
+    # (reading volleys= from this special) and marks the unit
+    # sw_torpedoes_out when the magazine is empty. Refilled every mission.
+    # Filled in by magazine_special() below.
+    "magazine_2": "",
+    "magazine_3": "",
     "set_up": (
         "[damage]\n"
         "    id=sw_special_set_up\n"
@@ -738,6 +746,36 @@ SPECIALS = {
         "[/damage]"
     ),
 }
+
+
+def magazine_special(volleys: int) -> str:
+    return (
+        "[dummy]\n"
+        "    id=sw_special_torpedo_magazine\n"
+        f"    volleys={volleys}\n"
+        f"    name= _ \"{volleys} volleys\"\n"
+        f"    description= _ \"Limited ammunition: this weapon can be used in {volleys} fights per mission, attacking "
+        "or firing back. The magazine is refilled between missions.\"\n"
+        "[/dummy]\n"
+        "[disable]\n"
+        "    id=sw_special_torpedoes_spent\n"
+        "    name= _ \"magazine empty\"\n"
+        "    name_inactive=\"\"\n"
+        "    description= _ \"No torpedoes left until the next mission.\"\n"
+        "    description_inactive=\"\"\n"
+        "    [filter_self]\n"
+        "        [filter_wml]\n"
+        "            [variables]\n"
+        "                sw_torpedoes_out=yes\n"
+        "            [/variables]\n"
+        "        [/filter_wml]\n"
+        "    [/filter_self]\n"
+        "[/disable]"
+    )
+
+
+SPECIALS["magazine_2"] = magazine_special(2)
+SPECIALS["magazine_3"] = magazine_special(3)
 
 
 def attack(name, desc, kind, rng, dmg, num, icon=None, specials=(), max_range=None):
@@ -826,7 +864,7 @@ ROSTER = [
       file="hte_space", level=1, hp=34, mp=8, xp=44, cost=20, mt="sw_starfighter", race="mechanical",
       usage="mixed fighter",
       attacks=[LASERS(8, 3), attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 1,
-                                    specials=["marksman"])]),
+                                    specials=["marksman", "magazine_2"])]),
     U("sw_unit_nr_awing", "A-wing Interceptor",
       "Small, very fast interceptors built to catch enemy fighters and bombers before they reach their targets.",
       file="hte_space", level=1, hp=26, mp=10, xp=40, cost=18, mt="sw_starfighter", race="mechanical",
@@ -837,7 +875,7 @@ ROSTER = [
       usage="mixed fighter",
       attacks=[LASERS(6, 2),
                attack("ion_cannon", "ion cannon", "cold", "ranged", 7, 2, specials=["slow"]),
-               attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 2)]),
+               attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 2, specials=["magazine_3"])]),
     U("sw_unit_nr_docked_warship", "Docked Warship",
       "A New Republic warship tied up at the shipyards for refit, with only a skeleton crew aboard: it cannot move or fight back, and must be defended.",
       file="hte_space", level=2, hp=120, mp=0, xp=100, cost=0, mt="sw_capital", race="mechanical",
@@ -855,7 +893,7 @@ ROSTER = [
       file="hte_heroes", level=3, hp=50, mp=8, xp=150, cost=60, mt="sw_starfighter", race="mechanical",
       hero=True, gender="male",
       attacks=[LASERS(9, 4), attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 18, 2,
-                                    specials=["marksman"])]),
+                                    specials=["marksman", "magazine_2"])]),
     U("sw_hero_leia", "Chief of State",
       "Leia Organa Solo, a leader of the New Republic, a veteran of the Rebellion, and Force-sensitive herself. The Noghri want her alive.",
       file="hte_heroes", level=2, hp=40, mp=5, xp=100, cost=40, mt="sw_jedi", hero=True, gender="female",
@@ -894,7 +932,7 @@ ROSTER = [
       file="hte_heroes", level=3, hp=48, mp=8, xp=150, cost=60, mt="sw_starfighter", race="mechanical",
       hero=True, gender="male",
       attacks=[LASERS(9, 4), attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 2,
-                                    specials=["marksman"])],
+                                    specials=["marksman", "magazine_2"])],
       abilities=["leadership"]),
     U("sw_hero_pellaeon", "Imperial Captain",
       "Captain Gilad Pellaeon commands the Star Destroyer Chimaera. A career officer, he has come to trust the Grand Admiral completely.",

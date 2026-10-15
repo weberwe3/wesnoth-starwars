@@ -90,3 +90,31 @@ it tried to draw): a set-up E-Web played the set-up animation, an E-Web that
 had moved played the plain one, the braced status was cleared afterwards, and
 a stormtrooper showed the attack-formation animation only with a squadmate
 beside it. The callout text itself was not checked on screen.
+
+## Limited proton torpedoes and theatre-appropriate recall (2026-10-14)
+
+Owner requests: proton torpedoes were too strong with unlimited use, and
+starships could be recalled into ground battles (and ground troops into space
+battles).
+
+- **Torpedoes** (`lua/sw_logistics.lua`, special `magazine_N` in
+  `gen_hte_units.py`): X-wings (including Luke's and Wedge's) carry 2 volleys
+  per mission, Y-wings 3. Each fight the torpedoes are used in, attacking or
+  firing back, spends one; a floating note shows what is left, and an empty
+  magazine disables the weapon (`[disable]` on the unit variable
+  `sw_torpedoes_out`). Magazines refill at every mission's prestart. The
+  weapons used are read from the WML variables `$weapon` and
+  `$second_weapon` at attack end; the Lua event context does not carry them.
+- **Recall**: a mission with open space or asteroid terrain is a space battle
+  (every space mission has it; no ground mission does). At the start event,
+  after the scenario has placed and transformed its heroes, side-1 units still
+  on the recall list that do not belong (starfighter/capital movetype in a
+  ground battle, anything else in a space battle) are stored into
+  `sw_stashed_heroes`, which `{SW_VICTORY_HOUSEKEEPING}` returns at victory.
+  They are stored with `[store_unit]` and their `underlying_id` dropped: a
+  config copied through Lua turns that 64-bit id into a float, and restored
+  units with colliding ids overwrote each other in an engine probe.
+
+Verified with an engine probe (13 checks: volleys counted, lasers free, empty
+magazine cannot fire, refill, Y-wing capacity, ground and space sorting,
+restore at victory) and the scripted sequence of all three campaigns.
