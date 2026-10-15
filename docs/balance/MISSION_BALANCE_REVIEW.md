@@ -554,6 +554,39 @@ The AI uses all of these natively. Balance needs a human playtest: veterans on
 both sides are stronger than before, most noticeably Imperial sergeants with
 fire discipline and enemy TIE aces.
 
+### 3.20 Raid on Karrde's Base: the flank and the cold engines (2026-10-14)
+
+Owner report: won without a single attack. Cause: the Imperials start at the
+far west (3,10) while Karrde's people start east of Han and the transports
+stand at the east edge (x=27), so the evacuees walked away from every enemy.
+Measured on Normal with a bot that only walks everyone to the transports (no
+attacks, no recruits): before, all four needed evacuees boarded on turn 3 and
+Han arrived untouched.
+
+Update: (1) a flanking force comes out of the forest edge north and south of
+the landing field at the end of side 2's turn 2 (Easy 3, Normal 4, Hard 5
+units: scout troopers and stormtroopers) and turn 3 (Easy 1, Normal 2, Hard 3,
+a sergeant on Hard). Each wave appears at the end of the Imperial turn, so the
+player sees it a full turn before it can attack; spawning at the start of the
+turn let a fresh wave strike a Han who had run ahead. (2) The transports'
+engines are cold until turn 4/5/6, so evacuees must hold the field, and anyone
+already waiting on a transport boards when they warm. The flank spawns about
+15 hexes from Han's keep, so 3.12's protection holds.
+
+Measured with the same walk-only bot, Normal, 2 runs each on two builds: one
+defeat (Han killed on turn 6, two evacuees aboard) and one victory on turn 5
+with heavy losses (2 of 8 units left on the field). AI soak with the careful
+player, 3 runs: no errors; Han's earliest loss was turn 2 to the main western
+force's starting stormtroopers, which the flank cannot reach by then (the
+unchanged mission lost Han on turn 3 to the walker in one of three such runs).
+A player who recruits (120 gold on Normal) and fights the flank is expected to
+win; that has not been played by a human.
+
+Also fixed: the flanking special's formula logged "expected object but found
+null" whenever the engine evaluated it without a full opponent (AI planning);
+it now treats that as not flanked. Flanking still gives +10% with an ally
+behind the target (engine probe).
+
 ## 4. Measured results
 
 Careful AI player, Normal, 3 runs per mission. Each entry is the outcome and

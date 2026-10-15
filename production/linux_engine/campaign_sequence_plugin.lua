@@ -45,6 +45,10 @@ local WIN = {
     move("sw_hero_luke", 17, 9)
   end,
   sw_hte_06_raid_on_karrdes_base = function()
+    -- The transports launch from turn 3-5 (cold engines); the scripted path
+    -- warms them so it can board on turn 1. The timer and the flanking waves
+    -- are exercised by real turns elsewhere.
+    wml.variables.sw_hte06_ready = true
     local evac = 0
     for _, u in ipairs(wesnoth.units.find_on_map{side = 1, type = "sw_unit_sm_smuggler,sw_hero_karrde"}) do
       move(u.id, 27, 11)
