@@ -56,8 +56,15 @@ def tile(name: str) -> Image.Image | None:
 WALLS = {"Qwt": "timber", "Qwc": "colony", "Qwp": "palace", "Qwr": "rock", "Qib": "bulkhead"}
 
 
+def low_column(x: int) -> int:
+    """1 if map-file column x sits half a hex lower. File columns include the
+    border, so file column x is engine column x - 1, and the engine lowers
+    its odd columns (src/map/location.cpp get_direction): even file columns."""
+    return 1 - x % 2
+
+
 def neighbours(x: int, y: int) -> dict[str, tuple[int, int]]:
-    odd = x % 2      # odd columns sit half a hex lower
+    odd = low_column(x)
     return {"n": (x, y - 1), "s": (x, y + 1), "ne": (x + 1, y - 1 + odd), "se": (x + 1, y + odd),
             "nw": (x - 1, y - 1 + odd), "sw": (x - 1, y + odd)}
 
@@ -78,10 +85,10 @@ def draw_relief(img: Image.Image, grid: list[list[str]]) -> None:
     for y, row in enumerate(grid):
         for x in range(len(row)):
             here = base(x, y)
-            # The engine draws a row's even columns, then its odd ones (they
-            # sit half a hex lower), and each hex's images by layer.
-            key = (y, x % 2, x)
-            pos = (54 * x, 72 * y + (36 if x % 2 else 0))
+            # The engine draws a row's upper columns, then its lower ones, and
+            # each hex's images by layer.
+            key = (y, low_column(x), x)
+            pos = (54 * x, 72 * y + 36 * low_column(x))
             nb = neighbours(x, y)
             if here in WALLS or not solid(here):
                 cells = {"c": here, "s": base(*nb["s"]), "se": base(*nb["se"]), "sw": base(*nb["sw"])}
@@ -113,7 +120,7 @@ def render(map_path: Path, symbols: dict[str, str], scale: float) -> Image.Image
     for y, row in enumerate(grid):
         for x, code in enumerate(row):
             base, _, overlay = code.partition("^")
-            px, py = 54 * x, 72 * y + (36 if x % 2 else 0)
+            px, py = 54 * x, 72 * y + 36 * low_column(x)
             for part in [base] + ([f"^{overlay}"] if overlay else []):
                 t = tile(symbols.get(part, "")) if part in symbols else None
                 if t is None:
