@@ -6,6 +6,75 @@ first. Findings and scores are in [SCENARIO_AUDIT.md](SCENARIO_AUDIT.md).
 
 ---
 
+## 2026-10-17 — Design audit, round 2: structure, maps and bonuses
+
+**Branch:** `design/mission-audit` (same PR as round 1).
+
+This round implements recommendations from round 1's campaign review.
+
+**Honoghr's Choice: a finale that is not "hold or kill"** (SDF, P4).
+- **Before:** win by surviving to the last turn, or by killing Sorrell, the
+  shape of all three finales.
+- **After:**
+  - The clans answer only to Leia in their clan house (13,9), from turn 6, at
+    the start of the first player turn she is there. Until then Khabarakh
+    reminds the player where she must be.
+  - Their warriors then join and Noghri become recruitable. The only win is
+    to defeat Sorrell, west of the village. Running out the turns is a loss.
+  - Killing Sorrell before the clans rise still wins; the declaration plays at
+    victory.
+- **Why:**
+  - It gives the campaign's ending a phase change, from defense to
+    counterattack, which the standard (§3.2) asks of defenses.
+  - It removes the passive way to win.
+  - It ties the political payoff to holding the clan house.
+- **Alternatives considered:**
+  - An escort to the clan elders: a new map path and AI escort, more risk.
+  - Changing The Last Command instead: it is the trilogy's finale and the
+    novel's set piece.
+- **Evidence it is winnable:** earlier AI soaks won this mission on turns 4–5
+  by killing Sorrell, the route that remains.
+- **Test:** sequence win (Sorrell's last breath), plus an AI soak.
+- **Risk:** harder than before, because there is no timer win. A human check
+  is needed on Normal.
+
+**Asteroid lanes at Sluis Van and Thrawn's Gambit** (SDF, P4).
+- `gen_hte_maps.py`:
+  - Sluis Van gets a broken belt at x=15–17 with open lanes at rows 4–5, 9–11
+    and 15–16.
+  - Thrawn's Gambit gets 2×2 rock patches in front of each warship and
+    between the Star Destroyers.
+- Key hexes, spawns and warships are untouched (`gen_hte_maps.py --check`).
+- **Risk:** asteroids give fighters 60% defense for 2 movement, so screening
+  gets stronger. A playtest is needed with the post-#430 craft.
+
+**Mission-specific bonuses** (SDF, P4). Each replaces a generic "lose no
+units" with a trade-off particular to the mission:
+
+| Mission | New bonus | Trade-off |
+|---|---|---|
+| Raid on Karrde's Base | Get all six of Karrde's people aboard | The win needs 3/4/5; the rest cost turns at the field |
+| The Sluis Van Shipyards | Save all four docked warships | Screen every dock, or hunt miners forward; replaces Thrawn's Gambit's separate +40, so it is paid once |
+| The Siege of Coruscant | Destroy both minelayers by the end of turn 8 | Speed against flying through a thicker cordon |
+
+- **Tests:** sequence checks `raid_bonus_all_out`,
+  `sluis_van_bonus_all_saved` and `coruscant_bonus_swift`.
+
+**Round 2 test results:**
+- `gen_hte_maps.py --check`: 10 maps. Only the Sluis Van and Thrawn's Gambit
+  maps changed.
+- `run_campaign_sequence.py` passes all three campaigns, with every round 1
+  and round 2 check passing.
+- AI soak (careful player, one game each), with no WML, Lua or engine errors.
+
+  | Mission | Outcome |
+  |---|---|
+  | Honoghr's Choice | win, turn 4, by breaking Sorrell as the redesign requires |
+  | Sluis Van | win, turn 7 |
+  | Siege of Coruscant | win, turn 8, inside the new speed bonus |
+  | Thrawn's Gambit | loss, turn 8, matching earlier soaks |
+  | Raid on Karrde's Base | loss, turn 4: the AI player walked Han into the AT-ST, a known pattern |
+
 ## 2026-10-17 — Design audit, round 1: defects, information and consequences
 
 **Branch:** `design/mission-audit`.

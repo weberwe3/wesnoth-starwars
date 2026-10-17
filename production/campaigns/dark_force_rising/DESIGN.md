@@ -118,6 +118,8 @@ Thrawn arrives in force. Escort the captured Dreadnaughts to the jump point.
 ### 10. Honoghr's Choice
 Leia returns to Honoghr with the truth about the decontamination droids. An
 Imperial detachment comes to take her. The Noghri must choose.
-- Win: survive until the clans rise (final turn) or defeat the detachment.
+- Win: defeat Commander Sorrell. The clans rise only once Leia is in their
+  clan house on turn 6 or later; then the defense becomes a counterattack.
+  Outlasting the turn limit no longer wins (design audit round 2, 2026-10-17).
 - Lose: Leia, Chewbacca, or Khabarakh dies.
 - Ending: the Noghri renounce their service to the Empire. Hook for Campaign III.

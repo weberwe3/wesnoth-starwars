@@ -363,7 +363,14 @@ def m09() -> HexMap:
     castle_ring(m, (4, 10), "Qsk", "Qsc", 5)
     m.disc((22, 3), 1, ROCKS, prob=0.6)
     m.disc((24, 17), 2, ROCKS, prob=0.5)
-    m.disc((15, 10), 1, ROCKS, prob=0.4)
+    # Design audit round 2 (docs/design/CAMPAIGN_DESIGN_REVIEW.md section 2):
+    # the field between the docks and the Imperial entry was open void, so
+    # terrain never shaped the fight. A broken asteroid belt now leaves three
+    # open lanes (rows 4-5, 9-11, 15-16) that the slow mole miners must use,
+    # with rock cover on either side where fighters can wait to intercept,
+    # after the Bilbringi map (gen_tlc_maps.py m09).
+    for field in ((15, 1, 17, 3), (15, 6, 17, 8), (15, 12, 17, 14), (15, 17, 17, 20)):
+        m.rect(*field, ROCKS)
     ships = dict(ship_1=(10, 4), ship_2=(10, 16), ship_3=(6, 7), ship_4=(6, 13))
     m.start(1, 4, 10)
     keys("hte_09_sluis_van_shipyards", wedge_keep=(4, 10), miner_entry_n=(28, 4), miner_entry_s=(28, 16),
@@ -383,6 +390,11 @@ def m10() -> HexMap:
     m.disc((15, 4), 2, ROCKS, prob=0.5)
     m.disc((14, 18), 2, ROCKS, prob=0.5)
     m.disc((19, 11), 1, ROCKS, prob=0.5)
+    # Design audit round 2: rock cover in front of each warship and between
+    # the two Star Destroyers, so defending a warship and striking a
+    # Destroyer each have ground to fight from; the lanes between stay open.
+    for field in ((11, 8, 12, 9), (11, 14, 12, 15), (20, 6, 21, 7), (20, 16, 21, 17)):
+        m.rect(*field, ROCKS)
     m.start(1, 3, 11)
     m.start(2, 26, 8)
     m.start(3, 26, 15)

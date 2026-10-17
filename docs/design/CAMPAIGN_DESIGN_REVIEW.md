@@ -52,7 +52,7 @@ follows the war.
 
 | Pattern | Where | Verdict |
 |---|---|---|
-| **"Hold until the last turn, or kill X"** | HTE 3, 4, 8, 10; DFR 5, 10; TLC 2, 10. **All three finales.** | The most repeated structure. Each instance differs in map and enemy, so no single mission is weak because of it, but the three finales feel alike in structure. **Recommendation (not done, needs the owner):** give one finale a different shape, e.g. Honoghr's Choice as an escort of Leia to the clan elders while the detachment closes in, or The Last Command as a push to Thrawn's flagship rather than a timer. |
+| **"Hold until the last turn, or kill X"** | HTE 3, 4, 8, 10; DFR 5, 10; TLC 2, 10. **All three finales.** | The most repeated structure. Each instance differs in map and enemy, so no single mission is weak because of it, but the three finales feel alike in structure. **Done (round 2):** Honoghr's Choice is now hold the clan house until the clans rise, then break Sorrell's detachment; the timer no longer wins. The structure now appears in 7 missions and 2 of 3 finales. A further option is The Last Command as a push to Thrawn's flagship. |
 | **Hero reaches one hex** | HTE 2, 7; DFR 2, 4, 6, 8; TLC 4 | Told apart by terrain and opposition. Kept. The escape turn limits were too generous in three of them (below). |
 | **"Survive or kill all" twice in a row** | HTE 3 → 4 | Different domain (space, then forest) and tools. Kept; noted. |
 | **Two-hero jungle crossing twice in a row** | TLC 4 → 5 | The clearest local repetition (Sol). Same map size, same western two-hero opening, same jungle. **Done:** mission 5 is now an alliance battle. The native war parties hold their villages from turn 1, the garrison raids them, and the bonus is to lose none of them. |
@@ -213,9 +213,9 @@ Continuity fixes made:
 | Escape turn limits at most about 3× unobstructed travel (engine route check) | **Done** for The Forest Crossing, Honoghr and Landfall; added to the standard |
 | Bounded consequences between missions | **Done** for Nomad City → Sluis Van → Thrawn's Gambit |
 | Fix the force-ratio tool for neutral sides | **Done** |
-| Give one finale a structure other than "hold or kill" | Recommended; needs the owner's direction |
+| Give one finale a structure other than "hold or kill" | **Done (round 2):** Honoghr's Choice is now hold the clan house, then counterattack Sorrell; no win by timer |
 | Rework TLC 5 into an alliance battle | **Done** (natives at their villages from turn 1, garrison raids, ally-preservation bonus) |
-| Asteroid lanes on the Sluis Van and Thrawn's Gambit maps | Recommended, after the space rework has been played |
-| Mission-specific bonus objectives | Recommended when each mission is next reworked |
+| Asteroid lanes on the Sluis Van and Thrawn's Gambit maps | **Done (round 2):** a three-lane belt at Sluis Van; cover patches at Thrawn's Gambit. Playtest after the space rework |
+| Mission-specific bonus objectives | **Started (round 2):** Raid on Karrde's Base (all six aboard), Sluis Van (all four warships), Siege of Coruscant (minelayers by turn 8), Natives of Wayland (no native losses) |
 | Soak each command-decision branch | Recommended |
 | Human playtest of the open items (SCENARIO_AUDIT.md §3) | Required before any further balance change |

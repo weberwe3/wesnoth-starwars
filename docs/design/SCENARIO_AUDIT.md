@@ -199,6 +199,9 @@ Each finding lists its **Action** and the **Priority** it was given.
   - Engine check: `myrkr_bonus_secured`.
 
 **6 · Raid on Karrde's Base** — 82
+- **Round 2:** the generic "lose no units" bonus is now "get all six of
+  Karrde's people aboard". The win needs 3/4/5, so the bonus trades turns and
+  risk for the rest. Engine check `raid_bonus_all_out`.
 - **Mission:**
   - Hold the landing field while the transports' engines warm up, and get
     Karrde's people out. Reworked in #427.
@@ -247,9 +250,13 @@ Each finding lists its **Action** and the **Priority** it was given.
 - **Scores:** A3 B2 C4 D4 E3 F3 G4 H5 I4.
 - SDF: the map is mostly empty space with a few asteroid clusters, so
   terrain barely shapes the fight.
-  - Recorded for a later map pass (P4). Not changed now: a space map change
-    needs balance runs, and the space rework (#430) has just changed the
-    craft.
+  - **Round 2:** a broken asteroid belt (x=15–17) now leaves three open
+    lanes, rows 4–5, 9–11 and 15–16. The slow miners must use them, and
+    fighters can wait in the rock cover beside them (after the Bilbringi
+    map).
+- **Round 2:** the bonus is now "save all four docked warships". It replaces
+  Thrawn's Gambit's separate +40 credits, so it is paid once. Engine check
+  `sluis_van_bonus_all_saved`.
 
 **10 · Thrawn's Gambit** — 75
 - **Mission:**
@@ -261,7 +268,8 @@ Each finding lists its **Action** and the **Priority** it was given.
 - **SDF (P5):** the finale always fielded *Liberty's Hope* and *Valiant*,
   even if one was captured at Sluis Van. **Fixed:** the warships are named
   after Sluis Van survivors (engine check `warship_names`).
-- SDF: the map is open, as at Sluis Van (P4, recorded).
+- SDF: the map was open, as at Sluis Van. **Round 2:** rock cover in front
+  of each warship and between the two Star Destroyers; the lanes stay open.
 
 ### Dark Force Rising
 
@@ -366,10 +374,22 @@ Each finding lists its **Action** and the **Priority** it was given.
   Sorrell's detachment is overdue.
 - CD (P5): the finale showed a gold-carryover note although the campaign ends
   there. **Removed.**
+- **SDF (P4, round 2): all three campaign finales were "hold until the last
+  turn, or kill X".**
+  - **Redesigned as a defense that turns into a counterattack:**
+    - The clans answer only to Leia in their clan house, from turn 6, at the
+      start of the first turn she is there.
+    - Then the player must defeat Sorrell. Outlasting the turn limit no longer
+      wins.
+    - Killing Sorrell early still wins, and the declaration plays.
+  - The signature decision becomes: how much to commit to holding the dukha,
+    and when to turn and strike.
 
 ### The Last Command
 
 **1 · The Siege of Coruscant** — 70
+- **Round 2:** the bonus is now "destroy both minelayers by the end of turn
+  8": speed against the growing cordon. Engine check `coruscant_bonus_swift`.
 - **SDF (P3, Sol):** Luke said he could feel the cloaked asteroids, but Force
   Sense finds only living things. **Fixed:** Luke now points the fleet to its
   sensors.

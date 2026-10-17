@@ -207,6 +207,21 @@ local CHECKS = {
     check("myrkr_bonus_secured", r.scenario == "sw_hte_05_prisoner_of_myrkr" and r.state == "complete",
       tostring(r.scenario) .. "/" .. tostring(r.state))
   end,
+  -- Mission-specific bonuses (design audit round 2), earned on the scripted
+  -- win paths: all six evacuated, no warship lost, minelayers down on turn 1.
+  sw_hte_07_the_forest_crossing = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("raid_bonus_all_out", r.scenario == "sw_hte_06_raid_on_karrdes_base" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  sw_tlc_02_the_smugglers_council = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("coruscant_bonus_swift", r.scenario == "sw_tlc_01_the_siege_of_coruscant" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+    local has = false
+    for _, t in ipairs(wesnoth.sides[1].recruit) do if t == "sw_unit_nr_eweb_team" then has = true end end
+    check("eweb_recruit", has, table.concat(wesnoth.sides[1].recruit, ","))
+  end,
   -- Nomad City's stolen-miner count reaches Sluis Van (the scripted win
   -- there loses no miners).
   sw_hte_09_sluis_van_shipyards = function()
@@ -217,6 +232,9 @@ local CHECKS = {
   sw_hte_10_thrawns_gambit = function()
     local n, s = wesnoth.units.get("sw_hte10_ship_1"), wesnoth.units.get("sw_hte10_ship_2")
     local names = (n and tostring(n.name) or "?") .. "/" .. (s and tostring(s.name) or "?")
+    local r = wml.variables.sw_bonus_result or {}
+    check("sluis_van_bonus_all_saved", r.scenario == "sw_hte_09_sluis_van_shipyards" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
     check("warship_names", n and s and tostring(n.name) == tostring(wml.variables.sw_hte_warship_north)
       and tostring(s.name) == tostring(wml.variables.sw_hte_warship_south) and tostring(n.name) ~= "", names)
   end,
@@ -238,12 +256,6 @@ local CHECKS = {
   sw_dfr_06_the_mad_jedi = function()
     local c = tonumber(wml.variables.sw_dfr06_column) or 0
     check("storm_marked_ahead", c >= 6 and c <= 22, c)
-  end,
-  -- The Smugglers' Council keeps its E-Web recruit.
-  sw_tlc_02_the_smugglers_council = function()
-    local has = false
-    for _, t in ipairs(wesnoth.sides[1].recruit) do if t == "sw_unit_nr_eweb_team" then has = true end end
-    check("eweb_recruit", has, table.concat(wesnoth.sides[1].recruit, ","))
   end,
   -- The Natives of Wayland: the war parties hold their villages from turn 1.
   sw_tlc_05_the_natives_of_wayland = function()

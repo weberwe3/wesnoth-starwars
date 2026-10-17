@@ -10547,7 +10547,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/10_honoghrs_choice.cfg",
-      "sha256": "fa3aa50b6a869a45c78608f00e86a959891136666feefba3ecd22e891bdc12da"
+      "sha256": "3b9b1c12d7103d7a434b07d7eb1bf0b1e1f4aafde6f704e5a93a3cdaf924a973"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg",
@@ -10571,7 +10571,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg",
-      "sha256": "f7d3991332b953dcf3543f5a24f5f8310ef08bde17a691d0cf644f2f95a3606a"
+      "sha256": "e82ab1d5da6a901b28511cb4cec00b56507636db870006446ea06c76e20395c6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/07_the_forest_crossing.cfg",
@@ -10583,15 +10583,15 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg",
-      "sha256": "771ae4188181d2cc2567938839118e0ddbc6e5f2a8668aec462dae4d197a23dc"
+      "sha256": "adb4a118adbec6aad430d308371377a91dda2d8372153303ae6d5c45c1c61126"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/10_thrawns_gambit.cfg",
-      "sha256": "a394c75a4c78bc757af33de5ad2976605b4f9e8118de9f8473de4464517935b8"
+      "sha256": "114625d2fe340372ae21ef172033b5df4723d5f863b3452914bef7361ce78a99"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg",
-      "sha256": "cc9a45225b08930ea0e1b501b69a9a5fa8f885bd1d43c55a33f9afbb7fe9bc5e"
+      "sha256": "e83be5b9c739d44b68b22ddc94ab6c52c2908d64034e5a3ae8f93b824b562713"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg",
@@ -16807,11 +16807,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_09_sluis_van_shipyards.map",
-      "sha256": "31e633f78cdae622752ceb623f7b8339a3d9f40b18744254fbabcecbee4f02aa"
+      "sha256": "2e3ef6d7b9b845c68c61c073912967c1e62881b53e74b7eeeb9f0b85a16d96ae"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_10_thrawns_gambit.map",
-      "sha256": "3712e18716c2f96317d9e25ae0be77c00450ab4d9c8580774997afad140def4e"
+      "sha256": "241f1ef8dfbdee67f3dd58b4b715cece88a89b90efeba463fffb073c05852127"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_01_the_siege_of_coruscant.map",
