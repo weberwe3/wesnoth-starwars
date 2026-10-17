@@ -276,6 +276,30 @@ function ow.resolve(shooter, target)
 	}
 end
 
+-- A watcher the target's side cannot see (hidden by a [hides] ability, a
+-- cloak, or fog) would give its position away by firing. Its player chooses
+-- (owner direction 2026-10-16); an AI side always fires. The choice is a
+-- synced user choice for the watcher's side, so replays and network games
+-- agree; it runs during the moving side's turn.
+function ow.unseen_by(shooter, side)
+	return not shooter:matches{ T.filter_vision{ side = side, visible = true } }
+end
+
+function ow.choose_to_fire(shooter, target)
+	local res = wesnoth.sync.evaluate_single(_ "overwatch",
+		function()
+			local name = tostring(shooter.name ~= "" and shooter.name or shooter.__cfg.language_name)
+			local tname = tostring(target.name ~= "" and target.name or target.__cfg.language_name)
+			local text = core.wrap(tostring(_ "is hidden from the enemy, and has a clear shot at") .. " " .. tname ..
+				". " .. tostring(_ "Opening fire reveals its position until its next turn. Open fire?"), 60)
+			wesnoth.interface.scroll_to_hex(target.x, target.y, true)
+			return { fire = gui.confirm(tostring(_ "Reaction fire") .. " — " .. name, name .. " " .. text) }
+		end,
+		function() return { fire = true } end,
+		shooter.side)
+	return res.fire ~= false
+end
+
 -- enter_hex handler: the moving unit just entered (x1, y1).
 function ow.on_enter_hex()
 	if ow.resolving then return end
@@ -293,8 +317,21 @@ function ow.on_enter_hex()
 			if not target or target.id ~= mover.id then break end -- target died
 			if shooter then
 				local can, why = ow.eligible(shooter, target)
-				if can then
+				local unseen = can and ow.unseen_by(shooter, target.side)
+				if can and unseen and wesnoth.sides[shooter.side].controller == "human"
+					and not ow.choose_to_fire(shooter, target) then
+					-- Held fire: no reaction is spent, and the player is not
+					-- asked again about this target during this move.
+					shooter.variables.sw_ow_fired = target.id .. "#" .. core.number(target.variables.sw_move_serial, 0)
+					core.log("overwatch", id .. " holds fire on " .. mover.id .. " to stay hidden")
+				elseif can then
 					ow.resolve(shooter, target)
+					-- Firing gives a hidden watcher away, as an attack does
+					-- (the engine's "uncovered" status lasts until its turn).
+					if unseen then
+						local s = wesnoth.units.get(id)
+						if s then s.status.uncovered = true end
+					end
 					reacted = true
 				else
 					core.log("overwatch", id .. " holds fire on " .. mover.id .. ": " .. why)

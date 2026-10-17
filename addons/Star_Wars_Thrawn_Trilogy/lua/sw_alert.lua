@@ -178,13 +178,19 @@ function alert.face_toward(g, x)
 end
 
 -- Face the nearest intruder (deterministic: distance, then id order).
-function alert.face_nearest_intruder(g)
+-- known_only: only intruders the guard's side can see, so a guard arriving
+-- mid-mission never turns toward a hidden unit (owner direction 2026-10-16:
+-- the AI must not know where the player's hidden units are). At mission
+-- setup guards face the intruders' deployment, which the scenario defines.
+function alert.face_nearest_intruder(g, known_only)
 	local best, bd = nil, nil
 	for _i, it in ipairs(alert.intruders()) do
-		local d = wesnoth.map.distance_between(g.x, g.y, it.x, it.y)
-		if bd == nil or d < bd then best, bd = it, d end
+		if not known_only or it:matches{ T.filter_vision{ side = g.side, visible = true } } then
+			local d = wesnoth.map.distance_between(g.x, g.y, it.x, it.y)
+			if bd == nil or d < bd then best, bd = it, d end
+		end
 	end
-	if best then alert.face_toward(g, best.x) else g.facing = "se" end
+	if best then alert.face_toward(g, best.x) elseif not known_only then g.facing = "se" end
 end
 
 -- Can the guard see hex x, y within radius r?

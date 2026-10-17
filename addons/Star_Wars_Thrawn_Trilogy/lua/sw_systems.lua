@@ -228,7 +228,7 @@ on("unit placed", "sw_sys_unit_placed", function()
 		-- Reinforcements arriving after the alarm come in alert.
 		u.variables.sw_alert_state = acfg.alarm and "alert" or "unaware"
 		-- A set facing, not the engine's unsynced random one (sw_alert.lua).
-		alert.face_nearest_intruder(u)
+		alert.face_nearest_intruder(u, true)
 	end
 	doctrine.on_unit_placed(u)
 	if mover_matters(u) then force.refresh_fields() end
