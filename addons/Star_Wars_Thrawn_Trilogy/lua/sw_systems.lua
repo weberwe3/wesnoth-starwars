@@ -106,6 +106,10 @@ end
 force.on_power_used = function(u, power_id)
 	doctrine.observe_tactic(u, "force_" .. power_id)
 	achievements.on_tactic(u.side, "sw_force")
+	-- Scenario hook: objectives that watch hit points (The Noghri Prisoner's
+	-- capture) must also see damage dealt by Force powers, which is not an
+	-- attack and fires no "attack end".
+	wesnoth.game_events.fire("sw_force_used", u.x, u.y)
 end
 air.hooks.on_call = {
 	function(side, sortie_id, observer) doctrine.observe_tactic(observer, "air_" .. sortie_id) end,

@@ -605,6 +605,31 @@ SPECIALS = {
         "    [/filter_self]\n"
         "[/disable]"
     ),
+    # Force lightning is the Force, so a ysalamiri bubble stops it when either
+    # the caster or the target stands inside one (design audit 2026-10-17: The
+    # Throne Room promised "nobody can use the Force" in Mara's field, but the
+    # lightning ignored it). The second disable is unnamed so the help lists
+    # the rule once.
+    "force_weapon": (
+        "[disable]\n"
+        "    id=sw_special_force_weapon_self\n"
+        "    name= _ \"Force\"\n"
+        "    description= _ \"A Force attack. It cannot be used if the attacker or its target is inside a ysalamiri bubble.\"\n"
+        "    [filter_self]\n"
+        "        [filter_location]\n"
+        "            find_in=sw_ysalamiri_zone\n"
+        "        [/filter_location]\n"
+        "    [/filter_self]\n"
+        "[/disable]\n"
+        "[disable]\n"
+        "    id=sw_special_force_weapon_target\n"
+        "    [filter_opponent]\n"
+        "        [filter_location]\n"
+        "            find_in=sw_ysalamiri_zone\n"
+        "        [/filter_location]\n"
+        "    [/filter_opponent]\n"
+        "[/disable]"
+    ),
     "force_hunter": (
         "[damage]\n"
         "    id=sw_special_force_hunter\n"
@@ -1143,7 +1168,7 @@ ROSTER = [
       "Joruus C'baoth claims to be a Jedi Master of the Old Republic. His power is immense; his judgment is not. His Force abilities fail inside a ysalamiri bubble.",
       file="dfr_units", level=4, hp=60, mp=5, xp=200, cost=80, mt="sw_jedi", hero=True, gender="male",
       attacks=[attack("lightsaber", "lightsaber", "arcane", "melee", 12, 4),
-               attack("force_lightning", "Force lightning", "fire", "ranged", 12, 3, specials=["magical"])],
+               attack("force_lightning", "Force lightning", "fire", "ranged", 12, 3, specials=["magical", "force_weapon"])],
       abilities=["force_agility", "force_healing"]),
     U("sw_hero_bel_iblis", "Senator-General",
       "Garm Bel Iblis, a founder of the Rebellion who broke with its leaders and fought on alone with his own private army.",
@@ -1186,7 +1211,7 @@ ROSTER = [
       "Luuke, a clone grown from Luke Skywalker's hand and raised by Joruus C'baoth as the apprentice Luke refused to be. His Force abilities fail inside a ysalamiri bubble.",
       file="tlc_units", level=4, hp=56, mp=6, xp=200, cost=80, mt="sw_jedi", hero=True, gender="male",
       attacks=[attack("lightsaber", "lightsaber", "arcane", "melee", 11, 4),
-               attack("force_lightning", "Force lightning", "fire", "ranged", 10, 3, specials=["magical"])],
+               attack("force_lightning", "Force lightning", "fire", "ranged", 10, 3, specials=["magical", "force_weapon"])],
       abilities=["force_agility"]),
     U("sw_unit_wy_myneyrshi", "Myneyrshi Warrior",
       "Four-armed Wayland hunters who fight with long spears and short bows at once.",

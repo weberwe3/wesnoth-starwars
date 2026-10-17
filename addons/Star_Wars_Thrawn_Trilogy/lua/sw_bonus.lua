@@ -39,7 +39,7 @@ function bonus.define(kind, value, gold)
 end
 
 local function fail(cfg, why)
-	if cfg.failed then return end
+	if cfg.failed or cfg.secured then return end
 	cfg.failed = true
 	save(cfg)
 	if wesnoth.sides[bonus.PLAYER_SIDE].controller == "human" then
@@ -49,6 +49,7 @@ local function fail(cfg, why)
 end
 
 function bonus.met(cfg)
+	if cfg.secured then return true end
 	if cfg.failed then return false end
 	local kind, value = cfg.kind, cfg.value
 	if kind == "villages" then
@@ -86,6 +87,16 @@ function bonus.on_withdraw(id)
 	for _i, h in ipairs(core.split(cfg.value)) do
 		if h == id then fail(cfg, _ "a hero had to withdraw.") return end
 	end
+end
+
+-- The objective has been achieved for good: a scripted story event after this
+-- point (Prisoner of Myrkr raises the alarm itself once Luke has his
+-- lightsaber back) cannot fail it. No effect if it has already failed.
+function bonus.secure()
+	local cfg = bonus.config()
+	if not cfg or cfg.failed then return end
+	cfg.secured = true
+	save(cfg)
 end
 
 -- Alarm raised: "undetected" is lost.

@@ -132,7 +132,7 @@ least one scripted beat.
 | 4 | `sw_hte_04_shadows_of_kashyyyk` | Shadows of Kashyyyk | wroshyr forest 26×20 | 14 (night) | Leia, Chewbacca |
 | 5 | `sw_hte_05_prisoner_of_myrkr` | Prisoner of Myrkr | smuggler compound 24×18 | 14 | Luke |
 | 6 | `sw_hte_06_raid_on_karrdes_base` | Raid on Karrde's Base | compound + forest 28×20 | 15 | Han, Lando, Karrde |
-| 7 | `sw_hte_07_the_forest_crossing` | The Forest Crossing | Myrkr forest 30×20 | 18 | Luke, Mara |
+| 7 | `sw_hte_07_the_forest_crossing` | The Forest Crossing | Myrkr forest 30×20 | 15 | Luke, Mara |
 | 8 | `sw_hte_08_nomad_city` | Nomad City | Nkllon sunside 28×18 | 14 | Han, Lando |
 | 9 | `sw_hte_09_sluis_van_shipyards` | The Sluis Van Shipyards | orbital 28×20 | 14 | Wedge, Lando |
 | 10 | `sw_hte_10_thrawns_gambit` | Thrawn's Gambit | orbital 30×22 | 18 | full party |

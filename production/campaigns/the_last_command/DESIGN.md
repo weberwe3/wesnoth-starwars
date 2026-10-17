@@ -41,7 +41,7 @@ names and broad plot concepts only.
 | 1 | `sw_tlc_01_the_siege_of_coruscant` | The Siege of Coruscant | orbital 30×22 | 16 | Wedge, Luke |
 | 2 | `sw_tlc_02_the_smugglers_council` | The Smugglers' Council | fortress 26×20 | 15 | Karrde, Mara |
 | 3 | `sw_tlc_03_the_palace_infiltrators` | The Palace Infiltrators | palace 26×18 | 14 | Leia, Chewbacca, Khabarakh |
-| 4 | `sw_tlc_04_landfall_on_wayland` | Landfall on Wayland | jungle 28×20 | 16 | Luke, Mara |
+| 4 | `sw_tlc_04_landfall_on_wayland` | Landfall on Wayland | jungle 28×20 | 15 | Luke, Mara |
 | 5 | `sw_tlc_05_the_natives_of_wayland` | The Natives of Wayland | jungle and hills 28×20 | 15 | Luke, Mara |
 | 6 | `sw_tlc_06_the_gates_of_tantiss` | The Gates of Mount Tantiss | mountain base 28×20 | 16 | Han, Lando, Chewbacca, Leia |
 | 7 | `sw_tlc_07_the_cloning_vats` | The Cloning Vats | interior 26×18 | 16 | Han, Lando, Chewbacca |
@@ -73,14 +73,18 @@ Imperial commandos slip into the Imperial Palace to take Leia's newborn twins.
 ### 4. Landfall on Wayland
 Luke and Mara crash-land near Mount Tantiss and must reach the river crossing
 through jungle patrolled by the garrison.
-- Win: both reach the river crossing.
+- Win: Luke crosses the ford to the far bank (with Mara, if still in the fight).
 - Lose: Luke or Mara dies; turns run out.
 
 ### 5. The Natives of Wayland
 The Myneyrshi and Psadan peoples distrust all outsiders. Prove the Empire is
 the common enemy by breaking the garrison outpost that oppresses them.
-- Win: destroy the outpost commander; natives join from turn 4.
-- Lose: Luke or Mara dies.
+- Win: destroy the outpost commander.
+- Lose: Luke dies (Mara withdraws).
+- Alliance battle (design audit 2026-10-17): the Myneyrshi (north) and Psadan
+  (south) war parties hold their own villages from turn 1 and join the advance
+  on turn 2 (Hard: 4); the garrison raids those villages for tribute. Bonus:
+  lose none of the native warriors.
 
 ### 6. The Gates of Mount Tantiss
 Han, Lando, Chewbacca, and Leia (with Noghri) assault the mountain entrance.

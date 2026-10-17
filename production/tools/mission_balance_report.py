@@ -234,8 +234,18 @@ def scenario_report(sc: Node, types: dict) -> dict:
     report["warnings"] = []
     if p1.get("recruit") and p1.get("gold", 0) > 0 and player_start_on_keep(map_data) is False:
         report["warnings"].append("side 1 has gold and recruits but does not start on a keep")
-    # Force ratio: side 1 (+ allied human/allied sides sharing its team) vs. the rest.
-    player_team = sides.get(1, {}).get("team", "")
+    # Force ratio: side 1 (+ sides allied with it) vs. the rest. Wesnoth allies
+    # sides whose comma-separated team_name lists share any team. A side allied
+    # with both camps (The Dark Force's derelicts, "republic,imperial") is
+    # neutral and counts for neither (design audit 2026-10-17: it was counted
+    # as enemy strength).
+    def teams(d: dict) -> set[str]:
+        return {t.strip() for t in d.get("team", "").split(",") if t.strip()}
+    player_teams = teams(sides.get(1, {}))
+    enemy_teams: set[str] = set()
+    for num, d in sides.items():
+        if num != 1 and not (teams(d) & player_teams):
+            enemy_teams |= teams(d)
     span = turns if turns > 0 else 20
     player = enemy = 0
     reinf_by_side: dict[int, int] = {}
@@ -247,8 +257,11 @@ def scenario_report(sc: Node, types: dict) -> dict:
         value += max(0, d["income"]) * span // 2  # base income accrues; half-weight (spent late)
         if d["recruit"] == [] and num != 1:
             value -= d["gold"]  # gold with nothing to recruit is not strength
-        if num == 1 or (player_team and d.get("team") == player_team):
+        if num == 1:
             player += value
+        elif teams(d) & player_teams:
+            if not (teams(d) & enemy_teams):
+                player += value
         else:
             enemy += value
     report["player_value"] = player
