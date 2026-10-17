@@ -282,9 +282,16 @@ local function plugin(events, context, info)
       check("blocked pull: bold, no damage", force.displacement_preview(luke, v, "pull").blocked and
         text:find("<b>", 1, true) ~= nil and text:find("no damage", 1, true) ~= nil, text)
       local summary = force.power_summary(luke, "push")
-      check("power description lists effect, cost, range, recovery and attack use",
-        summary:find("Hurl", 1, true) and summary:find("2 FP", 1, true) and summary:find("range 2", 1, true) and
-        summary:find("recovers", 1, true) and summary:find("attack", 1, true), summary)
+      -- The menu line is the power's short text (the full description shows
+      -- when picking a target), so it fits the dialog without scrolling.
+      check("power menu line lists effect, cost, range, cooldown and attack use",
+        summary:find("Push an enemy", 1, true) and summary:find("2 FP", 1, true) and summary:find("range 2", 1, true) and
+        summary:find("cooldown 1", 1, true) and summary:find("uses attack", 1, true), summary)
+      local longest = 0
+      for line in (sw_systems.core.wrap(summary) .. "\n"):gmatch("(.-)\n") do
+        longest = math.max(longest, utf8.len((line:gsub("<[^>]*>", ""))))
+      end
+      check("menu lines wrap within the option width", longest <= sw_systems.core.OPTION_WIDTH, longest)
       check("passive powers are described as passive", force.power_summary(luke, "deflection"):find("passive", 1, true) ~= nil)
       check("self powers say self", force.power_summary(luke, "speed"):find("self", 1, true) ~= nil)
     end
