@@ -1593,3 +1593,10 @@ the resulting files before tests and publication.
 - Confirmed cause: the flanking special's WFL `where` clause had been made null-safe (2026-10-14) with `sw_dist = ... distance_between(sw_here, sw_from)`. The bindings of one `where` clause cannot see each other, so `sw_dist` was always 0. Every armed hostile unit adjacent to the target then counted except the attacker, including allies beside the attacker. Two specials sharing one id also do not add up, which matters once the tiers are split.
 - Resolution: compute `sw_dist` from `loc` and `other` directly, keeping the null guard. Give each +10% tier its own id. All flanking checks pass in the engine.
 - Prevention: in WFL, write each `where` binding only in terms of the formula's own context (`self`, `loc`, `other`), never another binding of the same clause. Keep a negative engine check (a case that must not trigger) next to every positive one.
+
+## 2026-10-17: Plugin closures must not carry tables of functions or nil upvalues
+
+- Symptom: after adding per-scenario design checks to `campaign_sequence_plugin.lua`, the first run printed `win_script_error execute refused: cannot serialize function with upvalue CHECKS = {…}`; after looking the check up per scenario, every campaign then crashed with SIGSEGV (exit -11) right after its first scenario without a check.
+- Confirmed cause: `wesnoth.plugin.execute` copies the closure's upvalues into the game kernel. A table holding functions cannot be serialized, and a nil upvalue crashes the engine (gdb: `luaW_copy_upvalues`, 1.19.27). The scenarios without a check had `scenario_check = nil`.
+- Resolution: look up the scenario's check outside the closure, and default it to a no-op function (`CHECKS[scenario] or function() end`).
+- Prevention: every upvalue of a function passed to `wesnoth.plugin.execute` must be a non-nil string, number, boolean or function; give lookups a non-nil default. A segfault with no log line right after a scenario transition in a plugin run points here; get a backtrace with gdb on `~/opt/build-wesnoth/wesnoth` (the `wesnoth-linux` launcher is a shell script).

@@ -903,6 +903,12 @@
       ]
     },
     {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/misc/sw-storm-gathering.png",
+      "source_paths": [
+        "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/06_the_mad_jedi.cfg"
+      ]
+    },
+    {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/misc/sw-ysalamiri.png",
       "source_paths": [
         "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg"
@@ -10505,19 +10511,19 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/01_the_noghri_prisoner.cfg",
-      "sha256": "d5d76abdaf2db691d398b207ca90345fe653fb3d5d9191bb16b039923cc9c36b"
+      "sha256": "5b472a3a34a17d9100c8db6cd415fd79601a91527744fa560171e89989e5bed8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/02_honoghr.cfg",
-      "sha256": "7832ad74c55a8f339f38fa05e529affbc68ed6b3491f29bba01c2ebaaa46f198"
+      "sha256": "bc44417d5ea504340bcf02d5d0f7e5f05cc86b2d2eda3371942f907d937b91a6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/03_jomark.cfg",
-      "sha256": "1b889789f7bb16c32b78b63ba3d3012f4bc80dffc3ba9d411bf4cfadee1286fa"
+      "sha256": "3ee83cad95609fad91704b0ae961f75c3492be5e81126ac209d4ad2b6adc071a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/04_the_senators_men.cfg",
-      "sha256": "f9615d6fab93445f4d7aab07d9c8a12c1e179b01da08bacd75f440d54361bc30"
+      "sha256": "b2a3f88d6e036bc118c77606af68865be0bb98aedd3904f0c0229db71f8e1bb1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/05_peregrines_nest.cfg",
@@ -10525,7 +10531,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/06_the_mad_jedi.cfg",
-      "sha256": "9a2b45b734887d8e0eb64883652c97ae247f5137cac829864e2af1ff5d76b339"
+      "sha256": "6e1670ecb5dfb062c7bdb9068addc4be32e8d9f29928bd721aef44db5ea52e52"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/07_the_dark_force.cfg",
@@ -10537,11 +10543,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/09_battle_for_the_fleet.cfg",
-      "sha256": "66283f7289c0a64c3e031d43a3bfef370c9dc27e811c08a7d68293f25cd91fcb"
+      "sha256": "d79c92b81386264c9dd44565b4895541141c60fe908b1481d3f7565c33bd2763"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/10_honoghrs_choice.cfg",
-      "sha256": "316d9b3bacede5f27a2fbac57e2d2355b618639c5ba9a5dfa4032d362aa1bf75"
+      "sha256": "3b9b1c12d7103d7a434b07d7eb1bf0b1e1f4aafde6f704e5a93a3cdaf924a973"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg",
@@ -10553,59 +10559,59 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/03_adrift.cfg",
-      "sha256": "c3c7ae285c7af909deea50360430f207c8a812f648842d7e73584d2a8a2bec11"
+      "sha256": "bc1a921eb5cc1b9142a853d98b4978bb52daec42502db01de5a16ae54f1d55ca"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/04_shadows_of_kashyyyk.cfg",
-      "sha256": "5ff4eff7cfa2902bdc64cb5d2bd2c2adb51d02bfc232f102a1583488324739a0"
+      "sha256": "79dbc344a81b807662dc49e7872e4d09786d7ed175fd812d4d508362c98d38cd"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg",
-      "sha256": "ca5e938c7507189a407e04de6042dbab2b45423a271ee047e9f05cca52b3622f"
+      "sha256": "36449110078e0d6dab96553240ba475205799e19914d0de88e9289a91c316e58"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg",
-      "sha256": "f7d3991332b953dcf3543f5a24f5f8310ef08bde17a691d0cf644f2f95a3606a"
+      "sha256": "e82ab1d5da6a901b28511cb4cec00b56507636db870006446ea06c76e20395c6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/07_the_forest_crossing.cfg",
-      "sha256": "2c8819d9bdf118a9d87c02484d462de91bc67c938c148691d7c883fb3701c2a8"
+      "sha256": "0ab08537ea3d9f2f3e779e2bf2fdc0fe722636a3bafa5a17e3df6a658908a9f5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/08_nomad_city.cfg",
-      "sha256": "18c912bef35584fedea933e3530b3b4e4464a1870c811d2ba0cb35613a09b8bd"
+      "sha256": "ee7e8b9e56c76dee637742ddf680119558d77229bf03e42a6816d2fc3e1daf9d"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg",
-      "sha256": "c3c8d94d17defb4cc3ed1333d26c2d0521df111189336ca44b09520a01b52037"
+      "sha256": "adb4a118adbec6aad430d308371377a91dda2d8372153303ae6d5c45c1c61126"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/heir_to_the_empire/10_thrawns_gambit.cfg",
-      "sha256": "8c58dfa858020e789f0250e7656591e385c73bafd03870d99296b2cc2b57c4e3"
+      "sha256": "114625d2fe340372ae21ef172033b5df4723d5f863b3452914bef7361ce78a99"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/01_the_siege_of_coruscant.cfg",
-      "sha256": "de5c13aa6607adb49a964db8f85bc910a0983fa77e85319d2156fac0c39a7ede"
+      "sha256": "e83be5b9c739d44b68b22ddc94ab6c52c2908d64034e5a3ae8f93b824b562713"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/02_the_smugglers_council.cfg",
-      "sha256": "5acfd514df364c15e1ec0dc1dca648859ccb44ebd0147433e15ef403b66ca835"
+      "sha256": "d03571cee35f0214e5164b329173ca4033e627b5cc37e6e272a6bbf384a2451b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/03_the_palace_infiltrators.cfg",
-      "sha256": "3914da5df21ffd5861ba2e1cbeec9c9c5faa33df6233e53aadb0647601253a39"
+      "sha256": "c8f163a46173abfd98eaec81996554b2038cf9f25aadc1c321dacb9d0583968e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/04_landfall_on_wayland.cfg",
-      "sha256": "3b9180b081530f6e85ce140e74767cac07800add688c12243ff49ccbb8800783"
+      "sha256": "1670c245ed50e58deee3591ce4ff654d36f0d4a33d47dc8d56e3dff4edc1eca6"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/05_the_natives_of_wayland.cfg",
-      "sha256": "f2ec620bbce37f5711b4fe4fb17763813465df7052a20bfdfa6460e81abba954"
+      "sha256": "13b53034102855c44448aa7082ab679223c3530891126ccac9bfab9e5ef20c14"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/06_the_gates_of_tantiss.cfg",
-      "sha256": "4878ad7c8ccbfcdf3a6e750a11b713257cc6570d49abb611999cd170afb35225"
+      "sha256": "4e3d478dff3b419766c7e2f3f1d63e958820a497b050621541eab57c5266418e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/07_the_cloning_vats.cfg",
@@ -10613,15 +10619,15 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/08_the_throne_room.cfg",
-      "sha256": "c57a6386e39c5e3dc3c92100cad739c5b942ca972f7d99987844834e394c22c2"
+      "sha256": "f29e105e6827257ba265fbf3e7872c0fccb91b63de77cf590bcb92993c941b84"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/09_bilbringi.cfg",
-      "sha256": "f797bf35ac2827597ad69324b123705279ff7f270dacb844a08a40c9e48795a2"
+      "sha256": "5ffc0bdaf184d0fb9aac2c5e7e96895ca892b3dcb975f51bb8cd15fdc2b82e67"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg",
-      "sha256": "845becf4ebba87a379692312d5189d426a7eafba70eb0b282a5a855f8564ef19"
+      "sha256": "77d56b730f04d50f37266a0b7fcec7f7ea0f4b57f2452de5bcf2713604efb0b4"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/00_sw_specials.cfg",
@@ -10629,7 +10635,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "sha256": "2011348d4576d55e436f624aa6857308e02d05e86f44078f817b69416e733fb1"
+      "sha256": "156a7bbcc4dfd22b50ed53da8f09b25af3a36f61d18c156aa69782e9dd099206"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
@@ -10669,7 +10675,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "91832def9712a44a6cd7a956f5f89255f4ccbf698763b9eb467e71b0bef57418"
+      "sha256": "48b7e4176614d2298377587c194732204b7fe2312d47b602f785d3bf16a8fb50"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
@@ -10677,7 +10683,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "a69c77c6a6955ffa780457562e11e2d9241df97501479dda620694f3cb12cab1"
+      "sha256": "ce2ab409dc4b94dfcfd22eae79aae5028b43003323909ddeff664f6ddb8ae40e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10713,7 +10719,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_bonus.lua",
-      "sha256": "e18e4c197dfbdbf058a0b760b37071ff8042ac8789833b925624ae2f34004f47"
+      "sha256": "e22337d47e99102a71fcdba847f4dd2de34c9f8d8a1afc8626c87bba64d5fb1e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_command.lua",
@@ -10769,7 +10775,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "e94bae3736b8fe4d26889e778c0cc707d8e9c78b469421838c1d5ec26f214b5e"
+      "sha256": "1107005190fea9483ec707eef43593f5ce0470a7707963719bf3ed822dd00f6f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua",
@@ -10866,6 +10872,10 @@
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/misc/sw-prop-transport.png",
       "sha256": "43c92f09887a641c0dc314e3fbf0fc86e4b3fa62ce33fbd6ff456012097c59fd"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/images/misc/sw-storm-gathering.png",
+      "sha256": "c566910a6bb31ae508aad1b469430f0418d69a89b99705feb492653ee00ee921"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/misc/sw-ysalamiri.png",
@@ -16801,11 +16811,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_09_sluis_van_shipyards.map",
-      "sha256": "31e633f78cdae622752ceb623f7b8339a3d9f40b18744254fbabcecbee4f02aa"
+      "sha256": "2e3ef6d7b9b845c68c61c073912967c1e62881b53e74b7eeeb9f0b85a16d96ae"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/hte_10_thrawns_gambit.map",
-      "sha256": "3712e18716c2f96317d9e25ae0be77c00450ab4d9c8580774997afad140def4e"
+      "sha256": "241f1ef8dfbdee67f3dd58b4b715cece88a89b90efeba463fffb073c05852127"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/tlc_01_the_siege_of_coruscant.map",

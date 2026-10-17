@@ -191,6 +191,8 @@ def parse(log_text: str) -> dict:
                 current["left"] = body
         elif current is not None and body.startswith("route "):
             current.setdefault("routes", []).append(body[len("route "):])
+        elif current is not None and body.startswith("check "):
+            current.setdefault("checks", []).append(body[len("check "):])
         else:
             notes.append(body)
     return {"scenarios": scenarios, "notes": notes}
@@ -226,6 +228,10 @@ def evaluate(parsed: dict, log_text: str, expected: list[str] | None = None) -> 
             # limit with no enemies in the way.
             if limit > 0 and turns > limit * 0.8:
                 failures.append(f"{s['id']}: objective route needs {turns} of {limit} turns: {route}")
+    for s in parsed["scenarios"]:
+        for line in s.get("checks", []):
+            if " FAIL" in line:
+                failures.append(f"{s['id']}: check failed: {line}")
     for note in parsed["notes"]:
         if note.startswith(("fatal", "win_script_error", "route_error")):
             failures.append(note)

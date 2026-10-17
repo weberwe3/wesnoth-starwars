@@ -71,9 +71,32 @@ local WIN = {
   sw_hte_10_thrawns_gambit = function() kill_id("sw_hte10_judicator") end,
   -- Campaign II
   sw_dfr_01_the_noghri_prisoner = function()
+    -- A real attack that passes through the capture window: Chewbacca's
+    -- 10-3 melee, forced to hit, against Khabarakh at 20 HP. The first hit
+    -- leaves him at 10 (subdued), the second would kill him; he must be taken
+    -- alive and carried into Honoghr (REQUIRED_HEROES), not lose the mission.
     local k = wesnoth.units.get("sw_hero_khabarakh")
-    k.hitpoints = 5
-    fire("sw_dfr01_check_capture")
+    k.hitpoints = 20
+    k.status.guardian = false
+    local chewie = wesnoth.units.get("sw_hero_chewbacca")
+    local x, y = wesnoth.paths.find_vacant_hex(k.x, k.y, chewie)
+    if wesnoth.map.distance_between(x, y, k.x, k.y) ~= 1 then
+      x, y = nil, nil
+      for _, hex in ipairs(wesnoth.map.find{wml.tag["and"]{x = k.x, y = k.y, radius = 1}}) do
+        if not wesnoth.units.get(hex.x, hex.y) and wesnoth.units.movement_on(chewie, wesnoth.current.map[hex]) < 99 then
+          x, y = hex.x, hex.y
+          break
+        end
+      end
+    end
+    chewie:to_map(x, y)
+    chewie.moves, chewie.attacks_left = 0, 1
+    chewie:add_modification("object", {
+      wml.tag.effect{apply_to = "attack", name = "wookiee_strength",
+        wml.tag.set_specials{mode = "append", wml.tag.chance_to_hit{id = "sw_test_sure", value = 100}}},
+    })
+    wesnoth.wml_actions.do_command{ wml.tag.attack{ weapon = 0,
+      wml.tag.source{ x = x, y = y }, wml.tag.destination{ x = k.x, y = k.y } } }
   end,
   sw_dfr_02_honoghr = function() move("sw_hero_leia", 26, 9) end,
   sw_dfr_03_jomark = function() kill_id("sw_dfr03_raid_boss") end,
@@ -113,8 +136,9 @@ local WIN = {
     for _, u in ipairs(wesnoth.units.find_on_map{type = "sw_unit_im_infiltrator"}) do kill_id(u.id) end
   end,
   sw_tlc_04_landfall_on_wayland = function()
-    move("sw_hero_luke", 25, 10)
-    move("sw_hero_mara", 26, 10)
+    -- The far bank (design audit 2026-10-17); the ford hexes no longer win.
+    move("sw_hero_luke", 28, 10)
+    move("sw_hero_mara", 28, 9)
   end,
   sw_tlc_05_the_natives_of_wayland = function() kill_id("sw_tlc05_commander") end,
   sw_tlc_06_the_gates_of_tantiss = function() kill_id("sw_tlc06_generator") end,
@@ -129,7 +153,13 @@ local WIN = {
     local platforms = wesnoth.units.find_on_map{type = "sw_unit_ob_shipyard_platform"}
     for i = 1, 3 do kill_id(platforms[i].id) end
   end,
-  sw_tlc_10_the_last_command = function() fire("sw_tlc10_the_end") end,
+  sw_tlc_10_the_last_command = function()
+    -- The assault win (design audit round 3): the Chimaera at half strength
+    -- after an attack ends the battle. There is no timer win any more.
+    local c = wesnoth.units.get("sw_tlc10_chimaera")
+    c.hitpoints = c.max_hitpoints // 2
+    wesnoth.game_events.fire("attack end", c.x, c.y)
+  end,
 }
 
 -- Legal-route checks: unit id -> target hexes it must be able to reach over
@@ -151,10 +181,166 @@ local ROUTE_SPECS = {
   sw_dfr_06_the_mad_jedi = "sw_hero_luke:26,9",
   sw_dfr_08_aboard_the_katana = "sw_hero_luke:23,9",
   sw_dfr_09_battle_for_the_fleet = "sw_dfr09_katana:29,11",
-  sw_tlc_04_landfall_on_wayland = "sw_hero_luke:25,10|sw_hero_mara:26,10",
+  sw_tlc_04_landfall_on_wayland = "sw_hero_luke:28,10|sw_hero_mara:28,9",
   sw_tlc_05_the_natives_of_wayland = "sw_hero_luke:21,10",
   sw_tlc_06_the_gates_of_tantiss = "sw_hero_han:23,10",
   sw_tlc_08_the_throne_room = "sw_hero_luke:16,8",
+}
+
+-- Design-audit checks (docs/design/MISSION_IMPROVEMENT_LOG.md): run on the
+-- opening position, before the win script, inside the game kernel. Each
+-- prints "SW_SEQ: check <scenario> <name> PASS|FAIL <detail>"; the runner
+-- fails the run on any FAIL. They may change the position only in ways the
+-- win script that follows does not depend on.
+local function check(name, ok, detail)
+  std_print("SW_SEQ: check " .. wesnoth.scenario.id .. " " .. name .. " " .. (ok and "PASS" or "FAIL")
+    .. " " .. tostring(detail or ""))
+end
+
+-- A passable, empty hex next to (x, y) for unit u, optionally outside a zone.
+local function free_neighbor(u, x, y, avoid)
+  for _, hex in ipairs(wesnoth.map.find{x = x, y = y, radius = 1}) do
+    if not (hex.x == x and hex.y == y) and wesnoth.current.map:on_board(hex.x, hex.y)
+        and not wesnoth.units.get(hex.x, hex.y)
+        and wesnoth.units.movement_on(u, wesnoth.current.map[hex]) < 99
+        and not (avoid and avoid[hex.x .. "," .. hex.y]) then
+      return hex.x, hex.y
+    end
+  end
+end
+
+local CHECKS = {
+  -- Prisoner of Myrkr's bonus is earned when Luke reaches the office unseen,
+  -- although taking the lightsaber then raises the alarm by script.
+  sw_hte_06_raid_on_karrdes_base = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("myrkr_bonus_secured", r.scenario == "sw_hte_05_prisoner_of_myrkr" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  -- Mission-specific bonuses (design audit round 2), earned on the scripted
+  -- win paths: all six evacuated, no warship lost, minelayers down on turn 1.
+  sw_hte_07_the_forest_crossing = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("raid_bonus_all_out", r.scenario == "sw_hte_06_raid_on_karrdes_base" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  sw_tlc_02_the_smugglers_council = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("coruscant_bonus_swift", r.scenario == "sw_tlc_01_the_siege_of_coruscant" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+    local has = false
+    for _, t in ipairs(wesnoth.sides[1].recruit) do if t == "sw_unit_nr_eweb_team" then has = true end end
+    check("eweb_recruit", has, table.concat(wesnoth.sides[1].recruit, ","))
+  end,
+  -- Round 3 bonuses, earned on the scripted win paths.
+  sw_dfr_05_peregrines_nest = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("senators_bonus_swift", r.scenario == "sw_dfr_04_the_senators_men" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  sw_dfr_07_the_dark_force = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("mad_jedi_bonus_dry", r.scenario == "sw_dfr_06_the_mad_jedi" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  sw_dfr_10_honoghrs_choice = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("fleet_bonus_all_ships", r.scenario == "sw_dfr_09_battle_for_the_fleet" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  sw_tlc_10_the_last_command = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("bilbringi_bonus_swift", r.scenario == "sw_tlc_09_bilbringi" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  -- Nomad City's stolen-miner count reaches Sluis Van (the scripted win
+  -- there loses no miners).
+  sw_hte_09_sluis_van_shipyards = function()
+    check("miners_stolen_carried", tonumber(wml.variables.sw_hte_miners_stolen) == 0,
+      wml.variables.sw_hte_miners_stolen)
+  end,
+  -- The finale's warships are Sluis Van survivors, by name.
+  sw_hte_10_thrawns_gambit = function()
+    local n, s = wesnoth.units.get("sw_hte10_ship_1"), wesnoth.units.get("sw_hte10_ship_2")
+    local names = (n and tostring(n.name) or "?") .. "/" .. (s and tostring(s.name) or "?")
+    local r = wml.variables.sw_bonus_result or {}
+    check("sluis_van_bonus_all_saved", r.scenario == "sw_hte_09_sluis_van_shipyards" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+    check("warship_names", n and s and tostring(n.name) == tostring(wml.variables.sw_hte_warship_north)
+      and tostring(s.name) == tostring(wml.variables.sw_hte_warship_south) and tostring(n.name) ~= "", names)
+  end,
+  -- Jomark: the same village captured twice counts once.
+  sw_dfr_03_jomark = function()
+    local x, y = 13, 2
+    local occupant = wesnoth.units.get(x, y)
+    if occupant then occupant:to_recall() end
+    local raider = wesnoth.units.create{type = "sw_unit_sm_smuggler", side = 3, id = "sw_check_raider"}
+    raider:to_map(x, y)
+    wesnoth.game_events.fire("capture", x, y)
+    wesnoth.game_events.fire("capture", x, y)
+    local lost = tonumber(wml.variables.sw_dfr03_villages_lost) or 0
+    raider:erase()
+    if occupant then occupant:to_map(x, y) end
+    check("village_counted_once", lost == 1 and wesnoth.scenario.id == "sw_dfr_03_jomark", lost)
+  end,
+  -- The Mad Jedi: the first storm band is marked on turn 1, a turn before it breaks.
+  sw_dfr_06_the_mad_jedi = function()
+    local c = tonumber(wml.variables.sw_dfr06_column) or 0
+    check("storm_marked_ahead", c >= 6 and c <= 22, c)
+  end,
+  -- The Natives of Wayland: the war parties hold their villages from turn 1.
+  sw_tlc_05_the_natives_of_wayland = function()
+    local at_home = 0
+    for _, v in ipairs{{6, 4}, {13, 3}, {6, 16}, {13, 17}} do
+      local u = wesnoth.units.get(v[1], v[2])
+      if u and u.side == 3 and u.status.guardian then at_home = at_home + 1 end
+    end
+    check("natives_hold_villages", at_home == 4, at_home)
+    check("allies_bonus_armed", wml.variables.sw_tlc05_allies_kept == "yes" or wml.variables.sw_tlc05_allies_kept == true,
+      wml.variables.sw_tlc05_allies_kept)
+  end,
+  -- The Throne Room: Force lightning fails inside Mara's ysalamiri field.
+  sw_tlc_08_the_throne_room = function()
+    local mara, luuke = wesnoth.units.get("sw_hero_mara"), wesnoth.units.get("sw_hero_luuke")
+    local zone = {}
+    for _, h in ipairs(wml.array_access.get("sw_ysalamiri_zone")) do zone[h.x .. "," .. h.y] = true end
+    local ranged
+    for i, a in ipairs(mara.attacks) do if a.range == "ranged" then ranged = i break end end
+    local mx, my, lx, ly = mara.x, mara.y, luuke.x, luuke.y
+    -- Inside: Luuke on a field hex, Mara next to him outside it.
+    local zx, zy
+    for key in pairs(zone) do
+      local x, y = key:match("(%d+),(%d+)")
+      x, y = tonumber(x), tonumber(y)
+      if not wesnoth.units.get(x, y) and free_neighbor(mara, x, y, zone) then zx, zy = x, y break end
+    end
+    if not zx then check("lightning_blocked_in_field", false, "no free field hex") return end
+    luuke:to_map(zx, zy)
+    mara:to_map(free_neighbor(mara, zx, zy, zone))
+    local _, _, _, inside = wesnoth.simulate_combat(mara, ranged, luuke)
+    -- Outside: both on hexes that are not in the field (the rule tests field
+    -- membership only, so being next to it is fine).
+    local ox, oy
+    for _, hex in ipairs(wesnoth.map.find{wml.tag["not"]{find_in = "sw_ysalamiri_zone"}}) do
+      if wesnoth.current.map:on_board(hex.x, hex.y) and not zone[hex.x .. "," .. hex.y]
+          and not wesnoth.units.get(hex.x, hex.y)
+          and wesnoth.units.movement_on(luuke, wesnoth.current.map[hex]) < 99
+          and free_neighbor(mara, hex.x, hex.y, zone) then ox, oy = hex.x, hex.y break end
+    end
+    if not ox then
+      mara:to_map(mx, my)
+      luuke:to_map(lx, ly)
+      check("lightning_outside_field", false, "no free hex outside the field")
+      return
+    end
+    luuke:to_map(ox, oy)
+    mara:to_map(free_neighbor(mara, ox, oy, zone))
+    local _, _, _, outside = wesnoth.simulate_combat(mara, ranged, luuke)
+    mara:to_map(mx, my)
+    luuke:to_map(lx, ly)
+    check("lightning_blocked_in_field", (inside.name or "none") ~= "force_lightning", inside.name)
+    check("lightning_outside_field", outside.name == "force_lightning", outside.name)
+  end,
 }
 
 -- Turns a unit needs to walk a path, honoring per-turn movement points.
@@ -267,10 +453,16 @@ local function plugin(events, context, info)
     local win = WIN[scenario]
     if not win then out("fatal no win script for " .. tostring(scenario)); break end
     local route_spec = ROUTE_SPECS[scenario] or ""
+    -- Looked up here: the kernel can serialize a function upvalue, but not a
+    -- table of functions, and a nil upvalue crashes it (SIGSEGV in
+    -- luaW_copy_upvalues, 1.19.27), so default to a no-op.
+    local scenario_check = CHECKS[scenario] or function() end
     local exec_ok, exec_err = wesnoth.plugin.execute(context, function()
       -- Legal-route check first, on the untouched opening position.
       local routes_ok, routes_err = pcall(check_routes, route_spec)
       if not routes_ok then std_print("SW_SEQ: route_error " .. tostring(routes_err)) end
+      local checks_ok, checks_err = pcall(scenario_check)
+      if not checks_ok then std_print("SW_SEQ: check " .. scenario .. " error FAIL " .. tostring(checks_err)) end
       local ok, err = pcall(win)
       if not ok then std_print("SW_SEQ: win_script_error " .. tostring(err)) end
     end)

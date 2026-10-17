@@ -25,6 +25,8 @@ Rank insignia (lua/sw_rank.lua) and air support (lua/sw_air.lua):
   misc/sw-rank-<style>-1..3.png  20x10 rank plates blitted into the unit sprite
                                  at (37,61); each higher rank covers the lower
   misc/sw-air-inbound.png        hex marker: bombing run inbound (seen by all)
+  misc/sw-storm-gathering.png    hex marker: a Force storm will strike here at the
+                                 start of the next player turn (The Mad Jedi)
   misc/sw-menu-air.png           menu icon
   misc/sw-force-arrow-<dir>[-blocked].png  Force Push/Pull direction on the
                                  target hex: blue = moves, red = blocked/slam
@@ -369,6 +371,30 @@ def air_inbound() -> Image.Image:
     return done(img)
 
 
+def storm_gathering() -> Image.Image:
+    """A pale blue-violet wash with a dashed rim and a jagged bolt: a Force
+    storm is gathering over this hex and breaks next turn."""
+    img = canvas()
+    d = ImageDraw.Draw(img)
+    pts = [(x * S, y * S) for x, y in hex_points(0.06)]
+    d.polygon(pts, fill=(140, 150, 255, 46))
+    color = (190, 200, 255, 230)
+    for i in range(6):
+        a, b = pts[i], pts[(i + 1) % 6]
+        for t0 in (0.1, 0.55):
+            t1 = t0 + 0.32
+            seg = [(a[0] + (b[0] - a[0]) * t0, a[1] + (b[1] - a[1]) * t0),
+                   (a[0] + (b[0] - a[0]) * t1, a[1] + (b[1] - a[1]) * t1)]
+            d.line(seg, fill=(10, 8, 18, 150), width=int(3.6 * S))
+            d.line(seg, fill=color, width=int(2 * S))
+    bolt = [(40, 18), (30, 37), (38, 37), (31, 55), (45, 32), (37, 32), (44, 18)]
+    bolt = [(x * S, y * S) for x, y in bolt]
+    d.polygon(bolt, fill=(10, 8, 18, 170))
+    inner = [((x - 36 * S) * 0.82 + 36 * S, (y - 36 * S) * 0.82 + 36 * S) for x, y in bolt]
+    d.polygon(inner, fill=(225, 230, 255, 235))
+    return done(img)
+
+
 def menu_air() -> Image.Image:
     img = canvas(64)
     d = ImageDraw.Draw(img)
@@ -530,6 +556,7 @@ def main() -> int:
         for n in (1, 2, 3):
             rank_plate(style, n).save(OUT / f"sw-rank-{style}-{n}.png", optimize=True)
     air_inbound().save(OUT / "sw-air-inbound.png", optimize=True)
+    storm_gathering().save(OUT / "sw-storm-gathering.png", optimize=True)
     null_fill().save(OUT / "sw-null-fill.png", optimize=True)
     for direction in HEX_EDGES:
         null_edge(direction).save(OUT / f"sw-null-edge-{direction}.png", optimize=True)

@@ -46,7 +46,7 @@ no prose or dialogue from the novels is quoted or closely paraphrased.
 | # | id | Name | Map | T | POV |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `sw_dfr_01_the_noghri_prisoner` | The Noghri Prisoner | Kashyyyk 24×18 | 12 | Leia, Chewbacca |
-| 2 | `sw_dfr_02_honoghr` | Honoghr | blighted plain 28×18 | 16 | Leia, Chewbacca, Khabarakh |
+| 2 | `sw_dfr_02_honoghr` | Honoghr | blighted plain 28×18 | 15 | Leia, Chewbacca, Khabarakh |
 | 3 | `sw_dfr_03_jomark` | Jomark | lake island 26×20 | 14 | Luke (C'baoth allied) |
 | 4 | `sw_dfr_04_the_senators_men` | The Senator's Men | city 26×18 | 14 | Han, Lando |
 | 5 | `sw_dfr_05_peregrines_nest` | The Peregrine's Nest | rock base 28×20 | 15 | Han, Lando, Bel Iblis |
@@ -59,6 +59,8 @@ no prose or dialogue from the novels is quoted or closely paraphrased.
 ### 1. The Noghri Prisoner
 Another Noghri team comes for Leia on Kashyyyk. This time she wants one alive.
 - Win: capture Khabarakh by reducing him to a third of his hit points or less.
+  The strike that brings him there subdues him: a later strike in the same
+  fight captures him instead of killing him (design audit 2026-10-17).
 - Lose: Khabarakh is killed; Leia or Chewbacca dies; turns run out.
 
 ### 2. Honoghr
@@ -92,6 +94,8 @@ warning and a ship. C'baoth calls storms over the lake.
 - Win: Luke and Mara reach Mara's ship.
 - Lose: Luke or Mara dies; turns run out.
 - Beat: every second turn C'baoth's Force storm strikes a random band of hexes.
+  He marks the band on the player's turn before it breaks (design audit
+  2026-10-17), so the player can time the crossing around it.
 
 ### 7. The Dark Force
 The Katana fleet is found. Boarding shuttles must reach the drifting
@@ -114,6 +118,8 @@ Thrawn arrives in force. Escort the captured Dreadnaughts to the jump point.
 ### 10. Honoghr's Choice
 Leia returns to Honoghr with the truth about the decontamination droids. An
 Imperial detachment comes to take her. The Noghri must choose.
-- Win: survive until the clans rise (final turn) or defeat the detachment.
+- Win: defeat Commander Sorrell. The clans rise only once Leia is in their
+  clan house on turn 6 or later; then the defense becomes a counterattack.
+  Outlasting the turn limit no longer wins (design audit round 2, 2026-10-17).
 - Lose: Leia, Chewbacca, or Khabarakh dies.
 - Ending: the Noghri renounce their service to the Empire. Hook for Campaign III.
