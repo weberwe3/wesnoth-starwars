@@ -778,11 +778,16 @@ local function plugin(events, context, info)
       tie:to_map(15, 4)
       local t3, nt3 = cth(xw, "proton_torpedoes", tie)
       check("guided torpedoes reach 3 hexes without falloff", nt3 > 0 and t3 == t1, t1 .. " -> " .. t3)
-      local shown = false
+      -- The falloff special is unnamed: the help's Range column shows the
+      -- reach, and long special lists overflowed the help's attack table.
+      local present, named = false, false
       for _i, sp in ipairs(tr.attacks[idx(tr, "blaster_rifle")].specials) do
-        if sp[2] and sp[2].id == "sw_special_range" and tostring(sp[2].name) == "range 2" then shown = true end
+        if sp[2] and sp[2].id == "sw_special_range" then
+          present = true
+          named = sp[2].name ~= nil and tostring(sp[2].name) ~= ""
+        end
       end
-      check("the range is listed with the weapon's specials", shown)
+      check("the range falloff is on the weapon but not listed by name", present and not named)
     end
 
     -- Space combat review 2026-10-16: lore evasion ratings (per-unit

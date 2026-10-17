@@ -127,8 +127,15 @@ canvas.convert("RGB").save(r"{out}")
     subprocess.run([str(g.codex_art.art_python()), "-c", script], check=True, capture_output=True, timeout=300)
 
 
+# Walks Codex drew facing left although the prompt asks for right: the
+# engine mirrors a unit only when it moves west, so these walked backwards
+# (owner report 2026-10-16: Lando). Their frames are mirrored on install.
+MIRRORED = {"sw-hero-lando", "sw-hero-lando-rank2", "sw-hero-lando-rank3"}
+
+
 def import_sheet(slug: str, sheet: Path, preview: Path | None, install: bool) -> str | None:
     """Cut, scale-match and write the walk frames; returns a problem or None."""
+    mirror = slug in MIRRORED
     script = f"""
 import sys
 sys.path.insert(0, r"{TOOLS}")
@@ -196,6 +203,8 @@ for n, f in out.items():
         c = a[..., :3].astype(int)
         a[edge & (c[..., 0] > c[..., 1] + 40) & (c[..., 2] > c[..., 1] + 40), 3] = 0   # magenta key fringe
     out[n] = Image.fromarray(a, "RGBA")
+    if {mirror!r}:
+        out[n] = out[n].transpose(Image.FLIP_LEFT_RIGHT)
 preview = {str(preview)!r}
 if preview != "None":
     strip = Image.new("RGBA", (6 * 288, 288), (70, 90, 60, 255))
