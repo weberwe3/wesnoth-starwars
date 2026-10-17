@@ -149,7 +149,13 @@ local WIN = {
     local platforms = wesnoth.units.find_on_map{type = "sw_unit_ob_shipyard_platform"}
     for i = 1, 3 do kill_id(platforms[i].id) end
   end,
-  sw_tlc_10_the_last_command = function() fire("sw_tlc10_the_end") end,
+  sw_tlc_10_the_last_command = function()
+    -- The assault win (design audit round 3): the Chimaera at half strength
+    -- after an attack ends the battle. There is no timer win any more.
+    local c = wesnoth.units.get("sw_tlc10_chimaera")
+    c.hitpoints = c.max_hitpoints // 2
+    wesnoth.game_events.fire("attack end", c.x, c.y)
+  end,
 }
 
 -- Legal-route checks: unit id -> target hexes it must be able to reach over
@@ -221,6 +227,27 @@ local CHECKS = {
     local has = false
     for _, t in ipairs(wesnoth.sides[1].recruit) do if t == "sw_unit_nr_eweb_team" then has = true end end
     check("eweb_recruit", has, table.concat(wesnoth.sides[1].recruit, ","))
+  end,
+  -- Round 3 bonuses, earned on the scripted win paths.
+  sw_dfr_05_peregrines_nest = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("senators_bonus_swift", r.scenario == "sw_dfr_04_the_senators_men" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  sw_dfr_07_the_dark_force = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("mad_jedi_bonus_dry", r.scenario == "sw_dfr_06_the_mad_jedi" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  sw_dfr_10_honoghrs_choice = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("fleet_bonus_all_ships", r.scenario == "sw_dfr_09_battle_for_the_fleet" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
+  sw_tlc_10_the_last_command = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("bilbringi_bonus_swift", r.scenario == "sw_tlc_09_bilbringi" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
   end,
   -- Nomad City's stolen-miner count reaches Sluis Van (the scripted win
   -- there loses no miners).

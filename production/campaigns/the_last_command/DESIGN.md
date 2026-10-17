@@ -116,8 +116,9 @@ screen and destroy the shipyard platforms.
 
 ### 10. The Last Command
 Thrawn commits his fleet. Hold until the Grand Admiral's plan collapses.
-- Win: survive until the scripted turn when Thrawn falls and Pellaeon orders
-  the retreat, or destroy the Chimaera's escorts.
+- Win: bring the Chimaera to half strength (with the bridge under fire, Rukh
+  strikes and Pellaeon orders the retreat), or destroy both escorts. Surviving
+  to a scripted turn no longer wins (design audit round 3, 2026-10-17).
 - Lose: Wedge, Luke, or Mara dies.
 - Ending: Rukh's betrayal; Pellaeon's retreat; the trilogy closes.
 - Twists: on turn 4 Thrawn's reserve TIE interceptors (2/2/3) appear in the

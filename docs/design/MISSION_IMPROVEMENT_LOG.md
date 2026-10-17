@@ -6,6 +6,62 @@ first. Findings and scores are in [SCENARIO_AUDIT.md](SCENARIO_AUDIT.md).
 
 ---
 
+## 2026-10-17 — Design audit, round 3: the trilogy finale and more bonuses
+
+**The Last Command becomes an assault** (SDF, P4).
+- **Before:** win by surviving to a scripted turn 10, when Rukh kills Thrawn,
+  or by destroying both escorts.
+- **After:**
+  - The Grand Admiral falls when the Chimaera is brought to half strength
+    (checked after every attack: Rukh strikes while the bridge is under
+    fire), or when both escorts are destroyed.
+  - There is no timer win. Turns are 16/14/14.
+  - A note explains how to fight Star Destroyers.
+- **Why:**
+  - After round 2, this was the last finale with the passive shape.
+  - The three finales now differ: three objectives at Sluis Van, defense then
+    counterattack at Honoghr, and an assault here.
+  - It keeps the story beat, Rukh's strike and Pellaeon's retreat, tied to the
+    battle the player fights.
+- **Precedent:** Thrawn's Gambit already uses "damage the Chimaera to half
+  strength".
+- **Test:** the sequence win script sets the Chimaera to half and fires
+  `attack end`; the level must end. Plus an AI soak.
+- **Risk:** the hardest mission loses its safe route. A human Normal
+  playtest is needed.
+
+**Four more mission-specific bonuses** (SDF, P4), each replacing "lose no
+units":
+
+| Mission | New bonus |
+|---|---|
+| The Senator's Men | Get Han to the Falcon by the end of turn 8 |
+| The Mad Jedi | Never let the Force storm catch one of your units |
+| Battle for the Fleet | Lose none of the three Dreadnaughts |
+| Bilbringi | Destroy three platforms by the end of turn 10 |
+
+- **Tests:** sequence checks `senators_bonus_swift`, `mad_jedi_bonus_dry`,
+  `fleet_bonus_all_ships` and `bilbringi_bonus_swift`.
+- **Engine detail:** the storm's location filters now pair `x` and `y` lists
+  (`y=1-18,1-18`). Unequal lists log an engine error
+  (`map_location::matches_range`).
+
+**Round 3 test results:**
+- `run_campaign_sequence.py` passes all three campaigns with every check,
+  including the new finale win path and the four new bonus checks.
+- AI soak (careful player, one game each), with no WML, Lua or engine errors.
+
+  | Mission | Outcome |
+  |---|---|
+  | Bilbringi | win, turn 8, inside the new bonus |
+  | The Last Command | loss, turn 7 (before: losses on turns 5–6) |
+  | The Mad Jedi | loss, turn 8 |
+  | Battle for the Fleet | loss, turn 17 (turn limit) |
+  | The Senator's Men | loss, turn 15 (turn limit) |
+
+  The last two match earlier soaks: the AI player does not pursue movement
+  objectives.
+
 ## 2026-10-17 — Design audit, round 2: structure, maps and bonuses
 
 **Branch:** `design/mission-audit` (same PR as round 1).

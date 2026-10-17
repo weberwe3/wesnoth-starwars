@@ -52,12 +52,12 @@ follows the war.
 
 | Pattern | Where | Verdict |
 |---|---|---|
-| **"Hold until the last turn, or kill X"** | HTE 3, 4, 8, 10; DFR 5, 10; TLC 2, 10. **All three finales.** | The most repeated structure. Each instance differs in map and enemy, so no single mission is weak because of it, but the three finales feel alike in structure. **Done (round 2):** Honoghr's Choice is now hold the clan house until the clans rise, then break Sorrell's detachment; the timer no longer wins. The structure now appears in 7 missions and 2 of 3 finales. A further option is The Last Command as a push to Thrawn's flagship. |
+| **"Hold until the last turn, or kill X"** | HTE 3, 4, 8, 10; DFR 5, 10; TLC 2, 10. **All three finales.** | The most repeated structure. Each instance differs in map and enemy, so no single mission is weak because of it, but the three finales feel alike in structure. **Done (round 2):** Honoghr's Choice is now hold the clan house until the clans rise, then break Sorrell's detachment; the timer no longer wins. **Round 3:** The Last Command is now an assault (Chimaera to half strength, or both escorts), with no timer win. The three finales now have three shapes. |
 | **Hero reaches one hex** | HTE 2, 7; DFR 2, 4, 6, 8; TLC 4 | Told apart by terrain and opposition. Kept. The escape turn limits were too generous in three of them (below). |
 | **"Survive or kill all" twice in a row** | HTE 3 → 4 | Different domain (space, then forest) and tools. Kept; noted. |
 | **Two-hero jungle crossing twice in a row** | TLC 4 → 5 | The clearest local repetition (Sol). Same map size, same western two-hero opening, same jungle. **Done:** mission 5 is now an alliance battle. The native war parties hold their villages from turn 1, the garrison raids them, and the bonus is to lose none of them. |
 | **Space maps mostly empty** | HTE 9, 10; DFR 7, 9; TLC 1, 10 | 6 of 8 space maps are open void with a few asteroid clusters; Bilbringi (TLC 9) is the exception and the model. **Recommendation:** an asteroid-lane pass on the Sluis Van and Thrawn's Gambit maps, after the space rework (#430) has been played. |
-| **Generic bonus objectives** | "Lose no units" 9 times, "keep heroes" 10, "hold villages" 7 | They reward preservation but rarely create a different way to play. The good exceptions are Adrift (destroy the patrol) and Prisoner of Myrkr (stay unseen). **Recommendation:** when a mission is next reworked, give it a bonus that is a real trade-off for that mission. |
+| **Generic bonus objectives** | Before: "lose no units" 9 times, "keep heroes" 10, "hold villages" 7. After rounds 2–3, "lose no units" is left only in The Dark Force (open PR #434) and The Palace Infiltrators | They reward preservation but rarely create a different way to play. The good exceptions are Adrift (destroy the patrol) and Prisoner of Myrkr (stay unseen). **Recommendation:** when a mission is next reworked, give it a bonus that is a real trade-off for that mission. |
 | **Fixed-turn reinforcements** | Most missions | Mostly fine. Conditional ones are better (Jomark's boat, Thrawn's Gambit's flanking bombers, the Gates sortie), provided they are announced; three were not, and are now. |
 
 ---
@@ -216,6 +216,6 @@ Continuity fixes made:
 | Give one finale a structure other than "hold or kill" | **Done (round 2):** Honoghr's Choice is now hold the clan house, then counterattack Sorrell; no win by timer |
 | Rework TLC 5 into an alliance battle | **Done** (natives at their villages from turn 1, garrison raids, ally-preservation bonus) |
 | Asteroid lanes on the Sluis Van and Thrawn's Gambit maps | **Done (round 2):** a three-lane belt at Sluis Van; cover patches at Thrawn's Gambit. Playtest after the space rework |
-| Mission-specific bonus objectives | **Started (round 2):** Raid on Karrde's Base (all six aboard), Sluis Van (all four warships), Siege of Coruscant (minelayers by turn 8), Natives of Wayland (no native losses) |
+| Mission-specific bonus objectives | **Rounds 2–3:** also The Senator's Men (Falcon by turn 8), The Mad Jedi (never caught by the storm), Battle for the Fleet (no Dreadnaught lost), Bilbringi (three platforms by turn 10); earlier: Raid on Karrde's Base (all six aboard), Sluis Van (all four warships), Siege of Coruscant (minelayers by turn 8), Natives of Wayland (no native losses) |
 | Soak each command-decision branch | Recommended |
 | Human playtest of the open items (SCENARIO_AUDIT.md §3) | Required before any further balance change |

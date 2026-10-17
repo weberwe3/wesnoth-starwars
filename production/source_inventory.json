@@ -10523,7 +10523,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/04_the_senators_men.cfg",
-      "sha256": "f9615d6fab93445f4d7aab07d9c8a12c1e179b01da08bacd75f440d54361bc30"
+      "sha256": "b2a3f88d6e036bc118c77606af68865be0bb98aedd3904f0c0229db71f8e1bb1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/05_peregrines_nest.cfg",
@@ -10531,7 +10531,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/06_the_mad_jedi.cfg",
-      "sha256": "96dd59eb7549fcb6c5e7b4b33df1ba22e1699e3acb933f6a3f253a0828745db4"
+      "sha256": "6e1670ecb5dfb062c7bdb9068addc4be32e8d9f29928bd721aef44db5ea52e52"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/07_the_dark_force.cfg",
@@ -10543,7 +10543,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/09_battle_for_the_fleet.cfg",
-      "sha256": "b15ee323dbca6636cdd6e12de9db80b3923c6e2318d81dea715dca34e49321e6"
+      "sha256": "d79c92b81386264c9dd44565b4895541141c60fe908b1481d3f7565c33bd2763"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/10_honoghrs_choice.cfg",
@@ -10623,11 +10623,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/09_bilbringi.cfg",
-      "sha256": "9997233c97f626de830a44db5e577be42223d79b61be462d7eec82b748c9e0b6"
+      "sha256": "5ffc0bdaf184d0fb9aac2c5e7e96895ca892b3dcb975f51bb8cd15fdc2b82e67"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/the_last_command/10_the_last_command.cfg",
-      "sha256": "845becf4ebba87a379692312d5189d426a7eafba70eb0b282a5a855f8564ef19"
+      "sha256": "77d56b730f04d50f37266a0b7fcec7f7ea0f4b57f2452de5bcf2713604efb0b4"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/00_sw_specials.cfg",

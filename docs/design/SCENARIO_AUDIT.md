@@ -309,6 +309,8 @@ Each finding lists its **Action** and the **Priority** it was given.
   the rule.
 
 **4 · The Senator's Men** — 68
+- **Round 3 bonus:** "Get Han to the Falcon by the end of turn 8": break
+  contact fast, or wait for the commandos.
 - DH (Sol): the allied commandos may not hold the north street they promise
   to. Needs observation before any change (P4).
 
@@ -317,6 +319,8 @@ Each finding lists its **Action** and the **Priority** it was given.
   playtest.
 
 **6 · The Mad Jedi** — 68
+- **Round 3 bonus:** "Never let the Force storm catch one of your units",
+  which builds on the telegraphed storm.
 - **SDF (P3): C'baoth's Force storm hit a random band with no warning.**
   - It added damage without a decision.
   - The owner's own report on 2026-10-16 ("a large flash … does not appear to
@@ -350,6 +354,8 @@ Each finding lists its **Action** and the **Priority** it was given.
   has already fielded clones. Recorded for a dialogue pass.
 
 **9 · Battle for the Fleet** — 76
+- **Round 3 bonus:** "Lose none of the three Dreadnaughts": the win needs
+  only two.
 - **SDF (P3, Sol): the exit rule was vague.**
   - The objective said "the eastern edge", while the label and dialogue
     suggested one central jump point.
@@ -469,6 +475,8 @@ Each finding lists its **Action** and the **Priority** it was given.
   - Engine checks: `lightning_blocked_in_field`, `lightning_outside_field`.
 
 **9 · The Bilbringi Shipyards** — 72
+- **Round 3 bonus:** "Destroy three platforms by the end of turn 10": speed
+  against the mines the yards keep seeding.
 - **SDF (P3, Sol):** reactor blasts and turn-6 mines were explained only after
   they hit. **Fixed:** the objective notes now describe both.
 
@@ -477,8 +485,18 @@ Each finding lists its **Action** and the **Priority** it was given.
   interceptors appear at the start of the **player's** turn and act on the
   enemy's. The player sees them a full turn ahead, which the standard (§1.3)
   counts as fair warning.
-- DH (Sol, P4): survival may favor running away over holding a line. Needs
-  playtest data before any change.
+- DH (Sol, P4): survival may favor running away over holding a line.
+- **Round 3: redesigned as the trilogy's assault finale**, which also answers
+  that finding.
+  - The scripted turn-10 win is gone.
+  - The Grand Admiral falls when the Chimaera is brought to half strength
+    (Rukh strikes while the bridge is under fire), or when both escorts are
+    destroyed.
+  - Easy gets 16 turns.
+  - The three finales now have three shapes: three objectives at Sluis Van,
+    defense then counterattack at Honoghr, and an assault here.
+  - Risk: the hardest mission loses its safe route. A Normal playtest is
+    needed.
 
 ---
 
