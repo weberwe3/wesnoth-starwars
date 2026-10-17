@@ -75,10 +75,26 @@ def regenerates(name: str, flavour: str, value: int) -> tuple:
     })
 
 
+# Unit filters have no movement-type key (installed src/units/filter.cpp
+# reads type=, race=, ... but not movement_type=, and WFL units do not expose
+# it either), so a [filter_*] with movement_type= matched every unit. Class
+# filters list the unit types of each movetype instead. gen_hte_units.py
+# fills this from its roster before rendering.
+TYPES_BY_MOVETYPE: dict[str, list[str]] = {}
+
+
+def unit_types(movetypes: str) -> str:
+    """Comma-separated unit types of the given movetypes, for a type= filter."""
+    types = [t for mt in movetypes.split(",") for t in TYPES_BY_MOVETYPE.get(mt, [])]
+    if not types:
+        raise ValueError(f"no unit types for movetypes {movetypes!r}")
+    return ",".join(types)
+
+
 def hit_aura(name: str, flavour: str, *, ranged_only: bool = False, craft_only: bool = False) -> tuple:
     student = []
     if craft_only:
-        student.append(node("filter_student", {"movement_type": "sw_starfighter"}))
+        student.append(node("filter_student", {"type": unit_types(CRAFT)}))
     if ranged_only:
         student.append(node("filter_student", {}, node("filter_weapon", {"range": "ranged"})))
     who = "allied starfighters" if craft_only else "allies"
@@ -169,7 +185,7 @@ def bane(name: str, flavour: str, movetypes: str, targets: str, pct: int = 50) -
     return node("damage", {
         "id": "sw_rank_bane", "multiply": 1 + pct / 100, "name": Tr(name),
         "description": Tr(f"{flavour} This attack deals +{pct}% damage against {targets}."),
-    }, node("filter_opponent", {"movement_type": movetypes}))
+    }, node("filter_opponent", {"type": unit_types(movetypes)}))
 
 
 # --- Catalogue ---------------------------------------------------------------
@@ -328,7 +344,7 @@ ASSIGNMENTS = {
     "sw_unit_wk_lookout": {1: ("sniper_perch", "bowcaster"), 2: ("forest_ghost", None),
                            3: ("pinning_shot", "bowcaster")},
     "sw_unit_nr_xwing": {1: ("wingman", None), 2: ("deflector_shields", None), 3: ("ace", "laser_cannons")},
-    "sw_unit_nr_awing": {1: ("afterburners", None), 2: ("dogfighter", "laser_cannons"),
+    "sw_unit_nr_awing": {1: ("wingman", None), 2: ("dogfighter", "laser_cannons"),
                          3: ("ace", "laser_cannons")},
     "sw_unit_nr_ywing": {1: ("ion_lock", "ion_cannon"), 2: ("armoured_hull", None),
                          3: ("ship_killer", "proton_torpedoes")},

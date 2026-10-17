@@ -579,6 +579,7 @@ ABILITY_BUILDERS = {
     "noghri_stealth": noghri_stealth,
     "tactical_genius": tactical_genius,
     "cloaked": cloaked,
+    "astromech": lambda: astromech(),
 }
 
 # Weapon specials. Values are WML snippets placed in [specials].
@@ -644,17 +645,9 @@ SPECIALS = {
     # Lore weapons (owner request 2026-10-13): Legends models where the lore
     # names one, each with a profile that changes how the unit plays.
     # A280: the Rebellion's rifle, known for bolts that punch through armour.
-    "a280_piercing": (
-        "[damage]\n"
-        "    id=sw_special_a280_piercing\n"
-        "    name= _ \"armour-piercing\"\n"
-        "    description= _ \"The A280's bolts punch through most personal armour: +25% damage against armoured troopers such as stormtroopers.\"\n"
-        "    multiply=1.25\n"
-        "    [filter_opponent]\n"
-        "        movement_type=sw_armored_trooper\n"
-        "    [/filter_opponent]\n"
-        "[/damage]"
-    ),
+    # Filled in after the roster (class_filter_specials): it lists the
+    # armoured trooper unit types.
+    "a280_piercing": "",
     # Leia's Defender: a light, accurate sporting blaster.
     "precise": (
         "[chance_to_hit]\n"
@@ -761,7 +754,7 @@ def magazine_special(volleys: int) -> str:
         "    id=sw_special_torpedoes_spent\n"
         "    name= _ \"magazine empty\"\n"
         "    name_inactive=\"\"\n"
-        "    description= _ \"No torpedoes left until the next mission.\"\n"
+        "    description= _ \"No ordnance left until the next mission.\"\n"
         "    description_inactive=\"\"\n"
         "    [filter_self]\n"
         "        [filter_wml]\n"
@@ -776,6 +769,120 @@ def magazine_special(volleys: int) -> str:
 
 SPECIALS["magazine_2"] = magazine_special(2)
 SPECIALS["magazine_3"] = magazine_special(3)
+# unguided and anti_ship are filled in after the roster (class_filter_specials).
+SPECIALS["unguided"] = SPECIALS["anti_ship"] = ""
+
+
+# --- space combat (owner review 2026-10-16) -------------------------------
+#
+# Evasion: every craft has a lore-based evasion rating, its chance to dodge
+# a shot in open space. Open space (Qsp) is aliased to Qt, the movetype's
+# "unwalkable" column, where the shared sw_starfighter movetype gives 50%.
+# A rating shifts the craft's whole defense table by the same amount, so
+# asteroid cover still adds 10% and docking decks still cost 10%, capped
+# at EVASION_CAP (Wesnoth's usual best defense) and at 10% at worst. The
+# shift is written as a per-unit [defense] override (UnitTypeWML), so the
+# craft keeps the sw_starfighter movetype that filters, logistics, sensors
+# and achievements key on.
+EVASION_BASE = 50
+EVASION_CAP = 70
+EVASION_LORE = {
+    "sw_unit_nr_awing": "The fastest, most agile starfighter in the New Republic fleet; few pilots can hold one in "
+                        "their sights.",
+    "sw_unit_im_tie_interceptor": "The fastest and most agile TIE design. Its pilots dodge what they cannot "
+                                  "shrug off: it carries no shields.",
+    "sw_unit_im_tie_fighter": "Light and nimble, but unshielded: a single solid hit can finish it.",
+    "sw_unit_nr_xwing": "A balanced design, neither the fastest nor the most agile; deflector shields carry it "
+                        "through the hits it takes.",
+    "sw_hero_xwing_luke": "A balanced X-wing flown by a Jedi who feels the shots coming.",
+    "sw_hero_wedge": "A balanced X-wing flown by the New Republic's finest living pilot.",
+    "sw_unit_nr_ywing": "A sluggish, heavy assault bomber that survives on armour and shields, not agility.",
+    "sw_unit_im_tie_bomber": "The double hull and a full bomb bay make it slow to turn.",
+    "sw_unit_nr_boarding_shuttle": "A big, slow, armoured hull.",
+    "sw_unit_im_boarding_shuttle": "A big, slow, armoured hull.",
+    "sw_unit_im_mole_miner": "A lumbering mining craft, never built for combat.",
+}
+CAPITAL_EVASION = 10   # sw_capital: 90% to be hit everywhere
+
+
+def evasion(u: dict) -> int | None:
+    """The craft's evasion rating (dodge chance in open space), or None."""
+    if u["mt"] == "sw_capital":
+        return CAPITAL_EVASION
+    if u["mt"] != "sw_starfighter":
+        return None
+    return u["evasion"] if u["evasion"] is not None else 100 - MOVETYPES["sw_starfighter"]["defense"]["unwalkable"]
+
+
+def unit_defense(u: dict) -> dict:
+    """Per-unit [defense] overrides (chance to be hit) for the evasion rating."""
+    if u["mt"] != "sw_starfighter" or u["evasion"] is None or u["evasion"] == EVASION_BASE:
+        return {}
+    shift = EVASION_BASE - u["evasion"]
+    base = MOVETYPES["sw_starfighter"]["defense"]
+    out = {}
+    for terrain, hit in base.items():
+        if terrain == "impassable":
+            continue
+        out[terrain] = max(100 - EVASION_CAP, min(90, hit + shift))
+    return out
+
+
+def unit_resistance(u: dict) -> dict:
+    return dict(u["resist"])
+
+
+def role_text(u: dict) -> str:
+    return f"\n\nRole — {u['role']}" if u.get("role") else ""
+
+
+def evasion_ability(u: dict) -> str | None:
+    ev = evasion(u)
+    if ev is None or u["mp"] == 0 and not u["attacks"] and u["id"] != "sw_unit_nr_docked_warship":
+        return None
+    if u["mt"] == "sw_capital":
+        text = ("Too large to dodge: shots hit 90% of the time wherever it is. Deflector shields and armour "
+                "plating, not agility, keep it fighting.")
+    else:
+        hit = {**MOVETYPES["sw_starfighter"]["defense"], **unit_defense(u)}
+        base = MOVETYPES["sw_starfighter"]["defense"]
+        compare = "" if not unit_defense(u) else (
+            f" (an ordinary starfighter: {100 - base['unwalkable']}%, {100 - base['mountains']}% and "
+            f"{100 - base['flat']}%)")
+        text = (f"{EVASION_LORE.get(u['id'], '')} Dodges {100 - hit['unwalkable']}% of shots in open space, "
+                f"{100 - hit['mountains']}% in an asteroid field and {100 - hit['flat']}% over a station deck"
+                f"{compare}. A marksman shot still hits at least 60% of the time.").strip()
+    return (
+        "[dummy]\n"
+        "    id=sw_ability_evasion\n"
+        f"    name= _ \"evasion {ev}%\"\n"
+        f"    description= _ \"{text}\"\n"
+        "[/dummy]"
+    )
+
+
+def astromech() -> str:
+    # [regenerate] (AbilitiesWML) with value=4: the droid patches the craft
+    # in flight. Regeneration replaces, not adds to, other healing.
+    return (
+        "[regenerate]\n"
+        "    id=sw_ability_astromech\n"
+        "    value=4\n"
+        "    affect_self=yes\n"
+        "    poison=cured\n"
+        "    name= _ \"astromech droid\"\n"
+        "    description= _ \"An astromech droid rides behind the cockpit and patches damage in flight: the craft "
+        "repairs 4 HP at the start of each of its turns, wherever it is. This replaces, not adds to, other repairs.\"\n"
+        "[/regenerate]"
+    )
+
+
+# Weapon specials whose damage depends on the target's class:
+# name -> (multiplier, target movetypes). Mirrored by space_balance_report.
+SPACE_DAMAGE_SPECIALS = {
+    "unguided": (0.5, ("sw_starfighter",)),
+    "anti_ship": (1.5, ("sw_capital",)),
+}
 
 
 def attack(name, desc, kind, rng, dmg, num, icon=None, specials=(), max_range=None):
@@ -787,10 +894,11 @@ def attack(name, desc, kind, rng, dmg, num, icon=None, specials=(), max_range=No
 
 def U(uid, name, desc, *, file, level, hp, mp, xp, cost, mt, attacks, alignment="neutral", race="human",
       usage="fighter", abilities=(), advances=None, gender=None, resist=None, hero=False, zoc=None,
-      hide_help=False):
+      hide_help=False, evasion=None, role=None):
     return dict(id=uid, name=name, desc=desc, file=file, level=level, hp=hp, mp=mp, xp=xp, cost=cost, mt=mt,
                 attacks=attacks, alignment=alignment, race=race, usage=usage, abilities=list(abilities),
-                advances=advances, gender=gender, resist=resist or {}, hero=hero, zoc=zoc, hide_help=hide_help)
+                advances=advances, gender=gender, resist=resist or {}, hero=hero, zoc=zoc, hide_help=hide_help,
+                evasion=evasion, role=role)
 
 
 RIFLE = lambda d, n, sp=(): attack("blaster_rifle", "blaster rifle", "fire", "ranged", d, n, specials=sp)
@@ -862,23 +970,36 @@ ROSTER = [
     U("sw_unit_nr_xwing", "X-wing Starfighter",
       "The New Republic's workhorse starfighter: four laser cannons, proton torpedoes, shields, and a hyperdrive.",
       file="hte_space", level=1, hp=34, mp=8, xp=44, cost=20, mt="sw_starfighter", race="mechanical",
-      usage="mixed fighter",
+      usage="mixed fighter", evasion=50, resist=dict(fire=90, impact=90),
+      role="Multirole line fighter: holds the line against any enemy craft and carries two torpedo volleys for "
+           "warships. Shields and an astromech droid keep it in a long fight.",
+      abilities=["astromech"],
       attacks=[LASERS(8, 3), attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 1,
-                                    specials=["marksman", "magazine_2"])]),
+                                    specials=["marksman", "anti_ship", "magazine_2"])]),
     U("sw_unit_nr_awing", "A-wing Interceptor",
       "Small, very fast interceptors built to catch enemy fighters and bombers before they reach their targets.",
-      file="hte_space", level=1, hp=26, mp=10, xp=40, cost=18, mt="sw_starfighter", race="mechanical",
-      usage="scout", attacks=[LASERS(7, 3, sp=["firststrike"])]),
+      file="hte_space", level=1, hp=28, mp=10, xp=40, cost=18, mt="sw_starfighter", race="mechanical",
+      usage="scout", evasion=65,
+      role="Interceptor: the fastest craft in the fleet slips past escorts to catch bombers and shuttles, "
+           "screens the fleet against fighters and jams enemy sensors. Fragile when it is hit.",
+      abilities=["skirmisher"],
+      attacks=[LASERS(7, 3, sp=["firststrike"]),
+               attack("concussion_missiles", "concussion missiles", "impact", "ranged", 12, 2,
+                      specials=["marksman", "magazine_2"])]),
     U("sw_unit_nr_ywing", "Y-wing Bomber",
       "Rugged, slow assault bombers whose ion cannons can disable a target's systems.",
-      file="hte_space", level=1, hp=40, mp=7, xp=44, cost=22, mt="sw_starfighter", race="mechanical",
-      usage="mixed fighter",
+      file="hte_space", level=1, hp=44, mp=7, xp=44, cost=22, mt="sw_starfighter", race="mechanical",
+      usage="mixed fighter", evasion=35, resist=dict(blade=80, pierce=80, impact=85, fire=85),
+      role="Assault bomber: armoured and slow, it breaks capital ships and stations with torpedoes and "
+           "disables targets with its ion cannon. Needs fighters to keep interceptors off it.",
+      abilities=["astromech"],
       attacks=[LASERS(6, 2),
                attack("ion_cannon", "ion cannon", "cold", "ranged", 7, 2, specials=["slow"]),
-               attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 2, specials=["magazine_3"])]),
+               attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 2,
+                      specials=["anti_ship", "magazine_3"])]),
     U("sw_unit_nr_docked_warship", "Docked Warship",
       "A New Republic warship tied up at the shipyards for refit, with only a skeleton crew aboard: it cannot move or fight back, and must be defended.",
-      file="hte_space", level=2, hp=120, mp=0, xp=100, cost=0, mt="sw_capital", race="mechanical",
+      file="hte_space", level=2, hp=135, mp=0, xp=100, cost=0, mt="sw_capital", race="mechanical",
       attacks=[], zoc="no"),
 
     # Heroes ---------------------------------------------------------------
@@ -890,10 +1011,10 @@ ROSTER = [
       abilities=["force_agility", "force_healing"]),
     U("sw_hero_xwing_luke", "X-wing Pilot (Jedi)",
       "Luke Skywalker at the controls of his X-wing, with his astromech droid riding behind the cockpit.",
-      file="hte_heroes", level=3, hp=50, mp=8, xp=150, cost=60, mt="sw_starfighter", race="mechanical",
-      hero=True, gender="male",
+      file="hte_heroes", level=3, hp=50, mp=8, xp=150, cost=40, mt="sw_starfighter", race="mechanical",
+      hero=True, gender="male", evasion=60, resist=dict(fire=90, impact=90), abilities=["astromech"],
       attacks=[LASERS(9, 4), attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 18, 2,
-                                    specials=["marksman", "magazine_2"])]),
+                                    specials=["marksman", "anti_ship", "magazine_2"])]),
     U("sw_hero_leia", "Chief of State",
       "Leia Organa Solo, a leader of the New Republic, a veteran of the Rebellion, and Force-sensitive herself. The Noghri want her alive.",
       file="hte_heroes", level=2, hp=40, mp=5, xp=100, cost=40, mt="sw_jedi", hero=True, gender="female",
@@ -929,11 +1050,11 @@ ROSTER = [
       attacks=[FISTS(5, 2), PISTOL(8, 2, sp=["marksman"])], abilities=["leadership"]),
     U("sw_hero_wedge", "Rogue Leader",
       "Wedge Antilles, commander of Rogue Squadron, is one of the finest starfighter pilots in the New Republic.",
-      file="hte_heroes", level=3, hp=48, mp=8, xp=150, cost=60, mt="sw_starfighter", race="mechanical",
-      hero=True, gender="male",
+      file="hte_heroes", level=3, hp=48, mp=8, xp=150, cost=40, mt="sw_starfighter", race="mechanical",
+      hero=True, gender="male", evasion=60, resist=dict(fire=90, impact=90),
       attacks=[LASERS(9, 4), attack("proton_torpedoes", "proton torpedoes", "impact", "ranged", 16, 2,
-                                    specials=["marksman", "magazine_2"])],
-      abilities=["leadership"]),
+                                    specials=["marksman", "anti_ship", "magazine_2"])],
+      abilities=["leadership", "astromech"]),
     U("sw_hero_pellaeon", "Imperial Captain",
       "Captain Gilad Pellaeon commands the Star Destroyer Chimaera. A career officer, he has come to trust the Grand Admiral completely.",
       file="hte_heroes", level=3, hp=50, mp=5, xp=150, cost=50, mt="sw_infantry", hero=True, gender="male",
@@ -977,20 +1098,32 @@ ROSTER = [
       abilities=["noghri_stealth"]),
     U("sw_unit_im_tie_fighter", "TIE Fighter",
       "Mass-produced, unshielded short-range fighters. They are fast and numerous and do not last long once hit.",
-      file="hte_space", level=1, hp=24, mp=9, xp=36, cost=12, mt="sw_starfighter", race="mechanical",
-      usage="scout", attacks=[LASERS(7, 3, sp=["tie_pack"])]),
+      file="hte_space", level=1, hp=22, mp=9, xp=36, cost=12, mt="sw_starfighter", race="mechanical",
+      usage="scout", evasion=55, resist=dict(fire=110, impact=110),
+      role="Swarm fighter: cheap and nimble, it wins by numbers, pack tactics and screening the fleet. "
+           "Unshielded, it dies to a few hits.",
+      attacks=[LASERS(7, 3, sp=["tie_pack"])]),
     U("sw_unit_im_tie_interceptor", "TIE Interceptor",
       "A faster, more heavily armed TIE design flown by the Remnant's best pilots.",
-      file="hte_space", level=2, hp=30, mp=10, xp=80, cost=24, mt="sw_starfighter", race="mechanical",
-      attacks=[LASERS(9, 4, sp=["firststrike", "tie_pack"])]),
+      file="hte_space", level=2, hp=27, mp=10, xp=80, cost=24, mt="sw_starfighter", race="mechanical",
+      evasion=65, resist=dict(fire=110, impact=110),
+      role="Elite dogfighter: the Remnant's best pilots hunt enemy fighters and bombers with four cannons. "
+           "Unshielded, it relies on speed and agility.",
+      attacks=[LASERS(8, 4, sp=["firststrike", "tie_pack"])]),
     U("sw_unit_im_tie_bomber", "TIE Bomber",
       "Double-hulled TIE bombers carry concussion bombs for stations and capital ships.",
-      file="hte_space", level=1, hp=34, mp=7, xp=40, cost=18, mt="sw_starfighter", race="mechanical",
-      usage="mixed fighter",
-      attacks=[LASERS(5, 2, sp=["tie_pack"]), attack("concussion_bombs", "concussion bombs", "impact", "ranged", 16, 2)]),
+      file="hte_space", level=1, hp=38, mp=7, xp=40, cost=16, mt="sw_starfighter", race="mechanical",
+      usage="mixed fighter", evasion=35, resist=dict(blade=90, pierce=90, impact=90),
+      role="Bomber: slow and sturdy, it carries concussion bombs for stations and capital ships. Its bombs "
+           "are nearly useless against craft that can dodge, so it needs an escort.",
+      attacks=[LASERS(5, 2, sp=["tie_pack"]),
+               attack("concussion_bombs", "concussion bombs", "impact", "ranged", 16, 2,
+                      specials=["unguided", "anti_ship"])]),
     U("sw_unit_im_mole_miner", "Hijacked Mole Miner",
       "A stolen asteroid-mining craft with plasma jets that can cut through hull plating. Imperial crews use them to board ships.",
       file="hte_space", level=1, hp=44, mp=4, xp=40, cost=20, mt="sw_starfighter", race="mechanical",
+      evasion=20, resist=dict(blade=80, pierce=80, impact=80),
+      role="Boarding craft: slow and clumsy, it cuts into a warship's hull at close range.",
       attacks=[attack("plasma_jets", "plasma jets", "fire", "melee", 10, 2)]),
     U("sw_unit_im_star_destroyer", "Imperial Star Destroyer",
       "A wedge-shaped capital ship sixteen hundred meters long, bristling with turbolasers and ion cannons.",
@@ -1035,11 +1168,17 @@ ROSTER = [
       attacks=[attack("turbolasers", "turbolasers", "fire", "ranged", 14, 3)], zoc="no"),
     U("sw_unit_nr_boarding_shuttle", "Boarding Shuttle",
       "An armored shuttle carrying a boarding crew. It secures a derelict ship by docking beside it.",
-      file="dfr_units", level=1, hp=40, mp=6, xp=40, cost=20, mt="sw_starfighter", race="mechanical",
+      file="dfr_units", level=1, hp=40, mp=6, xp=40, cost=16, mt="sw_starfighter", race="mechanical",
+      evasion=25, resist=dict(blade=80, pierce=80, impact=80, fire=80),
+      role="Boarding craft: an armoured transport that secures a derelict by docking beside it. Too slow to "
+           "dodge fire, it needs an escort to get there.",
       attacks=[LASERS(5, 2)]),
     U("sw_unit_im_boarding_shuttle", "Imperial Assault Shuttle",
       "An Imperial boarding craft packed with clone stormtroopers.",
-      file="dfr_units", level=1, hp=44, mp=6, xp=40, cost=20, mt="sw_starfighter", race="mechanical",
+      file="dfr_units", level=1, hp=44, mp=6, xp=40, cost=16, mt="sw_starfighter", race="mechanical",
+      evasion=25, resist=dict(blade=80, pierce=80, impact=80, fire=80),
+      role="Boarding craft: an armoured transport packed with clone stormtroopers, built to seize derelicts. "
+           "Too slow to dodge fire, it needs an escort to get there.",
       attacks=[LASERS(6, 2)]),
 
     # Campaign III (The Last Command) -------------------------------------
@@ -1116,6 +1255,42 @@ ROSTER = [
       attacks=[attack("fangs", "fangs", "blade", "melee", 6, 3, specials=["force_hunter"]),
                attack("whip_tail", "whip tail", "impact", "melee", 4, 2)]),
 ]
+
+# Class-based specials. Unit filters cannot test a movetype (no such SUF
+# key: installed src/units/filter.cpp), so each lists the unit types of the
+# class, taken from the roster.
+rank_abilities.TYPES_BY_MOVETYPE.update(
+    {mt: [u["id"] for u in ROSTER if u["mt"] == mt] for mt in {u["mt"] for u in ROSTER}})
+
+
+def class_damage_special(sid: str, name: str, desc: str, multiply: float, movetypes: str) -> str:
+    return (
+        "[damage]\n"
+        f"    id={sid}\n"
+        f"    name= _ \"{name}\"\n"
+        f"    description= _ \"{desc}\"\n"
+        f"    multiply={multiply}\n"
+        "    [filter_opponent]\n"
+        f"        type={rank_abilities.unit_types(movetypes)}\n"
+        "    [/filter_opponent]\n"
+        "[/damage]"
+    )
+
+
+SPECIALS["a280_piercing"] = class_damage_special(
+    "sw_special_a280_piercing", "armour-piercing",
+    "The A280's bolts punch through most personal armour: +25% damage against armoured troopers such as "
+    "stormtroopers.", 1.25, "sw_armored_trooper")
+# Bombs dropped on a target that can dodge: concussion bombs are meant for
+# stations and capital ships.
+SPECIALS["unguided"] = class_damage_special(
+    "sw_special_unguided", "unguided",
+    "Unguided ordnance, built for stations and capital ships: half damage against starfighters and shuttles.",
+    0.5, "sw_starfighter")
+SPECIALS["anti_ship"] = class_damage_special(
+    "sw_special_anti_ship", "anti-ship",
+    "Heavy ordnance made to break capital-ship shields and armour: +50% damage against capital ships and "
+    "installations.", 1.5, "sw_capital")
 
 FILES = {
     "hte_new_republic": "New Republic and allied ground units for Campaign I.",
@@ -1295,7 +1470,7 @@ def projectile(unit_id: str, attack_name: str) -> tuple[str, str | None] | None:
         return "projectiles/missile-n.png", "projectiles/missile-ne.png"
     if attack_name.startswith("ion_"):
         return "projectiles/sw-ion-n.png", "projectiles/sw-ion-ne.png"
-    if attack_name.startswith("proton_torpedo"):
+    if attack_name.startswith("proton_torpedo") or attack_name == "concussion_missiles":
         return "projectiles/sw-torpedo.png", None
     if attack_name.startswith("concussion_"):
         return "projectiles/sw-bomb-n.png", "projectiles/sw-bomb-ne.png"
@@ -1535,6 +1710,7 @@ ICONS = {
     "eweb_repeater": "sw-heavy-repeater", "twin_blaster_cannon": "sw-heavy-repeater",
     "laser_cannons": "sw-laser-cannon", "point_defense": "sw-laser-cannon", "turbolasers": "sw-turbolaser",
     "ion_cannon": "sw-ion-cannon", "ion_cannons": "sw-ion-cannon", "proton_torpedoes": "sw-proton-torpedo",
+    "concussion_missiles": "sw-proton-torpedo",
     "concussion_bombs": "sw-concussion-bomb", "concussion_grenade": "sw-concussion-bomb",
     "plasma_jets": "fire-breath-drake", "lightsaber": "sw-lightsaber-blue", "deflection": "sw-deflection",
     "force_lightning": "sw-force-lightning", "force_pike": "sw-force-pike", "vibroknife": "sw-vibroknife",
@@ -1570,9 +1746,9 @@ WEAPON_RANGES = {
     "eweb_repeater": 3, "twin_blaster_cannon": 3,
     # craft
     "laser_cannons": 2, "ion_cannon": 2, "point_defense": 1, "concussion_bombs": 1,
-    "proton_torpedoes": 3, "turbolasers": 3, "ion_cannons": 3,
+    "proton_torpedoes": 3, "concussion_missiles": 3, "turbolasers": 3, "ion_cannons": 3,
 }
-NO_FALLOFF = {"proton_torpedoes"}       # guided
+NO_FALLOFF = {"proton_torpedoes", "concussion_missiles"}       # guided
 RANGE_FALLOFF = 10                      # % to hit lost per hex beyond the first
 # Aimed shot: one strike fewer, +20% to hit, needs 2+ hexes, attack only.
 AIMED_WEAPONS = {"blaster_rifle", "blaster_carbine", "bowcaster", "bow", "heavy_blaster_pistol"}
@@ -1977,7 +2153,7 @@ def unit_wml(u: dict, with_variations: bool = True) -> str:
         f"    advances_to={u['advances'] or 'null'}",
         f"    cost={u['cost']}",
         f"    usage={u['usage']}",
-        f"    description= _ \"{u['desc']}{rank_abilities.description_suffix(u['id'])}\"",
+        f"    description= _ \"{u['desc']}{role_text(u)}{rank_abilities.description_suffix(u['id'])}\"",
     ]
     if u["advances"] is None:
         lines.append("    {AMLA_DEFAULT}")
@@ -1986,12 +2162,23 @@ def unit_wml(u: dict, with_variations: bool = True) -> str:
             lines.append(indent(training, 4))
     if u["zoc"] == "no":
         lines.append("    zoc=no")
+    resist = unit_resistance(u)
+    if resist:
+        lines.append("    [resistance]")
+        lines += [f"        {k}={v}" for k, v in resist.items()]
+        lines.append("    [/resistance]")
+    defense = unit_defense(u)
+    if defense:
+        lines.append("    # Evasion rating: the movetype's defense shifted for this craft.")
+        lines.append("    [defense]")
+        lines += [f"        {k}={v}" for k, v in defense.items()]
+        lines.append("    [/defense]")
     if u["hero"]:
         lines.append("    # Named character: scenarios place the single instance and keep")
         lines.append("    # it out of recruit lists.")
         lines.append("    do_not_list=yes")
     system_abilities = [x for x in (force_ability(u["id"]), overwatch_ability(u["attacks"]), ew_ability(u["id"]),
-                                    observer_ability(u["id"]), anti_air_ability(u["id"])) if x]
+                                    observer_ability(u["id"]), anti_air_ability(u["id"]), evasion_ability(u)) if x]
     if u["abilities"] or system_abilities:
         lines.append("    [abilities]")
         for ab in u["abilities"]:
