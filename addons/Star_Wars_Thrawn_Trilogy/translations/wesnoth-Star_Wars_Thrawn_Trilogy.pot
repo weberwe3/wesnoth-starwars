@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-16 20:32 UTC\n"
+"POT-Creation-Date: 2026-10-17 02:44 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1153,9 +1153,9 @@ msgstr ""
 #. [lua]: when
 #. [message]: speaker=narrator
 #: lua/sw_doctrine.lua:861
-#: lua/sw_systems.lua:344
+#: lua/sw_systems.lua:345
 #: lua/sw_tips.lua:97
-#: utils/hte_macros.cfg:593
+#: utils/hte_macros.cfg:595
 msgid "Thrawn's doctrine"
 msgstr ""
 
@@ -1335,7 +1335,7 @@ msgstr ""
 #. [lua]: ew.contact_menu_command
 #. [lua]: wesnoth.wml_actions.show_objectives
 #: lua/sw_ew.lua:1019
-#: lua/sw_systems.lua:302
+#: lua/sw_systems.lua:303
 msgid "Sensor contact"
 msgstr ""
 
@@ -1560,7 +1560,7 @@ msgstr ""
 #. [lua]: force.status_text
 #. [lua]: sw_systems.show_status
 #: lua/sw_force.lua:550
-#: lua/sw_systems.lua:378
+#: lua/sw_systems.lua:379
 msgid "Inside a ysalamiri field: the Force is blocked here."
 msgstr ""
 
@@ -2589,64 +2589,64 @@ msgid "Has outlasted every war he fought. This unit's resistances are doubled, u
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:274
+#: lua/sw_systems.lua:275
 msgid "The Force…"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:281
+#: lua/sw_systems.lua:282
 msgid "Overwatch (commits this turn's attack)"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:288
+#: lua/sw_systems.lua:289
 msgid "Active sensor sweep (commits this turn's attack)"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:295
+#: lua/sw_systems.lua:296
 msgid "Launch sensor decoy…"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:309
+#: lua/sw_systems.lua:310
 msgid "Call air support…"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:316
+#: lua/sw_systems.lua:317
 msgid "Silent takedown"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:323
+#: lua/sw_systems.lua:324
 msgid "Show or hide guard sight"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:330
+#: lua/sw_systems.lua:331
 msgid "Show attack range"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:337
+#: lua/sw_systems.lua:338
 msgid "Hide attack range"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:351
-#: lua/sw_systems.lua:394
+#: lua/sw_systems.lua:352
+#: lua/sw_systems.lua:395
 msgid "Tactical status"
 msgstr ""
 
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:381
+#: lua/sw_systems.lua:382
 msgid "On overwatch:"
 msgstr ""
 
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:382
+#: lua/sw_systems.lua:383
 msgid "reaction(s) left, range"
 msgstr ""
 
@@ -2748,7 +2748,7 @@ msgstr ""
 #. [set_menu_item]: id=sw_field_manual
 #: lua/sw_tips.lua:153
 #: utils/hte_macros.cfg:454
-#: utils/hte_macros.cfg:608
+#: utils/hte_macros.cfg:610
 #: utils/hte_macros.cfg:470
 #: utils/hte_macros.cfg:465
 msgid "Field Manual"
@@ -2762,6 +2762,11 @@ msgstr ""
 #. [lua]: tips.on_side_turn
 #: lua/sw_tips.lua:156
 msgid "Turn off tips"
+msgstr ""
+
+#. [lua]: xp.on_die
+#: lua/sw_xp.lua:43
+msgid "XP (tough kill)"
 msgstr ""
 
 #. [part]
@@ -2833,9 +2838,9 @@ msgstr ""
 
 #. [objective]: condition=lose
 #: scenarios/dark_force_rising/01_the_noghri_prisoner.cfg:147
-#: scenarios/dark_force_rising/02_honoghr.cfg:113
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:122
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:170
+#: scenarios/dark_force_rising/02_honoghr.cfg:118
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:127
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:175
 #: scenarios/heir_to_the_empire/04_shadows_of_kashyyyk.cfg:161
 #: scenarios/the_last_command/03_the_palace_infiltrators.cfg:116
 msgid "Death of Leia"
@@ -2903,74 +2908,74 @@ msgid "Imperial Overseers"
 msgstr ""
 
 #. [label]
-#: scenarios/dark_force_rising/02_honoghr.cfg:100
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:109
+#: scenarios/dark_force_rising/02_honoghr.cfg:105
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:114
 msgid "Clan House of Nystao"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/02_honoghr.cfg:109
+#: scenarios/dark_force_rising/02_honoghr.cfg:114
 msgid "Leia reaches the clan house at Nystao"
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/02_honoghr.cfg:117
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:126
+#: scenarios/dark_force_rising/02_honoghr.cfg:122
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:131
 #: scenarios/the_last_command/03_the_palace_infiltrators.cfg:120
 msgid "If Chewbacca or Khabarakh falls, that hero withdraws from the fight badly wounded and returns for the next mission."
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/02_honoghr.cfg:121
+#: scenarios/dark_force_rising/02_honoghr.cfg:126
 msgid "The decontamination droids stay at their posts until someone comes within reach. Avoid open ground near them."
 msgstr ""
 
 #. [objectives]
-#: scenarios/dark_force_rising/02_honoghr.cfg:123
+#: scenarios/dark_force_rising/02_honoghr.cfg:128
 #: scenarios/heir_to_the_empire/08_nomad_city.cfg:192
 #: scenarios/the_last_command/05_the_natives_of_wayland.cfg:120
 msgid "Hold at least four settlements at the end"
 msgstr ""
 
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/dark_force_rising/02_honoghr.cfg:131
+#: scenarios/dark_force_rising/02_honoghr.cfg:136
 msgid "The Empire watches the plain with its droids. They do not look for us; we are their servants. They will look for you."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/02_honoghr.cfg:135
+#: scenarios/dark_force_rising/02_honoghr.cfg:140
 msgid "Then we keep to the hills and the riverbed. How far to your clan house?"
 msgstr ""
 
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/dark_force_rising/02_honoghr.cfg:139
+#: scenarios/dark_force_rising/02_honoghr.cfg:144
 msgid "Across the plain, to Nystao. The maitrakh of my clan will decide what happens to you there. And to me."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/02_honoghr.cfg:150
+#: scenarios/dark_force_rising/02_honoghr.cfg:155
 msgid "Those are the droids. They've been working this ground for forty years? Something doesn't add up."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/dark_force_rising/02_honoghr.cfg:162
-#: scenarios/dark_force_rising/02_honoghr.cfg:172
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:196
+#: scenarios/dark_force_rising/02_honoghr.cfg:167
+#: scenarios/dark_force_rising/02_honoghr.cfg:177
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:201
 msgid "Maitrakh of Clan Kihm'bar"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/dark_force_rising/02_honoghr.cfg:164
+#: scenarios/dark_force_rising/02_honoghr.cfg:169
 msgid "Khabarakh, you bring a human into the dukha? ... Wait. That scent. It is the scent of the Lord Vader himself."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/02_honoghr.cfg:168
+#: scenarios/dark_force_rising/02_honoghr.cfg:173
 msgid "Darth Vader was my father. I didn't come to claim anything from you. I came to understand."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/dark_force_rising/02_honoghr.cfg:174
+#: scenarios/dark_force_rising/02_honoghr.cfg:179
 msgid "Then stay hidden, Lady Vader, and listen. You will hear things that we ourselves do not wish to hear."
 msgstr ""
 
@@ -3032,84 +3037,84 @@ msgid "Vorr Tannick"
 msgstr ""
 
 #. [label]
-#: scenarios/dark_force_rising/03_jomark.cfg:126
+#: scenarios/dark_force_rising/03_jomark.cfg:131
 msgid "C'baoth's Retreat"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/03_jomark.cfg:131
+#: scenarios/dark_force_rising/03_jomark.cfg:136
 msgid "Defeat the raid leader, Vorr Tannick"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/dark_force_rising/03_jomark.cfg:135
+#: scenarios/dark_force_rising/03_jomark.cfg:140
 msgid "Two of the three lakeshore villages captured by raiders"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/dark_force_rising/03_jomark.cfg:139
+#: scenarios/dark_force_rising/03_jomark.cfg:144
 #: scenarios/heir_to_the_empire/03_adrift.cfg:161
 #: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:212
 msgid "Death of Luke Skywalker"
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/03_jomark.cfg:145
+#: scenarios/dark_force_rising/03_jomark.cfg:150
 msgid "Jomark's villagers volunteer as militia. C'baoth fights as he sees fit."
 msgstr ""
 
 #. [objectives]
-#: scenarios/dark_force_rising/03_jomark.cfg:147
+#: scenarios/dark_force_rising/03_jomark.cfg:152
 msgid "Hold all four settlements at the end"
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/03_jomark.cfg:155
+#: scenarios/dark_force_rising/03_jomark.cfg:160
 msgid "Raiders, young Skywalker. Petty thieves who think the shore is undefended. Come, we shall show these people what Jedi are."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/03_jomark.cfg:159
+#: scenarios/dark_force_rising/03_jomark.cfg:164
 msgid "Master C'baoth, the villagers can help. Let's keep them out of the fighting where we can."
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/03_jomark.cfg:163
+#: scenarios/dark_force_rising/03_jomark.cfg:168
 msgid "The villagers are mine to protect, and mine to command. Do as you like with yours."
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/03_jomark.cfg:189
+#: scenarios/dark_force_rising/03_jomark.cfg:194
 msgid "You have failed them, Skywalker. I will remember that."
 msgstr ""
 
 #. [message]: speaker=unit
-#: scenarios/dark_force_rising/03_jomark.cfg:205
+#: scenarios/dark_force_rising/03_jomark.cfg:210
 msgid "We yield! We yield! Take the cargo, just let us go!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/03_jomark.cfg:209
+#: scenarios/dark_force_rising/03_jomark.cfg:214
 msgid "Yield? No. Let the lake have them."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/03_jomark.cfg:213
+#: scenarios/dark_force_rising/03_jomark.cfg:218
 msgid "Master, they surrendered! That isn't... that isn't how the Jedi did things."
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/03_jomark.cfg:217
+#: scenarios/dark_force_rising/03_jomark.cfg:222
 msgid "You know very little about how the Jedi did things, my young apprentice. That is why you are here."
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/03_jomark.cfg:290
+#: scenarios/dark_force_rising/03_jomark.cfg:295
 msgid "Another boat, Skywalker, at the western village. You left it open to them."
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/03_jomark.cfg:297
+#: scenarios/dark_force_rising/03_jomark.cfg:302
 msgid "Another boat, Skywalker, at the southern village. You left it open to them."
 msgstr ""
 
@@ -3169,41 +3174,41 @@ msgid "Lando Calrissian"
 msgstr ""
 
 #. [label]
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:116
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:157
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:121
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:162
 msgid "Millennium Falcon"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:121
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:126
 msgid "Han reaches the Millennium Falcon"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:125
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:136
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:193
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:130
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:141
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:198
 #: scenarios/the_last_command/06_the_gates_of_tantiss.cfg:115
 #: scenarios/the_last_command/07_the_cloning_vats.cfg:115
 msgid "Death of Han"
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:129
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:134
 msgid "If Lando falls, he withdraws from the fight badly wounded and returns for the next mission."
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:132
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:137
 msgid "Senator Bel Iblis's commandos arrive at the north edge on turn 4 and fight on your side."
 msgstr ""
 
 #. [objectives]
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:137
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:158
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:142
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:163
 #: scenarios/dark_force_rising/07_the_dark_force.cfg:174
 #: scenarios/dark_force_rising/09_battle_for_the_fleet.cfg:175
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:208
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:213
 #: scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg:157
 #: scenarios/the_last_command/01_the_siege_of_coruscant.cfg:158
 #: scenarios/the_last_command/03_the_palace_infiltrators.cfg:127
@@ -3212,42 +3217,42 @@ msgid "Lose no units"
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:147
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:152
 msgid "Stormtroopers at both ends of the street, Han. I think our informant sold us twice."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:151
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:156
 msgid "Then we go through the middle. The Falcon's at the north pad. Stay low."
 msgstr ""
 
 #. [unit]: id=sw_dfr04_irenez, type=sw_unit_bi_commando
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:161
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:166
 msgid "Captain Irenez"
 msgstr ""
 
 #. [message]: speaker=sw_dfr04_irenez
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:184
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:189
 msgid "Captain Solo, the Senator sends his regards. We'll hold the north street. Get to your ship."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:188
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:193
 msgid "Senator? Which senator?"
 msgstr ""
 
 #. [message]: speaker=sw_dfr04_irenez
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:192
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:197
 msgid "One you used to know. He'll explain, if you live long enough to meet him."
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:204
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:209
 msgid "Those commandos are signaling. They want us to follow them out-system."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/04_the_senators_men.cfg:208
+#: scenarios/dark_force_rising/04_the_senators_men.cfg:213
 msgid "Then we follow. Carefully."
 msgstr ""
 
@@ -3289,63 +3294,63 @@ msgstr ""
 
 #. [label]
 #. [unit_type]: id=sw_unit_ob_shield_generator, race=mechanical
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:119
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:124
 #: units/tlc_units.cfg:1479
 msgid "Shield Generator"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:124
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:129
 msgid "Hold the shield generator through the last turn"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:128
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:133
 msgid "Defeat Major Tierce"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:132
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:137
 msgid "An Imperial unit reaches the shield generator"
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:140
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:145
 msgid "If Lando or Bel Iblis falls, that hero withdraws from the fight badly wounded and returns for the next mission."
 msgstr ""
 
 #. [objectives]
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:145
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:150
 msgid "Keep Garm Bel Iblis in the fight to the end"
 msgstr ""
 
 #. [message]: speaker=sw_hero_bel_iblis
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:157
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:162
 msgid "So the Grand Admiral has found my nest. Captain Solo, I'd hoped to make my introductions over a drink."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:161
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:166
 msgid "We'll do the drink after. What do you need?"
 msgstr ""
 
 #. [message]: speaker=sw_hero_bel_iblis
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:165
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:170
 msgid "The shield generator. If it falls, their walkers will flatten this base before my ships can lift. Hold the canyon mouth."
 msgstr ""
 
 #. [message]: speaker=sw_hero_bel_iblis
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:177
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:182
 msgid "They're at the generator. Abandon the base!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_bel_iblis
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:205
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:210
 msgid "They're falling back. Well fought. Now, about the Katana fleet: I know where it is not. Someone else claims to know where it is."
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/dark_force_rising/05_peregrines_nest.cfg:209
+#: scenarios/dark_force_rising/05_peregrines_nest.cfg:214
 msgid "Let me guess. Someone who'll want paying."
 msgstr ""
 
@@ -3360,44 +3365,44 @@ msgid "When Luke tried to leave, the sky over the lake turned black."
 msgstr ""
 
 #. [label]
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:139
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:144
 msgid "Mara's Ship"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:144
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:149
 msgid "Luke reaches Mara Jade's ship"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:148
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:153
 msgid "Death of Luke or Mara"
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:153
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:158
 msgid "C'baoth cannot be defeated here. Every second turn his Force storm strikes part of the map."
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:156
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:161
 msgid "The villagers attacking you are under C'baoth's influence."
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:166
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:171
 msgid "You will not leave Jomark, Skywalker. You have not finished learning."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:170
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:175
 msgid "I've learned enough. You don't want an apprentice, you want a servant."
 msgstr ""
 
 #. [event]
 #. [unit]: id=sw_hte05_mara, type=sw_hero_mara
 #. [message]: speaker=narrator
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:176
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:181
 #: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:351
 #: scenarios/heir_to_the_empire/05_prisoner_of_myrkr.cfg:396
 #: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:157
@@ -3409,47 +3414,47 @@ msgid "Mara Jade"
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:179
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:184
 msgid "Skywalker! Karrde sent me to warn you about this lunatic. Looks like I'm late. My ship's on the east shore. Move."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:183
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:188
 msgid "Mara? I thought you wanted me dead."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:187
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:192
 msgid "I do. By my hand, not his. Now move!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:229
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:234
 msgid "Feel the storm, boy!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:253
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:258
 msgid "Strap in. And don't think this makes us friends."
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:257
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:262
 msgid "Run, then. You will come back to me, Skywalker. All Jedi come back to me in the end."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:268
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:273
 msgid "I can't fly this ship myself, and I'm not leaving Mara behind."
 msgstr ""
 
 #. [message]: speaker=sw_hero_cbaoth
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:319
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:324
 msgid "No. Not dead. Broken, and then remade. You will thank me for it, Skywalker."
 msgstr ""
 
 #. [message]: speaker=unit
-#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:325
+#: scenarios/dark_force_rising/06_the_mad_jedi.cfg:330
 #: utils/hte_macros.cfg:137
 msgid "I can't go on..."
 msgstr ""
@@ -3600,7 +3605,7 @@ msgstr ""
 
 #. [objective]: condition=lose
 #: scenarios/dark_force_rising/08_aboard_the_katana.cfg:125
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:178
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:188
 #: scenarios/the_last_command/04_landfall_on_wayland.cfg:120
 #: scenarios/the_last_command/05_the_natives_of_wayland.cfg:109
 #: scenarios/the_last_command/08_the_throne_room.cfg:132
@@ -3789,62 +3794,62 @@ msgid "Noghri Clans"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:114
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:119
 msgid "Hold out until the clans decide (end of the last turn)"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:118
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:123
 msgid "Defeat Commander Sorrell"
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:130
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:135
 msgid "A second Imperial shuttle lands east of the village on turn 4. On turn 6 the Noghri clans give their answer and join your side."
 msgstr ""
 
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:139
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:144
 msgid "The clans are still debating, my lady. They will not move until they have decided. We must hold the dukha until then."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:143
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:148
 msgid "Then we hold it. Chewie, the west door."
 msgstr ""
 
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:168
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:173
 msgid "A second shuttle, east of the village!"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:198
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:203
 msgid "The clans have spoken. We served the Empire for a generation because it told us we owed it our lives. It lied. The Lady Vader is under our protection."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:202
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:207
 msgid "Thank you. You don't owe me anything. But I'll be glad of the help."
 msgstr ""
 
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:227
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:232
 msgid "The Empire will learn of this. And every Noghri who guards the Grand Admiral will learn of it too."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:231
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:236
 msgid "Then he's about to discover what it's like to be watched by his own bodyguards."
 msgstr ""
 
 #. [event]
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:233
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:238
 msgid "The Noghri have broken with us? ... Interesting. Then it is time to finish this war quickly, before they learn how much they know."
 msgstr ""
 
 #. [endlevel]
-#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:236
+#: scenarios/dark_force_rising/10_honoghrs_choice.cfg:241
 msgid ""
 "The Noghri have learned the truth, and the Grand Admiral has lost the people who served him best, though he does not know it yet. His clones are still growing on a world called Wayland.\n"
 "\n"
@@ -3892,103 +3897,103 @@ msgid "Aves"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:206
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:211
 msgid "Lambda Shuttle"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:210
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:220
 msgid "Smugglers' Camp"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:216
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:226
 msgid "Harvest the four marked ysalamiri and bring each nutrient frame back to the shuttle (its landing pad or the landing apron around it)"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:220
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:230
 msgid "Death of Captain Pellaeon"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:225
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:235
 msgid "Move a unit onto a marked tree to take its ysalamiri. A unit can carry only one frame. If the carrier falls, the frame returns to its tree."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:228
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:238
 msgid "Karrde's smugglers are allowing the harvest. Leave them alone."
 msgstr ""
 
 #. [objectives]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:230
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:240
 #: scenarios/heir_to_the_empire/04_shadows_of_kashyyyk.cfg:171
 msgid "Hold at least six settlements at the end"
 msgstr ""
 
 #. [event]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:236
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:246
 msgid "Captain, the creatures we need cling to the high branches. Four nutrient frames should be enough to start."
 msgstr ""
 
 #. [message]: speaker=sw_hero_pellaeon
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:239
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:249
 msgid "Four lizards on four sticks, Admiral. I hope you will tell me what they are for."
 msgstr ""
 
 #. [event]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:241
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:251
 msgid "Each one pushes back the Force around itself, like a bubble in water. A Jedi standing inside one is an ordinary man. Mind the vornskrs; they hunt anything that touches the Force, and they are not particular about the rest."
 msgstr ""
 
 #. [message]: speaker=sw_hte01_aves
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:244
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:254
 msgid "Karrde says take what you came for and go. Our people stay out of your way, and you stay out of ours."
 msgstr ""
 
 #. [message]: speaker=sw_hero_pellaeon
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:248
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:258
 msgid "Understood. Squads, form up. Keep your eyes on the trees."
 msgstr ""
 
 #. [dummy]: id=sw_ability_ysalamiri
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:323
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:333
 msgid "ysalamiri frame"
 msgstr ""
 
 #. [dummy]: id=sw_ability_ysalamiri
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:324
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:334
 msgid "Carries a ysalamiri in its nutrient frame. The creature pushes the Force away from every hex within one of its bearer."
 msgstr ""
 
 #. [floating_text]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:337
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:347
 msgid "Frame secured"
 msgstr ""
 
 #. [floating_text]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:386
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:396
 msgid "Frame delivered"
 msgstr ""
 
 #. [message]: speaker=sw_hero_pellaeon
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:424
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:434
 msgid "We lost a frame! The creature will have gone back to its branch. Send another squad."
 msgstr ""
 
 #. [message]: speaker=second_unit
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:457
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:467
 msgid "Movement in the brush! Vornskrs!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_pellaeon
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:465
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:475
 msgid "All four frames are aboard, Admiral."
 msgstr ""
 
 #. [event]
-#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:467
+#: scenarios/heir_to_the_empire/01_ysalamiri_harvest.cfg:477
 msgid "Well done, Captain. Now we need a Jedi to test them on, and Intelligence tells me where one will be. Return to the Chimaera."
 msgstr ""
 
@@ -4025,82 +4030,82 @@ msgid "Captain Tarvan"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:161
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:166
 msgid "Assembly Plaza"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:166
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:171
 msgid "Leia reaches the Millennium Falcon"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:174
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:179
 msgid "If Han or Chewbacca falls, that hero withdraws from the fight badly wounded and returns for the next mission."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:180
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:185
 msgid "Noghri commandos are invisible in the parks and at night until you move next to them."
 msgstr ""
 
 #. [objectives]
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:182
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:187
 msgid "Keep Han Solo and Chewbacca in the fight to the end"
 msgstr ""
 
 #. [message]: speaker=sw_hte02_militia_captain
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:192
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:197
 msgid "Your Highness, Imperial landing craft in the north district! It's a raid. They're hitting the warehouses and pulling out."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:196
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:201
 msgid "A raid this far inside our territory? I don't like it. Leia, we're going to the Falcon. Now."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:200
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:205
 msgid "Not without making sure these people can hold. Captain, keep the plaza. We'll go through the east district."
 msgstr ""
 
 #. [message]: speaker=sw_hero_chewbacca
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:204
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:209
 msgid "<i>(Chewbacca growls and checks his bowcaster.)</i>"
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:216
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:221
 msgid "Those aren't stormtroopers. Gray skin, no armor, no sound. Leia, stay behind Chewie!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:220
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:225
 msgid "They're not shooting to kill, Han. They want me alive."
 msgstr ""
 
 #. [message]: speaker=sw_hte02_militia_captain
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:229
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:234
 msgid "TIE fighters, coming in low over the plaza! Take cover!"
 msgstr ""
 
 #. [message]: speaker=sw_hte02_militia_captain
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:270
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:275
 msgid "More of our people are coming in from the south. We'll hold them, Your Highness!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:282
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:287
 msgid "Chewie, get the engines warm! Everybody aboard!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:286
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:291
 msgid "Han, those commandos were after me, not the warehouses. Someone knew exactly where I would be."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:290
+#: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:295
 msgid "Then we stop being where people expect. And we tell Luke. Wherever he's got to."
 msgstr ""
 
@@ -4462,97 +4467,97 @@ msgid "Talon Karrde"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:177
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:182
 msgid "Transport"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:185
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:190
 msgid "Get Karrde's people to the transports on the landing field"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:189
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:194
 msgid "Then bring Han to the transports (with Lando, if he is still in the fight)"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:197
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:202
 msgid "If Karrde falls, he withdraws from the fight badly wounded. If Lando falls, he withdraws too and returns for the next mission."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:203
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:208
 msgid "Karrde and his smugglers leave the battle when they reach a transport. Karrde counts as an evacuee."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:206
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:211
 msgid "The transports' engines are cold: they cannot launch before turn"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:206
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:211
 msgid "Anyone already aboard leaves as soon as they are ready."
 msgstr ""
 
 #. [message]: speaker=sw_hero_karrde
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:219
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:224
 msgid "An Imperial assault force, at my front gate. Someone has been very indiscreet about my guest."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:223
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:228
 msgid "Guest? You had Luke here?"
 msgstr ""
 
 #. [message]: speaker=sw_hero_karrde
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:227
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:232
 msgid "Had, Captain Solo. He left last night, with my second-in-command close behind him. We can argue about it later. My people need to reach the transports."
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:231
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:236
 msgid "Then let's give them a reason to keep their heads down. Han, you take the house; I'll take the yard."
 msgstr ""
 
 #. [floating_text]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:263
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:268
 msgid "Engines warming up"
 msgstr ""
 
 #. [floating_text]
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:278
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:283
 msgid "Evacuated"
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:293
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:298
 msgid "That's enough of them aboard. Lando, time to go!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_karrde
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:324
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:329
 msgid "The transports' engines are hot. Everyone at the landing field, get aboard!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_karrde
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:379
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:384
 msgid "Movement in the trees east of the landing field. They've circled round to cut us off from the transports."
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:383
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:388
 msgid "Then we hold that field until the engines are warm. Nobody boards a ship that can't fly."
 msgstr ""
 
 #. [message]: speaker=sw_hero_lando
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:447
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:452
 msgid "Karrde says the Imperials have speeder bikes out in the forest. They're still hunting Luke."
 msgstr ""
 
 #. [message]: speaker=sw_hero_han
-#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:451
+#: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:456
 msgid "Then Luke's alive and they haven't caught him. That's the best news I've had all week. Punch it."
 msgstr ""
 
@@ -4595,37 +4600,37 @@ msgid "Hyllyard City"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:165
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:170
 msgid "City Gate"
 msgstr ""
 
 #. [label]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:169
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:179
 msgid "Hunter's Cabin"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:174
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:184
 msgid "Luke reaches Hyllyard City through its west gate (with Mara, if she is still in the fight)"
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:182
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:192
 msgid "If Mara falls, she withdraws from the fight badly wounded and slips away into the forest."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:187
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:197
 msgid "Violet hexes are ysalamiri bubbles: Luke's Force abilities and deflection fail inside them. Vornskrs hunt Force-sensitives and hit Luke harder."
 msgstr ""
 
 #. [note]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:190
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:200
 msgid "Speeder bikes are fast in clearings and slow among the trees."
 msgstr ""
 
 #. [objectives]
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:192
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:202
 #: scenarios/the_last_command/02_the_smugglers_council.cfg:150
 #: scenarios/the_last_command/04_landfall_on_wayland.cfg:131
 #: scenarios/the_last_command/08_the_throne_room.cfg:142
@@ -4633,42 +4638,42 @@ msgid "Keep Mara Jade in the fight to the end"
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:200
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:210
 msgid "Don't get comfortable, Skywalker. The moment we're out of this forest, we settle things."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:204
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:214
 msgid "You keep saying that. You still haven't said why."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:208
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:218
 msgid "I have my reasons. Right now, I have Imperial scouts on bikes and a forest full of vornskrs. Walk."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:221
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:231
 msgid "Karrde keeps a comm relay here. I can call two of our people who are still in the forest. They'll help us. Not you. Us."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:262
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:272
 msgid "More bikes, coming in from the north."
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:295
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:305
 msgid "They go for you because they can feel the Force in you. Karrde's tame ones do the same thing. Keep moving."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:334
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:344
 msgid "Hyllyard City. We made it. So, do we settle things now?"
 msgstr ""
 
 #. [message]: speaker=sw_hero_mara
-#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:338
+#: scenarios/heir_to_the_empire/07_the_forest_crossing.cfg:348
 msgid "Not today. Karrde will want to hear about this first. Next time, Skywalker."
 msgstr ""
 
@@ -9680,11 +9685,14 @@ msgstr ""
 
 #. [message]: speaker=narrator
 #: utils/hte_macros.cfg:592
-msgid "Veterans wear their rank. A unit that rises past its highest level gains a rank — Veteran, Seasoned veteran, Elite — shown as insignia on the unit: gold chevrons for the New Republic, the red-and-blue rank plaque for the Imperial Remnant, brass studs for independents, violet marks for dark Jedi. Promoted units such as sergeants and smuggler veterans start at the first rank. Many units and heroes also change their look as Seasoned veterans and Elites, earning heavier armour, capes and cloaks, or squadron colours. <b>Each rank also brings a new ability for the unit's class</b>: a sergeant's fire discipline, a medic's field surgery, a Wookiee's battle roar, a pilot's wingman call, an ace's marksman eye. They are listed at the end of each unit's description, so you can see what a veteran is working towards, and they are kept for good. No rank adds a new attack; abilities either work on their own or improve a weapon the unit already carries. At each rank a soldier, alien warrior, combat droid or starfighter chooses its training: +3 maximum hit points, a weapons drill (+1 damage on every weapon, up to twice) or a mobility drill (+1 movement, once). Every choice brings a full heal. Named heroes also choose <b>specializations</b> after their last level; the advancement dialog states each benefit and cap. Force discipline adds 2 maximum Force Points once (regeneration unchanged; ysalamiri still block the Force). Weapon disciplines add 1 damage per strike to the named weapon, up to twice, including its aimed shot where present. Combat maneuvering, blockade running or command repositioning adds 1 movement once, without extra vision. Infiltration lets Mara or Khabarakh ignore enemy zones of control. Field coordination restores up to 4 HP per turn to adjacent allies and slows poison; it never heals the commander or stacks with another healer. Every specialization fully heals, cures poison and slow, and raises the next XP requirement by 20%. Each hero retains the +3 maximum HP choice after all specialization caps."
+msgid ""
+"Tough kills teach more: on top of the usual 8 experience per level, destroying an armed unit that is much sturdier than others of its level earns 1 more for every 4 hitpoints of difference. A Star Destroyer is worth 68, a Katana Dreadnaught 48, a stormtrooper 8.\n"
+"\n"
+"Veterans wear their rank. A unit that rises past its highest level gains a rank — Veteran, Seasoned veteran, Elite — shown as insignia on the unit: gold chevrons for the New Republic, the red-and-blue rank plaque for the Imperial Remnant, brass studs for independents, violet marks for dark Jedi. Promoted units such as sergeants and smuggler veterans start at the first rank. Many units and heroes also change their look as Seasoned veterans and Elites, earning heavier armour, capes and cloaks, or squadron colours. <b>Each rank also brings a new ability for the unit's class</b>: a sergeant's fire discipline, a medic's field surgery, a Wookiee's battle roar, a pilot's wingman call, an ace's marksman eye. They are listed at the end of each unit's description, so you can see what a veteran is working towards, and they are kept for good. No rank adds a new attack; abilities either work on their own or improve a weapon the unit already carries. At each rank a soldier, alien warrior, combat droid or starfighter chooses its training: +3 maximum hit points, a weapons drill (+1 damage on every weapon, up to twice) or a mobility drill (+1 movement, once). Every choice brings a full heal. Named heroes also choose <b>specializations</b> after their last level; the advancement dialog states each benefit and cap. Force discipline adds 2 maximum Force Points once (regeneration unchanged; ysalamiri still block the Force). Weapon disciplines add 1 damage per strike to the named weapon, up to twice, including its aimed shot where present. Combat maneuvering, blockade running or command repositioning adds 1 movement once, without extra vision. Infiltration lets Mara or Khabarakh ignore enemy zones of control. Field coordination restores up to 4 HP per turn to adjacent allies and slows poison; it never heals the commander or stacks with another healer. Every specialization fully heals, cures poison and slow, and raises the next XP requirement by 20%. Each hero retains the +3 maximum HP choice after all specialization caps."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:593
+#: utils/hte_macros.cfg:595
 msgid ""
 "Grand Admiral Thrawn learns his enemies. His forces gain Insight from what they observe: how you move, the weapons you use, the targets you choose, your reinforcements, your formations and your tactics. Repeating yourself teaches him faster. Captured art, archives and intelligence can teach him too. Red pips over his commander show how far his doctrine has come.\n"
 "\n"
@@ -9692,22 +9700,22 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:596
+#: utils/hte_macros.cfg:598
 msgid "Command decisions"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:596
+#: utils/hte_macros.cfg:598
 msgid "Once in each campaign — in Shadows of Kashyyyk, The Senator's Men and The Palace Infiltrators — High Command offers one kind of support for the rest of that campaign. <b>Supply convoy</b>: +25 credits at the start of every later mission where you recruit. <b>Veteran cadre</b>: two loyal units of your best recruit join at once, half-way to their next level. <b>Counter-intelligence</b>: Thrawn's doctrine never reaches Coordinated fire (its Insight stays at 75 or below). The choice stands until the campaign ends."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:597
+#: utils/hte_macros.cfg:599
 msgid "Achievements"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:597
+#: utils/hte_macros.cfg:599
 msgid ""
 "Each campaign has achievements, listed under <b>Achievements</b> in the main menu: finish the campaign, finish it on Hard, finish it with no hero ever withdrawing, win missions with at least a third of their turns unused, become an ace by destroying enemy starfighters and warships in the space battles, and pull off feats in single missions: keep every warship at Thrawn's Gambit, every Dreadnaught at Battle for the Fleet, bring down the traitor at the Smugglers' Council, and break the line at The Last Command.\n"
 "\n"
@@ -9715,27 +9723,27 @@ msgid ""
 msgstr ""
 
 #. [option]
-#: utils/hte_macros.cfg:601
+#: utils/hte_macros.cfg:603
 msgid "Show the tips again"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:609
+#: utils/hte_macros.cfg:611
 msgid "Tips are on again. Each one appears the first time its system matters to you."
 msgstr ""
 
 #. [option]
-#: utils/hte_macros.cfg:614
+#: utils/hte_macros.cfg:616
 msgid "Close the manual"
 msgstr ""
 
 #. [objective]: description= , condition=win
-#: utils/hte_macros.cfg:695
+#: utils/hte_macros.cfg:697
 msgid "(reward:"
 msgstr ""
 
 #. [objective]: description= , condition=win
-#: utils/hte_macros.cfg:695
+#: utils/hte_macros.cfg:697
 msgid "credits next mission)"
 msgstr ""
 

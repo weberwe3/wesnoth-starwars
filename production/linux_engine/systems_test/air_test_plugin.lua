@@ -11,7 +11,7 @@ local PHASE = "main"
 local STEPS = {
   "move_sounds", "rank_promotion", "rank_amla", "rank_abilities", "safe_backstab", "air_basics", "air_accuracy", "air_ecm_origin", "air_ecm_ai", "check_air_ecm_ai", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "space_evasion", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "space_evasion", "kill_xp", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_ow_path_rules", "ai_ow_path", "check_ai_ow_path", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
   "alert_rules", "alert_sneak", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw",
   "myneyrshi_medic_ranks", "myneyrshi_medic_recruit_setup", "myneyrshi_medic_recruit_check",
@@ -826,6 +826,33 @@ local function plugin(events, context, info)
       check("hero X-wings cost 40 and dodge 60%",
         wesnoth.unit_types["sw_hero_wedge"].cost == 40 and wesnoth.unit_types["sw_hero_xwing_luke"].cost == 40
         and swt.place("sw_hero_wedge", 1, 10, 10, "t_wedge"):defense_on("Qsp") == 60)
+    end
+
+    -- Kill experience scales with the victim's toughness (lua/sw_xp.lua):
+    -- engine 8 x level, plus 1 XP per 4 HP above 22 + 14 x level.
+    function S.kill_xp()
+      swt.clear()
+      local xpm = sw_systems.xp
+      local st = swt.place("sw_unit_im_stormtrooper", 2, 14, 4, "t_kx_st")
+      local sd = swt.place("sw_unit_im_star_destroyer", 2, 13, 8, "t_kx_sd")
+      local gen = swt.place("sw_unit_ob_shield_generator", 2, 16, 8, "t_kx_gen")
+      check("a stormtrooper gives no bonus; a Star Destroyer +36; an unarmed set piece none",
+        xpm.kill_bonus(st) == 0 and xpm.kill_bonus(sd) == 36 and xpm.kill_bonus(gen) == 0,
+        xpm.kill_bonus(st) .. "," .. xpm.kill_bonus(sd) .. "," .. xpm.kill_bonus(gen))
+      -- A real attack: Wedge (level 3, 150 XP to advance) finishes a 1-HP Star
+      -- Destroyer. The kill pays 32 (8 x level 4) + 36.
+      local wedge = swt.place("sw_hero_wedge", 1, 12, 7, "t_kx_wedge")
+      wedge.experience = 0
+      sd.hitpoints = 1
+      local killed = false
+      for _try = 1, 4 do
+        wedge.attacks_left = 1
+        wesnoth.wml_actions.do_command{ T.attack{ T.source{ x = 12, y = 7 }, T.destination{ x = 13, y = 8 }, weapon = 0 } }
+        if not wesnoth.units.get("t_kx_sd") then killed = true break end
+      end
+      wedge = wesnoth.units.get("t_kx_wedge")
+      check("destroying a Star Destroyer pays 68 XP, not 32", killed and wedge.experience >= 68,
+        tostring(killed) .. " xp=" .. (wedge and wedge.experience or -1))
     end
 
     -- Flanking (units/00_sw_specials.cfg): +10% to hit per armed unit hostile
