@@ -11,7 +11,7 @@ local PHASE = "main"
 local STEPS = {
   "move_sounds", "rank_promotion", "rank_amla", "rank_abilities", "safe_backstab", "air_basics", "air_accuracy", "air_ecm_origin", "air_ecm_ai", "check_air_ecm_ai", "air_strafe", "check_strafe",
   "air_bombing", "land_bombing", "check_bombing", "scripted", "check_scripted", "carryover",
-  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
+  "ai_avoid", "check_ai_avoid", "ai_air", "check_ai_air", "weapon_ranges", "space_evasion", "ability_review", "achievements", "bonus_objectives", "command_decisions", "flanking", "ai_ranged_legality", "ai_ranged", "check_ai_ranged",
   "ai_target_priority", "ai_ow_path_rules", "ai_ow_path", "check_ai_ow_path", "ai_withdraw_rules", "ai_withdraw", "check_ai_withdraw",
   "alert_rules", "alert_sneak", "alert_takedown", "alert_ai", "check_alert_ai", "alert_sight", "check_alert_sight", "hero_withdraw", "check_hero_withdraw",
   "myneyrshi_medic_ranks", "myneyrshi_medic_recruit_setup", "myneyrshi_medic_recruit_check",
@@ -783,6 +783,49 @@ local function plugin(events, context, info)
         if sp[2] and sp[2].id == "sw_special_range" and tostring(sp[2].name) == "range 2" then shown = true end
       end
       check("the range is listed with the weapon's specials", shown)
+    end
+
+    -- Space combat review 2026-10-16: lore evasion ratings (per-unit
+    -- [defense] overrides of sw_starfighter), unguided and anti-ship
+    -- ordnance, astromech repairs and the A-wing's pursuit (skirmisher).
+    -- defense_on is avoidance; Qsp open space, Qsa asteroids, Qsd deck.
+    function S.space_evasion()
+      swt.clear()
+      local function idx(u, name)
+        for i, a in ipairs(u.attacks) do if a.name == name then return i end end
+      end
+      local function dmg(att, name, def)
+        local _a, _d, aw = wesnoth.simulate_combat(att, idx(att, name), def)
+        return aw.damage
+      end
+      local aw = swt.place("sw_unit_nr_awing", 1, 12, 4, "t_aw")
+      local xw = swt.place("sw_unit_nr_xwing", 1, 12, 6, "t_xw")
+      local yw = swt.place("sw_unit_nr_ywing", 1, 12, 8, "t_yw")
+      local tf = swt.place("sw_unit_im_tie_fighter", 2, 14, 4, "t_tf")
+      local ti = swt.place("sw_unit_im_tie_interceptor", 2, 14, 6, "t_ti")
+      local tb = swt.place("sw_unit_im_tie_bomber", 2, 13, 6, "t_tb")
+      local sd = swt.place("sw_unit_im_star_destroyer", 2, 13, 8, "t_sd")
+      local function ev(u) return u:defense_on("Qsp") end
+      check("evasion in open space: A-wing 65, TIE Interceptor 65, TIE fighter 55, X-wing 50, Y-wing 35, TIE bomber 35, Star Destroyer 10",
+        ev(aw) == 65 and ev(ti) == 65 and ev(tf) == 55 and ev(xw) == 50 and ev(yw) == 35 and ev(tb) == 35 and ev(sd) == 10,
+        table.concat({ev(aw), ev(ti), ev(tf), ev(xw), ev(yw), ev(tb), ev(sd)}, ","))
+      check("asteroids add 10% up to the 70% cap, decks take 10% away",
+        aw:defense_on("Qsa") == 70 and yw:defense_on("Qsa") == 45 and aw:defense_on("Qsd") == 55 and xw:defense_on("Qsd") == 40,
+        aw:defense_on("Qsa") .. "," .. yw:defense_on("Qsa") .. "," .. aw:defense_on("Qsd") .. "," .. xw:defense_on("Qsd"))
+      check("the rating is listed as an ability", aw:matches{ ability = "sw_ability_evasion" } and sd:matches{ ability = "sw_ability_evasion" })
+      -- TIE bomber concussion bombs 16: half against craft (X-wing impact 90%: 16*0.5*0.9=7.2 -> 7), +50% against
+      -- capital ships (Y-wing torpedoes 16*1.5 vs Star Destroyer impact 70% = 16.8 -> 17).
+      tb:to_map(13, 6)
+      check("unguided bombs: half damage against a starfighter", dmg(tb, "concussion_bombs", xw) == 7, dmg(tb, "concussion_bombs", xw))
+      check("anti-ship torpedoes: +50% against a capital ship", dmg(yw, "proton_torpedoes", sd) == 17, dmg(yw, "proton_torpedoes", sd))
+      check("X-wing and Y-wing carry astromech droids; the A-wing and TIEs do not",
+        xw:matches{ ability = "sw_ability_astromech" } and yw:matches{ ability = "sw_ability_astromech" }
+        and not aw:matches{ ability = "sw_ability_astromech" } and not tf:matches{ ability = "sw_ability_astromech" })
+      check("the A-wing slips past escorts (skirmisher) and carries concussion missiles",
+        aw:matches{ ability = "skirmisher" } and idx(aw, "concussion_missiles") ~= nil)
+      check("hero X-wings cost 40 and dodge 60%",
+        wesnoth.unit_types["sw_hero_wedge"].cost == 40 and wesnoth.unit_types["sw_hero_xwing_luke"].cost == 40
+        and swt.place("sw_hero_wedge", 1, 10, 10, "t_wedge"):defense_on("Qsp") == 60)
     end
 
     -- Flanking (units/00_sw_specials.cfg): +10% to hit per armed unit hostile

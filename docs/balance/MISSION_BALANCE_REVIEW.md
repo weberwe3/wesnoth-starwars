@@ -1785,3 +1785,135 @@ All 30 careful-player AI soaks passed the existing technical gate. All raw logs 
 These independent random runs recorded 9 victories and 21 defeats. They are unpaired and do not establish a human win rate or a difficulty change. All defeats and raw warnings are retained. Mission scenarios/maps, unit statistics, rank abilities and overwatch resolution retain their integrated-base bytes.
 
 Source coverage records a literal; native execution supplies behavioral evidence.
+
+## Space combat rework (2026-10-16)
+
+Owner request:
+- every ship has a lore-accurate **evasion rating** that makes it harder to hit, where that fits;
+- every ship fits a **role**, and its abilities and cost reflect that role;
+- every unit is balanced by **capability against cost**.
+
+The A-wing in particular was weak for its 18 gold.
+
+### Cause
+
+All craft shared the `sw_starfighter` movetype, so an A-wing, a Y-wing and a TIE bomber were all hit 50% of the time in open space. The A-wing had less HP than an X-wing (26 against 34), weaker lasers, no ordnance and no special job. Its only edge, 10 movement, did not decide fights. The TIE bomber's concussion bombs (16-2) killed fighters as well as ships, so the cheap bomber was also the best dogfighter.
+
+`production/tools/space_balance_report.py` measures this. It reads the roster from `gen_hte_units.py` and works out exact expected combat results in open space, using Wesnoth's own rules:
+- strike order and firststrike;
+- marksman, slow and chance-to-hit specials;
+- resistances and damage rounding.
+
+The number it reports is the **gold exchange**: share of the enemy's cost destroyed per share of one's own cost lost, over one attack each way. 1.0 is an even trade. "Mean" below is the average against the opposing fighters (geometric mean, shuttles excluded), with full magazines:
+
+| Craft | Cost | Evasion | Mean before | Mean after* | Ship damage per gold (after*) |
+|---|---|---|---|---|---|
+| X-wing | 20 | 50% → 50% | 0.75 | 1.13 | 0.70 |
+| A-wing | 18 | 50% → 65% | **0.56** | 1.21 | 0.67 |
+| Y-wing | 22 | 50% → 35% | 1.10 | 1.10 | **0.95** |
+| TIE fighter | 12 | 50% → 55% | 1.20 | 0.97 | 0.85 |
+| TIE Interceptor | 24 | 50% → 65% | 1.23 | 1.15 | 0.78 |
+| TIE bomber | 18 → 16 | 50% → 35% | **1.45** | 0.62 | **1.91** |
+| Boarding / assault shuttle | 20 → 16 | 50% → 25% | 0.37 / 0.63 | 0.55 / 0.52 | — |
+
+\* "After" blends full magazines (40%) with empty ones (60%), since torpedoes and missiles last only 2–3 fights a mission.
+
+### Update
+
+**Evasion.** Every craft now has an evasion rating: its chance to dodge in open space. Open space (`Qsp`) is aliased to `Qt`, the movetype's `unwalkable` column. The rating shifts the craft's whole movetype defense table by a per-unit `[defense]` override, so the craft keeps `sw_starfighter`, which filters, logistics, sensors and achievements key on. Asteroids still add 10% (capped at 70%), and decks still cost 10%. The rating is shown as an `evasion N%` ability with its lore reason:
+
+| Rating | Craft |
+|---|---|
+| 65% | A-wing (fastest, most agile New Republic craft), TIE Interceptor (most agile TIE) |
+| 60% | Luke's X-wing and Wedge (ace pilots) |
+| 55% | TIE fighter (nimble, unshielded) |
+| 50% | X-wing (balanced) |
+| 35% | Y-wing and TIE bomber (sluggish, heavy) |
+| 25% | boarding shuttles |
+| 20% | mole miner |
+| 10% | capital ships (unchanged) |
+
+**Roles.** Each craft's help now states its role. Abilities and stats follow from it:
+
+- **X-wing — multirole line fighter.**
+  - Deflector shields: fire and impact 90%.
+  - New **astromech droid** ability: repairs 4 HP each turn (`[regenerate] value=4`).
+  - Its torpedoes gain **anti-ship**: +50% damage against capital ships and installations.
+- **A-wing — interceptor.**
+  - HP 26 → 28.
+  - Gains **skirmisher**: it slips past escorts to reach bombers and shuttles.
+  - New guided **concussion missiles** (12-2, marksman, range 3, 2 volleys).
+  - Keeps its first-strike lasers and its jammer.
+  - Its rank-1 ability changes from Afterburners (now redundant) to Wingman.
+- **Y-wing — assault bomber.**
+  - HP 40 → 44.
+  - Armour: blade and pierce 80%, fire and impact 85%.
+  - Astromech droid.
+  - Anti-ship torpedoes.
+- **TIE fighter — swarm fighter.**
+  - HP 24 → 22.
+  - No shields: fire and impact 110%.
+  - Still the cheapest craft, with pack tactics.
+- **TIE Interceptor — elite dogfighter.**
+  - HP 30 → 27.
+  - No shields.
+  - Lasers 9-4 → 8-4 (owner choice: keep 24 gold, trim the stats).
+- **TIE bomber — anti-ship bomber.**
+  - HP 34 → 38.
+  - Double hull: blade, pierce and impact 90%.
+  - Cost 18 → 16.
+  - Its bombs are **unguided** (half damage against anything with the starfighter movetype) and **anti-ship** (+50% against capital ships).
+- **Boarding shuttles — boarding craft.**
+  - Armoured: blade, pierce, impact and fire 80%.
+  - Cost 20 → 16. They carry an objective, not a fight.
+- **Hero X-wings.** Cost 60 → 40 (owner choice: 60 was three times the median, and a high cost makes the enemy AI hunt them), with 60% evasion, shields, astromech and anti-ship torpedoes.
+- **Docked warships.** Hull 120 → 135. This offsets the bombers' new anti-ship bonus. In the rework soak at 120 HP, a warship fell as early as turn 5, against turns 7–8 in the baseline.
+
+The in-game field manual's *Space battles* topic lists the ratings and roles. `S.space_evasion` in the air systems suite checks the ratings, the caps, the unguided and anti-ship damage, the astromech and the A-wing's kit with the engine's own combat simulation.
+
+### Impact
+
+AI soak, careful player, all seven space missions, 2 runs each before and after (14 games each):
+
+| | Before | After |
+|---|---|---|
+| Victories | 6 | 7 |
+| Engine failures | 0 | 0 |
+| A-wing kills / losses | 29 / 27 | 42 / 15 |
+| X-wing kills / losses | 39 / 24 | 57 / 27 |
+| Y-wing kills / losses | 37 / 19 | 54 / 19 |
+| TIE bomber kills / losses | 29 / 40 | 12 / 51 |
+| TIE Interceptor kills / losses | 15 / 34 | 24 / 39 |
+
+- **A-wing.** It now earns its cost: more kills and fewer losses than any New Republic craft.
+- **TIE bombers.** They no longer win dogfights. They are a threat to warships and must be intercepted.
+- **TIE Interceptor.** It is the elite threat, as intended.
+- **Faster wins.** Sluis Van, Coruscant and Bilbringi were won about 3 turns sooner.
+- **The Last Command.** It was won once (baseline: never).
+- **Thrawn's Gambit.** At 120 HP the AI player still lost the defence of the docked warships (0 of 2, as in the baseline). With the 135-HP hull it won 2 of 3; in the defeat, the warships fell on turns 6 and 8, as in the baseline. The bombers can now be caught: A-wings slip past their escorts, and the bombs are wasted on fighters. Defending the warships is still the hard part of the mission.
+
+### Unit filters that matched everything
+
+The engine test of the unguided bombs exposed an older defect. Several specials filtered their targets with `movement_type=` in `[filter_opponent]` or `[filter_student]`. The installed engine's unit filter (`src/units/filter.cpp`) has no such key, and WFL units do not expose it either, so those filters matched **every** unit:
+
+| Special or ability | Intended targets | Actual targets |
+|---|---|---|
+| A280 armour-piercing (+25%) | armoured troopers | every target |
+| Dogfighter (rank bane) | starfighters | every target |
+| Ship-killer (rank bane) | capital ships | every target |
+| Armour-piercing (rank bane) | armoured troopers and walkers | every target |
+| Saboteur (rank bane) | vehicles | every target |
+| Wingman | allied starfighters | every ally |
+
+Each now lists the unit types of its class, taken from the generator roster, so it applies as described. New Republic troopers' A280 bonus now hits only stormtroopers and other armoured troopers. Earlier ground balance had been measured with the bonus applying to every target.
+
+Full campaign soak, careful player, one run of all 30 missions on `main` and on this change:
+
+| | Before | After |
+|---|---|---|
+| Victories | 9 | 10 |
+| Engine failures | 0 | 0 |
+
+Single runs vary a lot. Space missions won sooner. Among ground missions, The Noghri Prisoner was newly won and The Cloning Vats was lost at the turn limit; with one run each, both are within normal spread.
+
+The air systems suite's flanking check ("allies beside the attacker do not flank") and its main-phase timeout fail the same way on unchanged `main`. They are not caused by this change.

@@ -169,7 +169,7 @@ return {
 							name = _ "saboteur",
 							description = _ "Knows where to place a charge. This attack deals +50% damage against walkers, speeders and installations.",
 							T.filter_opponent {
-								movement_type = "sw_walker,sw_repulsor,sw_capital",
+								type = "sw_unit_im_at_st,sw_unit_im_decon_droid,sw_unit_im_scout_trooper,sw_unit_nr_docked_warship,sw_unit_im_star_destroyer,sw_unit_ob_dreadnaught,sw_unit_im_minelayer,sw_unit_ob_cloaked_asteroid,sw_unit_ob_shield_generator,sw_unit_ob_cloning_cylinder,sw_unit_ob_shipyard_platform",
 							},
 						},
 					},
@@ -275,7 +275,7 @@ return {
 							name = _ "armour-piercing",
 							description = _ "Loaded and aimed to punch through plate. This attack deals +50% damage against armoured troopers and walkers.",
 							T.filter_opponent {
-								movement_type = "sw_armored_trooper,sw_walker",
+								type = "sw_unit_im_stormtrooper,sw_unit_im_stormtrooper_sergeant,sw_unit_im_clone_trooper,sw_unit_wy_psadan,sw_unit_im_at_st,sw_unit_im_decon_droid",
 							},
 						},
 					},
@@ -519,7 +519,7 @@ return {
 							description = _ "Calls the break and covers the leader's tail. Adjacent allied starfighters have +10% chance to hit with their attacks.",
 							T.affect_adjacent {},
 							T.filter_student {
-								movement_type = "sw_starfighter",
+								type = "sw_unit_nr_xwing,sw_unit_nr_awing,sw_unit_nr_ywing,sw_hero_xwing_luke,sw_hero_wedge,sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber,sw_unit_im_mole_miner,sw_unit_nr_boarding_shuttle,sw_unit_im_boarding_shuttle",
 							},
 						},
 					},
@@ -564,15 +564,22 @@ return {
 			} },
 	},
 	sw_unit_nr_awing = {
-		[1] = { key = "afterburners", name = _ "Afterburners", effects = {
+		[1] = { key = "wingman", name = _ "Wingman", effects = {
 				T.effect {
 					apply_to = "new_ability",
 					T.abilities {
-						T.skirmisher {
-							id = "sw_rank_skirmisher",
-							affect_self = "yes",
-							name = _ "afterburners",
-							description = _ "Too fast to be pinned by escorts. This unit ignores enemy zones of control.",
+						T.chance_to_hit {
+							id = "sw_rank_hit_aura",
+							add = 10,
+							cumulative = "no",
+							affect_self = "no",
+							affect_allies = "yes",
+							name = _ "wingman",
+							description = _ "Calls the break and covers the leader's tail. Adjacent allied starfighters have +10% chance to hit with their attacks.",
+							T.affect_adjacent {},
+							T.filter_student {
+								type = "sw_unit_nr_xwing,sw_unit_nr_awing,sw_unit_nr_ywing,sw_hero_xwing_luke,sw_hero_wedge,sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber,sw_unit_im_mole_miner,sw_unit_nr_boarding_shuttle,sw_unit_im_boarding_shuttle",
+							},
 						},
 					},
 				},
@@ -589,7 +596,7 @@ return {
 							name = _ "dogfighter",
 							description = _ "Lives for the turning fight. This attack deals +25% damage against starfighters and shuttles.",
 							T.filter_opponent {
-								movement_type = "sw_starfighter",
+								type = "sw_unit_nr_xwing,sw_unit_nr_awing,sw_unit_nr_ywing,sw_hero_xwing_luke,sw_hero_wedge,sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber,sw_unit_im_mole_miner,sw_unit_nr_boarding_shuttle,sw_unit_im_boarding_shuttle",
 							},
 						},
 					},
@@ -663,7 +670,7 @@ return {
 							name = _ "ship-killer",
 							description = _ "Knows a capital ship's weak points. This attack deals +50% damage against capital ships and installations.",
 							T.filter_opponent {
-								movement_type = "sw_capital",
+								type = "sw_unit_nr_docked_warship,sw_unit_im_star_destroyer,sw_unit_ob_dreadnaught,sw_unit_im_minelayer,sw_unit_ob_cloaked_asteroid,sw_unit_ob_shield_generator,sw_unit_ob_cloning_cylinder,sw_unit_ob_shipyard_platform",
 							},
 						},
 					},
@@ -685,7 +692,7 @@ return {
 							description = _ "Calls the break and covers the leader's tail. Adjacent allied starfighters have +10% chance to hit with their attacks.",
 							T.affect_adjacent {},
 							T.filter_student {
-								movement_type = "sw_starfighter",
+								type = "sw_unit_nr_xwing,sw_unit_nr_awing,sw_unit_nr_ywing,sw_hero_xwing_luke,sw_hero_wedge,sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber,sw_unit_im_mole_miner,sw_unit_nr_boarding_shuttle,sw_unit_im_boarding_shuttle",
 							},
 						},
 					},
@@ -703,7 +710,7 @@ return {
 							name = _ "dogfighter",
 							description = _ "Lives for the turning fight. This attack deals +25% damage against starfighters and shuttles.",
 							T.filter_opponent {
-								movement_type = "sw_starfighter",
+								type = "sw_unit_nr_xwing,sw_unit_nr_awing,sw_unit_nr_ywing,sw_hero_xwing_luke,sw_hero_wedge,sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber,sw_unit_im_mole_miner,sw_unit_nr_boarding_shuttle,sw_unit_im_boarding_shuttle",
 							},
 						},
 					},
@@ -753,7 +760,7 @@ return {
 							name = _ "dogfighter",
 							description = _ "Lives for the turning fight. This attack deals +25% damage against starfighters and shuttles.",
 							T.filter_opponent {
-								movement_type = "sw_starfighter",
+								type = "sw_unit_nr_xwing,sw_unit_nr_awing,sw_unit_nr_ywing,sw_hero_xwing_luke,sw_hero_wedge,sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber,sw_unit_im_mole_miner,sw_unit_nr_boarding_shuttle,sw_unit_im_boarding_shuttle",
 							},
 						},
 					},
@@ -827,7 +834,7 @@ return {
 							name = _ "ship-killer",
 							description = _ "Knows a capital ship's weak points. This attack deals +50% damage against capital ships and installations.",
 							T.filter_opponent {
-								movement_type = "sw_capital",
+								type = "sw_unit_nr_docked_warship,sw_unit_im_star_destroyer,sw_unit_ob_dreadnaught,sw_unit_im_minelayer,sw_unit_ob_cloaked_asteroid,sw_unit_ob_shield_generator,sw_unit_ob_cloning_cylinder,sw_unit_ob_shipyard_platform",
 							},
 						},
 					},
@@ -1525,7 +1532,7 @@ return {
 							description = _ "Calls the break and covers the leader's tail. Adjacent allied starfighters have +10% chance to hit with their attacks.",
 							T.affect_adjacent {},
 							T.filter_student {
-								movement_type = "sw_starfighter",
+								type = "sw_unit_nr_xwing,sw_unit_nr_awing,sw_unit_nr_ywing,sw_hero_xwing_luke,sw_hero_wedge,sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber,sw_unit_im_mole_miner,sw_unit_nr_boarding_shuttle,sw_unit_im_boarding_shuttle",
 							},
 						},
 					},
@@ -1930,7 +1937,7 @@ return {
 							description = _ "Calls the break and covers the leader's tail. Adjacent allied starfighters have +10% chance to hit with their attacks.",
 							T.affect_adjacent {},
 							T.filter_student {
-								movement_type = "sw_starfighter",
+								type = "sw_unit_nr_xwing,sw_unit_nr_awing,sw_unit_nr_ywing,sw_hero_xwing_luke,sw_hero_wedge,sw_unit_im_tie_fighter,sw_unit_im_tie_interceptor,sw_unit_im_tie_bomber,sw_unit_im_mole_miner,sw_unit_nr_boarding_shuttle,sw_unit_im_boarding_shuttle",
 							},
 						},
 					},
