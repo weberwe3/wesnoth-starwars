@@ -411,6 +411,9 @@ Each finding lists its **Action** and the **Priority** it was given.
   - Engine check: `eweb_recruit`.
 
 **3 · The Palace Infiltrators** — 76
+- **Round 4 bonus:** "Keep every infiltrator out of the nursery wing" (3
+  hexes): intercept forward, or fall back to the door. Engine check
+  `palace_bonus_wing_clear`.
 - **SDF (P3, Sol):** victory waits for the turn-7 wave, and the objective did
   not say so. **Fixed.**
 - **CD (P3, Sol; verified), shared by every campaign:** the bonus reward said

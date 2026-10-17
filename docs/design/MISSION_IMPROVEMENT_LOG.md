@@ -6,6 +6,15 @@ first. Findings and scores are in [SCENARIO_AUDIT.md](SCENARIO_AUDIT.md).
 
 ---
 
+## 2026-10-17 — Design audit, round 4: the last generic bonus
+
+- **The Palace Infiltrators:** "Lose no units" becomes "Keep every
+  infiltrator out of the nursery wing" (no infiltrator ends a move within 3
+  hexes of the nursery at 22,9).
+  - **Trade-off:** intercept forward in the corridors, or fall back to the
+    door.
+  - **Test:** sequence check `palace_bonus_wing_clear`.
+
 ## 2026-10-17 — Design audit, round 3: the trilogy finale and more bonuses
 
 **The Last Command becomes an assault** (SDF, P4).

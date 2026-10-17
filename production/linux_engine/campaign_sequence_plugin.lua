@@ -233,6 +233,11 @@ local CHECKS = {
     check("eweb_recruit", has, table.concat(wesnoth.sides[1].recruit, ","))
   end,
   -- Round 3 bonuses, earned on the scripted win paths.
+  sw_tlc_04_landfall_on_wayland = function()
+    local r = wml.variables.sw_bonus_result or {}
+    check("palace_bonus_wing_clear", r.scenario == "sw_tlc_03_the_palace_infiltrators" and r.state == "complete",
+      tostring(r.scenario) .. "/" .. tostring(r.state))
+  end,
   sw_dfr_05_peregrines_nest = function()
     local r = wml.variables.sw_bonus_result or {}
     check("senators_bonus_swift", r.scenario == "sw_dfr_04_the_senators_men" and r.state == "complete",

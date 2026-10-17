@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-17 13:25 UTC\n"
+"POT-Creation-Date: 2026-10-17 13:45 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2840,7 +2840,7 @@ msgstr ""
 #: scenarios/dark_force_rising/10_honoghrs_choice.cfg:52
 #: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:51
 #: scenarios/heir_to_the_empire/04_shadows_of_kashyyyk.cfg:68
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:46
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:72
 #: scenarios/the_last_command/06_the_gates_of_tantiss.cfg:104
 msgid "Leia Organa Solo"
 msgstr ""
@@ -2855,7 +2855,7 @@ msgstr ""
 #: scenarios/dark_force_rising/01_the_noghri_prisoner.cfg:73
 #: scenarios/dark_force_rising/02_honoghr.cfg:99
 #: scenarios/dark_force_rising/10_honoghrs_choice.cfg:116
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:88
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:114
 #: scenarios/the_last_command/06_the_gates_of_tantiss.cfg:107
 msgid "Khabarakh"
 msgstr ""
@@ -2867,7 +2867,7 @@ msgstr ""
 #: scenarios/dark_force_rising/10_honoghrs_choice.cfg:115
 #: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:150
 #: scenarios/heir_to_the_empire/04_shadows_of_kashyyyk.cfg:141
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:87
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:113
 #: scenarios/the_last_command/06_the_gates_of_tantiss.cfg:106
 #: scenarios/the_last_command/07_the_cloning_vats.cfg:107
 msgid "Chewbacca"
@@ -2889,7 +2889,7 @@ msgstr ""
 #: scenarios/dark_force_rising/10_honoghrs_choice.cfg:145
 #: scenarios/heir_to_the_empire/02_ambush_at_bpfassh.cfg:175
 #: scenarios/heir_to_the_empire/04_shadows_of_kashyyyk.cfg:161
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:116
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:142
 msgid "Death of Leia"
 msgstr ""
 
@@ -2975,7 +2975,7 @@ msgstr ""
 #. [note]
 #: scenarios/dark_force_rising/02_honoghr.cfg:124
 #: scenarios/dark_force_rising/10_honoghrs_choice.cfg:150
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:120
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:146
 msgid "If Chewbacca or Khabarakh falls, that hero withdraws from the fight badly wounded and returns for the next mission."
 msgstr ""
 
@@ -3604,7 +3604,6 @@ msgstr ""
 
 #. [objectives]
 #: scenarios/dark_force_rising/07_the_dark_force.cfg:242
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:127
 msgid "Lose no units"
 msgstr ""
 
@@ -5348,67 +5347,72 @@ msgid "That settles $sw_tlc02_traitor_name|'s account. The bounty is paid."
 msgstr ""
 
 #. [part]
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:28
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:54
 msgid "Leia's twins, Jacen and Jaina, were born in the Imperial Palace on Coruscant, behind more guards than any children in the galaxy."
 msgstr ""
 
 #. [part]
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:32
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:58
 msgid "It was not enough. On a night when half the guard was at the orbital defenses, Imperial infiltrators came through the service corridors."
 msgstr ""
 
 #. [side]: id=sw_hero_leia, type=sw_hero_leia
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:43
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:69
 msgid "Palace Guard"
 msgstr ""
 
 #. [side]
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:59
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:85
 msgid "Imperial Infiltrators"
 msgstr ""
 
 #. [label]
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:103
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:129
 msgid "Nursery"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:108
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:134
 msgid "Defeat every infiltrator (they come in three groups; the last arrives on turn 7)"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:112
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:138
 msgid "An infiltrator reaches the nursery"
 msgstr ""
 
 #. [note]
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:125
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:151
 msgid "The Noghri now guard the Lady Vader: Noghri Commandos can be recruited."
 msgstr ""
 
+#. [objectives]
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:153
+msgid "Keep every infiltrator out of the nursery wing (3 hexes around it)"
+msgstr ""
+
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:135
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:161
 msgid "My lady. Movement in the service corridors. Not palace staff. They move the way we were trained to move."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:139
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:165
 msgid "They're after the twins. Chewie, the nursery door. Khabarakh, find them before they find us."
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:190
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:216
 msgid "No!"
 msgstr ""
 
 #. [message]: speaker=sw_hero_leia
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:219
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:245
 msgid "That's all of them. Han is going to hear about this the moment he lands, and then he'll want to go to Wayland too."
 msgstr ""
 
 #. [message]: speaker=sw_hero_khabarakh
-#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:223
+#: scenarios/the_last_command/03_the_palace_infiltrators.cfg:249
 msgid "Then we will all go, my lady. The Noghri have a debt to pay at Mount Tantiss."
 msgstr ""
 
