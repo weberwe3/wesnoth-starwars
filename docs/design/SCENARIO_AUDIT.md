@@ -84,7 +84,7 @@ for the objective unit against the turn limit.
 
 \*The Dark Force's 2.80 counted the neutral derelicts as enemy strength, a
 bug in the report tool that is now fixed. The score is for the version on
-`main`; PR #434 (open) reworks this mission.
+`main` before PR #434, which reworks this mission and was merged on 2026-10-17.
 
 ### The Last Command (`CAMPAIGN_STAR_WARS_THE_LAST_COMMAND`)
 

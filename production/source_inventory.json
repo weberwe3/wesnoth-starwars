@@ -10535,7 +10535,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/07_the_dark_force.cfg",
-      "sha256": "73436b8625caf39193d20a6672f144ee88b0d9c2cf6b7ae8588c787e8e803041"
+      "sha256": "3afd0adf6cf4bddcdc748565c22c327bfac3937a4b43810aefd47f5f2c143e61"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/scenarios/dark_force_rising/08_aboard_the_katana.cfg",
@@ -10631,11 +10631,11 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/00_sw_specials.cfg",
-      "sha256": "3098a07c5738c11a0aeb14d2db4f35536aa565c2a70203dfed13bdeb82644da9"
+      "sha256": "3f1705ddb3f9c0eec21d12e3281c7191a4f546a546260251e5ac3ae787cd66be"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/dfr_units.cfg",
-      "sha256": "5490560787ef6d9245a4e984248df078be6f11e1ff30497200c126edd5fa03fa"
+      "sha256": "156a7bbcc4dfd22b50ed53da8f09b25af3a36f61d18c156aa69782e9dd099206"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/heroes.cfg",
@@ -10647,23 +10647,23 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_heroes.cfg",
-      "sha256": "6d4d02b8736a22dcb3ca5face75d6b7064c45830937c241e0e42d91257ff2bc6"
+      "sha256": "b97eff907dc33921042e4e91924dad6714c066ceba4e69f4378f7b096d524ec8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_imperial.cfg",
-      "sha256": "a2ab58762891070967117f3f1d47699bb7c9b85984a27208de833091eeeb43e6"
+      "sha256": "33caead008147dfd97dccbd0a2a4f50a61365a82e179559832f784d137810566"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_new_republic.cfg",
-      "sha256": "0da225e406fe1b2fd83ea61a69dc3f4e997d9ec42ac4466b0922dd488846cb27"
+      "sha256": "343abcf69cbc3d098453981152360bc9d8fdaa5798f25afcb85c2a437000a435"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_smugglers.cfg",
-      "sha256": "4cbc490a15f6bde4dff3d97b1a730c42e6e6642a8e3915dab604fe705cfe56f9"
+      "sha256": "960e15d65554692df9b5df483399affb1a9f47d6a9944e1a5678d7edd458e895"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/hte_space.cfg",
-      "sha256": "ae6f4dbe3cd25e85f267fadf84839cfc622b56e11377d09b9d4a51fd12274dd4"
+      "sha256": "a51af485bef0e2d0c23e6012cc61d6ea13478c600816c61862ce8e881a13a574"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/infantry.cfg",
@@ -10675,7 +10675,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/tlc_units.cfg",
-      "sha256": "c90cae3ca4dbfe6bc5b0463197b58091b66b902704de67e618a83b1d18536c62"
+      "sha256": "48b7e4176614d2298377587c194732204b7fe2312d47b602f785d3bf16a8fb50"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/units/vehicles.cfg",
@@ -10683,7 +10683,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "d40c33fd86e44f97efa8a0e1bc97c5ed7383fd370aff2983ca6c348bc50e7dd8"
+      "sha256": "ce2ab409dc4b94dfcfd22eae79aae5028b43003323909ddeff664f6ddb8ae40e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10715,7 +10715,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua",
-      "sha256": "5b8f98ef8f5dc86e59f32dd5492187697931e9e656c64bb7347b0ecee5239a85"
+      "sha256": "8a95db6e0c0e78a830d58b4c2aa384e8acf2588b6446a966dfdcd3d3c06568c1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_bonus.lua",
@@ -10727,7 +10727,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_core.lua",
-      "sha256": "a00b3d25af8e996b4c28399025600d283212e68e99d226496bc176c424cf8e0b"
+      "sha256": "78b99df0aaee49edf96d65a41b460cedf319b583d56d6a59064dced86152e3b2"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_debrief.lua",
@@ -10743,7 +10743,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_force.lua",
-      "sha256": "cb25ea23ff0fe9ec83f813eaae8a733f839176ef87d8825b966b69ca4df462b3"
+      "sha256": "1ead5add3bb08897c62c287b004acd8e58539273fa25136bcb07ae195ccc3e96"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_logistics.lua",
@@ -10755,7 +10755,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_overwatch.lua",
-      "sha256": "df6e95a180c77457c2bff88e23b34755cdd082e9327acb320e5fec4e3a39fdaf"
+      "sha256": "45cb1a90d908917fc5c22ad7c3e0830e01274ad753d4b04bb49afb58309fbdff"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_range.lua",
@@ -10775,11 +10775,15 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "c94905eeb5b05ce34423555797a74a0069dea0c36ddde30da3df74d85cc754c2"
+      "sha256": "1107005190fea9483ec707eef43593f5ce0470a7707963719bf3ed822dd00f6f"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua",
       "sha256": "d4aad4eb5c8b44b0747513892e88472eec3c4a5d922f11b31c8d47235cbaa68f"
+    },
+    {
+      "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_xp.lua",
+      "sha256": "997c5975ccc454c7ca95a491f474d2fea9a56df7a18c28927ef89a421d6a34a5"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/tests/gameplay-contracts.json",
@@ -12063,19 +12067,19 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank2/move-1.png",
-      "sha256": "ca81608be5067fdadf1afaa90d5a76ec9ac57d7b6f9f8b46e2d8297abcd72a49"
+      "sha256": "798c0b8d3d8e391a08bce3b236bd865473eba8c03674f6006b8878e5cbf40e90"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank2/move-2.png",
-      "sha256": "ca34a2a053dcb140dd7c345b2a30154f6a0116fc70f0461807024ccab59ad2e6"
+      "sha256": "da625d17b4cb1f7b93d33c3be597250ab2053b48294d534ab2c2b4eb5683bb46"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank2/move-3.png",
-      "sha256": "3981a2dbfd468031f24b95780253460e7c6893754a63688abca77ccbdd2128be"
+      "sha256": "e5847be3f4b25102be28e0b87390f5a6a2b1ba35bb24ff4dc8c0930701057fe8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank2/move-4.png",
-      "sha256": "faac6f7f5d5af13114d3bf8a00965710cdb3c6abfad3e16f7af0bfd0627aea97"
+      "sha256": "845711ec80671ebed2d6fe31dbb491cc3b7d4a29981c1f3bf8913195e126b67a"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank2/ranged-1.png",
@@ -12119,19 +12123,19 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank3/move-1.png",
-      "sha256": "1742553f62f07a48f4c7700b299d6d7b435fdd5b73ad26075985a971ab685e9e"
+      "sha256": "452b40a70e230c8639ad31beeb737004fbc4e70e2fe4db3af3887d41ec7568b8"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank3/move-2.png",
-      "sha256": "f6e09967195b96b3113ce0852e6580dcc562fd6d6ba86b9b98c4440eb4f90cc3"
+      "sha256": "a3cba771f974a3667251af89f742696e70a79be0827e34785da61e6b3dd4f4a0"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank3/move-3.png",
-      "sha256": "6ba1fef2ed232d9d10c21c92322702f01ca47ecbabcecdabc386ec14b9d72987"
+      "sha256": "950399cb97fa528a70af5e762ab0afc793ee5ad2e8da55735c6e41f34517857b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank3/move-4.png",
-      "sha256": "c5ca48561c44e4336ca34e170018692333185a9b141643dc8e4f9885669354da"
+      "sha256": "079d6586d837e0030b8485ad02c2aff89eaac9fb3d0903bc437e0fc25201270c"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando-rank3/ranged-1.png",
@@ -12175,19 +12179,19 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando/move-1.png",
-      "sha256": "33ed5c1cd7645ce3e8e835dc4e666f55bfc025fc98253d390e53a3c42f75918e"
+      "sha256": "8c5744ea861ccde2526895b15fb860b798152d18f34a6700362c12080d106a35"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando/move-2.png",
-      "sha256": "28719d88c542eaf8bf847271f90ed5da88a188904054ced7e986083e005c0f17"
+      "sha256": "45f331b4eac5c305027b97a2be96c9c74c84a350973ece6638f1639cbaeb99be"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando/move-3.png",
-      "sha256": "378fee6eab21f56f05d2f5119e3a36935f5b2bf9b3122ec3e26793d19df4856f"
+      "sha256": "a9d0e34cefe2be1ce9e9a573a1332443c56705d5eef34ecc25414f9e018e938b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando/move-4.png",
-      "sha256": "369b3e30777b96eeb8f223e88c3db32158929806d7d2915686938fbaaf2932bf"
+      "sha256": "cb5996b8b9e7f46316a6bbe3e2403423d872d23b4af7d5debe9b58786366a80b"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/images/units/sw-hero-lando/ranged-1.png",
@@ -16743,7 +16747,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_03_jomark.map",
-      "sha256": "8b3a0c30b5ba4c88fc735ecd2565bd25e31af8e5a89c07ef8a83c79b39bc047f"
+      "sha256": "2a796ac88e3710498c0ce975e40677f13218a75791827e56153187b563b46cfe"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/maps/dfr_04_the_senators_men.map",

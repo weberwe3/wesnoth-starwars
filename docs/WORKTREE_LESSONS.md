@@ -1586,6 +1586,14 @@ the resulting files before tests and publication.
 - Evidence: with the fix Luke leaves the office with 5 moves; in throwaway engine runs (real side-2 AI, a greedy runner that cuts through blockers) he survived the first enemy turn at 38-44 HP, and in one run stood next to the shed with 38 HP on turn 3. The runs did not complete the mission end to end, and a human playthrough has not been done.
 - Prevention: objective hexes that a hero must step on and then leave should not be villages, or must restore movement; check remaining MP at the objective in an engine probe, not only route reachability (the sequence probe's route check ignores enemies).
 
+
+## 2026-10-16: Allies beside the attacker counted as flankers
+
+- Symptom (air systems suite, also failing on `main`): "allies beside the attacker do not flank" gave +20% instead of +0%.
+- Confirmed cause: the flanking special's WFL `where` clause had been made null-safe (2026-10-14) with `sw_dist = ... distance_between(sw_here, sw_from)`. The bindings of one `where` clause cannot see each other, so `sw_dist` was always 0. Every armed hostile unit adjacent to the target then counted except the attacker, including allies beside the attacker. Two specials sharing one id also do not add up, which matters once the tiers are split.
+- Resolution: compute `sw_dist` from `loc` and `other` directly, keeping the null guard. Give each +10% tier its own id. All flanking checks pass in the engine.
+- Prevention: in WFL, write each `where` binding only in terms of the formula's own context (`self`, `loc`, `other`), never another binding of the same clause. Keep a negative engine check (a case that must not trigger) next to every positive one.
+
 ## 2026-10-17: Plugin closures must not carry tables of functions or nil upvalues
 
 - Symptom: after adding per-scenario design checks to `campaign_sequence_plugin.lua`, the first run printed `win_script_error execute refused: cannot serialize function with upvalue CHECKS = {…}`; after looking the check up per scenario, every campaign then crashed with SIGSEGV (exit -11) right after its first scenario without a check.

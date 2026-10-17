@@ -86,7 +86,13 @@ def m03() -> HexMap:
     m.disc((15, 10), 6, "Wo")
     m.disc((15, 10), 2, "Gg")
     m.set(15, 10, "Gg^Vh")
-    m.path([(9, 10), (13, 10)], "Ww^Bsb\\")
+    # Causeway from the west shore (8,8) to the island (13,11). A bridge
+    # piece joins two hexes along one hex axis, so a uniform bridge must run
+    # along a straight diagonal: each hex is the south-east neighbour of the
+    # last (odd x: (x+1, y); even x: (x+1, y+1)). A run along one map row
+    # zigzags between the / and \ axes, so all-\ pieces there broke apart.
+    for x, y in ((9, 9), (10, 9), (11, 10), (12, 10)):
+        m.set(x, y, "Ww^Bsb\\")
     villages = dict(village_n=(13, 2), village_w=(4, 14), village_s=(18, 19))
     for v in villages.values():
         m.disc(v, 1, "Gg")

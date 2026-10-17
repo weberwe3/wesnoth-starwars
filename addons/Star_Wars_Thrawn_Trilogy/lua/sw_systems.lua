@@ -57,10 +57,11 @@ local debrief = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_debrie
 local command = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_command.lua")
 local move_sound = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_move_sound.lua")
 local logistics = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_logistics.lua")
+local xp = wesnoth.require("~add-ons/Star_Wars_Thrawn_Trilogy/lua/sw_xp.lua")
 local T = wml.tag
 local _ = wesnoth.textdomain("wesnoth-Star_Wars_Thrawn_Trilogy")
 
-sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips, bonus = bonus, debrief = debrief, command = command, move_sound = move_sound }
+sw_systems = { core = core, force = force, overwatch = overwatch, ew = ew, doctrine = doctrine, air = air, rank = rank, alert = alert, range = range, achievements = achievements, tips = tips, bonus = bonus, debrief = debrief, command = command, move_sound = move_sound, xp = xp }
 
 -- Keep command registration in this dynamically loaded file: existing saves
 -- contain an older expansion of SW_TACTICAL_SYSTEMS, but still call this loader.
@@ -232,7 +233,7 @@ on("unit placed", "sw_sys_unit_placed", function()
 		-- Reinforcements arriving after the alarm come in alert.
 		u.variables.sw_alert_state = acfg.alarm and "alert" or "unaware"
 		-- A set facing, not the engine's unsynced random one (sw_alert.lua).
-		alert.face_nearest_intruder(u)
+		alert.face_nearest_intruder(u, true)
 	end
 	doctrine.on_unit_placed(u)
 	if mover_matters(u) then force.refresh_fields() end
@@ -555,6 +556,9 @@ on("start", "sw_command_start", command.on_start)
 -- One victory handler, in order: the bonus is decided, then the debrief reports it.
 on("victory", "sw_bonus_victory", function() bonus.on_victory() debrief.on_victory() end)
 on("die", "sw_bonus_die", function() bonus.on_die() debrief.on_die() end)
+
+-- Kill experience scaled by the victim's toughness (lua/sw_xp.lua).
+on("die", "sw_xp_die", xp.on_die)
 
 -- A hero withdraws (SW_HERO_WITHDRAWS, SW_HERO_WITHDRAWS_TEMPORARY).
 function sw_systems.on_hero_withdraw(id)

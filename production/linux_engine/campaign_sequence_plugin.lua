@@ -106,11 +106,15 @@ local WIN = {
     wesnoth.wml_actions.unit{side = 1, id = "sw_hero_mara", type = "sw_hero_mara", x = 24, y = 9}
     move("sw_hero_luke", 26, 9)
   end,
+  -- Docking takes a turn: three shuttles dock, then the start-of-turn
+  -- check (the scenario's side turn event) secures the ships.
   sw_dfr_07_the_dark_force = function()
-    local shuttle = wesnoth.units.find_on_map{side = 1, type = "sw_unit_nr_boarding_shuttle"}[1]
-    for _, hex in ipairs{{10, 9}, {11, 5}, {11, 14}} do
-      move(shuttle.id, hex[1], hex[2])
+    for i, hex in ipairs{{10, 9}, {11, 5}, {11, 14}} do
+      local id = "seq_dfr07_shuttle_" .. i
+      wesnoth.wml_actions.unit{side = 1, type = "sw_unit_nr_boarding_shuttle", id = id, x = 4, y = 6 + i}
+      move(id, hex[1], hex[2])
     end
+    fire("side turn")
   end,
   sw_dfr_08_aboard_the_katana = function()
     kill_id("sw_dfr08_clone_officer")

@@ -1917,3 +1917,30 @@ Full campaign soak, careful player, one run of all 30 missions on `main` and on 
 Single runs vary a lot. Space missions won sooner. Among ground missions, The Noghri Prisoner was newly won and The Cloning Vats was lost at the turn limit; with one run each, both are within normal spread.
 
 The air systems suite's flanking check ("allies beside the attacker do not flank") and its main-phase timeout fail the same way on unchanged `main`. They are not caused by this change.
+
+## The Dark Force: boarding takes a turn (2026-10-16)
+
+**Cause (owner report).** Three Dreadnaughts were secured before the Imperial assault shuttles had moved once. Several things combined:
+
+- Docking was instant: a shuttle claimed a ship by ending a move next to it.
+- The player started with a shuttle already out, and shuttles cost 16 gold.
+- The Imperials recruited their shuttles on turn 1, so those only began to move on turn 2.
+- No Imperial unit could reach the western derelicts in time to interfere.
+
+**Update.**
+
+- **Docking takes a turn.** A shuttle that ends its move next to a free derelict starts docking. The ship joins that side at the start of the side's next turn, but only if the shuttle is still alive and alongside. Otherwise the docking is broken off.
+- **A TIE picket patrols the derelicts** from the start: 2 TIE fighters on Easy, 3 on Normal, and 3 TIE fighters plus 2 Interceptors on Hard.
+- **An Imperial boarding party is already under way:** 1, 2 or 3 assault shuttles by difficulty, with escorts. They are two moves from the eastern derelicts, so they dock on Imperial turn 2 and secure on turn 3. Luke can reach them on turn 2, and A-wings recruited on turn 1 on turn 3.
+- **Imperial shuttles head for the nearest free derelict** that no other shuttle is already heading for, and a crew that secures a ship moves on to the next.
+
+**Impact.** The quickest possible win is now on the player's turn 3, and only if the docking shuttles survive the picket. The player can:
+
+- escort the shuttles;
+- clear the picket first;
+- send A-wings past the escorts to break up the Imperial dockings;
+- or race for the far ships.
+
+Securing ships for the Empire is now a real threat, since captured Dreadnaughts fire on the player.
+
+The AI soak cannot rate this mission: its player does not understand docking, and it lost before the change as well (turns 4 and 14). The campaign sequence and the soak runs show no errors.
