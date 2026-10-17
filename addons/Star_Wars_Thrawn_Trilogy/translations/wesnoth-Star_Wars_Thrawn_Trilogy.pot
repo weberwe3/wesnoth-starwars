@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-17 13:21 UTC\n"
+"POT-Creation-Date: 2026-10-17 13:23 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -660,7 +660,7 @@ msgstr ""
 #. [lua]: ew.decoy_menu_command
 #. [lua]: force.open_menu
 #: lua/sw_air.lua:602
-#: lua/sw_alert.lua:420
+#: lua/sw_alert.lua:426
 #: lua/sw_ew.lua:957
 #: lua/sw_force.lua:723
 msgid "Cancel"
@@ -691,12 +691,12 @@ msgid "none available"
 msgstr ""
 
 #. [lua]: alert.takedown
-#: lua/sw_alert.lua:391
+#: lua/sw_alert.lua:397
 msgid "knocked out"
 msgstr ""
 
 #. [lua]: alert.takedown_menu_command
-#: lua/sw_alert.lua:422
+#: lua/sw_alert.lua:428
 msgid "Knock out an unaware guard next to you. It uses your attack. Any other guard who can see this spot will raise the alarm."
 msgstr ""
 
@@ -1750,8 +1750,10 @@ msgid "already on overwatch"
 msgstr ""
 
 #. [lua]: ow.enter
+#. [lua]: ow.choose_to_fire
 #. [dummy]: id=sw_ability_overwatch
 #: lua/sw_overwatch.lua:145
+#: lua/sw_overwatch.lua:289
 #: units/dfr_units.cfg:91
 #: units/dfr_units.cfg:317
 #: units/dfr_units.cfg:544
@@ -1848,6 +1850,21 @@ msgstr ""
 #. [lua]: ow.resolve
 #: lua/sw_overwatch.lua:268
 msgid "miss"
+msgstr ""
+
+#. [lua]: ow.choose_to_fire
+#: lua/sw_overwatch.lua:293
+msgid "is hidden from the enemy, and has a clear shot at"
+msgstr ""
+
+#. [lua]: ow.choose_to_fire
+#: lua/sw_overwatch.lua:294
+msgid "Opening fire reveals its position until its next turn. Open fire?"
+msgstr ""
+
+#. [lua]: ow.choose_to_fire
+#: lua/sw_overwatch.lua:296
+msgid "Reaction fire"
 msgstr ""
 
 #. [variation]: race=sw_noghri, gender=male
@@ -9481,7 +9498,7 @@ msgstr ""
 msgid ""
 "A soldier that could still attack but ends its turn without attacking goes on <b>overwatch</b> automatically. Units that cannot attack this turn (they attacked, used their action, are dazed or unaware) do not. To take it earlier, right-click the soldier and choose <b>Overwatch</b>: it gives up this turn's attack and stops moving. A gold crosshair marks the unit, with one bar per reaction left. Until its next turn, an enemy that moves within its range and in plain sight draws reaction fire. The moving unit stops when fired on but keeps its remaining moves.\n"
 "\n"
-"Hidden units cannot be targeted. Each watcher fires at most once per enemy move order. Overwatch ends at the start of its side's next turn. Enemy units go on overwatch the same way when they end a turn without attacking."
+"Hidden units cannot be targeted. If one of your watchers is itself hidden from the enemy (cloaked, in stealth, or unseen), you are asked before it fires: opening fire reveals it until its next turn, and holding fire keeps it hidden without spending the reaction. Each watcher fires at most once per enemy move order. Overwatch ends at the start of its side's next turn. Enemy units go on overwatch the same way when they end a turn without attacking."
 msgstr ""
 
 #. [message]: speaker=narrator

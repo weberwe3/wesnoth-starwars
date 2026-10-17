@@ -12,7 +12,7 @@ local PHASE = "main"
 local STEPS = {
   "slicer_recruit_setup", "slicer_recruit_check", "slicer_ew", "profiles", "thresholds", "jamming", "sweep", "transitions", "real_move", "decoys", "terrain_env",
   "reveal", "leakage", "menu_show_if", "doctrine_gain", "doctrine_control", "doctrine_effects", "check_doctrine_effects",
-  "integration", "counter_deployment", "force_sense", "carryover", "ai_ew_selection", "ai_ew_guards", "ai_ew_decoys", "ai_turn", "check_ai_turn", "prepare_save",
+  "integration", "counter_deployment", "force_sense", "carryover", "ai_ew_selection", "ai_ew_guards", "ai_ew_decoys", "hidden_watcher", "ai_turn", "check_ai_turn", "prepare_save",
 }
 
 local function plugin(events, context, info)
@@ -954,6 +954,28 @@ local function plugin(events, context, info)
       swt.mem.ai_pre = ew.state_for(IMP, "t_p_cloak")
       wesnoth.sides[2].controller = "ai"
     end
+    -- A hidden watcher on overwatch (owner direction 2026-10-16): a human
+    -- player is asked before it gives itself away; an AI side fires at once
+    -- (ow.choose_to_fire's AI default) and the shot uncovers the watcher.
+    function S.hidden_watcher()
+      swt.clear()
+      local w = swt.place("sw_unit_im_stormtrooper", 3, 10, 8, "t_hw",
+        { cloak = 9, signature = 0, sensor = 0, sensor_range = 0 })
+      swt.refresh()
+      check("the cloaked watcher is hidden from the player", not swt.seen("t_hw", 1))
+      check("watcher enters overwatch", ow.enter(u("t_hw")))
+      local mover = swt.place("sw_unit_nr_trooper", 1, 6, 8, "t_hw_mover")
+      check("the watcher is unseen by the mover's side", ow.unseen_by(u("t_hw"), 1))
+      check("an AI watcher's choice defaults to fire", ow.choose_to_fire(u("t_hw"), mover))
+      local hp = mover.hitpoints
+      swt.move_to("t_hw_mover", 8, 8)
+      local watcher = u("t_hw")
+      check("the AI watcher fired (one reaction spent)", watcher and watcher.variables.sw_ow_shots == 0,
+        watcher and watcher.variables.sw_ow_shots)
+      check("firing uncovered the hidden watcher until its next turn", watcher and watcher.status.uncovered == true)
+      check("and the mover drew fire", u("t_hw_mover") == nil or u("t_hw_mover").hitpoints <= hp)
+    end
+
     function S.check_ai_turn()
       check("AI turn with sensors and doctrine completed without script errors", true)
       check("AI had an unidentified contact before its turn", swt.mem.ai_pre ~= nil and swt.mem.ai_pre >= ew.CONTACT and swt.mem.ai_pre < ew.FULL,

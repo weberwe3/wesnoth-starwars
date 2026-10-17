@@ -10677,7 +10677,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_macros.cfg",
-      "sha256": "ae0657fd90624d65c9e37a70571d3b7d13222aff9a78eb4cd8b47a5632651dde"
+      "sha256": "a69c77c6a6955ffa780457562e11e2d9241df97501479dda620694f3cb12cab1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/utils/hte_terrain.cfg",
@@ -10709,7 +10709,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_alert.lua",
-      "sha256": "5b8f98ef8f5dc86e59f32dd5492187697931e9e656c64bb7347b0ecee5239a85"
+      "sha256": "8a95db6e0c0e78a830d58b4c2aa384e8acf2588b6446a966dfdcd3d3c06568c1"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_bonus.lua",
@@ -10749,7 +10749,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_overwatch.lua",
-      "sha256": "df6e95a180c77457c2bff88e23b34755cdd082e9327acb320e5fec4e3a39fdaf"
+      "sha256": "45cb1a90d908917fc5c22ad7c3e0830e01274ad753d4b04bb49afb58309fbdff"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_range.lua",
@@ -10769,7 +10769,7 @@
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_systems.lua",
-      "sha256": "c1d2a8dbc1c0e9f150e6122a0ab03f1c95a081155ed5fdc1057e185e9dc7c173"
+      "sha256": "e94bae3736b8fe4d26889e778c0cc707d8e9c78b469421838c1d5ec26f214b5e"
     },
     {
       "path": "addons/Star_Wars_Thrawn_Trilogy/lua/sw_tips.lua",
