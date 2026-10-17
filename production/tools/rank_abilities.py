@@ -413,12 +413,35 @@ def effects_for(unit: dict, key: str, weapon: str | None, expanded: list[dict]) 
                  node("set_specials", {"mode": "append"}, special))]
 
 
+# What each rank ability does, for the unit's help page: the ability's own
+# description without its opening flavour sentence. "effects" entries have no
+# description of their own.
+EFFECT_TEXT = {
+    "field_surgery": "Heals adjacent allies 8 HP each turn instead of 4.",
+}
+
+
+def effect_text(key: str) -> str:
+    if key in EFFECT_TEXT:
+        return EFFECT_TEXT[key]
+    built = CATALOG[key][2]()
+    text = str(built[1]["description"])
+    _flavour, _sep, rules = text.partition(". ")
+    return rules or text
+
+
 def description_suffix(unit_id: str) -> str:
+    """Rank abilities listed with what they do, one line each."""
     ranks = ASSIGNMENTS.get(unit_id)
     if not ranks:
         return ""
-    parts = [f"{RANK_LABELS[n]}: {CATALOG[ranks[n][0]][0].lower()}" for n in sorted(ranks)]
-    return "\n\nRank abilities — " + "; ".join(parts) + "."
+    lines = []
+    for n in sorted(ranks):
+        key, weapon = ranks[n]
+        name = CATALOG[key][0]
+        where = f" ({weapon.replace('_', ' ')})" if weapon else ""
+        lines.append(f"• {RANK_LABELS[n]} — {name}{where}: {effect_text(key)}")
+    return "\n\nRank abilities, gained as the unit rises in rank:\n" + "\n".join(lines)
 
 
 # --- Lua output --------------------------------------------------------------
