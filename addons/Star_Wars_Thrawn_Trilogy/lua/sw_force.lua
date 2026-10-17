@@ -32,6 +32,7 @@ force.FP_ICON_MAX = 10
 --   valid(caster, target, power): extra target filter (true or false, reason)
 --   apply(caster, target, power): the effect
 --   passive: not shown in the menu (used reactively, e.g. deflection)
+--   description: full text, shown when picking a target; short: the menu line
 force.powers = {}
 force.power_order = {}
 
@@ -336,6 +337,7 @@ end
 force.register_power("push", {
 	name = _ "Force Push", cost = 2, range = 2, cooldown = 1, target = "enemy", needs_action = true,
 	description = _ "Hurl an enemy one hex straight away from you. If a unit, a wall or the edge of the battlefield is in the way, it slams into it for 6 impact damage and stays where it is.",
+	short = _ "Push an enemy 1 hex away; 6 damage if it hits something.",
 	slam_damage = 6,
 	apply = function(caster, target, power)
 		local dir = wesnoth.map.get_relative_dir({ caster.x, caster.y }, { target.x, target.y })
@@ -353,6 +355,7 @@ force.register_power("push", {
 force.register_power("pull", {
 	name = _ "Force Pull", cost = 2, range = 3, cooldown = 1, target = "enemy", needs_action = true,
 	description = _ "Drag an enemy one hex straight toward you. It must be at least two hexes away. Nothing happens if the way is blocked.",
+	short = _ "Pull an enemy 2+ hexes away 1 hex toward you.",
 	valid = function(caster, target)
 		return wesnoth.map.distance_between(caster.x, caster.y, target.x, target.y) > 1
 	end,
@@ -365,6 +368,7 @@ force.register_power("pull", {
 force.register_power("speed", {
 	name = _ "Force Speed", cost = 2, range = 0, target = "self", per_turn = true, bonus_moves = 2,
 	description = _ "Gain 2 extra movement points right away. They can be used until the end of this turn.",
+	short = _ "+2 movement for the rest of this turn.",
 	apply = function(caster, _target, power)
 		caster.moves = caster.moves + power.bonus_moves
 		core.float(caster.x, caster.y, _ "Force speed", "#a8c8ff")
@@ -374,6 +378,7 @@ force.register_power("speed", {
 force.register_power("sense", {
 	name = _ "Force Sense", cost = 1, range = 0, target = "self", per_turn = true, radius = 4, feel_radius = 8,
 	description = _ "Reveal every living enemy within 4 hexes until your next turn, even in fog or deep forest; hiding creatures such as Noghri lose their stealth. Living presences up to 8 hexes away are marked on the map as unknown contacts. Droids, technological cloaking and anything inside a ysalamiri field cannot be sensed.",
+	short = _ "Reveal living enemies within 4 hexes until your next turn.",
 	apply = function(caster, _target, power)
 		local team = core.team_key(caster.side)
 		local team_sides = {}
@@ -449,6 +454,7 @@ force.SENSE_REVEALS = { sw_ability_noghri_stealth = true }
 force.register_power("mind_trick", {
 	name = _ "Mind Trick", cost = 3, range = 2, cooldown = 2, target = "enemy", needs_action = true, max_level = 2,
 	description = _ "Cloud a weak-minded enemy: on its next turn it cannot move or attack, and it loses overwatch. Leaders, Force users and units above level 2 resist.",
+	short = _ "A weak-minded enemy skips its next turn.",
 	valid = function(caster, target, power)
 		return target.level <= power.max_level and not target.canrecruit and not force.is_sensitive(target)
 	end,
@@ -465,6 +471,7 @@ force.register_power("choke", {
 	name = _ "Force Choke", cost = 3, range = 3, cooldown = 1, target = "enemy", needs_action = true, damage = 10,
 	alignment = "dark",
 	description = _ "Crush an enemy's throat from a distance: 10 arcane damage (dark side).",
+	short = _ "10 arcane damage to an enemy at range.",
 	apply = function(caster, target, power)
 		wesnoth.wml_actions.harm_unit{ T.filter{ id = target.id }, T.filter_second{ id = caster.id },
 			amount = power.damage, damage_type = "arcane", kill = true, fire_event = true,
@@ -475,6 +482,7 @@ force.register_power("choke", {
 force.register_power("deflection", {
 	name = _ "Blaster Deflection", cost = 1, target = "self", passive = true,
 	description = _ "Works by itself: turns aside an overwatch volley aimed at this unit, spending 1 Force Point each time. Fails inside a ysalamiri field.",
+	short = _ "Automatic: turns aside an overwatch volley.",
 	apply = function() end,
 })
 
@@ -647,12 +655,12 @@ function force.power_summary(caster, power_id, cfg)
 		end
 		local cooldown = force.power_value(caster, cfg, power, "cooldown")
 		if cooldown and cooldown > 0 then
-			table.insert(parts, tostring(_ "recovers in") .. " " .. cooldown .. " " .. tostring(_ "turn(s)"))
+			table.insert(parts, tostring(_ "cooldown") .. " " .. cooldown)
 		end
 		if power.per_turn then table.insert(parts, tostring(_ "once per turn")) end
-		if power.needs_action then table.insert(parts, tostring(_ "uses your attack")) end
+		if power.needs_action then table.insert(parts, tostring(_ "uses attack")) end
 	end
-	return tostring(power.description) .. "\n<small>" .. table.concat(parts, " · ") .. "</small>"
+	return tostring(power.short or power.description) .. "\n<small>" .. table.concat(parts, " · ") .. "</small>"
 end
 
 local function power_known(cfg, id)
@@ -681,7 +689,7 @@ function force.open_menu()
 			else
 				ok, why = force.can_use(caster, id, cfg)
 				label = tostring(power.name) .. " (" .. force.power_value(caster, cfg, power, "cost") .. " FP)"
-				if ok and #force.valid_targets(caster, id, cfg) == 0 then ok, why = false, _ "no valid target in range" end
+				if ok and #force.valid_targets(caster, id, cfg) == 0 then ok, why = false, _ "no target" end
 				if not ok then label = "<span color='#888888'>" .. label .. " — " .. tostring(why) .. "</span>" end
 			end
 			table.insert(options, { label = label, description = force.power_summary(caster, id, cfg) })

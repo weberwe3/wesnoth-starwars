@@ -748,14 +748,13 @@ def magazine_special(volleys: int) -> str:
         f"    volleys={volleys}\n"
         f"    name= _ \"{volleys} volleys\"\n"
         f"    description= _ \"Limited ammunition: this weapon can be used in {volleys} fights per mission, attacking "
-        "or firing back. The magazine is refilled between missions.\"\n"
+        "or firing back. Once they are spent the weapon cannot be used until the magazine is refilled for the next "
+        "mission.\"\n"
         "[/dummy]\n"
+        # Unnamed: the help lists every named special, so "magazine empty"
+        # showed on every torpedo weapon. The volleys special explains it.
         "[disable]\n"
         "    id=sw_special_torpedoes_spent\n"
-        "    name= _ \"magazine empty\"\n"
-        "    name_inactive=\"\"\n"
-        "    description= _ \"No ordnance left until the next mission.\"\n"
-        "    description_inactive=\"\"\n"
         "    [filter_self]\n"
         "        [filter_wml]\n"
         "            [variables]\n"
@@ -1756,32 +1755,17 @@ AIMED_BONUS = 20
 
 
 def range_special(name: str, max_range: int) -> str:
-    if max_range <= 1:
-        return (
-            "[chance_to_hit]\n"
-            "    id=sw_special_range\n"
-            "    name= _ \"range 1\"\n"
-            "    description= _ \"Close range: only adjacent targets.\"\n"
-            "    add=0\n"
-            "    cumulative=yes\n"
-            "[/chance_to_hit]"
-        )
-    if name in NO_FALLOFF:
-        return (
-            "[chance_to_hit]\n"
-            "    id=sw_special_range\n"
-            f"    name= _ \"range {max_range}, guided\"\n"
-            f"    description= _ \"Reaches targets up to {max_range} hexes away. Guided: no accuracy lost with distance.\"\n"
-            "    add=0\n"
-            "    cumulative=yes\n"
-            "[/chance_to_hit]"
-        )
+    """The range falloff. Unnamed, so it is not listed with the weapon's
+    specials: the help's Range column and the attack dialog already show the
+    reach (min_range/max_range) and the chance to hit, and long special lists
+    overflowed the help's attack table. The field manual's "Weapon ranges"
+    topic explains the falloff."""
+    if max_range <= 1 or name in NO_FALLOFF:
+        # Adjacent-only or guided: no falloff, nothing to apply.
+        return ""
     return (
         "[chance_to_hit]\n"
         "    id=sw_special_range\n"
-        f"    name= _ \"range {max_range}\"\n"
-        f"    description= _ \"Reaches targets up to {max_range} hexes away. Each hex beyond the first lowers the "
-        f"chance to hit by {RANGE_FALLOFF}%.\"\n"
         # Special formulas see the combatants as attacker and defender.
         f"    sub=\"({RANGE_FALLOFF} * (distance_between(attacker.loc, defender.loc) - 1))\"\n"
         "    cumulative=yes\n"
@@ -1817,8 +1801,12 @@ FLANKERS_WFL = (
 # found null" in the log (seen 2026-10-14): such checks are simply not flanked.
 # The AI's hypothetical attacks can also leave a hex unset, so both hexes
 # are checked before use.
+# A where clause's bindings cannot see each other, so sw_dist is computed from
+# loc and other directly: written in terms of sw_here and sw_from it was always
+# 0, and allies beside the attacker counted as flankers (systems test,
+# 2026-10-16).
 FLANKERS_WHERE = ("where sw_target = self, sw_here = loc, sw_from = if(other = null(), null(), other.loc), "
-                  "sw_dist = if(sw_from = null() or sw_here = null(), 0, distance_between(sw_here, sw_from))")
+                  "sw_dist = if(other = null() or loc = null(), 0, distance_between(loc, other.loc))")
 
 
 def flanking_specials_wml() -> str:
@@ -1826,22 +1814,26 @@ def flanking_specials_wml() -> str:
     tiers = []
     steps = FLANK_MAX // FLANK_BONUS
     for n in range(1, steps + 1):
-        bonus = n * FLANK_BONUS
-        test = f"= {n}" if n < steps else f">= {n}"
+        # Tier n adds FLANK_BONUS when n or more flankers stand behind the
+        # target. The tiers are unnamed: the help lists every named special as
+        # active (src/units/abilities.cpp special_unit_matches passes every
+        # filter when listing), so "flanking" sat on every weapon and long
+        # special lists overflowed the help's attack table. Units list it
+        # once, as the flanking ability (flanking_ability), and the attack
+        # dialog's chance to hit includes the bonus.
+        name = f"        # +{FLANK_BONUS}% with {n} or more flankers.\n"
+        # Each tier needs its own id: specials sharing an id do not add up
+        # (engine test: two flankers gave +10%, not +20%).
+        tier_id = "sw_special_flanking" if n == 1 else f"sw_special_flanking_{n}"
         tiers.append(
             "    [chance_to_hit]\n"
-            "        id=sw_special_flanking\n"
-            f"        name= _ \"flanking +{bonus}%\"\n"
-            "        # Empty inactive name and description: shown only while it applies.\n"
-            "        name_inactive=\"\"\n"
-            f"        description= _ \"The target is flanked: allies stand on its far side. +{FLANK_BONUS}% chance to "
-            f"hit for each, up to +{FLANK_MAX}%.\"\n"
-            "        description_inactive=\"\"\n"
-            f"        add={bonus}\n"
+            f"        id={tier_id}\n"
+            + name +
+            f"        add={FLANK_BONUS}\n"
             "        cumulative=yes\n"
             "        active_on=offense\n"
             "        [filter_opponent]\n"
-            f"            formula=\"if(sw_from = null() or sw_here = null(), false, {FLANKERS_WFL} {test}) {FLANKERS_WHERE}\"\n"
+            f"            formula=\"if(sw_from = null() or sw_here = null(), false, {FLANKERS_WFL} >= {n}) {FLANKERS_WHERE}\"\n"
             "        [/filter_opponent]\n"
             "    [/chance_to_hit]\n"
         )
@@ -1855,8 +1847,8 @@ def flanking_specials_wml() -> str:
         "# target that stands adjacent to it on its far side -- farther from the\n"
         "# attacker than the target is (for a melee attack, the three hexes behind\n"
         "# the target). At most +20%. Petrified and unarmed units do not count, and\n"
-        "# it never applies to return fire. One special per tier, so the attack\n"
-        "# dialog names the exact bonus, and neither is listed when inactive.\n"
+        "# it never applies to return fire. One unnamed special per +10% tier; units\n"
+        "# list flanking once as an ability.\n"
         "#define SW_SPECIAL_FLANKING\n"
         + "".join(tiers)
         + "#enddef\n"
@@ -1864,11 +1856,24 @@ def flanking_specials_wml() -> str:
     )
 
 
+def flanking_ability() -> str:
+    """The flanking rule, listed once in the unit's abilities. The effect is
+    the weapon special SW_SPECIAL_FLANKING on every attack."""
+    return (
+        "[dummy]\n"
+        "    id=sw_ability_flanking\n"
+        "    name= _ \"flanking\"\n"
+        f"    description= _ \"When attacking, +{FLANK_BONUS}% chance to hit for each armed unit hostile to the target "
+        f"on its far side, up to +{FLANK_MAX}%. Never on return fire.\"\n"
+        "[/dummy]"
+    )
+
+
 def aimed_special() -> str:
     return (
         "[chance_to_hit]\n"
         "    id=sw_special_aimed\n"
-        "    name= _ \"aimed shot\"\n"
+        "    name= _ \"aimed\"\n"
         f"    description= _ \"Taking a moment to aim: one shot fewer, +{AIMED_BONUS}% chance to hit. Needs at least two "
         "hexes of distance (no time to aim at point-blank range) and can only be used when attacking.\"\n"
         f"    add={AIMED_BONUS}\n"
@@ -1914,7 +1919,9 @@ def attack_wml(a: dict, unit_slug: str, unit_id: str = "") -> str:
         lines.append(f"    max_range={a['max_range']}")
     blocks = [SPECIALS[sp] for sp in a["specials"]]
     if a["range"] == "ranged" and a.get("max_range"):
-        blocks.append(range_special(a.get("base", a["name"]), a["max_range"]))
+        falloff = range_special(a.get("base", a["name"]), a["max_range"])
+        if falloff:
+            blocks.append(falloff)
     if a.get("aimed"):
         blocks.append(aimed_special())
     blocks.append("{SW_SPECIAL_FLANKING}")
@@ -2178,7 +2185,8 @@ def unit_wml(u: dict, with_variations: bool = True) -> str:
         lines.append("    # it out of recruit lists.")
         lines.append("    do_not_list=yes")
     system_abilities = [x for x in (force_ability(u["id"]), overwatch_ability(u["attacks"]), ew_ability(u["id"]),
-                                    observer_ability(u["id"]), anti_air_ability(u["id"]), evasion_ability(u)) if x]
+                                    observer_ability(u["id"]), anti_air_ability(u["id"]), evasion_ability(u),
+                                    flanking_ability() if u["attacks"] else None) if x]
     if u["abilities"] or system_abilities:
         lines.append("    [abilities]")
         for ab in u["abilities"]:

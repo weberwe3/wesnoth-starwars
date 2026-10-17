@@ -65,12 +65,49 @@ end
 -- every multiplayer client. Returns the 1-based index, or 0 if dismissed.
 -- Each entry of labels is a string, or a table { label =, description =,
 -- image = } for an option with a second line of text and an icon.
+-- Word-wrap text to about `width` visible characters per line, keeping
+-- existing line breaks. Pango markup tags (<small>, <span ...>) do not count
+-- toward the width and are never split. [message] options show their label
+-- and description in list columns that do not wrap, so long text ran past
+-- the edge of the dialog.
+core.OPTION_WIDTH = 52
+function core.wrap(text, width)
+	width = width or core.OPTION_WIDTH
+	local out = {}
+	for line in (tostring(text) .. "\n"):gmatch("(.-)\n") do
+		local current, len = {}, 0
+		-- Split on spaces outside markup tags.
+		local words, buf, depth = {}, {}, 0
+		for ch in line:gmatch(".") do
+			if ch == "<" then depth = depth + 1 elseif ch == ">" then depth = math.max(0, depth - 1) end
+			if ch == " " and depth == 0 then
+				table.insert(words, table.concat(buf)); buf = {}
+			else
+				table.insert(buf, ch)
+			end
+		end
+		table.insert(words, table.concat(buf))
+		for _i, w in ipairs(words) do
+			local visible = utf8.len((w:gsub("<[^>]*>", ""))) or #w
+			if len > 0 and len + 1 + visible > width then
+				table.insert(out, table.concat(current, " "))
+				current, len = {}, 0
+			end
+			table.insert(current, w)
+			len = len + (len > 0 and 1 or 0) + visible
+		end
+		table.insert(out, table.concat(current, " "))
+	end
+	return table.concat(out, "\n")
+end
+
 function core.choose(caption, text, labels, image)
 	local options = {}
 	for i, entry in ipairs(labels) do
 		local opt = type(entry) == "table" and entry or { label = entry }
 		table.insert(options, T.option{
-			label = opt.label, description = opt.description, image = opt.image,
+			label = opt.label and core.wrap(opt.label, 36), image = opt.image,
+			description = opt.description and core.wrap(opt.description),
 			T.command{ T.set_variable{ name = "sw_systems_choice", value = i } },
 		})
 	end
