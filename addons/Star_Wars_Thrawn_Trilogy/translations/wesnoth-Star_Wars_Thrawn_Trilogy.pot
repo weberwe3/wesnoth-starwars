@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-17 13:17 UTC\n"
+"POT-Creation-Date: 2026-10-17 13:20 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -364,7 +364,7 @@ msgstr ""
 #. [achievement]: id=sw_swift, description={SW_SWIFT_RULE}
 #. [scenario]: id=sw_dfr_07_the_dark_force
 #: achievements.cfg:92
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:30
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:35
 msgid "The Dark Force"
 msgstr ""
 
@@ -3021,7 +3021,7 @@ msgstr ""
 #: scenarios/dark_force_rising/03_jomark.cfg:45
 #: scenarios/dark_force_rising/06_the_mad_jedi.cfg:44
 #: scenarios/dark_force_rising/06_the_mad_jedi.cfg:47
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:142
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:147
 #: scenarios/dark_force_rising/08_aboard_the_katana.cfg:42
 #: scenarios/dark_force_rising/09_battle_for_the_fleet.cfg:115
 #: scenarios/heir_to_the_empire/03_adrift.cfg:54
@@ -3231,7 +3231,7 @@ msgstr ""
 #. [objectives]
 #: scenarios/dark_force_rising/04_the_senators_men.cfg:142
 #: scenarios/dark_force_rising/06_the_mad_jedi.cfg:163
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:174
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:242
 #: scenarios/dark_force_rising/09_battle_for_the_fleet.cfg:175
 #: scenarios/heir_to_the_empire/06_raid_on_karrdes_base.cfg:213
 #: scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg:157
@@ -3485,23 +3485,23 @@ msgid "I can't go on..."
 msgstr ""
 
 #. [part]
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:45
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:50
 msgid "Talon Karrde sold the location of the Katana fleet to the New Republic. He had already sold it to someone else, who had sold it to the Grand Admiral."
 msgstr ""
 
 #. [part]
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:49
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:54
 msgid "Two hundred Dreadnaughts drift in the dark, their crews long dead. Whoever docks with them first can fly them home."
 msgstr ""
 
 #. [side]: id=sw_hero_wedge, type=sw_hero_wedge
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:60
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:65
 #: scenarios/dark_force_rising/09_battle_for_the_fleet.cfg:41
 msgid "New Republic Task Force"
 msgstr ""
 
 #. [side]: id=sw_hero_wedge, type=sw_hero_wedge
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:63
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:68
 #: scenarios/dark_force_rising/09_battle_for_the_fleet.cfg:44
 #: scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg:57
 #: scenarios/heir_to_the_empire/10_thrawns_gambit.cfg:61
@@ -3512,32 +3512,32 @@ msgid "Wedge Antilles"
 msgstr ""
 
 #. [side]: id=sw_dfr07_carrier, type=sw_unit_im_star_destroyer
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:75
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:80
 msgid "Imperial Boarding Force"
 msgstr ""
 
 #. [side]: id=sw_dfr07_carrier, type=sw_unit_im_star_destroyer
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:78
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:83
 msgid "Peremptory"
 msgstr ""
 
 #. [side]
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:95
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:100
 msgid "Katana Fleet (derelict)"
 msgstr ""
 
 #. [objective]: condition=win
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:155
-msgid "Secure three Dreadnaughts (move a Boarding Shuttle next to one)"
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:220
+msgid "Secure three Dreadnaughts (dock a Boarding Shuttle next to one for a turn)"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:159
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:224
 msgid "The Empire secures four Dreadnaughts"
 msgstr ""
 
 #. [objective]: condition=lose
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:163
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:228
 #: scenarios/dark_force_rising/09_battle_for_the_fleet.cfg:167
 #: scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg:146
 #: scenarios/heir_to_the_empire/10_thrawns_gambit.cfg:184
@@ -3548,7 +3548,7 @@ msgid "Death of Wedge Antilles"
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:167
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:232
 #: scenarios/dark_force_rising/09_battle_for_the_fleet.cfg:171
 #: scenarios/heir_to_the_empire/09_sluis_van_shipyards.cfg:150
 #: scenarios/heir_to_the_empire/10_thrawns_gambit.cfg:188
@@ -3559,38 +3559,53 @@ msgid "If Luke falls, he withdraws from the fight badly wounded and returns for 
 msgstr ""
 
 #. [note]
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:172
-msgid "Imperial assault shuttles race for the same ships. Shoot them down before they dock."
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:237
+msgid "Docking takes a turn: a shuttle that ends its move next to a free Dreadnaught secures it at the start of its side's next turn, if it is still alive and alongside."
+msgstr ""
+
+#. [note]
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:240
+msgid "A TIE picket patrols the derelicts, an Imperial boarding party is already on its way, and more assault shuttles will follow. Escort your shuttles, and shoot theirs down before they finish docking."
 msgstr ""
 
 #. [message]: speaker=sw_hero_wedge
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:182
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:250
 msgid "There they are. Dreadnaughts, dozens of them, all in a line. And a Star Destroyer already launching shuttles."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:186
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:254
 msgid "Fighters, screen our shuttles. Boarding crews, dock with anything you can reach."
 msgstr ""
 
-#. [floating_text]
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:253
-msgid "Dreadnaught secured"
-msgstr ""
-
 #. [message]: speaker=sw_hero_wedge
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:266
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:306
 msgid "Three Dreadnaughts are ours and answering their helms. That's our share of the Dark Force, people."
 msgstr ""
 
 #. [message]: speaker=sw_hero_luke
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:270
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:310
 msgid "Wedge, the flagship is still unclaimed. If its slave circuits are intact, it controls the rest. I'm taking a team aboard."
 msgstr ""
 
 #. [message]: speaker=sw_hero_wedge
-#: scenarios/dark_force_rising/07_the_dark_force.cfg:287
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:327
 msgid "They've got too many of them. Pull back!"
+msgstr ""
+
+#. [lua]: sw_dfr07.dock
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:382
+msgid "Docking — secured next turn"
+msgstr ""
+
+#. [lua]: sw_dfr07.secure
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:396
+msgid "Dreadnaught secured"
+msgstr ""
+
+#. [lua]: sw_dfr07.secure
+#: scenarios/dark_force_rising/07_the_dark_force.cfg:400
+msgid "Docking broken off"
 msgstr ""
 
 #. [part]
