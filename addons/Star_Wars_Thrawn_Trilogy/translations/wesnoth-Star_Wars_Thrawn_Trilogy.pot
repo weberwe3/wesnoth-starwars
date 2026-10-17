@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: https://bugs.wesnoth.org/\n"
-"POT-Creation-Date: 2026-10-17 13:20 UTC\n"
+"POT-Creation-Date: 2026-10-17 13:21 UTC\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1153,9 +1153,9 @@ msgstr ""
 #. [lua]: when
 #. [message]: speaker=narrator
 #: lua/sw_doctrine.lua:861
-#: lua/sw_systems.lua:344
+#: lua/sw_systems.lua:345
 #: lua/sw_tips.lua:97
-#: utils/hte_macros.cfg:593
+#: utils/hte_macros.cfg:595
 msgid "Thrawn's doctrine"
 msgstr ""
 
@@ -1335,7 +1335,7 @@ msgstr ""
 #. [lua]: ew.contact_menu_command
 #. [lua]: wesnoth.wml_actions.show_objectives
 #: lua/sw_ew.lua:1019
-#: lua/sw_systems.lua:302
+#: lua/sw_systems.lua:303
 msgid "Sensor contact"
 msgstr ""
 
@@ -1595,7 +1595,7 @@ msgstr ""
 #. [lua]: force.status_text
 #. [lua]: sw_systems.show_status
 #: lua/sw_force.lua:558
-#: lua/sw_systems.lua:378
+#: lua/sw_systems.lua:379
 msgid "Inside a ysalamiri field: the Force is blocked here."
 msgstr ""
 
@@ -2619,64 +2619,64 @@ msgid "Has outlasted every war he fought. This unit's resistances are doubled, u
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:274
+#: lua/sw_systems.lua:275
 msgid "The Force…"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:281
+#: lua/sw_systems.lua:282
 msgid "Overwatch (commits this turn's attack)"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:288
+#: lua/sw_systems.lua:289
 msgid "Active sensor sweep (commits this turn's attack)"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:295
+#: lua/sw_systems.lua:296
 msgid "Launch sensor decoy…"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:309
+#: lua/sw_systems.lua:310
 msgid "Call air support…"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:316
+#: lua/sw_systems.lua:317
 msgid "Silent takedown"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:323
+#: lua/sw_systems.lua:324
 msgid "Show or hide guard sight"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:330
+#: lua/sw_systems.lua:331
 msgid "Show attack range"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
-#: lua/sw_systems.lua:337
+#: lua/sw_systems.lua:338
 msgid "Hide attack range"
 msgstr ""
 
 #. [lua]: wesnoth.wml_actions.show_objectives
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:351
-#: lua/sw_systems.lua:394
+#: lua/sw_systems.lua:352
+#: lua/sw_systems.lua:395
 msgid "Tactical status"
 msgstr ""
 
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:381
+#: lua/sw_systems.lua:382
 msgid "On overwatch:"
 msgstr ""
 
 #. [lua]: sw_systems.show_status
-#: lua/sw_systems.lua:382
+#: lua/sw_systems.lua:383
 msgid "reaction(s) left, range"
 msgstr ""
 
@@ -2778,7 +2778,7 @@ msgstr ""
 #. [set_menu_item]: id=sw_field_manual
 #: lua/sw_tips.lua:153
 #: utils/hte_macros.cfg:454
-#: utils/hte_macros.cfg:608
+#: utils/hte_macros.cfg:610
 #: utils/hte_macros.cfg:470
 #: utils/hte_macros.cfg:465
 msgid "Field Manual"
@@ -2792,6 +2792,11 @@ msgstr ""
 #. [lua]: tips.on_side_turn
 #: lua/sw_tips.lua:156
 msgid "Turn off tips"
+msgstr ""
+
+#. [lua]: xp.on_die
+#: lua/sw_xp.lua:43
+msgid "XP (tough kill)"
 msgstr ""
 
 #. [part]
@@ -9741,11 +9746,14 @@ msgstr ""
 
 #. [message]: speaker=narrator
 #: utils/hte_macros.cfg:592
-msgid "Veterans wear their rank. A unit that rises past its highest level gains a rank — Veteran, Seasoned veteran, Elite — shown as insignia on the unit: gold chevrons for the New Republic, the red-and-blue rank plaque for the Imperial Remnant, brass studs for independents, violet marks for dark Jedi. Promoted units such as sergeants and smuggler veterans start at the first rank. Many units and heroes also change their look as Seasoned veterans and Elites, earning heavier armour, capes and cloaks, or squadron colours. <b>Each rank also brings a new ability for the unit's class</b>: a sergeant's fire discipline, a medic's field surgery, a Wookiee's battle roar, a pilot's wingman call, an ace's marksman eye. They are listed at the end of each unit's description, so you can see what a veteran is working towards, and they are kept for good. No rank adds a new attack; abilities either work on their own or improve a weapon the unit already carries. At each rank a soldier, alien warrior, combat droid or starfighter chooses its training: +3 maximum hit points, a weapons drill (+1 damage on every weapon, up to twice) or a mobility drill (+1 movement, once). Every choice brings a full heal. Named heroes also choose <b>specializations</b> after their last level; the advancement dialog states each benefit and cap. Force discipline adds 2 maximum Force Points once (regeneration unchanged; ysalamiri still block the Force). Weapon disciplines add 1 damage per strike to the named weapon, up to twice, including its aimed shot where present. Combat maneuvering, blockade running or command repositioning adds 1 movement once, without extra vision. Infiltration lets Mara or Khabarakh ignore enemy zones of control. Field coordination restores up to 4 HP per turn to adjacent allies and slows poison; it never heals the commander or stacks with another healer. Every specialization fully heals, cures poison and slow, and raises the next XP requirement by 20%. Each hero retains the +3 maximum HP choice after all specialization caps."
+msgid ""
+"Tough kills teach more: on top of the usual 8 experience per level, destroying an armed unit that is much sturdier than others of its level earns 1 more for every 4 hitpoints of difference. A Star Destroyer is worth 68, a Katana Dreadnaught 48, a stormtrooper 8.\n"
+"\n"
+"Veterans wear their rank. A unit that rises past its highest level gains a rank — Veteran, Seasoned veteran, Elite — shown as insignia on the unit: gold chevrons for the New Republic, the red-and-blue rank plaque for the Imperial Remnant, brass studs for independents, violet marks for dark Jedi. Promoted units such as sergeants and smuggler veterans start at the first rank. Many units and heroes also change their look as Seasoned veterans and Elites, earning heavier armour, capes and cloaks, or squadron colours. <b>Each rank also brings a new ability for the unit's class</b>: a sergeant's fire discipline, a medic's field surgery, a Wookiee's battle roar, a pilot's wingman call, an ace's marksman eye. They are listed at the end of each unit's description, so you can see what a veteran is working towards, and they are kept for good. No rank adds a new attack; abilities either work on their own or improve a weapon the unit already carries. At each rank a soldier, alien warrior, combat droid or starfighter chooses its training: +3 maximum hit points, a weapons drill (+1 damage on every weapon, up to twice) or a mobility drill (+1 movement, once). Every choice brings a full heal. Named heroes also choose <b>specializations</b> after their last level; the advancement dialog states each benefit and cap. Force discipline adds 2 maximum Force Points once (regeneration unchanged; ysalamiri still block the Force). Weapon disciplines add 1 damage per strike to the named weapon, up to twice, including its aimed shot where present. Combat maneuvering, blockade running or command repositioning adds 1 movement once, without extra vision. Infiltration lets Mara or Khabarakh ignore enemy zones of control. Field coordination restores up to 4 HP per turn to adjacent allies and slows poison; it never heals the commander or stacks with another healer. Every specialization fully heals, cures poison and slow, and raises the next XP requirement by 20%. Each hero retains the +3 maximum HP choice after all specialization caps."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:593
+#: utils/hte_macros.cfg:595
 msgid ""
 "Grand Admiral Thrawn learns his enemies. His forces gain Insight from what they observe: how you move, the weapons you use, the targets you choose, your reinforcements, your formations and your tactics. Repeating yourself teaches him faster. Captured art, archives and intelligence can teach him too. Red pips over his commander show how far his doctrine has come.\n"
 "\n"
@@ -9753,22 +9761,22 @@ msgid ""
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:596
+#: utils/hte_macros.cfg:598
 msgid "Command decisions"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:596
+#: utils/hte_macros.cfg:598
 msgid "Once in each campaign — in Shadows of Kashyyyk, The Senator's Men and The Palace Infiltrators — High Command offers one kind of support for the rest of that campaign. <b>Supply convoy</b>: +25 credits at the start of every later mission where you recruit. <b>Veteran cadre</b>: two loyal units of your best recruit join at once, half-way to their next level. <b>Counter-intelligence</b>: Thrawn's doctrine never reaches Coordinated fire (its Insight stays at 75 or below). The choice stands until the campaign ends."
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:597
+#: utils/hte_macros.cfg:599
 msgid "Achievements"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:597
+#: utils/hte_macros.cfg:599
 msgid ""
 "Each campaign has achievements, listed under <b>Achievements</b> in the main menu: finish the campaign, finish it on Hard, finish it with no hero ever withdrawing, win missions with at least a third of their turns unused, become an ace by destroying enemy starfighters and warships in the space battles, and pull off feats in single missions: keep every warship at Thrawn's Gambit, every Dreadnaught at Battle for the Fleet, bring down the traitor at the Smugglers' Council, and break the line at The Last Command.\n"
 "\n"
@@ -9776,27 +9784,27 @@ msgid ""
 msgstr ""
 
 #. [option]
-#: utils/hte_macros.cfg:601
+#: utils/hte_macros.cfg:603
 msgid "Show the tips again"
 msgstr ""
 
 #. [message]: speaker=narrator
-#: utils/hte_macros.cfg:609
+#: utils/hte_macros.cfg:611
 msgid "Tips are on again. Each one appears the first time its system matters to you."
 msgstr ""
 
 #. [option]
-#: utils/hte_macros.cfg:614
+#: utils/hte_macros.cfg:616
 msgid "Close the manual"
 msgstr ""
 
 #. [objective]: description= , condition=win
-#: utils/hte_macros.cfg:695
+#: utils/hte_macros.cfg:697
 msgid "(reward:"
 msgstr ""
 
 #. [objective]: description= , condition=win
-#: utils/hte_macros.cfg:695
+#: utils/hte_macros.cfg:697
 msgid "credits next mission)"
 msgstr ""
 
